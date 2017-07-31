@@ -79,9 +79,9 @@ void classification(const char *path) {
 
 	SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, path));
 
-	RandomForestCls<10> rf(8, 200);
+	RandomForestCls<10> rf(14, 200);
 
-	const int treeNum = 200;
+	const int treeNum = 80;
 	for (int i = 0; i < treeNum; i++) {
 		rf.train(trainImages, trainLabels);
 		printf("\rtrain [%s] ", progressBar(i, treeNum));
