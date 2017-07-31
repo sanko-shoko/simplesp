@@ -1,0 +1,15 @@
+# project files
+/build/*
+!/build/.gitkeep
+
+# external files
+/external/*
+!/external/.gitkeep
+
+# database
+/dataset/*
+
+# others
+a.exe
+/x64/*
+

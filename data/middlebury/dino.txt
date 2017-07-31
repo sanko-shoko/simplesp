@@ -1,0 +1,4 @@
+dino datasets
+http://vision.middlebury.edu/mview/data/
+
+363 views

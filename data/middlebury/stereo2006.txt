@@ -1,0 +1,4 @@
+middlebury stereo datasets 2006
+http://vision.middlebury.edu/stereo/data/scenes2006/
+
+ALL-2view.zip

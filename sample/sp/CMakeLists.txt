@@ -1,0 +1,27 @@
+## algo
+add_subdirectory(mat)
+add_subdirectory(lsm)
+add_subdirectory(kdtree)
+add_subdirectory(randomforest)
+
+## image
+add_subdirectory(bin)
+add_subdirectory(filter)
+add_subdirectory(integral)
+add_subdirectory(slic)
+add_subdirectory(sift)
+add_subdirectory(graphcut)
+add_subdirectory(fourier)
+add_subdirectory(poc)
+add_subdirectory(opticalflow)
+##add_subdirectory(backsub)
+
+## geom
+add_subdirectory(fmat)
+add_subdirectory(rect)
+add_subdirectory(stereo)
+
+## learn
+add_subdirectory(train)
+
+

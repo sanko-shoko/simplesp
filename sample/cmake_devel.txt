@@ -1,0 +1,54 @@
+project(${target})
+
+file(GLOB MAIN *.h *.hpp *.cpp)
+source_group("main" FILES ${MAIN})
+
+file(GLOB SIMPLESP ${CMAKE_SOURCE_DIR}/*.h)
+source_group("" FILES ${SIMPLESP})
+
+file(GLOB SPEX ${CMAKE_SOURCE_DIR}/spex/*.h)
+source_group("spex" FILES ${SPEX})
+
+
+## core
+file(GLOB SPCORE ${CMAKE_SOURCE_DIR}/spcore/*.h)
+file(GLOB SPGEN ${CMAKE_SOURCE_DIR}/spcore/spgen/*.h)
+file(GLOB SPCPU ${CMAKE_SOURCE_DIR}/spcore/spcpu/*.h)
+
+source_group("spcore" FILES ${SPCORE})
+source_group("spcore\\spgen" FILES ${SPGEN})
+source_group("spcore\\spcpu" FILES ${SPCPU})
+
+
+## app
+file(GLOB SPAPP ${CMAKE_SOURCE_DIR}/spapp/*.h)
+file(GLOB SPDATA ${CMAKE_SOURCE_DIR}/spapp/spdata/*.h)
+file(GLOB SPALGO ${CMAKE_SOURCE_DIR}/spapp/spalgo/*.h)
+file(GLOB SPIMG ${CMAKE_SOURCE_DIR}/spapp/spimg/*.h)
+file(GLOB SPIMGEX ${CMAKE_SOURCE_DIR}/spapp/spimgex/*.h)
+file(GLOB SPGEOM ${CMAKE_SOURCE_DIR}/spapp/spgeom/*.h)
+file(GLOB SPGEOMEX ${CMAKE_SOURCE_DIR}/spapp/spgeomex/*.h)
+file(GLOB SPLEARN ${CMAKE_SOURCE_DIR}/spapp/splearn/*.h)
+
+source_group("spapp" FILES ${SPAPP})
+source_group("spapp\\spdata" FILES ${SPDATA})
+source_group("spapp\\spalgo" FILES ${SPALGO})
+source_group("spapp\\spimg" FILES ${SPIMG})
+source_group("spapp\\spimgex" FILES ${SPIMGEX})
+source_group("spapp\\spgeom" FILES ${SPGEOM})
+source_group("spapp\\spgeomex" FILES ${SPGEOMEX})
+source_group("spapp\\splearn" FILES ${SPLEARN})
+
+
+add_executable(${target} 
+	${MAIN} ${SIMPLESP} ${SPEX} 
+	${SPCORE} ${SPGEN} ${SPCPU}
+	${SPAPP} ${SPDATA} ${SPALGO} ${SPIMG} ${SPIMGEX} ${SPGEOM} ${SPGEOMEX} ${SPLEARN})
+
+set_target_properties(${target} PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/"
+)
+
+target_link_libraries(${target} ${EX_LIBS} ${OpenGL_LIBS} ${OpenCV_LIBS})
+
+
