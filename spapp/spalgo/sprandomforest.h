@@ -203,14 +203,15 @@ namespace sp{
 	// random forest classification
 	//--------------------------------------------------------------------------------
 
-	template <int CLASS>
 	class RandomForestCls : public RandomForest<int> {
 	private:
 		typedef int TYPE;
+		int m_classNum;
 
 	public:
 
-		RandomForestCls(const int maxDepth = 10, const int samples = 0) {
+		RandomForestCls(const int classNum, const int maxDepth = 10, const int samples = 0) {
+			m_classNum = classNum;
 			init(maxDepth, samples);
 		}
 
@@ -219,11 +220,12 @@ namespace sp{
 		virtual double calcGain(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
 			
 			int cnt[2] = { 0 };
-			int hist[2][CLASS] = { 0 };
-
+			Mem2<int> hist(2, m_classNum);
+			hist.zero();
+			
 			for (int n = 0; n < index.size(); n++) {
 				const int s = Xs[index[n]][param] < thresh ? 0 : 1;
-				hist[s][Ys[index[n]]]++;
+				hist(s, Ys[index[n]])++;
 				cnt[s]++;
 			}
 
@@ -232,8 +234,8 @@ namespace sp{
 			double gain = 0.0;
 			for (int s = 0; s < 2; s++) {
 				double sum = 0.0;
-				for (int c = 0; c < CLASS; c++) {
-					const double p = hist[s][c] / cnt[s];
+				for (int c = 0; c < m_classNum; c++) {
+					const double p = hist(s, c) / cnt[s];
 					sum += (p != 0.0) ? p * log(p) : 0.0;
 				}
 				gain -= sum * cnt[s] / index.size();
@@ -243,7 +245,7 @@ namespace sp{
 
 		virtual void setNode(Node *node, const Mem1<TYPE>& Y, const Mem1<int> &index) {
 
-			Mem1<int> hist(CLASS);
+			Mem1<int> hist(m_classNum);
 			hist.zero();
 
 			for (int n = 0; n < index.size(); n++) {

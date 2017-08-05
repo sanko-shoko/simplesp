@@ -127,8 +127,8 @@ namespace sp{
 
 		void setLink(int i, int j, int cap){
 
-			Link *linkAB = m_links.extend(1);
-			Link *linkBA = m_links.extend(1);
+			Link *linkAB = m_links.extend();
+			Link *linkBA = m_links.extend();
 
 			Node* A = &m_nodes[i];
 			Node* B = &m_nodes[j];

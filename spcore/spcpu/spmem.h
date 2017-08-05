@@ -44,26 +44,25 @@ namespace sp{
 			mem.reset();
 		}
 		
-		virtual void copy(const void *cpy, const int csize){
-			memcpy(this->ptr, cpy, csize * sizeof(TYPE));
-		}
-
-		virtual void malloc(const int msize, const void *cpy){
-
+		void malloc(const int msize, const void *cpy) {
 			const TYPE *tmp = this->ptr;
 
-			if (msize > this->msize){
+			if (msize > this->msize) {
 				this->msize = msize;
 				this->ptr = new TYPE[msize];
 			}
 
-			if (cpy != NULL){
+			if (cpy != NULL) {
 				copy(cpy, size());
 			}
 
-			if (this->ptr != tmp && (cpy == tmp || cpy == NULL)){
+			if (this->ptr != tmp && (cpy == tmp || cpy == NULL)) {
 				delete[]tmp;
 			}
+		}
+
+		virtual void copy(const void *cpy, const int csize){
+			memcpy(this->ptr, cpy, csize * sizeof(TYPE));
 		}
 
 	public:
@@ -285,21 +284,26 @@ namespace sp{
 		// util
 		//--------------------------------------------------------------------------------
 		
-		void reserve(const int msize){
-
-			if (msize > this->msize){
+		void reserve(const int msize) {
+			if (msize > this->msize) {
 				Mem<TYPE>::malloc(msize, this->ptr);
 			}
 		}
 
+		TYPE* extend() {
+			if (this->dsize[0] + 1 > this->msize) {
+				Mem<TYPE>::malloc((this->dsize[0] + 1) * 2, this->ptr);
+			}
+			return &this->ptr[this->dsize[0]++];
+		}
+
 		void push(const TYPE &data){
-			*extend(1) = data;
+			*extend() = data;
 		}
 
 		void push(const TYPE *data, const int num){
-			TYPE *dst = extend(num);
 			for (int i = 0; i < num; i++){
-				dst[i] = data[i];
+				push(data[i]);
 			}
 		}
 
@@ -311,15 +315,6 @@ namespace sp{
 			if (this->dsize[0] > 0){
 				this->dsize[0]--;
 			}
-		}
-
-		TYPE* extend(const int num = 1){
-			if (this->dsize[0] + num > this->msize){
-				Mem<TYPE>::malloc((this->dsize[0] + num) * 2, this->ptr);
-			}
-			this->dsize[0] += num;
-
-			return &this->ptr[this->dsize[0] - num];
 		}
 
 		TYPE* last(){

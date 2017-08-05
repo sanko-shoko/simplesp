@@ -79,7 +79,8 @@ void classification(const char *path) {
 
 	SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, path));
 
-	RandomForestCls<10> rf(14, 200);
+	RandomForestCls rf(10, 15, 200);
+	//RandomForestCls rf(10, 15, 1000); // slow
 
 	const int treeNum = 80;
 	for (int i = 0; i < treeNum; i++) {
