@@ -51,7 +51,7 @@ namespace sp{
 		}
 	}
 
-	template<typename TYPE, typename VEC>
+	template<typename TYPE>
 	SP_CPUCALL void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
@@ -201,6 +201,21 @@ namespace sp{
 			const double p = i * 2 * length / (num - 1);
 			renderLine(dst, cam, pose, getVec(-length, -length + p, 0.0), getVec(+length, -length + p, 0.0), val, thick);
 			renderLine(dst, cam, pose, getVec(-length + p, -length, 0.0), getVec(-length + p, +length, 0.0), val, thick);
+		}
+	}
+
+	template<typename TYPE>
+	SP_CPUCALL void renderCam(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const CamParam &trg, const double size, const TYPE &val, const int thick = 1) {
+		const double f = (trg.fx + trg.fy) / 2.0;
+		const double w = (trg.dsize[0] / 2.0) / f * size;
+		const double h = (trg.dsize[1] / 2.0) / f * size;
+
+		const Vec2 loop[4] = { getVec(-w, -h), getVec(+w, -h), getVec(+w, +h), getVec(-w, +h) };
+		for (int i = 0; i < 4; i++) {
+			const Vec2 a = loop[(i + 0) % 4];
+			const Vec2 b = loop[(i + 1) % 4];
+			renderLine(dst, cam, pose, getVec(0.0, 0.0, 0.0), getVec(a.x, a.y, size), val, thick);
+			renderLine(dst, cam, pose, getVec(a.x, a.y, size), getVec(b.x, b.y, size), val, thick);
 		}
 	}
 

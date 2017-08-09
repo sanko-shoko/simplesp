@@ -339,6 +339,7 @@ namespace sp{
 		}
 	}
 
+	// zyx eulter
 	SP_GENCALL Rot getRotEuler(const Vec3 &euler){
 		const Rot rotx = getRotAngleX(euler.x);
 		const Rot roty = getRotAngleY(euler.y);
@@ -346,6 +347,7 @@ namespace sp{
 		return rotz * roty * rotx;
 	}
 
+	// zyx eulter
 	SP_GENCALL Vec3 getEuler(const Rot &rot){
 		double mat[3 * 3];
 		cnvRotToMat(mat, 3, 3, rot);

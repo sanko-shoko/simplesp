@@ -352,10 +352,10 @@ namespace sp{
 		return detMat(mat.ptr, mat.rows(), mat.cols(), buf.ptr);
 	}
 
-	SP_CPUCALL Mat invMat(const Mat &mat){
+	SP_CPUCALL Mat invMat(const Mat &mat) {
 		Mat dst(mat.dsize);
 		Mat buf(mat.dsize);
-		if (invMat(dst.ptr, mat.ptr, mat.rows(), mat.cols(), buf.ptr) == false){
+		if (invMat(dst.ptr, mat.ptr, mat.rows(), mat.cols(), buf.ptr) == false) {
 			dst.clear();
 		}
 
@@ -528,6 +528,10 @@ namespace sp{
 
 	SP_CPUCALL Vec3 operator * (const Mat &mat, const Vec3 vec){
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
+	}
+
+	SP_CPUCALL Vec2 operator * (const CamParam &cam, const Vec2 vec) {
+		return mulCam(cam, vec);
 	}
 
 	SP_CPUCALL VecVN2 operator * (const Mat &mat, const VecVN2 vec){

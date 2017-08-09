@@ -46,6 +46,16 @@ namespace sp{
 		return true;
 	}
 
+	SP_CPUCALL string strFormat(const char *format, ...) {
+		char str[SP_STRMAX];
+
+		va_list arg;
+		va_start(arg, format);
+		::vsprintf(str, format, arg);
+		va_end(arg);
+
+		return string(str);
+	}
 
 }
 #endif
