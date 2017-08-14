@@ -281,6 +281,9 @@ namespace sp{
 			}
 		}
 
+		// marker direction (backup)
+		Vec2 m_direct = getVec(1.0, 0.0);
+
 		void estimate(const Mem2<Byte> &img, const Mem1<Vec2> &pixs){
 
 			// make kd tree
@@ -307,7 +310,7 @@ namespace sp{
 				SP_LOGGER_SET("recog");
 				
 				Mem1<Mem1<Vec2> > links;
-				getLink(links, pixs, kdtree, getVec(1.0, 0.0));
+				getLink(links, pixs, kdtree, m_direct);
 				
 				SP_HOLDER_SET("links", links);
 				
@@ -326,6 +329,8 @@ namespace sp{
 				}
 
 				m_hom = (trkEval > 0.95 * rcgEval) ? trkHom : rcgHom;
+
+				m_direct = unitVec(m_hom * getVec(1.0, 0.0) - m_hom * getVec(0.0, 0.0));
 			}
 
 			{

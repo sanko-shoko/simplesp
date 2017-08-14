@@ -18,6 +18,7 @@
 #include "spapp/spalgo/spgraphcut.h"
 #include "spapp/spalgo/spcluster.h"
 #include "spapp/spalgo/sprandomforest.h"
+#include "spapp/spalgo/spkalmanfilter.h"
 
 // image
 #include "spapp/spimg/spimage.h"

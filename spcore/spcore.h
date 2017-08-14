@@ -16,7 +16,7 @@
 #include "spcore/spgen/spvec.h"
 #include "spcore/spgen/spcol.h"
 #include "spcore/spgen/spmath.h"
-#include "spcore/spgen/sptrns.h"
+#include "spcore/spgen/sppose.h"
 
 // cpu
 #include "spcore/spcpu/spmem.h"

@@ -99,7 +99,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool loadGeodesicDorm(Mem1<Mesh> &model, const double size, const int div) {
+	SP_CPUCALL void loadGeodesicDorm(Mem1<Mesh> &model, const double size, const int div) {
 		model.clear();
 
 		const int num = getGeodesicMeshNum(div);
@@ -107,8 +107,9 @@ namespace sp{
 			model.push(getGeodesicMesh(div, i) * size);
 		}
 
-		return true;
 	}
+
+
 }
 
 #endif
