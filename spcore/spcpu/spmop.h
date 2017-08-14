@@ -7,7 +7,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spgen/spmath.h"
-#include "spcore/spgen/sptrns.h"
+#include "spcore/spgen/sppose.h"
 
 #include "spcore/spcpu/spmem.h"
 
