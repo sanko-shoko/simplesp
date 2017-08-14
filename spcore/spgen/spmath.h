@@ -828,7 +828,7 @@ namespace sp{
 				}
 
 				if (it == maxit - 1){
-					SP_PRINTF("no convergence in SVD iterations");
+					SP_PRINTD("no convergence in SVD iterations");
 				}
 
 				// shift from bottom 2-by-2 minor
