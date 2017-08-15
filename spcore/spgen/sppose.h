@@ -405,13 +405,13 @@ namespace sp{
 
 	SP_GENCALL Pose getPose(const double *mat){
 		Pose dst;
-		double rotMat[3 * 3];
+		double rmat[3 * 3];
 		for (int r = 0; r < 3; r++){
 			for (int c = 0; c < 3; c++){
-				rotMat[r * 3 + c] = mat[r * 4 + c];
+				rmat[r * 3 + c] = mat[r * 4 + c];
 			}
 		}
-		dst.rot = getRot(mat);
+		dst.rot = getRot(rmat);
 		dst.trn = getVec(mat[0 * 4 + 3], mat[1 * 4 + 3], mat[2 * 4 + 3]);
 		return dst;
 	}
