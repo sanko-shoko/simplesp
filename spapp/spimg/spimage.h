@@ -293,6 +293,16 @@ namespace sp{
 		}
 	}
 
+	SP_CPUCALL void cnvImgToGry(Mem<Byte> &dst, const Mem<Col4> &src) {
+		SP_ASSERT(isValid(2, src));
+
+		dst.resize(2, src.dsize);
+
+		for (int i = 0; i < dst.size(); i++) {
+			cnvImg(dst[i], src[i]);
+		}
+	}
+
 	SP_CPUCALL void cnvImgToHSV(Mem<Vec3> &dst, const Mem<Col3> &src) {
 		SP_ASSERT(isValid(2, src));
 
@@ -352,7 +362,7 @@ namespace sp{
 	template<typename TYPE>
 	SP_CPUCALL void cnvPtrToImg(Mem<TYPE> &dst, const void *src, const int dsize0, const int dsize1, const int ch){
 
-		switch (ch){
+		switch (ch) {
 		case 1:
 		{
 			Mem2<Byte> gry(dsize0, dsize1, src);
@@ -362,6 +372,12 @@ namespace sp{
 		case 3:
 		{
 			Mem2<Col3> col(dsize0, dsize1, src);
+			cnvImg(dst, col);
+			break;
+		}
+		case 4:
+		{
+			Mem2<Col4> col(dsize0, dsize1, src);
 			cnvImg(dst, col);
 			break;
 		}

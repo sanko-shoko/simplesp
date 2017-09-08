@@ -13,7 +13,7 @@ namespace sp{
 	// fitting
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
+	SP_CPUFUNC bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
 		const Rect rect = getRect2(img.dsize);
 
 		for (int it = 0; it < maxit; it++){
@@ -100,7 +100,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
+	SP_CPUFUNC bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
 		return fitting2D(pose, img, cam, getVec(objs, 0.0), getVec(drcs, 0.0), searchLng, maxit);
 	}
 

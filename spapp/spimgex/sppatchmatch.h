@@ -16,7 +16,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void opticalFlowPM(Mem2<Vec2> &flows, Mem2<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int winSize, const int maxit = 6) {
+	SP_CPUFUNC void opticalFlowPM(Mem2<Vec2> &flows, Mem2<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int winSize, const int maxit = 6) {
 
 		flows.resize(img0.dsize);
 		flows.zero();
@@ -84,7 +84,7 @@ namespace sp{
 
 	}
 
-	SP_CPUCALL void opticalFlowPM(Mem2<Vec2> &flows, Mem2<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const int winSize, const int maxit = 6) {
+	SP_CPUFUNC void opticalFlowPM(Mem2<Vec2> &flows, Mem2<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const int winSize, const int maxit = 6) {
 		Mem2<Byte> gry0, gry1;
 		cnvImg(gry0, img0);
 		cnvImg(gry1, img1);

@@ -119,7 +119,7 @@ namespace sp{
 
 
 	template<typename TYPE>
-	SP_CPUCALL void guidedFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Guide1 &guide, const int winSize) {
+	SP_CPUFUNC void guidedFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Guide1 &guide, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		Mem2<double> p(src.dsize);
@@ -157,7 +157,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const Guide3 &guide, const int winSize) {
+	SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const Guide3 &guide, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		Mem2<double> p(src.dsize);
@@ -210,7 +210,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const Guide3 &guide, const int winSize) {
+	SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const Guide3 &guide, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		Mem2<Vec3> p(src.dsize);
@@ -297,14 +297,14 @@ namespace sp{
 	}
 
 
-	SP_CPUCALL void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const double epsilon) {
+	SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const double epsilon) {
 		SP_ASSERT(isValid(2, src));
 
 		const Guide1 guide(src, winSize, epsilon);
 		guidedFilter(dst, src, guide, winSize);
 	}
 
-	SP_CPUCALL void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const double epsilon) {
+	SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const double epsilon) {
 		SP_ASSERT(isValid(2, src));
 
 		const Guide3 guide(src, winSize, epsilon);

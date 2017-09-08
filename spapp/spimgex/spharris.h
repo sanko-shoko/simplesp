@@ -17,7 +17,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void harris(Mem1<Vec2> &pixs, const Mem2<Byte> &src, const int block = 4) {
+	SP_CPUFUNC void harris(Mem1<Vec2> &pixs, const Mem2<Byte> &src, const int block = 4) {
 		SP_LOGGER_INSTANCE;
 		SP_LOGGER_SET("harris");
 
@@ -107,7 +107,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void harris(Mem1<Vec2> &pixs, const Mem2<Col3> &src, const int block = 4) {
+	SP_CPUFUNC void harris(Mem1<Vec2> &pixs, const Mem2<Col3> &src, const int block = 4) {
 		Mem2<Byte> gry;
 		cnvImg(gry, src);
 

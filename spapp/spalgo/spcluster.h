@@ -13,7 +13,7 @@ namespace sp{
 	// k-means clustering
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL Mem1<int> kmeans(const int dim, const void *ptr, const int size, const int K, const int maxit = 5){
+	SP_CPUFUNC Mem1<int> kmeans(const int dim, const void *ptr, const int size, const int K, const int maxit = 5){
 		SP_ASSERT(dim > 0);
 
 		const Mat data(size, dim, ptr);

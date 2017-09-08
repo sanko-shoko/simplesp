@@ -14,7 +14,7 @@ namespace sp{
 	// text
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftextf(FILE *fp, const char *mode, const char *format, const char *option = NULL) {
+	SP_CPUFUNC bool ftextf(FILE *fp, const char *mode, const char *format, const char *option = NULL) {
 		if (format == NULL) return false;
 
 		{
@@ -30,7 +30,7 @@ namespace sp{
 	}
 
 	template <typename TYPE>
-	SP_CPUCALL bool ftextf(FILE *fp, const char *mode, const char *format, const TYPE *val, const int num, const char *option = NULL) {
+	SP_CPUFUNC bool ftextf(FILE *fp, const char *mode, const char *format, const TYPE *val, const int num, const char *option = NULL) {
 		if (format == NULL) return false;
 
 		for (int i = 0; i < num; i++) {
@@ -51,7 +51,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_CPUCALL bool fbin(FILE *fp, const char *mode, const TYPE *val, const int num) {
+	SP_CPUFUNC bool fbin(FILE *fp, const char *mode, const TYPE *val, const int num) {
 
 		TYPE *ptr = (TYPE*)val;
 		if (*mode == 'w') {
@@ -69,7 +69,7 @@ namespace sp{
 	// bool
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const bool *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const bool *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -78,7 +78,7 @@ namespace sp{
 	// char
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const char *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const char *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -87,7 +87,7 @@ namespace sp{
 	// unsigned char
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const unsigned char *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const unsigned char *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -96,7 +96,7 @@ namespace sp{
 	// short
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const short *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const short *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -105,7 +105,7 @@ namespace sp{
 	// unsigned short
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const unsigned short *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const unsigned short *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -114,7 +114,7 @@ namespace sp{
 	// int
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const int *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const int *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -123,7 +123,7 @@ namespace sp{
 	// unsigned int
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const unsigned int *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const unsigned int *val, const int num) {
 		return ftextf(fp, mode, "%d", val, num, "\n");
 	}
 
@@ -132,7 +132,7 @@ namespace sp{
 	// float
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const float *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const float *val, const int num) {
 		return ftextf(fp, mode, "%f", val, num, "\n");
 	}
 
@@ -141,7 +141,7 @@ namespace sp{
 	// double
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const double *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const double *val, const int num) {
 		const char *format = (*mode == 'w') ? "%e" : "%lf";
 		return ftextf(fp, mode, format, val, num, "\n");
 	}
@@ -152,7 +152,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_CPUCALL bool ftextn(FILE *fp, const char *mode, const TYPE *val, const int num, const char *name) {
+	SP_CPUFUNC bool ftextn(FILE *fp, const char *mode, const TYPE *val, const int num, const char *name) {
 		bool ret = true;
 		ret &= ftextf(fp, mode, name, ",");
 		ret &= ftext(fp, mode, val, num);
@@ -164,7 +164,7 @@ namespace sp{
 	// camera parameter
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const CamParam *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const CamParam *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "CamParam,\n");
@@ -190,7 +190,7 @@ namespace sp{
 	// pose
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const Pose *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const Pose *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "Pose,\n");
@@ -212,7 +212,7 @@ namespace sp{
 	// vector
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const Vec2 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const Vec2 *val, const int num) {
 		
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "Vec2,");
@@ -223,7 +223,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const VecVN2 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecVN2 *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "VecVN2,");
@@ -236,7 +236,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const Vec3 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const Vec3 *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "Vec3,");
@@ -248,7 +248,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const VecVN3 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecVN3 *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "VecVN3,");
@@ -268,7 +268,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 	
 	template <typename TYPE>
-	SP_CPUCALL bool ftext(FILE *fp, const char *mode, const Mem<TYPE> *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const Mem<TYPE> *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
 			ftextf(fp, mode, "Mem,\n");

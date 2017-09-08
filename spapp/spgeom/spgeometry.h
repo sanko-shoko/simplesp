@@ -13,7 +13,7 @@ namespace sp{
 	// jacob
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL void jacobHMat(double *jacob, const double *img, const double *obj){
+	SP_GENFUNC void jacobHMat(double *jacob, const double *img, const double *obj){
 		jacob[0 * 9 + 0] = obj[0];
 		jacob[0 * 9 + 1] = obj[1];
 		jacob[0 * 9 + 2] = 1.0;
@@ -35,13 +35,13 @@ namespace sp{
 		jacob[1 * 9 + 8] = -img[1];
 	}
 
-	SP_GENCALL void jacobHMat(double *jacob, const Vec2 &img, const Vec2 &obj){
+	SP_GENFUNC void jacobHMat(double *jacob, const Vec2 &img, const Vec2 &obj){
 		double pimg[2] = { img.x, img.y };
 		double pobj[2] = { obj.x, obj.y };
 		jacobHMat(jacob, pimg, pobj);
 	}
 
-	SP_GENCALL void jacobFMat(double *jacob, const double *pix0, const double *pix1){
+	SP_GENFUNC void jacobFMat(double *jacob, const double *pix0, const double *pix1){
 		jacob[0] = pix1[0] * pix0[0];
 		jacob[1] = pix1[0] * pix0[1];
 		jacob[2] = pix1[0];
@@ -53,13 +53,13 @@ namespace sp{
 		jacob[8] = 1.0;
 	}
 
-	SP_GENCALL void jacobFMat(double *jacob, const Vec2 &pix0, const Vec2 &pix1){
+	SP_GENFUNC void jacobFMat(double *jacob, const Vec2 &pix0, const Vec2 &pix1){
 		double ppix0[2] = { pix0.x, pix0.y };
 		double ppix1[2] = { pix1.x, pix1.y };
 		jacobFMat(jacob, ppix0, ppix1);
 	}
 
-	SP_GENCALL void jacobPMat(double *jacob, const double *img, const double *obj){
+	SP_GENFUNC void jacobPMat(double *jacob, const double *img, const double *obj){
 		jacob[0 * 12 + 0] = obj[0];
 		jacob[0 * 12 + 1] = obj[1];
 		jacob[0 * 12 + 2] = obj[2];
@@ -87,7 +87,7 @@ namespace sp{
 		jacob[1 * 12 + 11] = -img[1];
 	}
 
-	SP_GENCALL void jacobPMat(double *jacob, const Vec2 &img, const Vec3 &obj){
+	SP_GENFUNC void jacobPMat(double *jacob, const Vec2 &img, const Vec3 &obj){
 		double pimg[2] = { img.x, img.y };
 		double pobj[3] = { obj.x, obj.y, obj.z };
 		jacobPMat(jacob, pimg, pobj);
@@ -98,7 +98,7 @@ namespace sp{
 	// triangulation
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool refinePnt3d(Vec3 &pnt, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const int maxit = 1) {
+	SP_CPUFUNC bool refinePnt3d(Vec3 &pnt, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const int maxit = 1) {
 		SP_ASSERT(poses.size() == cams.size() && poses.size() == pixs.size());
 
 		const int unit = 2;
@@ -137,7 +137,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool calcPnt3d(Vec3 &pnt, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs) {
+	SP_CPUFUNC bool calcPnt3d(Vec3 &pnt, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs) {
 		SP_ASSERT(poses.size() == cams.size() && poses.size() == pixs.size());
 
 		Mat M(poses.size() * 2, 3);
@@ -173,7 +173,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool calcPnt3d(Vec3 &pnt, const Pose &pose0, const CamParam &cam0, const Vec2 &pix0, const Pose &pose1, const CamParam &cam1, const Vec2 &pix1) {
+	SP_CPUFUNC bool calcPnt3d(Vec3 &pnt, const Pose &pose0, const CamParam &cam0, const Vec2 &pix0, const Pose &pose1, const CamParam &cam1, const Vec2 &pix1) {
 		const Pose _poses[2] = { pose0, pose1 };
 		const CamParam _cams[2] = { cam0, cam1 };
 		const Vec2 _pixs[2] = { pix0, pix1 };
@@ -190,11 +190,11 @@ namespace sp{
 	// homography
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double errHMat(const Mat &H, const Vec2 &pix, const Vec2 &obj) {
+	SP_CPUFUNC double errHMat(const Mat &H, const Vec2 &pix, const Vec2 &obj) {
 		return normVec(pix - H * obj);
 	}
 
-	SP_CPUCALL Mem1<double> errHMat(const Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs) {
+	SP_CPUFUNC Mem1<double> errHMat(const Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		Mem1<double> errs(pixs.size());
@@ -205,7 +205,7 @@ namespace sp{
 	}
 
 	// calc homography
-	SP_CPUCALL bool calcHMat(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const int maxit = 1){
+	SP_CPUFUNC bool calcHMat(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const int maxit = 1){
 		SP_ASSERT(pixs.size() == objs.size());
 
 		const int unit = 4;
@@ -243,7 +243,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 5.0){
+	SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 5.0){
 		SP_ASSERT(pixs.size() == objs.size());
 		
 		const int unit = 4;
@@ -294,7 +294,7 @@ namespace sp{
 	// fundamental matrix
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double errFMat(const Mat &F, const Vec2 &upix0, const Vec2 &upix1) {
+	SP_CPUFUNC double errFMat(const Mat &F, const Vec2 &upix0, const Vec2 &upix1) {
 		const Vec3 line = F * getVec(upix0, 1.0);
 
 		const double div = pythag(line.x, line.y);
@@ -304,7 +304,7 @@ namespace sp{
 		return err;
 	}
 
-	SP_CPUCALL Mem1<double> errFMat(const Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1) {
+	SP_CPUFUNC Mem1<double> errFMat(const Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1) {
 		SP_ASSERT(upixs0.size() == upixs1.size());
 
 		Mem1<double> errs(upixs0.size());
@@ -315,7 +315,7 @@ namespace sp{
 	}
 
 	// calc fundamental matrix using 8 points algorithm
-	SP_CPUCALL bool calcFMat(Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1, const int maxit = 1){
+	SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1, const int maxit = 1){
 		SP_ASSERT(upixs0.size() == upixs1.size());
 
 		const int unit = 8;
@@ -357,7 +357,7 @@ namespace sp{
 	}
 
 	// 8 points algorithm
-	SP_CPUCALL bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1, const double thresh = 5.0){
+	SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &upixs0, const Mem1<Vec2> &upixs1, const double thresh = 5.0){
 		SP_ASSERT(upixs0.size() == upixs1.size());
 
 		const int unit = 8;
@@ -402,13 +402,13 @@ namespace sp{
 		return calcFMat(F, dpixs0, dpixs1, 10);
 	}
 
-	SP_CPUCALL bool calcFMat(Mat &F, const Pose &pose, const CamParam &cam0, const CamParam &cam1) {
+	SP_CPUFUNC bool calcFMat(Mat &F, const Pose &pose, const CamParam &cam0, const CamParam &cam1) {
 		const Mat E = skewMat(pose.trn) * getMat(pose.rot);
 		F = invMat(trnMat(getMat(cam1))) * E * invMat(getMat(cam0));
 		return true;
 	}
 
-	SP_CPUCALL bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
+	SP_CPUFUNC bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
 		SP_ASSERT(pixs0.size() == pixs1.size());
 
 		const int unit = 8;
@@ -467,15 +467,15 @@ namespace sp{
 	// pose
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
+	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
 		return normVec(pix - mulCam(cam, npxDist(cam, prjVec(pose * obj))));
 	}
 
-	SP_CPUCALL double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
+	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
 		return errPose(pose, cam, pix, getVec(obj, 0.0));
 	}
 
-	SP_CPUCALL Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+	SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		Mem1<double> errs(pixs.size());
@@ -485,11 +485,11 @@ namespace sp{
 		return errs;
 	}
 
-	SP_CPUCALL Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs) {
+	SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs) {
 		return errPose(pose, cam, pixs, getVec(objs, 0.0));
 	}
 
-	SP_CPUCALL bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
+	SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		const int unit = 3;
@@ -517,12 +517,12 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
+	SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
 		return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
 	}
 
 	// 
-	SP_CPUCALL bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+	SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		const int unit = 6;
@@ -570,7 +570,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
+	SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		const int unit = 6;
@@ -616,7 +616,7 @@ namespace sp{
 	}
 
 	//
-	SP_CPUCALL bool calcPose(Pose &pose, const CamParam &cam, const Mat &hom) {
+	SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mat &hom) {
 		SP_ASSERT(hom.rows() == 3 && hom.cols() == 3);
 
 		const Mat h = hom / hom(2, 2);
@@ -641,7 +641,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
+	SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
 		SP_ASSERT(pixs.size() == objs.size());
 
 		const int unit = 4;
@@ -654,7 +654,7 @@ namespace sp{
 		return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
 	}
 
-	SP_CPUCALL bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
+	SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
 		SP_ASSERT(pixs0.size() == pixs1.size());
 
 		Mem1<Vec2> upixs0(pixs0.size());

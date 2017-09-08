@@ -36,13 +36,13 @@
 //--------------------------------------------------------------------------------
 
 // cpu function
-#ifndef SP_CPUCALL
-#define SP_CPUCALL inline
+#ifndef SP_CPUFUNC
+#define SP_CPUFUNC inline
 #endif
 
 // cpu/gpu function
-#ifndef SP_GENCALL
-#define SP_GENCALL inline
+#ifndef SP_GENFUNC
+#define SP_GENFUNC inline
 #endif
 
 
@@ -190,6 +190,9 @@ namespace sp{
 		Byte r, g, b;
 	};
 
+	struct Col4 {
+		Byte r, g, b, a;
+	};
 
 	//--------------------------------------------------------------------------------
 	// byte order

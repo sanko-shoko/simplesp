@@ -14,7 +14,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_CPUCALL Mem1<TYPE> oneHot(const int label, const int num){
+	SP_CPUFUNC Mem1<TYPE> oneHot(const int label, const int num){
 		Mem1<TYPE> dst(num);
 		dst.zero();
 		dst[label] = static_cast<TYPE>(1);
@@ -27,13 +27,13 @@ namespace sp{
 	// cross entropy
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double crossEntropy(const Mem<double>  &result, const int truth){
+	SP_CPUFUNC double crossEntropy(const Mem<double>  &result, const int truth){
 
 		double loss = -log(result[truth]);
 		return loss;
 	}
 
-	SP_CPUCALL double crossEntropy(const Mem1<Mem<double> > &result, const Mem1<int> &truth){
+	SP_CPUFUNC double crossEntropy(const Mem1<Mem<double> > &result, const Mem1<int> &truth){
 
 		Mem1<double> loss(result.size());
 		for (int i = 0; i < result.size(); i++){
@@ -47,20 +47,20 @@ namespace sp{
 	// accuracy
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double testAccuracy(const int result, const int label) {
+	SP_CPUFUNC double testAccuracy(const int result, const int label) {
 		return (result == label) ? 1.0 : 0.0;
 	}
 
-	SP_CPUCALL double testAccuracy(const Mem<double>  &result, const int label) {
+	SP_CPUFUNC double testAccuracy(const Mem<double>  &result, const int label) {
 		return (maxArg(result) == label) ? 1.0 : 0.0;
 	}
 
-	SP_CPUCALL double testAccuracy(const Mem<double>  &result, const Mem<double>  &label){
+	SP_CPUFUNC double testAccuracy(const Mem<double>  &result, const Mem<double>  &label){
 		return (maxArg(result) == maxArg(label)) ? 1.0 : 0.0;
 	}
 
 	template<typename TYPE0, typename TYPE1>
-	SP_CPUCALL double testAccuracy(const Mem1<TYPE0> &result, const Mem1<TYPE1> &truth) {
+	SP_CPUFUNC double testAccuracy(const Mem1<TYPE0> &result, const Mem1<TYPE1> &truth) {
 
 		Mem1<double> accuracy(result.size());
 		for (int i = 0; i < result.size(); i++) {

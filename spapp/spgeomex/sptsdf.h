@@ -22,7 +22,7 @@ namespace sp{
 		char weight;
 	};
 
-	SP_CPUCALL Vec3 getSDFNrm(const Mem3<TSDF> &tsdfmap, const int x, const int y, const int z){
+	SP_CPUFUNC Vec3 getSDFNrm(const Mem3<TSDF> &tsdfmap, const int x, const int y, const int z){
 
 		const double vx = tsdfmap(x + 1, y, z).val - tsdfmap(x - 1, y, z).val;
 		const double vy = tsdfmap(x, y + 1, z).val - tsdfmap(x, y - 1, z).val;
@@ -30,7 +30,7 @@ namespace sp{
 		return unitVec(getVec(vx, vy, vz));
 	}
 
-	SP_CPUCALL void updateTSDF(Mem3<TSDF> &tsdfmap, const double unit, const CamParam &cam, const Pose &pose, const Mem2<double> &depth){
+	SP_CPUFUNC void updateTSDF(Mem3<TSDF> &tsdfmap, const double unit, const CamParam &cam, const Pose &pose, const Mem2<double> &depth){
 		SP_ASSERT(isValid(3, tsdfmap));
 
 		const Vec3 cent = getVec(tsdfmap.dsize[0] - 1, tsdfmap.dsize[1] - 1, tsdfmap.dsize[2] - 1) * 0.5;
@@ -64,7 +64,7 @@ namespace sp{
 	}
 
 
-	SP_CPUCALL void rayCasting(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
+	SP_CPUFUNC void rayCasting(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
 		vnmap.resize(cam.dsize);
 		vnmap.zero();
 
@@ -144,7 +144,7 @@ namespace sp{
 		}
 	}
 
-//	SP_CPUCALL void rayCastingFast(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
+//	SP_CPUFUNC void rayCastingFast(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
 //		SP_ASSERT(isValid(vnmap, 2));
 //		vnmap.zero();
 //

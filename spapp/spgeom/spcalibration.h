@@ -16,7 +16,7 @@ namespace sp{
 	
 	namespace _calibration{
 
-		SP_CPUCALL bool initCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList){
+		SP_CPUFUNC bool initCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList){
 
 			Mem1<Mat> homs;
 
@@ -69,7 +69,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUCALL double optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
+		SP_CPUFUNC double optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
 
 			Mem1<Pose> vposes;
 			Mem1<Mem1<Vec2> > vpixsList;
@@ -169,7 +169,7 @@ namespace sp{
 		}
 
 
-		SP_CPUCALL bool initStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
+		SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
 			const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList){
 	
 			double minv = SP_INFINITY;
@@ -193,7 +193,7 @@ namespace sp{
 			return (minv < SP_INFINITY) ? true : false;
 		}
 
-		SP_CPUCALL double optStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
+		SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
 			const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20){
 			Mem1<Pose> vposes;
 			Mem1<Mem1<Vec2> > vpixsList0, vpixsList1;
@@ -325,7 +325,7 @@ namespace sp{
 	// calibrate camera parameter
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double calibCam(CamParam &cam, const int dsize0, const int dsize1,
+	SP_CPUFUNC double calibCam(CamParam &cam, const int dsize0, const int dsize1,
 		const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
 		double rms = -1.0;
 
@@ -349,7 +349,7 @@ namespace sp{
 	// calibrate stereo pose
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
+	SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
 		const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
 
 		double rms = -1.0;
@@ -368,7 +368,7 @@ namespace sp{
 		return rms;
 	}
 	
-	SP_CPUCALL double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
+	SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
 		const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList0, const Mem1<Mem1<Vec2> > &objsList1, const int maxit = 20){
 
 		Mem1<Mem1<Vec2> > cpixsList0, cpixsList1, cobjsList;
@@ -403,7 +403,7 @@ namespace sp{
 		Rot rot;
 	};
 	
-	SP_CPUCALL void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const CamParam &cam1, const Pose &stereo){
+	SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const CamParam &cam1, const Pose &stereo){
 		SP_ASSERT(cmpSize(2, cam0.dsize, cam1.dsize));
 
 		// pre parameter
@@ -462,7 +462,7 @@ namespace sp{
 	// remap
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void makeRemapTable(Mem2<Vec2> &table, const CamParam &cam){
+	SP_CPUFUNC void makeRemapTable(Mem2<Vec2> &table, const CamParam &cam){
 		table.resize(cam.dsize);
 
 		for (int v = 0; v < table.dsize[1]; v++){
@@ -475,7 +475,7 @@ namespace sp{
 
 	}
 
-	SP_CPUCALL void makeRemapTable(Mem2<Vec2> &table, const RectParam &rect){
+	SP_CPUFUNC void makeRemapTable(Mem2<Vec2> &table, const RectParam &rect){
 		table.resize(rect.cam.dsize);
 
 		const Rot rot = invRot(rect.rot);

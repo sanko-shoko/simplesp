@@ -21,7 +21,7 @@ namespace sp{
 
 	using namespace std;
 
-	SP_CPUCALL Mem1<string> strSplit(const char *str, const char *tok = " ,\t\n\r"){
+	SP_CPUFUNC Mem1<string> strSplit(const char *str, const char *tok = " ,\t\n\r"){
 		Mem1<string> dst;
 		Mem1<char> buf(static_cast<int>(strlen(str) + 1), str);
 
@@ -35,7 +35,7 @@ namespace sp{
 	}
 
 
-	SP_CPUCALL bool strExtVal(const char *line, const char *name, const char *format, void *param){
+	SP_CPUFUNC bool strExtVal(const char *line, const char *name, const char *format, void *param){
 		const char *str = strstr(line, name);
 		if (str == NULL) return false;
 
@@ -46,7 +46,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL string strFormat(const char *format, ...) {
+	SP_CPUFUNC string strFormat(const char *format, ...) {
 		char str[SP_STRMAX];
 
 		va_list arg;

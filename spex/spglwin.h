@@ -65,7 +65,7 @@ namespace sp{
 	// control
 	//--------------------------------------------------------------------------------
 	
-	SP_CPUCALL void controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse){
+	SP_CPUFUNC void controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse){
 		if (mouse.bDownL) {
 			viewpPos += mouse.move;
 		}
@@ -76,7 +76,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()){
+	SP_CPUFUNC void controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()){
 
 		Pose cpose = pose * invPose(base);
 		if (cpose.trn.z < 0.0) return;

@@ -220,6 +220,23 @@ namespace sp{
 		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
 	}
 
+	SP_GENCALL void cnvImg(Byte &dst, const Col4 &src) {
+		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
+	}
+
+	SP_GENCALL void cnvImg(Col3 &dst, const Col4 &src) {
+		dst.r = src.r;
+		dst.g = src.g;
+		dst.b = src.b;
+	}
+
+	SP_GENCALL void cnvImg(Col4 &dst, const Col3 &src) {
+		dst.r = src.r;
+		dst.g = src.g;
+		dst.b = src.b;
+		dst.a = SP_BYTEMAX;
+	}
+
 	
 	//--------------------------------------------------------------------------------
 	// convert geom to image

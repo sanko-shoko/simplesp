@@ -34,7 +34,7 @@ namespace sp{
 			}
 		};
 
-		SP_CPUCALL bool loadHeader(File &file, Mem1<Element> &elemList){
+		SP_CPUFUNC bool loadHeader(File &file, Mem1<Element> &elemList){
 			elemList.clear();
 
 			Element *pElem = NULL;
@@ -76,7 +76,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUCALL Vec3 getVertex(const char *line, const Element &elem){
+		SP_CPUFUNC Vec3 getVertex(const char *line, const Element &elem){
 			Vec3 vec;
 
 			const Mem1<string> words = strSplit(line);
@@ -92,7 +92,7 @@ namespace sp{
 			return vec;
 		}
 
-		SP_CPUCALL Mem1<int> getIndex(const char *line, const Element &elem){
+		SP_CPUFUNC Mem1<int> getIndex(const char *line, const Element &elem){
 			Mem1<int> index;
 
 			const Mem1<string> words = strSplit(line);
@@ -106,7 +106,7 @@ namespace sp{
 	}
 	using namespace _ply;
 
-	SP_CPUCALL bool loadPLY(Mem1<Mesh> &meshes, const char *path){
+	SP_CPUFUNC bool loadPLY(Mem1<Mesh> &meshes, const char *path){
 		File file;
 		if (file.open(path, "r") == false) return false;
 
@@ -145,7 +145,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool savePLY(const Mem1<Vec3> &pnts, const char *path){
+	SP_CPUFUNC bool savePLY(const Mem1<Vec3> &pnts, const char *path){
 		File file;
 		if (file.open(path, "w") == false) return false;
 
@@ -165,7 +165,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool savePLY(const Mem1<Vec3> &pnts, const Mem1<Col3> &cols, const char *path){
+	SP_CPUFUNC bool savePLY(const Mem1<Vec3> &pnts, const Mem1<Col3> &cols, const char *path){
 		File file;
 		if (file.open(path, "w") == false) return false;
 		if (cmpSize(pnts, cols) == false) return false;

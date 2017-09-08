@@ -14,7 +14,7 @@ namespace sp{
 	// model util
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL Vec3 getModelCenter(const Mem1<Mesh> &model){
+	SP_CPUFUNC Vec3 getModelCenter(const Mem1<Mesh> &model){
 		Vec3 sum = zero<Vec3>();
 		for (int i = 0; i < model.size(); i++){
 			sum += getMeshPos(model[i]);
@@ -23,7 +23,7 @@ namespace sp{
 		return sum / model.size();
 	}
 
-	SP_CPUCALL double getModelRadius(const Mem1<Mesh> &model){
+	SP_CPUFUNC double getModelRadius(const Mem1<Mesh> &model){
 		Mem1<double> mem(model.size());
 		for (int i = 0; i < mem.size(); i++){
 			mem[i] = normVec(getMeshPos(model[i]));
@@ -32,7 +32,7 @@ namespace sp{
 		return maxVal(mem);
 	}
 
-	SP_CPUCALL double getModelDistance(const Mem1<Mesh> &model, const CamParam &cam){
+	SP_CPUFUNC double getModelDistance(const Mem1<Mesh> &model, const CamParam &cam){
 
 		const double radius = getModelRadius(model);
 		const double distance = 1.5 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
@@ -40,7 +40,7 @@ namespace sp{
 		return distance;
 	}
 
-	SP_CPUCALL Mem1<VecVN3> getModelPoint(const Mem1<Mesh> &model, const int density = 60){
+	SP_CPUFUNC Mem1<VecVN3> getModelPoint(const Mem1<Mesh> &model, const int density = 60){
 		const CamParam cam = getCamParam(density, density);
 		const double distance = getModelDistance(model, cam);
 		
@@ -86,7 +86,7 @@ namespace sp{
 	// sample model
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool loadBunny(Mem1<Mesh> &model, const char *path) {
+	SP_CPUFUNC bool loadBunny(Mem1<Mesh> &model, const char *path) {
 		if (loadPLY(model, path) == false) return false;
 
 		Vec3 center = getModelCenter(model);
@@ -99,7 +99,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL void loadGeodesicDorm(Mem1<Mesh> &model, const double size, const int div) {
+	SP_CPUFUNC void loadGeodesicDorm(Mem1<Mesh> &model, const double size, const int div) {
 		model.clear();
 
 		const int num = getGeodesicMeshNum(div);

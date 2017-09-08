@@ -10,7 +10,7 @@
 
 namespace sp {
 
-	SP_CPUCALL double calcSAD(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
+	SP_CPUFUNC double calcSAD(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
 
 		const int offset = winSize / 2;
 		const int wx0 = minVal(x, offset);
@@ -32,7 +32,7 @@ namespace sp {
 		return eval;
 	}
 
-	SP_CPUCALL double calcZNCC(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
+	SP_CPUFUNC double calcZNCC(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
 
 		const int offset = winSize / 2;
 		const int wx0 = minVal(x, offset);
