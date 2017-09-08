@@ -12,7 +12,7 @@ namespace sp{
 
 	namespace _fourier {
 		
-		SP_CPUCALL void calcHor(Mat &dstRe, Mat &dstIm, const Mat &srcRe, const Mat srcIm = Mat(), const bool flag = true) {
+		SP_CPUFUNC void calcHor(Mat &dstRe, Mat &dstIm, const Mat &srcRe, const Mat srcIm = Mat(), const bool flag = true) {
 
 			const int M = srcRe.dsize[0];
 			
@@ -58,7 +58,7 @@ namespace sp{
 			}
 		}
 
-		SP_CPUCALL void calcVer(Mat &dstRe, Mat &dstIm, const Mat &srcRe, const Mat &srcIm = Mat(), bool flag = true) {
+		SP_CPUFUNC void calcVer(Mat &dstRe, Mat &dstIm, const Mat &srcRe, const Mat &srcIm = Mat(), bool flag = true) {
 
 			calcHor(dstRe, dstIm, trnMat(srcRe), trnMat(srcIm), flag);
 
@@ -70,7 +70,7 @@ namespace sp{
 	using namespace _fourier;
 
 	template<typename TYPE>
-	SP_CPUCALL void dft(Mem<double> &re, Mem<double> &im, const Mem<TYPE> &img) {
+	SP_CPUFUNC void dft(Mem<double> &re, Mem<double> &im, const Mem<TYPE> &img) {
 		SP_ASSERT(isValid(2, img));
 
 		Mat mat;
@@ -87,7 +87,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void idft(Mem<TYPE> &img, const Mem<double> &re, const Mem<double> &im) {
+	SP_CPUFUNC void idft(Mem<TYPE> &img, const Mem<double> &re, const Mem<double> &im) {
 		SP_ASSERT(cmpSize(re, im));
 
 		Mat mRe, mIm;
@@ -104,7 +104,7 @@ namespace sp{
 	}
 
 
-	SP_CPUCALL void poc(Mem<double> &dst, const Mem<double> &re0, const Mem<double> &im0, const Mem<double> &re1, const Mem<double> &im1) {
+	SP_CPUFUNC void poc(Mem<double> &dst, const Mem<double> &re0, const Mem<double> &im0, const Mem<double> &re1, const Mem<double> &im1) {
 		const int *dsize = re0.dsize;
 
 		Mem2<double> re(dsize);

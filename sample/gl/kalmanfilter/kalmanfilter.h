@@ -24,7 +24,7 @@ private:
 		static int cnt = 0;
 
 		// delta time
-		const double dt = 1;
+		const double dt = 0.1;
 
 		// observation noise (sigma)
 		const double onoize = 5.0;

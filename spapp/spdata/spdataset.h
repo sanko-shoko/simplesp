@@ -17,7 +17,7 @@ namespace sp{
 
 	namespace _mnist{
 		template<typename TYPE>
-		SP_CPUCALL bool loadImages(Mem1<TYPE> &images, const char *dir, const char *name, const double scale = 1.0){
+		SP_CPUFUNC bool loadImages(Mem1<TYPE> &images, const char *dir, const char *name, const double scale = 1.0){
 			File file;
 			char path[512];
 			
@@ -42,7 +42,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUCALL bool loadLabels(Mem1<int> &labels, const char *dir, const char *name){
+		SP_CPUFUNC bool loadLabels(Mem1<int> &labels, const char *dir, const char *name){
 			File file;
 			char path[512];
 			sprintf(path, "%s/%s%s", dir, name, "-labels.idx1-ubyte");
@@ -62,7 +62,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL bool loadMNIST(
+	SP_CPUFUNC bool loadMNIST(
 		Mem1<Mem<double> > &trainImages, Mem1<int> &trainLabels,
 		Mem1<Mem<double> > &testImages, Mem1<int> &testLabels, const char *dir){
 
@@ -74,7 +74,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool loadMNIST(
+	SP_CPUFUNC bool loadMNIST(
 		Mem1<Mem2<Byte> > &trainImages, Mem1<int> &trainLabels,
 		Mem1<Mem2<Byte> > &testImages, Mem1<int> &testLabels, const char *dir){
 
@@ -94,7 +94,7 @@ namespace sp{
 	namespace _cifar{
 
 		template<typename TYPE>
-		SP_CPUCALL bool load10(Mem1<TYPE> &images, Mem1<int> &labels, const char *dir, const char *name, const int num, const double scale = 1.0){
+		SP_CPUFUNC bool load10(Mem1<TYPE> &images, Mem1<int> &labels, const char *dir, const char *name, const int num, const double scale = 1.0){
 			
 			File file;
 			char path[512];
@@ -120,7 +120,7 @@ namespace sp{
 		}
 
 		template<typename TYPE>
-		SP_CPUCALL bool loadTrain10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
+		SP_CPUFUNC bool loadTrain10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
 			const int num = 10000;
 
 			images.clear();
@@ -138,7 +138,7 @@ namespace sp{
 		}
 
 		template<typename TYPE>
-		SP_CPUCALL bool loadTest10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
+		SP_CPUFUNC bool loadTest10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
 			const int num = 10000;
 
 			images.clear();
@@ -151,7 +151,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL bool loadCIFAR10(
+	SP_CPUFUNC bool loadCIFAR10(
 		Mem1<Mem<double> > &trainImg, Mem1<int> &trainLabel,
 		Mem1<Mem<double> > &testImg, Mem1<int> &testLabel, const char *dir){
 

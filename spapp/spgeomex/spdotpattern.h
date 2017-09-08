@@ -12,7 +12,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
+	SP_CPUFUNC void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
 		
 		SP_ASSERT(isValid(2, src));
 
@@ -37,7 +37,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void splitMarkerAndPattern(Mem<Col3> &mrkImg, Mem<Col3> &ptnImg, const Mem<Col3> &src) {
+	SP_CPUFUNC void splitMarkerAndPattern(Mem<Col3> &mrkImg, Mem<Col3> &ptnImg, const Mem<Col3> &src) {
 
 		Mem2<Byte> gry;
 		cnvImg(gry, src);

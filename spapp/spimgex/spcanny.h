@@ -16,7 +16,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void canny(Mem<Byte> &dst, const Mem<Byte> &src, const int low, const int higth) {
+	SP_CPUFUNC void canny(Mem<Byte> &dst, const Mem<Byte> &src, const int low, const int higth) {
 		SP_LOGGER_INSTANCE;
 		SP_LOGGER_SET("canny");
 
@@ -116,7 +116,7 @@ namespace sp{
 	}
 
 
-	SP_CPUCALL void canny(Mem<Byte> &dst, const Mem<Col3> &src, const int low, const int higth) {
+	SP_CPUFUNC void canny(Mem<Byte> &dst, const Mem<Col3> &src, const int low, const int higth) {
 		Mem2<Byte> gry;
 		cnvImg(gry, src);
 

@@ -45,7 +45,7 @@ namespace sp{
 
 	};
 
-	SP_CPUCALL int getMatchCnt(const Mem1<int> &matches) {
+	SP_CPUFUNC int getMatchCnt(const Mem1<int> &matches) {
 		int cnt = 0;
 		for (int i = 0; i < matches.size(); i++) {
 			if (matches[i] >= 0) cnt++;
@@ -53,7 +53,7 @@ namespace sp{
 		return cnt;
 	};
 
-	SP_CPUCALL double getMatchRate(const Mem1<int> &matches) {
+	SP_CPUFUNC double getMatchRate(const Mem1<int> &matches) {
 		const int thresh = 10;
 		if (matches.size() <= thresh) return 0.0;
 
@@ -61,7 +61,7 @@ namespace sp{
 		return getMatchCnt(matches) * scale / matches.size();
 	};
 
-	SP_CPUCALL int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {
+	SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {
 		const double NCC_MIN = 0.9;
 
 		int id = -1;
@@ -86,7 +86,7 @@ namespace sp{
 		return id;
 	}
 
-	SP_CPUCALL Mem1<int> findMatch(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const bool crossCheck = true) {
+	SP_CPUFUNC Mem1<int> findMatch(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const bool crossCheck = true) {
 		Mem1<int> matches(fts0.size());
 
 #if SP_USE_OMP
@@ -113,7 +113,7 @@ namespace sp{
 		return matches;
 	}
 
-	SP_CPUCALL Mem1<int> findMatchFMat(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mat &F, const bool crossCheck = true) {
+	SP_CPUFUNC Mem1<int> findMatchFMat(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mat &F, const bool crossCheck = true) {
 		Mem1<int> matches(fts0.size());
 
 #if SP_USE_OMP

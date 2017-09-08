@@ -17,7 +17,7 @@ namespace sp {
 
 	using namespace std;
 
-	SP_CPUCALL bool findFile(const char *path) {
+	SP_CPUFUNC bool findFile(const char *path) {
 		FILE *fp = ::fopen(path, "r");
 		if (fp != NULL) {
 			::fclose(fp);
@@ -28,7 +28,7 @@ namespace sp {
 		}
 	}
 
-	SP_CPUCALL bool checkFileExt(const char *path, const char *ext) {
+	SP_CPUFUNC bool checkFileExt(const char *path, const char *ext) {
 		Mem1<string> exts = strSplit(ext);
 
 		bool ret = false;
@@ -240,7 +240,7 @@ namespace sp {
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_CPUCALL bool saveText(const TYPE &data, const char *path) {
+	SP_CPUFUNC bool saveText(const TYPE &data, const char *path) {
 		File file;
 		if (file.open(path, "w") == false) return false;
 
@@ -249,7 +249,7 @@ namespace sp {
 	}
 
 	template <typename TYPE>
-	SP_CPUCALL bool loadText(TYPE &data, const char *path) {
+	SP_CPUFUNC bool loadText(TYPE &data, const char *path) {
 		File file;
 		if (file.open(path, "r") == false) return false;
 
@@ -263,7 +263,7 @@ namespace sp {
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_CPUCALL bool saveMem(const Mem<TYPE> &mem, const char *path) {
+	SP_CPUFUNC bool saveMem(const Mem<TYPE> &mem, const char *path) {
 		File file;
 		if (file.open(path, "wb") == false) return false;
 
@@ -276,7 +276,7 @@ namespace sp {
 	}
 
 	template <typename TYPE>
-	SP_CPUCALL bool loadMem(Mem<TYPE> &mem, const char *path) {
+	SP_CPUFUNC bool loadMem(Mem<TYPE> &mem, const char *path) {
 		File file;
 		if (file.open(path, "rb") == false) return false;
 

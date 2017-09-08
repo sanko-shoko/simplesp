@@ -10,7 +10,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void calcDisparity(Mem2<float> &dspL, Mem2<float> &dspR, const Mem2<Byte> &imgL, const Mem2<Byte> &imgR, const double mindisp, const double maxdisp){
+	SP_CPUFUNC void calcDisparity(Mem2<float> &dspL, Mem2<float> &dspR, const Mem2<Byte> &imgL, const Mem2<Byte> &imgR, const double mindisp, const double maxdisp){
 
 		dspL.resize(imgL.dsize);
 		dspL.zero();

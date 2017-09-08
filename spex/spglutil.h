@@ -18,42 +18,42 @@ namespace sp{
 	// overwrap
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void glLoadMatrix(const Mat &mat){
+	SP_CPUFUNC void glLoadMatrix(const Mat &mat){
 		const Mat m4x4t = trnMat(extMat(4, 4, mat));
 		glLoadMatrixd(m4x4t.ptr);
 	}
 
-	SP_CPUCALL void glMultMatrix(const Mat &mat){
+	SP_CPUFUNC void glMultMatrix(const Mat &mat){
 		const Mat m4x4t = trnMat(extMat(4, 4, mat));
 		glMultMatrixd(m4x4t.ptr);
 	}
 
-	SP_CPUCALL void glLoadMatrix(const Pose &pose){
+	SP_CPUFUNC void glLoadMatrix(const Pose &pose){
 		glLoadMatrix(getMat(pose));
 	}
 
-	SP_CPUCALL void glMultMatrix(const Pose &pose){
+	SP_CPUFUNC void glMultMatrix(const Pose &pose){
 		glMultMatrix(getMat(pose));
 	}
 
 
-	SP_CPUCALL void glVertex(const Vec2 &vec){
+	SP_CPUFUNC void glVertex(const Vec2 &vec){
 		glVertex2d(vec.x, vec.y);
 	}
 
-	SP_CPUCALL void glVertex(const Vec3 &vec){
+	SP_CPUFUNC void glVertex(const Vec3 &vec){
 		glVertex3d(vec.x, vec.y, vec.z);
 	}
 
-	SP_CPUCALL void glNormal(const Vec3 &nrm){
+	SP_CPUFUNC void glNormal(const Vec3 &nrm){
 		glNormal3d(nrm.x, nrm.y, nrm.z);
 	}
 
-	SP_CPUCALL void glColor(const Col3 &col){
+	SP_CPUFUNC void glColor(const Col3 &col){
 		glColor3ub(col.r, col.g, col.b);
 	}
 
-	SP_CPUCALL void glColor(const int label){
+	SP_CPUFUNC void glColor(const int label){
 		srand(maxVal(label, 0));
 		Col3 col;
 		cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
@@ -65,7 +65,7 @@ namespace sp{
 	// load view
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+	SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 		GLint viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -95,12 +95,12 @@ namespace sp{
 		glLoadMatrix(mat);
 	}
 
-	SP_CPUCALL void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+	SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
 		glLoadView2D(cam.dsize[0], cam.dsize[1], viewPos, viewScale);
 	}
 
-	SP_CPUCALL void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
+	SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
 		GLint viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -150,7 +150,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL unsigned int glLoadTexture(const Mem<TYPE> &src) {
+	SP_CPUFUNC unsigned int glLoadTexture(const Mem<TYPE> &src) {
 		int format;
 		switch (sizeof(TYPE)) {
 		case 1: format = GL_LUMINANCE; break;
@@ -177,7 +177,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void glRenderImage(const Mem<TYPE> &src){
+	SP_CPUFUNC void glRenderImage(const Mem<TYPE> &src){
 		if (src.size() == 0) return;
 
 		const unsigned int texId = glLoadTexture(src);
@@ -220,7 +220,7 @@ namespace sp{
 	// util
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void glCircle(const Vec2 &pos, const double radius) {
+	SP_CPUFUNC void glCircle(const Vec2 &pos, const double radius) {
 		for (int i = 0; i < 36; i++) {
 			const double p0 = (i + 0) / 36.0 * 2.0 * SP_PI;
 			const double p1 = (i + 1) / 36.0 * 2.0 * SP_PI;
@@ -230,13 +230,13 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void glMesh(const Mesh &mesh){
+	SP_CPUFUNC void glMesh(const Mesh &mesh){
 		glVertex(mesh.vtx[0]);
 		glVertex(mesh.vtx[1]);
 		glVertex(mesh.vtx[2]);
 	}
 
-	SP_CPUCALL void glAxis(const double size){
+	SP_CPUFUNC void glAxis(const double size){
 		glColor3ub(255, 0, 0);
 		glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
 
@@ -247,7 +247,7 @@ namespace sp{
 		glVertex3d(0.0, 0.0, 0.0); glVertex3d(0.0, 0.0, size);
 	}
 
-	SP_CPUCALL void glCube(const double size){
+	SP_CPUFUNC void glCube(const double size){
 
 		const double s = size / 2.0;
 		const Vec2 loop[4] = { getVec(-s, -s), getVec(+s, -s), getVec(+s, +s), getVec(-s, +s) };
@@ -261,7 +261,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void glGrid(const double size, const int num){
+	SP_CPUFUNC void glGrid(const double size, const int num){
 		for (int i = 0; i < num; i++){
 			const double p = i * 2 * size / (num - 1);
 			glVertex3d(-size, -size + p, 0.0);
@@ -272,7 +272,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void glCam(const CamParam &cam, const double size) {
+	SP_CPUFUNC void glCam(const CamParam &cam, const double size) {
 		const double f = (cam.fx + cam.fy) / 2.0;
 		const double w = (cam.dsize[0] / 2.0) / f * size;
 		const double h = (cam.dsize[1] / 2.0) / f * size;

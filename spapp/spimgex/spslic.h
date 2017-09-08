@@ -15,7 +15,7 @@
 
 namespace sp{
 	
-	SP_CPUCALL void slic(Mem2<int> &map, const Mem2<Col3> &img, const int step = 20, const int maxit = 5){
+	SP_CPUFUNC void slic(Mem2<int> &map, const Mem2<Col3> &img, const int step = 20, const int maxit = 5){
 		SP_LOGGER_INSTANCE;
 		SP_LOGGER_SET("slic");
 		

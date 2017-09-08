@@ -74,7 +74,7 @@ namespace sp{
 
 	};
 
-	SP_CPUCALL Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+	SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
 		Mat AtW = trnMat(A);
 
 		if (errs.size() > 0){
@@ -93,7 +93,7 @@ namespace sp{
 	}
 
 	// solve equation (A * X = B)
-	SP_CPUCALL bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+	SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
 		
 		const Mat AtW = calcAtWeight(A, errs, minErr);
 
@@ -102,7 +102,7 @@ namespace sp{
 	}
 
 	// solve equation (A * X = 0)
-	SP_CPUCALL bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+	SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
 		
 		const Mat AtW = calcAtWeight(A, errs, minErr);
 
@@ -126,7 +126,7 @@ namespace sp{
 #define SP_RANSAC_RATE 0.1
 
 	// ransac adaptive stop
-	SP_CPUCALL int adaptiveStop(const double rate, const int num, const double n = 0.99){
+	SP_CPUFUNC int adaptiveStop(const double rate, const int num, const double n = 0.99){
 		const double e = maxVal(rate, 0.1);
 		const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, num)));
 		return minVal(k, SP_RANSAC_ITMAX);

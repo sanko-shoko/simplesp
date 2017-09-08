@@ -14,7 +14,7 @@ namespace sp{
 	// convert
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL bool cvCnvImg(Mem<Byte> &dst, const cv::Mat &src){
+	SP_CPUFUNC bool cvCnvImg(Mem<Byte> &dst, const cv::Mat &src){
 		if (src.type() == CV_8UC1){
 			cnvPtrToImg(dst, src.ptr(), src.size().width, src.size().height, 1);
 		}
@@ -26,7 +26,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool cvCnvImg(Mem<Col3> &dst, const cv::Mat &src){
+	SP_CPUFUNC bool cvCnvImg(Mem<Col3> &dst, const cv::Mat &src){
 		if (src.type() == CV_8UC1){
 			cnvPtrToImg(dst, src.ptr(), src.size().width, src.size().height, 1);
 		}
@@ -38,13 +38,13 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUCALL bool cvCnvImg(cv::Mat &dst, const Mem<Byte> &src){
+	SP_CPUFUNC bool cvCnvImg(cv::Mat &dst, const Mem<Byte> &src){
 		dst = cv::Mat(src.dsize[1], src.dsize[0], CV_8UC1);
 		memcpy(dst.ptr(), src.ptr, src.size() * sizeof(Byte));
 		return true;
 	}
 
-	SP_CPUCALL bool cvCnvImg(cv::Mat &dst, const Mem<Col3> &src){
+	SP_CPUFUNC bool cvCnvImg(cv::Mat &dst, const Mem<Col3> &src){
 		cv::Mat rgb(src.dsize[1], src.dsize[0], CV_8UC3);
 		memcpy(rgb.ptr(), src.ptr, src.size() * sizeof(Col3));
 
@@ -58,7 +58,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL bool cvCaptureImg(Mem<TYPE> &dst, cv::VideoCapture &cap, const int init = 0){
+	SP_CPUFUNC bool cvCaptureImg(Mem<TYPE> &dst, cv::VideoCapture &cap, const int init = 0){
 		if (cap.isOpened() == false){
 			if (cap.open(init) == false){
 				SP_PRINTF("could not find USB camera\n");
@@ -71,7 +71,7 @@ namespace sp{
 		return cvCnvImg(dst, img);
 	}
 
-	SP_CPUCALL void cvSetCaptureSize(cv::VideoCapture &cap, const int width, const int height){
+	SP_CPUFUNC void cvSetCaptureSize(cv::VideoCapture &cap, const int width, const int height){
 		cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
 		cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
 	}
@@ -81,7 +81,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL bool cvLoadImg(Mem<TYPE> &dst, const char *path){
+	SP_CPUFUNC bool cvLoadImg(Mem<TYPE> &dst, const char *path){
 		const cv::Mat cvimg = cv::imread(path);
 		return cvCnvImg(dst, cvimg);
 	}
@@ -91,7 +91,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL bool cvSaveImg(const Mem<TYPE> &src, const char *path){
+	SP_CPUFUNC bool cvSaveImg(const Mem<TYPE> &src, const char *path){
 		cv::Mat cvimg;
 		cvCnvImg(cvimg, src);
 				
@@ -103,7 +103,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 	
 	template<typename TYPE>
-	SP_CPUCALL void cvShowImg(const Mem<TYPE> &src, const char *name){
+	SP_CPUFUNC void cvShowImg(const Mem<TYPE> &src, const char *name){
 		cv::Mat cvimg;
 		cvCnvImg(cvimg, src);
 

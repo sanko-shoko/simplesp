@@ -15,14 +15,14 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// get color
-	SP_GENCALL Col3 getCol(const Byte r, const Byte g, const Byte b){
+	SP_GENFUNC Col3 getCol(const Byte r, const Byte g, const Byte b){
 		Col3 dst;
 		dst.r = r; dst.g = g; dst.b = b;
 		return dst;
 	}
 
 	// get color
-	SP_GENCALL Col3 getCol(const Vec3 &vec) {
+	SP_GENFUNC Col3 getCol(const Vec3 &vec) {
 		Col3 dst;
 		cnvVal(dst.r, vec.x);
 		cnvVal(dst.g, vec.y);
@@ -35,7 +35,7 @@ namespace sp{
 	// blend
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate){
+	SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate){
 		Col3 col;
 		cnvVal(col.r, col0.r * rate + col1.r * (1.0 - rate));
 		cnvVal(col.g, col0.g * rate + col1.g * (1.0 - rate));
@@ -49,7 +49,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// convert phase to col3(rainbow), phase = [0, 1]
-	SP_GENCALL void cnvPhaseToCol(Col3 &col, const double phase){
+	SP_GENFUNC void cnvPhaseToCol(Col3 &col, const double phase){
 		const double p = maxVal(0.0, minVal(phase, 1.0));
 		const double s = SP_PI + SP_PI / 4;
 
@@ -59,7 +59,7 @@ namespace sp{
 	}
 
 	// convert hsv to col3, hsv = Vec3(h = [0, 2 * PI], s = [0, 1], v = [0, 1])
-	SP_GENCALL void cnvHSVToCol(Col3 &col, const Vec3 &hsv){
+	SP_GENFUNC void cnvHSVToCol(Col3 &col, const Vec3 &hsv){
 		const double h = hsv.x;
 		const double s = hsv.y;
 		const double v = hsv.z;
@@ -84,7 +84,7 @@ namespace sp{
 	}
 
 	// convert col3 to hsv, hsv = Vec3(h = [0, 2 * PI], s = [0, 1], v = [0, 1])
-	SP_GENCALL void cnvColToHSV(Vec3 &hsv, const Col3 &col){
+	SP_GENFUNC void cnvColToHSV(Vec3 &hsv, const Col3 &col){
 		const double maxv = maxVal(col.r, maxVal(col.g, col.b));
 		const double minv = minVal(col.r, minVal(col.g, col.b));
 		const double subv = maxv - minv;
@@ -116,7 +116,7 @@ namespace sp{
 	}
 
 	
-	SP_GENCALL void cnvXYZToLab(Vec3 &lab, const Vec3 &xyz){
+	SP_GENFUNC void cnvXYZToLab(Vec3 &lab, const Vec3 &xyz){
 
 		const Vec3 w = getVec(0.95047, 1.00000, 1.0883); // D65
 
@@ -137,7 +137,7 @@ namespace sp{
 	}
 
 	
-	SP_GENCALL void cnvLabToXYZ(Vec3 &xyz, const Vec3 &lab) {
+	SP_GENFUNC void cnvLabToXYZ(Vec3 &xyz, const Vec3 &lab) {
 
 		const Vec3 w = getVec(0.95047, 1.00000, 1.0883); // D65
 
@@ -155,7 +155,7 @@ namespace sp{
 		xyz.z = f(val.z) * w.z;
 	}
 
-	SP_GENCALL void cnvColToXYZ(Vec3 &xyz, const Col3 &col){
+	SP_GENFUNC void cnvColToXYZ(Vec3 &xyz, const Col3 &col){
 		auto f = [](const double v)-> double {
 			return (v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
 		};
@@ -171,7 +171,7 @@ namespace sp{
 		xyz.z = +0.019331 * val.x + 0.119195 * val.y + 0.950532 * val.z;
 	}
 
-	SP_GENCALL void cnvXYZToCol(Col3 &col, const Vec3 &xyz) {
+	SP_GENFUNC void cnvXYZToCol(Col3 &col, const Vec3 &xyz) {
 		auto f = [](const double v)-> double {
 			return (v > 0.0031308) ? 1.055 * pow(v, 1.0 / 2.4) - 0.055 : 12.92 * v;
 		};
@@ -190,13 +190,13 @@ namespace sp{
 		col = getCol(val);
 	}
 
-	SP_GENCALL void cnvColToLab(Vec3 &lab, const Col3 &col){
+	SP_GENFUNC void cnvColToLab(Vec3 &lab, const Col3 &col){
 		Vec3 xyz;
 		cnvColToXYZ(xyz, col);
 		cnvXYZToLab(lab, xyz);
 	}
 
-	SP_GENCALL void cnvLabToCol(Col3 &col, const Vec3 &lab) {
+	SP_GENFUNC void cnvLabToCol(Col3 &col, const Vec3 &lab) {
 		Vec3 xyz;
 		cnvLabToXYZ(xyz, lab);
 		cnvXYZToCol(col, xyz);
@@ -208,16 +208,33 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_GENCALL void cnvImg(TYPE &dst, const TYPE &src){
+	SP_GENFUNC void cnvImg(TYPE &dst, const TYPE &src){
 		dst = src;
 	}
 
-	SP_GENCALL void cnvImg(Col3 &dst, const Byte &src){
+	SP_GENFUNC void cnvImg(Col3 &dst, const Byte &src){
 		dst = getCol(src, src, src);
 	}
 
-	SP_GENCALL void cnvImg(Byte &dst, const Col3 &src){
+	SP_GENFUNC void cnvImg(Byte &dst, const Col3 &src){
 		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
+	}
+
+	SP_GENFUNC void cnvImg(Byte &dst, const Col4 &src) {
+		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
+	}
+
+	SP_GENFUNC void cnvImg(Col3 &dst, const Col4 &src) {
+		dst.r = src.r;
+		dst.g = src.g;
+		dst.b = src.b;
+	}
+
+	SP_GENFUNC void cnvImg(Col4 &dst, const Col3 &src) {
+		dst.r = src.r;
+		dst.g = src.g;
+		dst.b = src.b;
+		dst.a = SP_BYTEMAX;
 	}
 
 	
@@ -225,21 +242,21 @@ namespace sp{
 	// convert geom to image
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL void cnvDepthToImg(Byte &dst, const double depth, const double nearPlane, const double farPlane){
+	SP_GENFUNC void cnvDepthToImg(Byte &dst, const double depth, const double nearPlane, const double farPlane){
 		const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
 		dst = static_cast<Byte>(255 * rate);
 	}
 
-	SP_GENCALL void cnvDepthToImg(Col3 &dst, const double depth, const double nearPlane, const double farPlane){
+	SP_GENFUNC void cnvDepthToImg(Col3 &dst, const double depth, const double nearPlane, const double farPlane){
 		const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
 		cnvPhaseToCol(dst, rate);
 	}
 
-	SP_GENCALL void cnvNormalToImg(Byte &dst, const Vec3 &nrm){
+	SP_GENFUNC void cnvNormalToImg(Byte &dst, const Vec3 &nrm){
 		dst = (nrm.z < 0) ? static_cast<Byte>(-255 * nrm.z) : 0;
 	}
 
-	SP_GENCALL void cnvNormalToImg(Col3 &dst, const Vec3 &nrm){
+	SP_GENFUNC void cnvNormalToImg(Col3 &dst, const Vec3 &nrm){
 		dst.r = static_cast<Byte>(255 * (1.0 - nrm.x) / 2);
 		dst.g = static_cast<Byte>(255 * (1.0 - nrm.y) / 2);
 		dst.b = static_cast<Byte>(255 * (1.0 - nrm.z) / 2);

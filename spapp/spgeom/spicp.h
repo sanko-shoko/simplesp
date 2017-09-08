@@ -21,19 +21,19 @@ namespace sp{
 		// check outlier
 		//--------------------------------------------------------------------------------
 
-		SP_CPUCALL bool checkOutlier(const VecVN3 &vec0, const VecVN3 &vec1){
+		SP_CPUFUNC bool checkOutlier(const VecVN3 &vec0, const VecVN3 &vec1){
 			return (dotVec(vec0.nrm, vec1.nrm) > 0.5) ? true : false;
 		}
 
-		SP_CPUCALL bool checkOutlier(const VecVN3 &vec0, const Vec3 &vec1){
+		SP_CPUFUNC bool checkOutlier(const VecVN3 &vec0, const Vec3 &vec1){
 			return true;
 		}
 
-		SP_CPUCALL bool checkOutlier(const Vec3 &vec0, const VecVN3 &vec1){
+		SP_CPUFUNC bool checkOutlier(const Vec3 &vec0, const VecVN3 &vec1){
 			return true;
 		}
 
-		SP_CPUCALL bool checkOutlier(const Vec3 &vec0, const Vec3 &vec1){
+		SP_CPUFUNC bool checkOutlier(const Vec3 &vec0, const Vec3 &vec1){
 			return true;
 		}
 
@@ -42,11 +42,11 @@ namespace sp{
 		// position
 		//--------------------------------------------------------------------------------
 
-		SP_CPUCALL Vec3 getPos(const VecVN3 &vec){
+		SP_CPUFUNC Vec3 getPos(const VecVN3 &vec){
 			return vec.vtx;
 		}
 
-		SP_CPUCALL Vec3 getPos(const Vec3 &vec){
+		SP_CPUFUNC Vec3 getPos(const Vec3 &vec){
 			return vec;
 		}
 
@@ -55,25 +55,25 @@ namespace sp{
 		// update direction
 		//--------------------------------------------------------------------------------
 
-		SP_CPUCALL Vec3 getDrc(const VecVN3 &vec0, const VecVN3 &vec1){
+		SP_CPUFUNC Vec3 getDrc(const VecVN3 &vec0, const VecVN3 &vec1){
 			return vec0.nrm;
 		}
 
-		SP_CPUCALL Vec3 getDrc(const VecVN3 &vec0, const Vec3 &vec1){
+		SP_CPUFUNC Vec3 getDrc(const VecVN3 &vec0, const Vec3 &vec1){
 			return vec0.nrm;
 		}
 
-		SP_CPUCALL Vec3 getDrc(const Vec3 &vec0, const VecVN3 &vec1){
+		SP_CPUFUNC Vec3 getDrc(const Vec3 &vec0, const VecVN3 &vec1){
 			return vec1.nrm;
 		}
 
-		SP_CPUCALL Vec3 getDrc(const Vec3 &vec0, const Vec3 &vec1){
+		SP_CPUFUNC Vec3 getDrc(const Vec3 &vec0, const Vec3 &vec1){
 			return unitVec(vec1 - vec0);
 		}
 
 
 		template <typename TYEP0, typename TYEP1>
-		SP_CPUCALL void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
+		SP_CPUFUNC void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
 			csrc.clear();
 			cref.clear();
 
@@ -100,7 +100,7 @@ namespace sp{
 		}
 
 		template <typename TYEP0, typename TYEP1>
-		SP_CPUCALL void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
+		SP_CPUFUNC void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
 			csrc.clear();
 			cref.clear();
 
@@ -125,7 +125,7 @@ namespace sp{
 
 
 		template <typename TYEP0, typename TYEP1>
-		SP_CPUCALL bool solve(Mat &result, const Pose &pose, const Mem1<TYEP0> &csrc, const Mem1<TYEP1> &cref){
+		SP_CPUFUNC bool solve(Mat &result, const Pose &pose, const Mem1<TYEP0> &csrc, const Mem1<TYEP1> &cref){
 			Mat J(1 * csrc.size(), 6);
 			Mat E(1 * csrc.size(), 1);
 			Mem1<double> errs(csrc.size());
@@ -151,7 +151,7 @@ namespace sp{
 	}
 
 	template<typename TYEP0, typename TYEP1>
-	SP_CPUCALL bool calcICP(Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
+	SP_CPUFUNC bool calcICP(Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
 		SP_ASSERT(src.dim == 1 && ref.dim == 1);
 
 		Mem1<TYEP0> csrc;
@@ -172,7 +172,7 @@ namespace sp{
 	}
 
 	template<typename TYEP0, typename TYEP1>
-	SP_CPUCALL bool calcICP(Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
+	SP_CPUFUNC bool calcICP(Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
 		SP_ASSERT(src.dim == 1 && ref.dim == 2);
 
 		Mem1<TYEP0> csrc;

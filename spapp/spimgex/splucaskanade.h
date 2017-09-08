@@ -16,7 +16,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs) {
+	SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs) {
 		SP_LOGGER_INSTANCE;
 		SP_LOGGER_SET("opticalFlowLK");
 
@@ -150,7 +150,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs) {
+	SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs) {
 		Mem2<Byte> gry0, gry1;
 		cnvImg(gry0, img0);
 		cnvImg(gry1, img1);

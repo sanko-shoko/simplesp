@@ -9,7 +9,7 @@
 
 namespace sp{
 
-	//SP_CPUCALL void cnvDepth(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src) {
+	//SP_CPUFUNC void cnvDepth(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src) {
 	//	SP_ASSERT(isValid(2, src));
 
 	//	dst.resize(2, src.dsize);
@@ -26,7 +26,7 @@ namespace sp{
 	//  bilateral filter
 	//--------------------------------------------------------------------------------
 	
-	SP_CPUCALL void bilateralFilterDepth(Mem<double> &dst, const Mem<double> &src, const double asigma = 0.8, const double bsigma = 10.0){
+	SP_CPUFUNC void bilateralFilterDepth(Mem<double> &dst, const Mem<double> &src, const double asigma = 0.8, const double bsigma = 10.0){
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -87,7 +87,7 @@ namespace sp{
 	//  pyrdown
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void pyrdownDepth(Mem<double> &dst, const Mem<double> &src){
+	SP_CPUFUNC void pyrdownDepth(Mem<double> &dst, const Mem<double> &src){
 		SP_ASSERT(isValid(2, src));
 
 		const Mem<double> &tmp = (&dst != &src) ? src : clone(src);
@@ -131,7 +131,7 @@ namespace sp{
 	//  vector vn
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void cnvDepthToVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src){
+	SP_CPUFUNC void cnvDepthToVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src){
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);

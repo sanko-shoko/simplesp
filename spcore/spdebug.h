@@ -61,7 +61,7 @@ namespace sp {
 	// print 
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void print(const int dim, const int *dsize) {
+	SP_CPUFUNC void print(const int dim, const int *dsize) {
 		SP_PRINTF("dim %d, ", dim);
 
 		SP_PRINTF("dsize [ ");
@@ -71,7 +71,7 @@ namespace sp {
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const Rect &rect) {
+	SP_CPUFUNC void print(const Rect &rect) {
 		SP_PRINTF("Rect dim %d, ", rect.dim);
 
 		SP_PRINTF("dbase [ ");
@@ -87,33 +87,33 @@ namespace sp {
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const Vec2 &vec) {
+	SP_CPUFUNC void print(const Vec2 &vec) {
 		SP_PRINTF("Vec2 [ %.5lf %.5lf ]\n", vec.x, vec.y);
 	}
 
-	SP_CPUCALL void print(const Vec3 &vec) {
+	SP_CPUFUNC void print(const Vec3 &vec) {
 		SP_PRINTF("Vec3 [ %.5lf %.5lf %.5lf ]\n", vec.x, vec.y, vec.z);
 	}
 
-	SP_CPUCALL void print(const Col3 &col) {
+	SP_CPUFUNC void print(const Col3 &col) {
 		SP_PRINTF("Col3 [ %d %d %d ]\n", col.r, col.g, col.b);
 	}
 
-	SP_CPUCALL void print(const VecVN2 &vec) {
+	SP_CPUFUNC void print(const VecVN2 &vec) {
 		SP_PRINTF("VecVN2 [\n");
 		print(vec.vtx);
 		print(vec.nrm);
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const VecVN3 &vec) {
+	SP_CPUFUNC void print(const VecVN3 &vec) {
 		SP_PRINTF("VecVN3 [\n");
 		print(vec.vtx);
 		print(vec.nrm);
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const Mesh &mesh) {
+	SP_CPUFUNC void print(const Mesh &mesh) {
 		SP_PRINTF("Mesh [\n");
 		print(mesh.vtx[0]);
 		print(mesh.vtx[1]);
@@ -121,7 +121,7 @@ namespace sp {
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const double *mat, const int rows, const int cols) {
+	SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
 		SP_PRINTF("Mat %d %d [\n", rows, cols);
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
@@ -133,7 +133,7 @@ namespace sp {
 	}
 
 	template <typename TYPE>
-	SP_CPUCALL void print(const ExPtr<TYPE> &mem) {
+	SP_CPUFUNC void print(const ExPtr<TYPE> &mem) {
 		SP_PRINTF("Mem ");
 
 		print(mem.dim, mem.dsize);
@@ -164,18 +164,18 @@ namespace sp {
 		}
 	}
 
-	SP_CPUCALL void print(const Rot &rot) {
+	SP_CPUFUNC void print(const Rot &rot) {
 		SP_PRINTF("Rot [ %.5lf %.5lf %.5lf %.5lf ]\n", rot.qx, rot.qy, rot.qz, rot.qw);
 	}
 
-	SP_CPUCALL void print(const Pose &pose) {
+	SP_CPUFUNC void print(const Pose &pose) {
 		SP_PRINTF("Pose [\n");
 		print(pose.rot);
 		print(pose.trn);
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUCALL void print(const CamParam &cam) {
+	SP_CPUFUNC void print(const CamParam &cam) {
 		SP_PRINTF("CamParam [\n");
 		SP_PRINTF("size %d %d\n", cam.dsize[0], cam.dsize[1]);
 		SP_PRINTF("fx %.5lf, fy %.5lf\n", cam.fx, cam.fy);
@@ -186,7 +186,7 @@ namespace sp {
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void print(const TYPE &data, const char *name) {
+	SP_CPUFUNC void print(const TYPE &data, const char *name) {
 		SP_PRINTF("%s ", name);
 		print(data);
 	}
@@ -196,7 +196,7 @@ namespace sp {
 	// util
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL char* progressBar(const double crnt, const double size){
+	SP_CPUFUNC char* progressBar(const double crnt, const double size){
 		const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
 
 		static char bar[11] = { 0 };
