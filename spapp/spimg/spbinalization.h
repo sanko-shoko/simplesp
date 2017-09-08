@@ -10,7 +10,7 @@
 
 namespace sp{
 
-	SP_CPUCALL void binalize(Mem2<Byte> &dst, const Mem2<Byte> &src, const int thresh){
+	SP_CPUFUNC void binalize(Mem2<Byte> &dst, const Mem2<Byte> &src, const int thresh){
 		dst.resize(src.dsize);
 		const Mem2<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -19,7 +19,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUCALL void binalizeAdapt(Mem2<Byte> &dst, const Mem2<Byte> &src){
+	SP_CPUFUNC void binalizeAdapt(Mem2<Byte> &dst, const Mem2<Byte> &src){
 
 		int hist[256] = { 0 };
 		for (int i = 0; i < src.size(); i++) {
@@ -58,7 +58,7 @@ namespace sp{
 		binalize(dst, src, thresh);
 	}
 
-	SP_CPUCALL void binalizeBlock(Mem2<Byte> &dst, const Mem2<Byte> &src, const int blockSize){
+	SP_CPUFUNC void binalizeBlock(Mem2<Byte> &dst, const Mem2<Byte> &src, const int blockSize){
 		dst.resize(src.dsize);
 		const Mem2<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -94,7 +94,7 @@ namespace sp{
 	// labeling
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL int labeling(Mem2<int> &map, const Mem2<Byte> &bin, const bool near8 = false){
+	SP_CPUFUNC int labeling(Mem2<int> &map, const Mem2<Byte> &bin, const bool near8 = false){
 		map.resize(bin.dsize);
 
 		Mem1<int> table;
@@ -179,7 +179,7 @@ namespace sp{
 		return labelNum;
 	}
 
-	SP_CPUCALL Mem1<Rect> getLabelRect(const Mem2<int> &map){
+	SP_CPUFUNC Mem1<Rect> getLabelRect(const Mem2<int> &map){
 		const int labelNum = round(maxVal(map) + 1);
 
 		Mem1<Rect> dst(labelNum);
@@ -198,7 +198,7 @@ namespace sp{
 		return dst;
 	}
 
-	SP_CPUCALL Mem1< Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool useImgFrame = false){
+	SP_CPUFUNC Mem1< Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool useImgFrame = false){
 
 		Mem1<Rect> rects = getLabelRect(map);
 

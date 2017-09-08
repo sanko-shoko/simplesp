@@ -17,7 +17,7 @@ namespace sp{
 	// jacob
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL void jacobPoseToPos(double *jacob, const Pose &pose, const Vec3 &pos){
+	SP_GENFUNC void jacobPoseToPos(double *jacob, const Pose &pose, const Vec3 &pos){
 		double rmat[3 * 3];
 		cnvRotToMat(rmat,3, 3, pose.rot);
 		const Vec3 v = mulMat(rmat, 3, 3, pos);
@@ -31,7 +31,7 @@ namespace sp{
 
 	}
 
-	SP_GENCALL void jacobCamToPix(double *jacob, const CamParam &cam, const Vec2 &npx){
+	SP_GENFUNC void jacobCamToPix(double *jacob, const CamParam &cam, const Vec2 &npx){
 		const double x2 = npx.x * npx.x;
 		const double y2 = npx.y * npx.y;
 		const double xy = npx.x * npx.y;
@@ -67,7 +67,7 @@ namespace sp{
 		jacob[1 * 9 + 8] = cam.fy * (2.0 * xy);
 	}
 
-	SP_GENCALL void jacobNpxToDist(double *jacob, const CamParam &cam, const Vec2 &npx){
+	SP_GENFUNC void jacobNpxToDist(double *jacob, const CamParam &cam, const Vec2 &npx){
 		const double x2 = npx.x * npx.x;
 		const double y2 = npx.y * npx.y;
 		const double xy = npx.x * npx.y;
@@ -86,7 +86,7 @@ namespace sp{
 		jacob[1 * 2 + 0] = xy * k2 + 2 * cam.p1 * npx.x + 2 * cam.p2 * npx.y;
 	}
 
-	SP_GENCALL void jacobNpxToPix(double *jacob, const CamParam &cam, const Vec2 &npx){
+	SP_GENFUNC void jacobNpxToPix(double *jacob, const CamParam &cam, const Vec2 &npx){
 
 		double jNpxToDist[2 * 2] = { 0 };
 		jacobNpxToDist(jNpxToDist, cam, npx);
@@ -98,14 +98,14 @@ namespace sp{
 		mulMat(jacob, 2, 2, jDistToPix, 2, 2, jNpxToDist, 2, 2);
 	}
 
-	SP_GENCALL void jacobPosToNpx(double *jacob, const Vec3 &pos){
+	SP_GENFUNC void jacobPosToNpx(double *jacob, const Vec3 &pos){
 		double divz = (pos.z != 0) ? 1.0 / pos.z : 0.0;
 
 		jacob[0 * 3 + 0] = divz; jacob[0 * 3 + 1] = 0.0; jacob[0 * 3 + 2] = -pos.x * divz * divz;
 		jacob[1 * 3 + 0] = 0.0; jacob[1 * 3 + 1] = divz; jacob[1 * 3 + 2] = -pos.y * divz * divz;
 	}
 
-	SP_GENCALL void jacobPosToPix(double *jacob, const CamParam &cam, const Vec3 &pos){
+	SP_GENFUNC void jacobPosToPix(double *jacob, const CamParam &cam, const Vec3 &pos){
 
 		double jPosToNpz[2 * 3] = { 0 };
 		jacobPosToNpx(jPosToNpz, pos);
@@ -116,7 +116,7 @@ namespace sp{
 		mulMat(jacob, 2, 3, jNpxToPix, 2, 2, jPosToNpz, 2, 3);
 	}
 
-	SP_GENCALL void jacobPoseToNpx(double *jacob, const Pose &pose, const Vec3 &pos){
+	SP_GENFUNC void jacobPoseToNpx(double *jacob, const Pose &pose, const Vec3 &pos){
 		double pmat[3 * 4];
 		cnvPoseToMat(pmat, 3, 4, pose);
 
@@ -130,7 +130,7 @@ namespace sp{
 	}
 
 
-	SP_GENCALL void jacobPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos){
+	SP_GENFUNC void jacobPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos){
 		double pmat[3 * 4];
 		cnvPoseToMat(pmat, 3, 4, pose);
 
@@ -143,7 +143,7 @@ namespace sp{
 		mulMat(jacob, 2, 6, jNpxToPix, 2, 2, jPoseToNpx, 2, 6);
 	}
 
-	SP_GENCALL void jacobCamPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos){
+	SP_GENFUNC void jacobCamPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos){
 		double pmat[3 * 4];
 		cnvPoseToMat(pmat, 3, 4, pose);
 
@@ -169,7 +169,7 @@ namespace sp{
 	// rotation
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Rot nrmRot(const Rot &rot){
+	SP_GENFUNC Rot nrmRot(const Rot &rot){
 		Rot dst;
 
 		const double div = sqrt(rot.qx * rot.qx + rot.qy * rot.qy + rot.qz * rot.qz + rot.qw * rot.qw);
@@ -188,7 +188,7 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Rot getRot(const double qx, const double qy, const double qz, const double qw){
+	SP_GENFUNC Rot getRot(const double qx, const double qy, const double qz, const double qw){
 		Rot dst;
 		dst.qx = qx; 
 		dst.qy = qy;
@@ -197,7 +197,7 @@ namespace sp{
 		return nrmRot(dst);
 	}
 
-	SP_GENCALL Rot getRot(const double *mat){
+	SP_GENFUNC Rot getRot(const double *mat){
 		Rot dst;
 		dst.qx = sqrt(maxVal(0.0, 1 + mat[0 * 3 + 0] - mat[1 * 3 + 1] - mat[2 * 3 + 2])) / 2;
 		dst.qy = sqrt(maxVal(0.0, 1 - mat[0 * 3 + 0] + mat[1 * 3 + 1] - mat[2 * 3 + 2])) / 2;
@@ -211,15 +211,15 @@ namespace sp{
 		return nrmRot(dst);
 	}
 
-	SP_GENCALL Rot zeroRot(){
+	SP_GENFUNC Rot zeroRot(){
 		return getRot(0.0, 0.0, 0.0, 1.0);
 	}
 
-	SP_GENCALL Rot invRot(const Rot &rot){
+	SP_GENFUNC Rot invRot(const Rot &rot){
 		return getRot(-rot.qx, -rot.qy, -rot.qz, rot.qw);
 	}
 
-	SP_GENCALL Rot mulRot(const Rot &rot0, const Rot &rot1){
+	SP_GENFUNC Rot mulRot(const Rot &rot0, const Rot &rot1){
 		Rot dst;
 		dst.qx = (rot0.qw * rot1.qx) + (rot0.qx * rot1.qw) + (rot0.qy * rot1.qz) - (rot0.qz * rot1.qy);
 		dst.qy = (rot0.qw * rot1.qy) + (rot0.qy * rot1.qw) + (rot0.qz * rot1.qx) - (rot0.qx * rot1.qz);
@@ -230,14 +230,14 @@ namespace sp{
 		return nrmRot(dst);
 	}
 
-	SP_GENCALL Vec3 mulRot(const Rot &rot, const Vec3 &vec){
+	SP_GENFUNC Vec3 mulRot(const Rot &rot, const Vec3 &vec){
 		double rotMat[3 * 3];
 		cnvRotToMat(rotMat, 3, 3, rot);
 
 		return mulMat(rotMat, 3, 3, vec);
 	}
 
-	SP_GENCALL Vec3 mulRot(const Rot &rot, const Vec2 &vec){
+	SP_GENFUNC Vec3 mulRot(const Rot &rot, const Vec2 &vec){
 		return mulRot(rot, getVec(vec.x, vec.y, 0.0));
 	}
 
@@ -246,15 +246,15 @@ namespace sp{
 	// rotation operator
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Vec3 operator * (const Rot &rot, const Vec3 &vec){
+	SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec3 &vec){
 		return mulRot(rot, vec);
 	}
 
-	SP_GENCALL Vec3 operator * (const Rot &rot, const Vec2 &vec){
+	SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec2 &vec){
 		return mulRot(rot, vec);
 	}
 
-	SP_GENCALL Rot operator * (const Rot &rot0, const Rot &rot1){
+	SP_GENFUNC Rot operator * (const Rot &rot0, const Rot &rot1){
 		return mulRot(rot0, rot1);
 	}
 
@@ -263,7 +263,7 @@ namespace sp{
 	// rotation util
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Rot getRotAxis(const Vec3 &x, const Vec3 &y, const Vec3 &z) {
+	SP_GENFUNC Rot getRotAxis(const Vec3 &x, const Vec3 &y, const Vec3 &z) {
 		const Vec3 nx = unitVec(x);
 		const Vec3 ny = unitVec(y);
 		const Vec3 nz = unitVec(z);
@@ -275,7 +275,7 @@ namespace sp{
 		return getRot(mat);
 	}
 
-	SP_GENCALL Rot getRotAngle(const Vec3 &vec) {
+	SP_GENFUNC Rot getRotAngle(const Vec3 &vec) {
 		const double angle = normVec(vec);
 		if (angle > SP_SMALL) {
 			const double s = sin(angle * 0.5);
@@ -287,23 +287,23 @@ namespace sp{
 		}
 	}
 
-	SP_GENCALL Rot getRotAngle(const Vec3 &vec, const double angle) {
+	SP_GENFUNC Rot getRotAngle(const Vec3 &vec, const double angle) {
 		return getRotAngle(unitVec(vec) * angle);
 	}
 
-	SP_GENCALL Rot getRotAngleX(const double angle) {
+	SP_GENFUNC Rot getRotAngleX(const double angle) {
 		return getRotAngle(getVec(1.0, 0.0, 0.0), angle);
 	}
 
-	SP_GENCALL Rot getRotAngleY(const double angle) {
+	SP_GENFUNC Rot getRotAngleY(const double angle) {
 		return getRotAngle(getVec(0.0, 1.0, 0.0), angle);
 	}
 
-	SP_GENCALL Rot getRotAngleZ(const double angle) {
+	SP_GENFUNC Rot getRotAngleZ(const double angle) {
 		return getRotAngle(getVec(0.0, 0.0, 1.0), angle);
 	}
 
-	SP_GENCALL Vec3 getAngle(const Rot &rot) {
+	SP_GENFUNC Vec3 getAngle(const Rot &rot) {
 		Vec3 vec = getVec(0.0, 0.0, 0.0);
 
 		if (cmpRot(rot, getRot(0.0, 0.0, 0.0, 1.0)) == false) {
@@ -319,7 +319,7 @@ namespace sp{
 		return vec;
 	}
 
-	SP_GENCALL Rot getRotDirection(const Vec3 &vec){
+	SP_GENFUNC Rot getRotDirection(const Vec3 &vec){
 		const Vec3 nrm = unitVec(vec);
 
 		if (fabs(nrm.z) == 1.0){
@@ -340,7 +340,7 @@ namespace sp{
 	}
 
 	// zyx eulter
-	SP_GENCALL Rot getRotEuler(const Vec3 &euler){
+	SP_GENFUNC Rot getRotEuler(const Vec3 &euler){
 		const Rot rotx = getRotAngleX(euler.x);
 		const Rot roty = getRotAngleY(euler.y);
 		const Rot rotz = getRotAngleZ(euler.z);
@@ -348,7 +348,7 @@ namespace sp{
 	}
 
 	// zyx eulter
-	SP_GENCALL Vec3 getEuler(const Rot &rot){
+	SP_GENFUNC Vec3 getEuler(const Rot &rot){
 		double mat[3 * 3];
 		cnvRotToMat(mat, 3, 3, rot);
 		
@@ -368,17 +368,17 @@ namespace sp{
 	}
 
 	// random uniform
-	SP_CPUCALL Rot randRotUnif(const double max){
+	SP_CPUFUNC Rot randRotUnif(const double max){
 		return getRotAngle(randVecUnif(1.0, 1.0, 1.0), randValUnif() * max);
 	}
 
 	// random gauss
-	SP_CPUCALL Rot randRotGauss(const double sig){
+	SP_CPUFUNC Rot randRotGauss(const double sig){
 		return getRotAngle(randVecUnif(1.0, 1.0, 1.0), randValGauss() * sig);
 	}
 
 	// update
-	SP_GENCALL Rot updateRot(const Rot &rot, const double *delta){
+	SP_GENFUNC Rot updateRot(const Rot &rot, const double *delta){
 		return getRotAngle(getVec(delta[0], delta[1], delta[2])) * rot;
 	}
 
@@ -387,7 +387,7 @@ namespace sp{
 	// pose
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Pose getPose(const Rot &rot, const Vec3 &trn){
+	SP_GENFUNC Pose getPose(const Rot &rot, const Vec3 &trn){
 		Pose dst;
 		dst.rot = nrmRot(rot);
 		dst.trn = trn;
@@ -395,15 +395,15 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Pose getPose(const Rot &rot){
+	SP_GENFUNC Pose getPose(const Rot &rot){
 		return getPose(rot, getVec(0.0, 0.0, 0.0));
 	}
 
-	SP_GENCALL Pose getPose(const Vec3 &trn){
+	SP_GENFUNC Pose getPose(const Vec3 &trn){
 		return getPose(zeroRot(), trn);
 	}
 
-	SP_GENCALL Pose getPose(const double *mat){
+	SP_GENFUNC Pose getPose(const double *mat){
 		Pose dst;
 		double rmat[3 * 3];
 		for (int r = 0; r < 3; r++){
@@ -416,11 +416,11 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Pose zeroPose(){
+	SP_GENFUNC Pose zeroPose(){
 		return getPose(zeroRot(), getVec(0.0, 0.0, 0.0));
 	}
 
-	SP_GENCALL Pose invPose(const Pose &pose){
+	SP_GENFUNC Pose invPose(const Pose &pose){
 		Pose dst;
 		dst.rot = invRot(pose.rot);
 		dst.trn = mulVec(mulRot(dst.rot, pose.trn), -1.0);
@@ -428,7 +428,7 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Pose mulPose(const Pose &pose0, const Pose &pose1){
+	SP_GENFUNC Pose mulPose(const Pose &pose0, const Pose &pose1){
 		Pose dst;
 		dst.rot = mulRot(pose0.rot, pose1.rot);
 		dst.trn = addVec(mulRot(pose0.rot, pose1.trn), pose0.trn);
@@ -436,25 +436,25 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Vec3 mulPose(const Pose &pose, const Vec3 &vec){
+	SP_GENFUNC Vec3 mulPose(const Pose &pose, const Vec3 &vec){
 		double poseMat[3 * 4];
 		cnvPoseToMat(poseMat, 3, 4, pose);
 
 		return mulMat(poseMat, 3, 4, vec);
 	}
 
-	SP_GENCALL Vec3 mulPose(const Pose &pose, const Vec2 &vec){
+	SP_GENFUNC Vec3 mulPose(const Pose &pose, const Vec2 &vec){
 		return mulPose(pose, getVec(vec.x, vec.y, 0.0));
 	}
 
-	SP_GENCALL VecVN3 mulPose(const Pose &pose, const VecVN3 &vec){
+	SP_GENFUNC VecVN3 mulPose(const Pose &pose, const VecVN3 &vec){
 		double poseMat[3 * 4];
 		cnvPoseToMat(poseMat, 3, 4, pose);
 
 		return mulMat(poseMat, 3, 4, vec);
 	}
 
-	SP_GENCALL Mesh mulPose(const Pose &pose, const Mesh &mesh){
+	SP_GENFUNC Mesh mulPose(const Pose &pose, const Mesh &mesh){
 		double poseMat[3 * 4];
 		cnvPoseToMat(poseMat, 3, 4, pose);
 
@@ -466,23 +466,23 @@ namespace sp{
 	// pose operator
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Vec3 operator * (const Pose &pose, const Vec3 &vec){
+	SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec3 &vec){
 		return mulPose(pose, vec);
 	}
 
-	SP_GENCALL Vec3 operator * (const Pose &pose, const Vec2 &vec){
+	SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec2 &vec){
 		return mulPose(pose, vec);
 	}
 
-	SP_GENCALL VecVN3 operator * (const Pose &pose, const VecVN3 &vec){
+	SP_GENFUNC VecVN3 operator * (const Pose &pose, const VecVN3 &vec){
 		return mulPose(pose, vec);
 	}
 
-	SP_GENCALL Mesh operator * (const Pose &pose, const Mesh &mesh){
+	SP_GENFUNC Mesh operator * (const Pose &pose, const Mesh &mesh){
 		return mulPose(pose, mesh);
 	}
 
-	SP_GENCALL Pose operator * (const Pose &pose0, const Pose &pose1){
+	SP_GENFUNC Pose operator * (const Pose &pose0, const Pose &pose1){
 		return mulPose(pose0, pose1);
 	}
 
@@ -491,17 +491,17 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// random uniform
-	SP_CPUCALL Pose randPoseUnif(const double rmax, const double tmax){
+	SP_CPUFUNC Pose randPoseUnif(const double rmax, const double tmax){
 		return getPose(randRotUnif(rmax), randVecUnif(tmax, tmax, tmax));
 	}
 
 	// random gauss
-	SP_CPUCALL Pose randPoseGauss(const double rsig, const double tsig){
+	SP_CPUFUNC Pose randPoseGauss(const double rsig, const double tsig){
 		return getPose(randRotGauss(rsig), randVecGauss(tsig, tsig, tsig));
 	}
 
 	// update
-	SP_GENCALL Pose updatePose(const Pose &pose, const double *delta){
+	SP_GENFUNC Pose updatePose(const Pose &pose, const double *delta){
 		Pose dst;
 		dst.rot = updateRot(pose.rot, &delta[0]);
 		dst.trn = addVec(pose.trn, getVec(delta[3], delta[4], delta[5]));
@@ -509,7 +509,7 @@ namespace sp{
 	}
 
 	// geom pose
-	SP_GENCALL Pose getGeomPose(const int div, const int id, const double distance) {
+	SP_GENFUNC Pose getGeomPose(const int div, const int id, const double distance) {
 		const Vec3 v = getMeshPos(getGeodesicMesh(div, id)) * -1.0;
 		
 		Pose pose;
@@ -522,11 +522,11 @@ namespace sp{
 	// rotation / pose operator
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Pose operator * (const Rot &rot, const Pose &pose){
+	SP_GENFUNC Pose operator * (const Rot &rot, const Pose &pose){
 		return mulPose(getPose(rot), pose);
 	}
 
-	SP_GENCALL Pose operator * (const Pose &pose, const Rot &rot){
+	SP_GENFUNC Pose operator * (const Pose &pose, const Rot &rot){
 		return mulPose(pose, getPose(rot));
 	}
 
@@ -536,7 +536,7 @@ namespace sp{
 	// camera parameter
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy, const double cx, const double cy){
+	SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy, const double cx, const double cy){
 		CamParam dst;
 		dst.dsize[0] = dsize0;
 		dst.dsize[1] = dsize1;
@@ -554,13 +554,13 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL CamParam getCamParam(const int dsize0, const int dsize1) {
+	SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1) {
 		// groundless camera parameter, but in many cases empirically, no big difference
 		const double f = 0.8 * (dsize0 + dsize1);
 		return getCamParam(dsize0, dsize1, f, f, (dsize0 - 1) * 0.5, (dsize1 - 1) * 0.5);
 	}
 
-	SP_GENCALL CamParam getCamParam(const int *dsize) {
+	SP_GENFUNC CamParam getCamParam(const int *dsize) {
 		return getCamParam(dsize[0], dsize[1]);
 	}
 
@@ -569,14 +569,14 @@ namespace sp{
 	// camera util
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Vec2 mulCam(const CamParam &cam, const Vec2 &npx) {
+	SP_GENFUNC Vec2 mulCam(const CamParam &cam, const Vec2 &npx) {
 		Vec2 pix;
 		pix.x = npx.x * cam.fx + cam.cx;
 		pix.y = npx.y * cam.fy + cam.cy;
 		return pix;
 	}
 
-	SP_GENCALL Vec2 invCam(const CamParam &cam, const Vec2 &pix) {
+	SP_GENFUNC Vec2 invCam(const CamParam &cam, const Vec2 &pix) {
 		Vec2 npx;
 		npx.x = (pix.x - cam.cx) / cam.fx;
 		npx.y = (pix.y - cam.cy) / cam.fy;
@@ -584,7 +584,7 @@ namespace sp{
 	}
 
 	// distiortion
-	SP_GENCALL Vec2 npxDist(const CamParam &cam, const Vec2 &npx) {
+	SP_GENFUNC Vec2 npxDist(const CamParam &cam, const Vec2 &npx) {
 		const double x2 = npx.x * npx.x;
 		const double y2 = npx.y * npx.y;
 		const double xy = npx.x * npx.y;
@@ -603,12 +603,12 @@ namespace sp{
 	}
 
 	// distiortion
-	SP_GENCALL Vec2 pixDist(const CamParam &cam, const Vec2 &pix) {
+	SP_GENFUNC Vec2 pixDist(const CamParam &cam, const Vec2 &pix) {
 		return mulCam(cam, npxDist(cam, invCam(cam, pix)));
 	}
 
 	// undistortion
-	SP_GENCALL Vec2 npxUndist(const CamParam &cam, const Vec2 &npx) {
+	SP_GENFUNC Vec2 npxUndist(const CamParam &cam, const Vec2 &npx) {
 		const int maxit = 10;
 
 		Vec2 undist = npx;
@@ -628,7 +628,7 @@ namespace sp{
 	}
 
 	// undistortion
-	SP_GENCALL Vec2 pixUndist(const CamParam &cam, const Vec2 &pix) {
+	SP_GENFUNC Vec2 pixUndist(const CamParam &cam, const Vec2 &pix) {
 		return mulCam(cam, npxUndist(cam, invCam(cam, pix)));
 	}
 

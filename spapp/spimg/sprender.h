@@ -15,7 +15,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL void renderPoint(Mem<TYPE> &dst, const Vec2 &pix, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const Vec2 &pix, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 		
 		const int w = radius - 1;
@@ -33,7 +33,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		const Vec3 p = pose * obj;
@@ -43,7 +43,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderPoint(Mem<TYPE> &dst, const Mem1<Vec2> &pixs, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const Mem1<Vec2> &pixs, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < pixs.size(); i++){
@@ -52,7 +52,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < objs.size(); i++){
@@ -66,7 +66,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL void renderLine(Mem<TYPE> &dst, const Vec2 &pix0, const Vec2 &pix1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const Vec2 &pix0, const Vec2 &pix1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		const double div = maxVal(fabs(pix1.x - pix0.x), fabs(pix1.y - pix0.y));
@@ -78,7 +78,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderLine(Mem<TYPE> &dst, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 		if (pixs0.size() != pixs1.size()) return;
 
@@ -88,7 +88,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj0, const Vec3 &obj1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj0, const Vec3 &obj1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		const Vec3 p0 = pose * obj0;
@@ -99,7 +99,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 		if (objs0.size() != objs1.size()) return;
 
@@ -114,7 +114,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL void renderCircle(Mem<TYPE> &dst, const Vec2 &pix, const double radius, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderCircle(Mem<TYPE> &dst, const Vec2 &pix, const double radius, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int r = 0; r < 36; r++){
@@ -127,7 +127,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderCircle(Mem<TYPE> &dst, const Mem1<Vec2> &pixs, const double radius, const TYPE &val, const int size = 1){
+	SP_CPUFUNC void renderCircle(Mem<TYPE> &dst, const Mem1<Vec2> &pixs, const double radius, const TYPE &val, const int size = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < pixs.size(); i++){
@@ -141,7 +141,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		renderLine(dst, cam, pose, mesh.vtx[0], mesh.vtx[1], val, thick);
@@ -150,7 +150,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &mesh, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &mesh, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < mesh.size(); i++){
@@ -164,7 +164,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUCALL void renderAxis(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int thick = 1){
+	SP_CPUFUNC void renderAxis(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		TYPE r, g, b;
@@ -178,7 +178,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderCube(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double size, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderCube(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double size, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		const double s = size / 2.0;
@@ -194,7 +194,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderGrid(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int num, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderGrid(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int num, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < num; i++){
@@ -205,7 +205,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderCam(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const CamParam &trg, const double size, const TYPE &val, const int thick = 1) {
+	SP_CPUFUNC void renderCam(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const CamParam &trg, const double size, const TYPE &val, const int thick = 1) {
 		const double f = (trg.fx + trg.fy) / 2.0;
 		const double w = (trg.dsize[0] / 2.0) / f * size;
 		const double h = (trg.dsize[1] / 2.0) / f * size;
@@ -220,7 +220,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderRect(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec2 &obj0, const Vec2 &obj1, const TYPE &val, const int thick = 1) {
+	SP_CPUFUNC void renderRect(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec2 &obj0, const Vec2 &obj1, const TYPE &val, const int thick = 1) {
 		SP_ASSERT(isValid(2, dst));
 
 		Mem1<Vec3> objs;
@@ -235,7 +235,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderRect(Mem<TYPE> &dst, const Mat &hom, const Vec2 &obj0, const Vec2 &obj1, const TYPE &val, const int thick = 1) {
+	SP_CPUFUNC void renderRect(Mem<TYPE> &dst, const Mat &hom, const Vec2 &obj0, const Vec2 &obj1, const TYPE &val, const int thick = 1) {
 		SP_ASSERT(isValid(2, dst));
 
 		Mem1<Vec2> objs;
@@ -250,7 +250,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderEpipolar(Mem<TYPE> &dst, const Mat F, const Vec2 &pix, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderEpipolar(Mem<TYPE> &dst, const Mat F, const Vec2 &pix, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		const int w = dst.dsize[0];
@@ -270,7 +270,7 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUCALL void renderEpipolar(Mem<TYPE> &dst, const Mat F, const Mem1<Vec2> &pixs, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderEpipolar(Mem<TYPE> &dst, const Mat F, const Mem1<Vec2> &pixs, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
 		for (int i = 0; i < pixs.size(); i++){
@@ -283,7 +283,7 @@ namespace sp{
 	// render vector vn
 	//--------------------------------------------------------------------------------
 
-	SP_CPUCALL void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mesh &mesh){
+	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mesh &mesh){
 
 		if (cmpSize(2, map.dsize, cam.dsize) == false){
 			map.resize(2, cam.dsize);
@@ -358,7 +358,7 @@ namespace sp{
 	}
 
 	template <typename TYPE>
-	SP_CPUCALL void renderVecVN(Mem<TYPE> &map, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes){
+	SP_CPUFUNC void renderVecVN(Mem<TYPE> &map, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes){
 
 		for (int i = 0; i < meshes.size(); i++){
 			renderVecVN(map, cam, pose, meshes[i]);

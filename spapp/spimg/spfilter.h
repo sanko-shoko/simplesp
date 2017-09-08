@@ -14,7 +14,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void filter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+	SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
 		SP_ASSERT(isValid(2, src) && isValid(2, kernel));
 		
 		dst.resize(2, src.dsize);
@@ -55,7 +55,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void filterX(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+	SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
 		SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
 		dst.resize(2, src.dsize);
@@ -93,7 +93,7 @@ namespace sp{
 
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void filterY(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+	SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
 		SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
 		dst.resize(2, src.dsize);
@@ -134,7 +134,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void gaussianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+	SP_CPUFUNC void gaussianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -169,7 +169,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+	SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
 		SP_ASSERT(isValid(2, src));
 
 		const int size = static_cast<int>(3.0 * sigma);
@@ -191,7 +191,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void boxFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+	SP_CPUFUNC void boxFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -226,7 +226,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void boxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize){
+	SP_CPUFUNC void boxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize){
 		SP_ASSERT(isValid(2, src));
 
 		Mem1<double> kernel(winSize);
@@ -245,7 +245,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void maxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
+	SP_CPUFUNC void maxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -278,7 +278,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void minFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
+	SP_CPUFUNC void minFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -316,7 +316,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void laplacianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+	SP_CPUFUNC void laplacianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -351,7 +351,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+	SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
 		SP_ASSERT(isValid(2, src));
 
 		const int size = static_cast<int>(3.0 * sigma);
@@ -373,7 +373,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename TYPE0>
-	SP_CPUCALL void sobelFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+	SP_CPUFUNC void sobelFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -400,7 +400,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename TYPE0>
-	SP_CPUCALL void sobelFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+	SP_CPUFUNC void sobelFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -432,7 +432,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename TYPE0>
-	SP_CPUCALL void scharrFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+	SP_CPUFUNC void scharrFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -459,7 +459,7 @@ namespace sp{
 	}
 
 	template <typename TYPE, typename TYPE0>
-	SP_CPUCALL void scharrFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+	SP_CPUFUNC void scharrFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -491,7 +491,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void medianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
+	SP_CPUFUNC void medianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -525,7 +525,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUCALL void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma_s, const double sigma_c){
+	SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma_s, const double sigma_c){
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);

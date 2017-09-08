@@ -16,7 +16,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// gauss function
-	SP_GENCALL double funcGauss(const double x, const double mean, const double sigma){
+	SP_GENFUNC double funcGauss(const double x, const double mean, const double sigma){
 		double ret = 0.0;
 
 		if (fabs(sigma) > 0){
@@ -26,7 +26,7 @@ namespace sp{
 	}
 
 	// tukey function
-	SP_GENCALL double funcTukey(const double x, const double t){
+	SP_GENFUNC double funcTukey(const double x, const double t){
 		double ret = 0.0;
 
 		if (fabs(x) < t){
@@ -37,12 +37,12 @@ namespace sp{
 	}
 
 	// a * a
-	SP_GENCALL double square(const double a){
+	SP_GENFUNC double square(const double a){
 		return a * a;
 	}
 
 	// sqrt(a * a + b * b) without destructive underflow or overflow
-	SP_GENCALL double pythag(const double a, const double b){
+	SP_GENFUNC double pythag(const double a, const double b){
 		const double x = fabs(a);
 		const double y = fabs(b);
 		if (x > y){
@@ -54,7 +54,7 @@ namespace sp{
 	}
 
 	// combination
-	SP_GENCALL int nCk(const int n, const int k) {
+	SP_GENFUNC int nCk(const int n, const int k) {
 		int ret = 1;
 		for (int i = 1; i <= k; i++){
 			ret = ret * (n - i + 1) / i;
@@ -69,7 +69,7 @@ namespace sp{
 	
 	// set
 	template <typename TYPE, typename TYPE0>
-	SP_GENCALL void setMem(TYPE *dst, const int size, const TYPE0 *mem0){
+	SP_GENFUNC void setMem(TYPE *dst, const int size, const TYPE0 *mem0){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i];
 		}
@@ -77,7 +77,7 @@ namespace sp{
 
 	// convert
 	template <typename TYPE, typename TYPE0>
-	SP_GENCALL void cnvMem(TYPE *dst, const int size, const TYPE0 *mem0, const double scale = 1.0, const double base = 0.0) {
+	SP_GENFUNC void cnvMem(TYPE *dst, const int size, const TYPE0 *mem0, const double scale = 1.0, const double base = 0.0) {
 		for (int i = 0; i < size; i++) {
 			cnvVal(dst[i], (mem0[i] - base) * scale);
 		}
@@ -85,7 +85,7 @@ namespace sp{
 
 	// addition
 	template <typename TYPE, typename TYPE0, typename TYPE1>
-	SP_GENCALL void addMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+	SP_GENFUNC void addMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] + mem1[i];
 		}
@@ -93,7 +93,7 @@ namespace sp{
 
 	// subtraction
 	template <typename TYPE, typename TYPE0, typename TYPE1>
-	SP_GENCALL void subMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+	SP_GENFUNC void subMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] - mem1[i];
 		}
@@ -101,7 +101,7 @@ namespace sp{
 
 	// multiple
 	template <typename TYPE, typename TYPE0, typename TYPE1>
-	SP_GENCALL void mulMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+	SP_GENFUNC void mulMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] * mem1[i];
 		}
@@ -109,7 +109,7 @@ namespace sp{
 
 	// division
 	template <typename TYPE, typename TYPE0, typename TYPE1>
-	SP_GENCALL void divMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+	SP_GENFUNC void divMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
 		for (int i = 0; i < size; i++){
 			if (mem1[i] == 0.0) continue;
 			dst[i] = mem0[i] / mem1[i];
@@ -119,7 +119,7 @@ namespace sp{
 
 	// set
 	template <typename TYPE, typename ELEM>
-	SP_GENCALL void setElm(TYPE *dst, const int size, const ELEM &elm){
+	SP_GENFUNC void setElm(TYPE *dst, const int size, const ELEM &elm){
 		for (int i = 0; i < size; i++){
 			dst[i] = elm;
 		}
@@ -127,7 +127,7 @@ namespace sp{
 
 	// addition
 	template <typename TYPE, typename TYPE0, typename ELEM>
-	SP_GENCALL void addElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+	SP_GENFUNC void addElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] + elm;
 		}
@@ -135,7 +135,7 @@ namespace sp{
 
 	// subtraction
 	template <typename TYPE, typename TYPE0, typename ELEM>
-	SP_GENCALL void subElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+	SP_GENFUNC void subElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] - elm;
 		}
@@ -143,7 +143,7 @@ namespace sp{
 
 	// multiple
 	template <typename TYPE, typename TYPE0, typename ELEM>
-	SP_GENCALL void mulElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+	SP_GENFUNC void mulElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] * elm;
 		}
@@ -151,7 +151,7 @@ namespace sp{
 
 	// division
 	template <typename TYPE, typename TYPE0, typename ELEM>
-	SP_GENCALL void divElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+	SP_GENFUNC void divElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
 		if (elm == 0.0) return;
 		for (int i = 0; i < size; i++){
 			dst[i] = mem0[i] / elm;
@@ -164,7 +164,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// identity matrix
-	SP_GENCALL void eyeMat(double *dst, const int rows, const int cols){
+	SP_GENFUNC void eyeMat(double *dst, const int rows, const int cols){
 		for (int r = 0; r < rows; r++){
 			for (int c = 0; c < cols; c++){
 				dst[r * cols + c] = (r == c) ? 1.0 : 0.0;
@@ -173,7 +173,7 @@ namespace sp{
 	}
 
 	// zero matrix
-	SP_GENCALL void zeroMat(double *dst, const int rows, const int cols){
+	SP_GENFUNC void zeroMat(double *dst, const int rows, const int cols){
 		for (int r = 0; r < rows; r++){
 			for (int c = 0; c < cols; c++){
 				dst[r * cols + c] = 0.0;
@@ -182,7 +182,7 @@ namespace sp{
 	}
 
 	// extension matrix
-	SP_GENCALL void extMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+	SP_GENFUNC void extMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
 		eyeMat(dst, rows, cols);
 
 		for (int r = 0; r < minVal(rows, rows0); r++){
@@ -193,7 +193,7 @@ namespace sp{
 	}
 
 	// multiple
-	SP_GENCALL void mulMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0, const double *mat1, const int rows1, const int cols1){
+	SP_GENFUNC void mulMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0, const double *mat1, const int rows1, const int cols1){
 
 		for (int r = 0; r < rows; r++){
 			for (int c = 0; c < cols; c++){
@@ -208,7 +208,7 @@ namespace sp{
 
 
 	// transpose
-	SP_GENCALL void trnMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+	SP_GENFUNC void trnMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
 		for (int r = 0; r < rows; r++){
 			for (int c = 0; c < cols; c++){
 				dst[r * cols + c] = mat0[c * cols0 + r];
@@ -217,7 +217,7 @@ namespace sp{
 	}
 
 	// covariance
-	SP_GENCALL void covMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+	SP_GENFUNC void covMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
 		for (int r = 0; r < rows; r++){
 			for (int c = 0; c < cols; c++){
 				double &d = dst[r * cols + c];
@@ -230,7 +230,7 @@ namespace sp{
 	}
 
 	// skew
-	SP_GENCALL void skewMat(double *dst, const int rows, const int cols, const Vec3 &vec){
+	SP_GENFUNC void skewMat(double *dst, const int rows, const int cols, const Vec3 &vec){
 		dst[0 * 3 + 0] = 0.0;
 		dst[0 * 3 + 1] = -vec.z;
 		dst[0 * 3 + 2] = +vec.y;
@@ -245,7 +245,7 @@ namespace sp{
 	}
 
 	// norm
-	SP_GENCALL double normMat(const double *mat, const int rows, const int cols, const double *base = NULL){
+	SP_GENFUNC double normMat(const double *mat, const int rows, const int cols, const double *base = NULL){
 		double norm = 0.0;
 		for (int i = 0; i < rows * cols; i++){
 			norm += (base == NULL) ? square(mat[i]) : square(mat[i] - base[i]);
@@ -258,7 +258,7 @@ namespace sp{
 	// matrix convert
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL void cnvRotToMat(double *dst, const int rows, const int cols, const Rot &rot) {
+	SP_GENFUNC void cnvRotToMat(double *dst, const int rows, const int cols, const Rot &rot) {
 		{
 			const double qx2 = rot.qx * rot.qx;
 			const double qy2 = rot.qy * rot.qy;
@@ -287,7 +287,7 @@ namespace sp{
 		}
 	}
 
-	SP_GENCALL void cnvPoseToMat(double *dst, const int rows, const int cols, const Pose &pose) {
+	SP_GENFUNC void cnvPoseToMat(double *dst, const int rows, const int cols, const Pose &pose) {
 		cnvRotToMat(dst, rows, cols, pose.rot);
 
 		dst[0 * cols + 3] = pose.trn.x;
@@ -295,7 +295,7 @@ namespace sp{
 		dst[2 * cols + 3] = pose.trn.z;
 	}
 
-	SP_GENCALL void cnvCamToMat(double *dst, const int rows, const int cols, const CamParam &cam) {
+	SP_GENFUNC void cnvCamToMat(double *dst, const int rows, const int cols, const CamParam &cam) {
 		dst[0 * cols + 0] = cam.fx; 
 		dst[0 * cols + 1] = 0.0;
 		dst[0 * cols + 2] = cam.cx;
@@ -313,11 +313,11 @@ namespace sp{
 	// matrix determinant
 	//--------------------------------------------------------------------------------
 	
-	SP_GENCALL double detMat22(const double *mat){
+	SP_GENFUNC double detMat22(const double *mat){
 		return mat[0 * 2 + 0] * mat[1 * 2 + 1] - mat[0 * 2 + 1] * mat[1 * 2 + 0];
 	}
 
-	SP_GENCALL double detMat33(const double *mat){
+	SP_GENFUNC double detMat33(const double *mat){
 		const double v0 = mat[0 * 3 + 0] * (mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[2 * 3 + 1] * mat[1 * 3 + 2]);
 		const double v1 = mat[0 * 3 + 1] * (mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[2 * 3 + 0] * mat[1 * 3 + 2]);
 		const double v2 = mat[0 * 3 + 2] * (mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[2 * 3 + 0] * mat[1 * 3 + 1]);
@@ -325,7 +325,7 @@ namespace sp{
 		return v0 - v1 + v2;
 	}
 
-	SP_GENCALL double detMat(const double *mat, const int rows, const int cols, double *buf){
+	SP_GENFUNC double detMat(const double *mat, const int rows, const int cols, double *buf){
 
 		if (rows != cols) return 0.0;
 		const int size = rows;
@@ -388,7 +388,7 @@ namespace sp{
 	// matrix inverse
 	//--------------------------------------------------------------------------------
 	
-	SP_GENCALL bool invMat22(double *dst, const double *mat){
+	SP_GENFUNC bool invMat22(double *dst, const double *mat){
 		const double det = detMat22(mat);
 		if (fabs(det) < SP_SMALL) return false;
 
@@ -401,7 +401,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_GENCALL bool invMat33(double *dst, const double *mat){
+	SP_GENFUNC bool invMat33(double *dst, const double *mat){
 		const double det = detMat33(mat);
 		if (fabs(det) < SP_SMALL) return false;
 
@@ -421,7 +421,7 @@ namespace sp{
 		return true;
 	}
 
-	SP_GENCALL bool invMat(double *dst, const double *mat, const int rows, const int cols, double *buf){
+	SP_GENFUNC bool invMat(double *dst, const double *mat, const int rows, const int cols, double *buf){
 
 		if (rows != cols) return false;
 		const int size = rows;
@@ -484,7 +484,7 @@ namespace sp{
 	// matrix eigen
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL bool eigMat(double *eigVec, double *eigVal, const double *mat, const int rows, const int cols, const bool minOrder = true){
+	SP_GENFUNC bool eigMat(double *eigVec, double *eigVal, const double *mat, const int rows, const int cols, const bool minOrder = true){
 	
 		if (rows < 2 || cols < 2 || rows != cols) return false;
 
@@ -603,7 +603,7 @@ namespace sp{
 	// matrix svd (simgular value decomposition)
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL bool svdMat(double *U, double *S, double *V, const double *mat, const int rows, const int cols, const bool minOrder = true){
+	SP_GENFUNC bool svdMat(double *U, double *S, double *V, const double *mat, const int rows, const int cols, const bool minOrder = true){
 		if (rows < 2 || cols < 2 || rows < cols) return false;
 
 		for (int i = 0; i < rows * cols; i++){

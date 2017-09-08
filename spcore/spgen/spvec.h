@@ -16,68 +16,68 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// get vector
-	SP_GENCALL Vec2 getVec(const double x, const double y){
+	SP_GENFUNC Vec2 getVec(const double x, const double y){
 		Vec2 dst;
 		dst.x = x, dst.y = y;
 		return dst;
 	}
 
 	// get vector
-	SP_GENCALL Vec3 getVec(const double x, const double y, const double z){
+	SP_GENFUNC Vec3 getVec(const double x, const double y, const double z){
 		Vec3 dst;
 		dst.x = x, dst.y = y, dst.z = z;
 		return dst;
 	}
 
 	// get vector
-	SP_GENCALL Vec3 getVec(const Col3 &col) {
+	SP_GENFUNC Vec3 getVec(const Col3 &col) {
 		Vec3 dst;
 		dst.x = col.r, dst.y = col.g, dst.z = col.b;
 		return dst;
 	}
 
 	// get vector
-	SP_GENCALL Vec3 getVec(const Vec2 &vec, const double z) {
+	SP_GENFUNC Vec3 getVec(const Vec2 &vec, const double z) {
 		return getVec(vec.x, vec.y, z);
 	}
 
 	// addition
-	SP_GENCALL Vec2 addVec(const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC Vec2 addVec(const Vec2 &vec0, const Vec2 &vec1){
 		return getVec(vec0.x + vec1.x, vec0.y + vec1.y);
 	}
 
 	// addition
-	SP_GENCALL Vec3 addVec(const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC Vec3 addVec(const Vec3 &vec0, const Vec3 &vec1){
 		return getVec(vec0.x + vec1.x, vec0.y + vec1.y, vec0.z + vec1.z);
 	}
 
 	// subtraction
-	SP_GENCALL Vec2 subVec(const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC Vec2 subVec(const Vec2 &vec0, const Vec2 &vec1){
 		return getVec(vec0.x - vec1.x, vec0.y - vec1.y);
 	}
 
 	// subtraction
-	SP_GENCALL Vec3 subVec(const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC Vec3 subVec(const Vec3 &vec0, const Vec3 &vec1){
 		return getVec(vec0.x - vec1.x, vec0.y - vec1.y, vec0.z - vec1.z);
 	}
 
 	// multiple
-	SP_GENCALL Vec2 mulVec(const Vec2 &vec, const double val){
+	SP_GENFUNC Vec2 mulVec(const Vec2 &vec, const double val){
 		return getVec(vec.x * val, vec.y * val);
 	}
 
 	// multiple
-	SP_GENCALL Vec3 mulVec(const Vec3 &vec, const double val){
+	SP_GENFUNC Vec3 mulVec(const Vec3 &vec, const double val){
 		return getVec(vec.x * val, vec.y * val, vec.z * val);
 	}
 
 	// division
-	SP_GENCALL Vec2 divVec(const Vec2 &vec, const double val){
+	SP_GENFUNC Vec2 divVec(const Vec2 &vec, const double val){
 		return (val != 0.0) ? getVec(vec.x / val, vec.y / val) : vec;
 	}
 
 	// division
-	SP_GENCALL Vec3 divVec(const Vec3 &vec, const double val){
+	SP_GENFUNC Vec3 divVec(const Vec3 &vec, const double val){
 		return (val != 0.0) ? getVec(vec.x / val, vec.y / val, vec.z / val) : vec;
 	}
 
@@ -86,67 +86,67 @@ namespace sp{
 	// vector operator
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Vec2 operator + (const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC Vec2 operator + (const Vec2 &vec0, const Vec2 &vec1){
 		return addVec(vec0, vec1);
 	}
 
-	SP_GENCALL Vec3 operator + (const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC Vec3 operator + (const Vec3 &vec0, const Vec3 &vec1){
 		return addVec(vec0, vec1);
 	}
 
-	SP_GENCALL Vec2 operator - (const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC Vec2 operator - (const Vec2 &vec0, const Vec2 &vec1){
 		return subVec(vec0, vec1);
 	}
 
-	SP_GENCALL Vec3 operator - (const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC Vec3 operator - (const Vec3 &vec0, const Vec3 &vec1){
 		return subVec(vec0, vec1);
 	}
 
-	SP_GENCALL Vec2 operator * (const Vec2 &vec, const double val){
+	SP_GENFUNC Vec2 operator * (const Vec2 &vec, const double val){
 		return mulVec(vec, val);
 	}
 
-	SP_GENCALL Vec3 operator * (const Vec3 &vec, const double val){
+	SP_GENFUNC Vec3 operator * (const Vec3 &vec, const double val){
 		return mulVec(vec, val);
 	}
 
-	SP_GENCALL Vec2 operator / (const Vec2 &vec, const double val){
+	SP_GENFUNC Vec2 operator / (const Vec2 &vec, const double val){
 		return divVec(vec, val);
 	}
 
-	SP_GENCALL Vec3 operator / (const Vec3 &vec, const double val){
+	SP_GENFUNC Vec3 operator / (const Vec3 &vec, const double val){
 		return divVec(vec, val);
 	}
 
-	SP_GENCALL void operator += (Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC void operator += (Vec2 &vec0, const Vec2 &vec1){
 		vec0 = addVec(vec0, vec1);
 	}
 
-	SP_GENCALL void operator += (Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC void operator += (Vec3 &vec0, const Vec3 &vec1){
 		vec0 = addVec(vec0, vec1);
 	}
 
-	SP_GENCALL void operator -= (Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC void operator -= (Vec2 &vec0, const Vec2 &vec1){
 		vec0 = subVec(vec0, vec1);
 	}
 
-	SP_GENCALL void operator -= (Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC void operator -= (Vec3 &vec0, const Vec3 &vec1){
 		vec0 = subVec(vec0, vec1);
 	}
 
-	SP_GENCALL void operator *= (Vec2 &vec, const double val){
+	SP_GENFUNC void operator *= (Vec2 &vec, const double val){
 		vec = mulVec(vec, val);
 	}
 
-	SP_GENCALL void operator *= (Vec3 &vec, const double val){
+	SP_GENFUNC void operator *= (Vec3 &vec, const double val){
 		vec = mulVec(vec, val);
 	}
 
-	SP_GENCALL void operator /= (Vec2 &vec, const double val){
+	SP_GENFUNC void operator /= (Vec2 &vec, const double val){
 		vec = divVec(vec, val);
 	}
 
-	SP_GENCALL void operator /= (Vec3 &vec, const double val){
+	SP_GENFUNC void operator /= (Vec3 &vec, const double val){
 		vec = divVec(vec, val);
 	}
 
@@ -156,81 +156,81 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// dot production
-	SP_GENCALL double dotVec(const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC double dotVec(const Vec2 &vec0, const Vec2 &vec1){
 		return vec0.x * vec1.x + vec0.y * vec1.y;
 	}
 
 	// dot production
-	SP_GENCALL double dotVec(const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC double dotVec(const Vec3 &vec0, const Vec3 &vec1){
 		return vec0.x * vec1.x + vec0.y * vec1.y + vec0.z * vec1.z;
 	}
 
 	// cross production
-	SP_GENCALL Vec3 crsVec(const Vec2 &vec0, const Vec2 &vec1){
+	SP_GENFUNC Vec3 crsVec(const Vec2 &vec0, const Vec2 &vec1){
 		return getVec(0.0, 0.0, vec0.x * vec1.y - vec0.y * vec1.x);
 	}
 
 	// cross production
-	SP_GENCALL Vec3 crsVec(const Vec3 &vec0, const Vec3 &vec1){
+	SP_GENFUNC Vec3 crsVec(const Vec3 &vec0, const Vec3 &vec1){
 		return getVec(vec0.y * vec1.z - vec0.z * vec1.y, vec0.z * vec1.x - vec0.x * vec1.z, vec0.x * vec1.y - vec0.y * vec1.x);
 	}
 
 	// projection vec3 to vec2
-	SP_GENCALL Vec2 prjVec(const Vec3 &vec) {
+	SP_GENFUNC Vec2 prjVec(const Vec3 &vec) {
 		return getVec(vec.x, vec.y) / vec.z;
 	}
 
 	// projection vec2 to vec3
-	SP_GENCALL Vec3 prjVec(const Vec2 &vec) {
+	SP_GENFUNC Vec3 prjVec(const Vec2 &vec) {
 		return getVec(vec.x, vec.y, 1.0);
 	}
 
-	SP_GENCALL double sqVec(const Vec2 &vec){
+	SP_GENFUNC double sqVec(const Vec2 &vec){
 		return dotVec(vec, vec);
 	}
 
 	// square
-	SP_GENCALL double sqVec(const Vec3 &vec){
+	SP_GENFUNC double sqVec(const Vec3 &vec){
 		return dotVec(vec, vec);
 	}
 
 	// norm
-	SP_GENCALL double normVec(const Vec2 &vec){
+	SP_GENFUNC double normVec(const Vec2 &vec){
 		return sqrt(dotVec(vec, vec));
 	}
 
 	// norm
-	SP_GENCALL double normVec(const Vec3 &vec){
+	SP_GENFUNC double normVec(const Vec3 &vec){
 		return sqrt(dotVec(vec, vec));
 	}
 
 	// unit vector
-	SP_GENCALL Vec2 unitVec(const Vec2 &vec){
+	SP_GENFUNC Vec2 unitVec(const Vec2 &vec){
 		return vec / normVec(vec);
 	}
 
 	// unit vector
-	SP_GENCALL Vec3 unitVec(const Vec3 &vec){
+	SP_GENFUNC Vec3 unitVec(const Vec3 &vec){
 		return vec / normVec(vec);
 	}
 
 	// random uniform
-	SP_CPUCALL Vec2 randVecUnif(const double x, const double y){
+	SP_CPUFUNC Vec2 randVecUnif(const double x, const double y){
 		return getVec(randValUnif() * x, randValUnif() * y);
 	}
 
 	// random uniform
-	SP_CPUCALL Vec3 randVecUnif(const double x, const double y, const double z){
+	SP_CPUFUNC Vec3 randVecUnif(const double x, const double y, const double z){
 		return getVec(randValUnif() * x, randValUnif() * y, randValUnif() * z);
 	}
 
 	// random gauss
-	SP_CPUCALL Vec2 randVecGauss(const double x, const double y){
+	SP_CPUFUNC Vec2 randVecGauss(const double x, const double y){
 		return getVec(randValGauss() * x, randValGauss() * y);
 	}
 
 	// random gauss
-	SP_CPUCALL Vec3 randVecGauss(const double x, const double y, const double z){
+	SP_CPUFUNC Vec3 randVecGauss(const double x, const double y, const double z){
 		return getVec(randValGauss() * x, randValGauss() * y, randValGauss() * z);
 	}
 
@@ -239,7 +239,7 @@ namespace sp{
 	// matrix * vector
 	//--------------------------------------------------------------------------------
 	
-	SP_GENCALL Vec2 mulMat(const double *mat, const int rows, const int cols, const Vec2 &vec){
+	SP_GENFUNC Vec2 mulMat(const double *mat, const int rows, const int cols, const Vec2 &vec){
 		Vec2 dst = getVec(0.0, 0.0);
 		if (rows == 2 && cols == 2){
 			dst.x = mat[0 * 2 + 0] * vec.x + mat[0 * 2 + 1] * vec.y;
@@ -258,7 +258,7 @@ namespace sp{
 		return dst;
 	}
 
-	SP_GENCALL Vec3 mulMat(const double *mat, const int rows, const int cols, const Vec3 &vec){
+	SP_GENFUNC Vec3 mulMat(const double *mat, const int rows, const int cols, const Vec3 &vec){
 		Vec3 dst = getVec(0.0, 0.0, 0.0);
 		if (rows == 3 && cols == 3){
 			dst.x = mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2] * vec.z;
@@ -286,7 +286,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 	
 	// get vector pd
-	SP_GENCALL VecVN2 getVecVN(const Vec2 &vtx, const Vec2 &nrm){
+	SP_GENFUNC VecVN2 getVecVN(const Vec2 &vtx, const Vec2 &nrm){
 		VecVN2 dst;
 		dst.vtx = vtx;
 		dst.nrm = nrm;
@@ -294,7 +294,7 @@ namespace sp{
 	}
 
 	// get vector pd
-	SP_GENCALL VecVN3 getVecVN(const Vec3 &vtx, const Vec3 &nrm){
+	SP_GENFUNC VecVN3 getVecVN(const Vec3 &vtx, const Vec3 &nrm){
 		VecVN3 dst;
 		dst.vtx = vtx;
 		dst.nrm = nrm;
@@ -306,7 +306,7 @@ namespace sp{
 	// matrix * vector vn
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL VecVN2 mulMat(const double *mat, const int rows, const int cols, const VecVN2 &vec){
+	SP_GENFUNC VecVN2 mulMat(const double *mat, const int rows, const int cols, const VecVN2 &vec){
 		VecVN2 dst;
 
 		dst.vtx = mulMat(mat, rows, cols, vec.vtx);
@@ -334,7 +334,7 @@ namespace sp{
 	}
 
 
-	SP_GENCALL VecVN3 mulMat(const double *mat, const int rows, const int cols, const VecVN3 &vec){
+	SP_GENFUNC VecVN3 mulMat(const double *mat, const int rows, const int cols, const VecVN3 &vec){
 		VecVN3 dst;
 
 		dst.vtx = mulMat(mat, rows, cols, vec.vtx);
@@ -365,15 +365,15 @@ namespace sp{
 	// extract depth element
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL double extractDepth(const VecVN3 &src){
+	SP_GENFUNC double extractDepth(const VecVN3 &src){
 		return src.vtx.z;
 	}
 
-	SP_GENCALL double extractDepth(const Vec3 &src){
+	SP_GENFUNC double extractDepth(const Vec3 &src){
 		return src.z;
 	}
 
-	SP_GENCALL double extractDepth(const double &src){
+	SP_GENFUNC double extractDepth(const double &src){
 		return src;
 	}
 
@@ -383,7 +383,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// get mesh
-	SP_GENCALL Mesh getMesh(const Vec3 &vec0, const Vec3 &vec1, const Vec3 &vec2){
+	SP_GENFUNC Mesh getMesh(const Vec3 &vec0, const Vec3 &vec1, const Vec3 &vec2){
 		Mesh dst;
 		dst.vtx[0] = vec0;
 		dst.vtx[1] = vec1;
@@ -392,7 +392,7 @@ namespace sp{
 	}
 
 	// addition
-	SP_GENCALL Mesh addMesh(const Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC Mesh addMesh(const Mesh &mesh, const Vec3 vec){
 		Mesh dst;
 		dst.vtx[0] = mesh.vtx[0] + vec;
 		dst.vtx[1] = mesh.vtx[1] + vec;
@@ -401,7 +401,7 @@ namespace sp{
 	}
 
 	// subtraction
-	SP_GENCALL Mesh subMesh(const Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC Mesh subMesh(const Mesh &mesh, const Vec3 vec){
 		Mesh dst;
 		dst.vtx[0] = mesh.vtx[0] - vec;
 		dst.vtx[1] = mesh.vtx[1] - vec;
@@ -410,7 +410,7 @@ namespace sp{
 	}
 
 	// multiple
-	SP_GENCALL Mesh mulMesh(const Mesh &mesh, const double val){
+	SP_GENFUNC Mesh mulMesh(const Mesh &mesh, const double val){
 		Mesh dst;
 		dst.vtx[0] = mesh.vtx[0] * val;
 		dst.vtx[1] = mesh.vtx[1] * val;
@@ -419,7 +419,7 @@ namespace sp{
 	}
 
 	// division
-	SP_GENCALL Mesh divMesh(const Mesh &mesh, const double val){
+	SP_GENFUNC Mesh divMesh(const Mesh &mesh, const double val){
 		Mesh dst;
 		dst.vtx[0] = mesh.vtx[0] / val;
 		dst.vtx[1] = mesh.vtx[1] / val;
@@ -432,35 +432,35 @@ namespace sp{
 	// mesh operator
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Mesh operator + (const Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC Mesh operator + (const Mesh &mesh, const Vec3 vec){
 		return addMesh(mesh, vec);
 	}
 
-	SP_GENCALL Mesh operator - (const Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC Mesh operator - (const Mesh &mesh, const Vec3 vec){
 		return subMesh(mesh, vec);
 	}
 
-	SP_GENCALL Mesh operator * (const Mesh &mesh, const double val){
+	SP_GENFUNC Mesh operator * (const Mesh &mesh, const double val){
 		return mulMesh(mesh, val);
 	}
 
-	SP_GENCALL Mesh operator / (const Mesh &mesh, const double val){
+	SP_GENFUNC Mesh operator / (const Mesh &mesh, const double val){
 		return divMesh(mesh, val);
 	}
 
-	SP_GENCALL void operator += (Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC void operator += (Mesh &mesh, const Vec3 vec){
 		mesh = addMesh(mesh, vec);
 	}
 
-	SP_GENCALL void operator -= (Mesh &mesh, const Vec3 vec){
+	SP_GENFUNC void operator -= (Mesh &mesh, const Vec3 vec){
 		mesh = subMesh(mesh, vec);
 	}
 
-	SP_GENCALL void operator *= (Mesh &mesh, const double val){
+	SP_GENFUNC void operator *= (Mesh &mesh, const double val){
 		mesh = mulMesh(mesh, val);
 	}
 
-	SP_GENCALL void operator /= (Mesh &mesh, const double val){
+	SP_GENFUNC void operator /= (Mesh &mesh, const double val){
 		mesh = divMesh(mesh, val);
 	}
 
@@ -469,7 +469,7 @@ namespace sp{
 	// matrix * mesh
 	//--------------------------------------------------------------------------------
 
-	SP_GENCALL Mesh mulMat(const double *mat, const int rows, const int cols, const Mesh &mesh){
+	SP_GENFUNC Mesh mulMat(const double *mat, const int rows, const int cols, const Mesh &mesh){
 		Mesh dst;
 		dst.vtx[0] = mulMat(mat, rows, cols, mesh.vtx[0]);
 		dst.vtx[1] = mulMat(mat, rows, cols, mesh.vtx[1]);
@@ -483,12 +483,12 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// get normal vector
-	SP_GENCALL Vec3 getMeshNrm(const Mesh &mesh){
+	SP_GENFUNC Vec3 getMeshNrm(const Mesh &mesh){
 		return unitVec(crsVec(mesh.vtx[1] - mesh.vtx[0], mesh.vtx[2] - mesh.vtx[0]));
 	}
 
 	// get center vector
-	SP_GENCALL Vec3 getMeshPos(const Mesh &mesh){
+	SP_GENFUNC Vec3 getMeshPos(const Mesh &mesh){
 		return (mesh.vtx[0] + mesh.vtx[1] + mesh.vtx[2]) / 3.0;
 	}
 
@@ -498,7 +498,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// geodesic mesh num
-	SP_GENCALL int getGeodesicMeshNum(const int div){
+	SP_GENFUNC int getGeodesicMeshNum(const int div){
 		int ret = 20;
 		for (int i = 0; i < div; i++){
 			ret *= 4;
@@ -506,7 +506,7 @@ namespace sp{
 		return ret;
 	}
 
-	SP_GENCALL Mesh getGeodesicMesh(const int div, const int id){
+	SP_GENFUNC Mesh getGeodesicMesh(const int div, const int id){
 		Mesh model[20];
 
 		// init regular geodesic dorm (vertex num 12)
