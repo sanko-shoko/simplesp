@@ -3,7 +3,7 @@
 
 using namespace sp;
 
-const DotMarkerParam mrk(6, 6, 30.0);
+const DotMarkerParam mrk(5, 5, 30.0);
 
 void sample(cv::Mat &cvimg, const int key);
 

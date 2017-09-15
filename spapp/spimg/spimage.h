@@ -283,26 +283,6 @@ namespace sp{
 		}
 	}
 
-	SP_CPUFUNC void cnvImgToGry(Mem<Byte> &dst, const Mem<Col3> &src) {
-		SP_ASSERT(isValid(2, src));
-
-		dst.resize(2, src.dsize);
-
-		for (int i = 0; i < dst.size(); i++) {
-			cnvImg(dst[i], src[i]);
-		}
-	}
-
-	SP_CPUFUNC void cnvImgToGry(Mem<Byte> &dst, const Mem<Col4> &src) {
-		SP_ASSERT(isValid(2, src));
-
-		dst.resize(2, src.dsize);
-
-		for (int i = 0; i < dst.size(); i++) {
-			cnvImg(dst[i], src[i]);
-		}
-	}
-
 	SP_CPUFUNC void cnvImgToHSV(Mem<Vec3> &dst, const Mem<Col3> &src) {
 		SP_ASSERT(isValid(2, src));
 

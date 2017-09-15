@@ -430,8 +430,8 @@ namespace sp{
 			W(1, 0) = +1.0;
 			W(2, 2) = +1.0;
 
-			R[0] = getRot((U * W * trnMat(V)).ptr);
-			R[1] = getRot((U * trnMat(W) * trnMat(V)).ptr);
+			R[0] = getRot((U * W * trnMat(V)).ptr, 3, 3);
+			R[1] = getRot((U * trnMat(W) * trnMat(V)).ptr, 3, 3);
 
 			T[0] = getVec(U(0, 2), U(1, 2), U(2, 2));
 			T[1] = getVec(U(0, 2), U(1, 2), U(2, 2)) * (-1);
@@ -564,7 +564,7 @@ namespace sp{
 			R = U * trnMat(V);
 			T /= scale;
 
-			pose = getPose(getRot(R.ptr), T);
+			pose = getPose(getRot(R.ptr, 3, 3), T);
 		}
 
 		return true;

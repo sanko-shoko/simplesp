@@ -255,61 +255,6 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// matrix convert
-	//--------------------------------------------------------------------------------
-
-	SP_GENFUNC void cnvRotToMat(double *dst, const int rows, const int cols, const Rot &rot) {
-		{
-			const double qx2 = rot.qx * rot.qx;
-			const double qy2 = rot.qy * rot.qy;
-			const double qz2 = rot.qz * rot.qz;
-			const double qw2 = rot.qw * rot.qw;
-
-			dst[0 * cols + 0] = qw2 + qx2 - qy2 - qz2;
-			dst[1 * cols + 1] = qw2 - qx2 + qy2 - qz2;
-			dst[2 * cols + 2] = qw2 - qx2 - qy2 + qz2;
-		}
-		{
-			const double qxy = rot.qx * rot.qy;
-			const double qzw = rot.qz * rot.qw;
-			dst[0 * cols + 1] = 2 * (qxy - qzw);
-			dst[1 * cols + 0] = 2 * (qxy + qzw);
-
-			const double qxz = rot.qx * rot.qz;
-			const double qyw = rot.qy * rot.qw;
-			dst[0 * cols + 2] = 2 * (qxz + qyw);
-			dst[2 * cols + 0] = 2 * (qxz - qyw);
-
-			const double qyz = rot.qy * rot.qz;
-			const double qxw = rot.qx * rot.qw;
-			dst[1 * cols + 2] = 2 * (qyz - qxw);
-			dst[2 * cols + 1] = 2 * (qyz + qxw);
-		}
-	}
-
-	SP_GENFUNC void cnvPoseToMat(double *dst, const int rows, const int cols, const Pose &pose) {
-		cnvRotToMat(dst, rows, cols, pose.rot);
-
-		dst[0 * cols + 3] = pose.trn.x;
-		dst[1 * cols + 3] = pose.trn.y;
-		dst[2 * cols + 3] = pose.trn.z;
-	}
-
-	SP_GENFUNC void cnvCamToMat(double *dst, const int rows, const int cols, const CamParam &cam) {
-		dst[0 * cols + 0] = cam.fx; 
-		dst[0 * cols + 1] = 0.0;
-		dst[0 * cols + 2] = cam.cx;
-
-		dst[1 * cols + 0] = 0.0;
-		dst[1 * cols + 1] = cam.fy;
-		dst[1 * cols + 2] = cam.cy;
-
-		dst[2 * cols + 0] = 0.0;
-		dst[2 * cols + 1] = 0.0;
-		dst[2 * cols + 2] = 1.0;
-	}
-
-	//--------------------------------------------------------------------------------
 	// matrix determinant
 	//--------------------------------------------------------------------------------
 	
