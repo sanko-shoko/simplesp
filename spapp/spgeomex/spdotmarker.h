@@ -188,7 +188,7 @@ namespace sp{
 				// detect blob
 				Mem1<Vec2> pixs;
 				detect(pixs, src);
-			
+
 				// estimate pose
 				estimate(src, pixs);
 
@@ -257,7 +257,6 @@ namespace sp{
 
 				SP_HOLDER_SET("minImg", minImg);
 			}
-
 			Mem2<int> labelMap;
 			{
 				SP_LOGGER_SET("labeling");
@@ -354,7 +353,7 @@ namespace sp{
 
 			const Mem1<Rect> rects = getLabelRect(labelMap);
 
-			for (int i = 0; i < rects.size(); i++){
+			for (int i = 0; i < rects.size(); i++) {
 				const Rect minRect = adjustRect(rects[i], 1);
 
 				// check outside area
@@ -364,36 +363,43 @@ namespace sp{
 				const int maxSize = round(minVal(minImg.dsize[0], minImg.dsize[1]) * DOT_MAXSIZE);
 				if (maxVal(minRect.dsize[0], minRect.dsize[1]) > maxSize) continue;
 
-				Mem2<Byte> part;
-				crop(part, minImg, minRect);
+				Byte maxv = 0;
+				Byte minv = SP_BYTEMAX;
+				for (int v = minRect.dbase[1]; v < minRect.dbase[1] + minRect.dsize[1]; v++) {
+					for (int u = minRect.dbase[0]; u < minRect.dbase[0] + minRect.dsize[0]; u++){
+						const Byte val = minImg(u, v);
+						maxv = maxVal(maxv, val);
+						minv = minVal(minv, val);
+					}
+				}
 
 				// check contrast
-				const Byte maxv = maxVal(part);
-				const Byte minv = minVal(part);
 				if (maxv - minv < SP_BYTEMAX * DOT_CONTRAST) continue;
 
-				// fine binalize
+				// set thresh
 				const int thresh = (maxv + minv) / 2;
+
+				// fine binalize
 				Rect orgRect;
 				orgRect.dim = 2;
 				for (int d = 0; d < 2; d++){
 					orgRect.dbase[d] = round(minRect.dbase[d] / minScale);
 					orgRect.dsize[d] = round(minRect.dsize[d] / minScale);
 				}
-				crop(part, orgImg, orgRect);
 
 				int cnt = 0;
 				Vec2 sum = getVec(0.0, 0.0);
-				for (int y = 0; y < part.dsize[1]; y++){
-					for (int x = 0; x < part.dsize[0]; x++){
-						if (part(x, y) >= thresh) continue;
+				for (int v = orgRect.dbase[1]; v < orgRect.dbase[1] + orgRect.dsize[1]; v++) {
+					for (int u = orgRect.dbase[0]; u < orgRect.dbase[0] + orgRect.dsize[0]; u++) {
+						const Byte val = orgImg(u, v);
+						if (val >= thresh) continue;
 						
-						sum += getVec(x, y);
+						sum += getVec(u, v);
 						cnt++;
 					}
 				}
 				if (cnt > 0){
-					pixs.push(sum / cnt + getVec(orgRect.dbase[0], orgRect.dbase[1]));
+					pixs.push(sum / cnt);
 				}
 			}
 		}

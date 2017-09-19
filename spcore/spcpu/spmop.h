@@ -280,22 +280,55 @@ namespace sp{
 	SP_CPUFUNC Mat getMat(const Rot &rot) {
 		Mat dst(3, 3);
 
-		cnvRotToMat(dst.ptr, dst.rows(), dst.cols(), rot);
+		getMat(dst.ptr, dst.rows(), dst.cols(), rot);
 		return dst;
+	}
+
+	SP_CPUFUNC Rot getRot(const Mat &mat) {
+		return getRot(mat.ptr, mat.rows(), mat.cols());
 	}
 
 	SP_CPUFUNC Mat getMat(const Pose &pose) {
 		Mat dst(3, 4);
 
-		cnvPoseToMat(dst.ptr, dst.rows(), dst.cols(), pose);
+		getMat(dst.ptr, dst.rows(), dst.cols(), pose);
 		return dst;
 	}
 
 	SP_CPUFUNC Mat getMat(const CamParam &cam) {
 		Mat dst(3, 3);
 
-		cnvCamToMat(dst.ptr, dst.rows(), dst.cols(), cam);
+		getMat(dst.ptr, dst.rows(), dst.cols(), cam);
 		return dst;
+	}
+
+	SP_CPUFUNC Mat getMatAngleX(const double angle) {
+		Mat dst(3, 3);
+
+		getMatAngleX(dst.ptr, dst.rows(), dst.cols(), angle);
+		return dst;
+	}
+
+	SP_CPUFUNC Mat getMatAngleY(const double angle) {
+		Mat dst(3, 3);
+
+		getMatAngleY(dst.ptr, dst.rows(), dst.cols(), angle);
+		return dst;
+	}
+
+	SP_CPUFUNC Mat getMatAngleZ(const double angle) {
+		Mat dst(3, 3);
+
+		getMatAngleZ(dst.ptr, dst.rows(), dst.cols(), angle);
+		return dst;
+	}
+
+	SP_GENFUNC Mat getMatEuler(const Vec3 &euler) {
+		return getMat(getRotEuler(euler));
+	}
+
+	SP_CPUFUNC Vec3 getEuler(const Mat &mat) {
+		return getEuler(mat.ptr, mat.rows(), mat.cols());
 	}
 
 	//--------------------------------------------------------------------------------

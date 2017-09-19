@@ -131,7 +131,7 @@ namespace sp{
 	}
 
 	SP_GENFUNC double log2(const double x){
-		return static_cast<double>(::log2(x));
+		return static_cast<double>(::log(x) / ::log(2.0));
 	}
 
 #endif
