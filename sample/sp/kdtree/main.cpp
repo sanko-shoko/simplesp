@@ -10,26 +10,27 @@ int main(){
 	// kd tree
 	//--------------------------------------------------------------------------------
 
-	const int dim = 3;
+	const int dim = 2;
+	typedef Vec2 VEC;
 
-	const int dataNum = 10000;
+	const int dataNum = 1000;
 
 	// search target data
-	Mem1<Vec3> targ;
+	Mem1<VEC> targ;
 	for (int i = 0; i < dataNum; i++) {
-		targ.push(randVecUnif(100.0, 100.0, 100.0));
+		targ.push(randVecUnif(100.0, 100.0));
 	}
 
 	// test data
-	Mem1<Vec3> test;
-	for (int i = 0; i < dataNum; i++) {
-		test.push(randVecUnif(100.0, 100.0, 100.0));
+	Mem1<VEC> test;
+	for (int i = 0; i < 1000; i++) {
+		test.push(randVecUnif(100.0, 100.0));
 	}
 
 
 	// kd tree
 	{
-		Mem1<Vec3> result;
+		Mem1<VEC> result;
 		result.reserve(test.size());
 		
 		{
@@ -62,7 +63,7 @@ int main(){
 
 	// brute force search
 	{
-		Mem1<Vec3> result;
+		Mem1<VEC> result;
 		result.reserve(dim * test.size());
 
 		{
