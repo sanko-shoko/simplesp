@@ -49,19 +49,6 @@ int main(){
 		guidedFilter(dst, src, 11, square(0.2 * SP_BYTEMAX));
 		saveBMP(dst, "guidedfilter_c.bmp");
 	}
-	{
-		Mem2<Byte> test;
-		SP_ASSERT(loadBMP(test, "test.bmp"));
-		for (int i = 0; i < test.size(); i++) {
-			test[i] = (test[i] < 255) ? 0 : test[i];
-		}
-		Guide3 guide(src, 11, square(0.1 * SP_BYTEMAX));
-
-		Mem2<Byte> dst;
-		guidedFilter(dst, test, guide, 11);
-		saveBMP(dst, "aaa.bmp");
-		saveBMP(test, "test.bmp");
-	}
 
 	// sobel
 	{
