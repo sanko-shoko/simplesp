@@ -33,10 +33,10 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &pnt, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
-		const Vec3 p = pose * obj;
+		const Vec3 p = pose * pnt;
 		if (p.z > 0){
 			renderPoint(dst, mulCam(cam, prjVec(p)), val, radius);
 		}
@@ -52,11 +52,11 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs, const TYPE &val, const int radius = 1){
+	SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &pnts, const TYPE &val, const int radius = 1){
 		SP_ASSERT(isValid(2, dst));
 
-		for (int i = 0; i < objs.size(); i++){
-			renderPoint(dst, cam, pose, objs[i], val, radius);
+		for (int i = 0; i < pnts.size(); i++){
+			renderPoint(dst, cam, pose, pnts[i], val, radius);
 		}
 	}
 
@@ -88,23 +88,23 @@ namespace sp{
 	}
 
 	template<typename TYPE>
-	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &obj0, const Vec3 &obj1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Vec3 &pnt0, const Vec3 &pnt1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
-		const Vec3 p0 = pose * obj0;
-		const Vec3 p1 = pose * obj1;
+		const Vec3 p0 = pose * pnt0;
+		const Vec3 p1 = pose * pnt1;
 		if (p0.z > 0 && p1.z > 0){
 			renderLine(dst, mulCam(cam, prjVec(p0)), mulCam(cam, prjVec(p1)), val, thick);
 		}
 	}
 
 	template<typename TYPE>
-	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const TYPE &val, const int thick = 1){
+	SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Vec3> &pnts0, const Mem1<Vec3> &pnts1, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
-		if (objs0.size() != objs1.size()) return;
+		if (pnts0.size() != pnts1.size()) return;
 
-		for (int i = 0; i < objs0.size(); i++){
-			renderLine(dst, cam, pose, objs0[i], objs1[i], val, thick);
+		for (int i = 0; i < pnts0.size(); i++){
+			renderLine(dst, cam, pose, pnts0[i], pnts1[i], val, thick);
 		}
 	}
 
@@ -366,6 +366,74 @@ namespace sp{
 	}
 
 
+
+	//--------------------------------------------------------------------------------
+	// render graph
+	//--------------------------------------------------------------------------------
+
+	class Graph2D {
+	private:
+		double maxv, minv;
+
+	private:
+		
+		Vec2 cnvPnt(const Vec2 &pnt) {
+			Vec2 dst;
+			dst.x = (pnt.x - minv) / (maxv - minv) * img.dsize[0];
+			dst.y = (pnt.y - minv) / (maxv - minv) * img.dsize[1];
+			dst.y = (img.dsize[1] - 1) - dst.y;
+			return dst;
+		}
+
+	public:
+		Mem2<Col3> img;
+
+		Graph2D() {
+			init();
+		}
+
+		Graph2D(const double maxv, const double minv) {
+			init();
+			setRange(maxv, minv);
+		}
+
+		void init() {
+			img.resize(500, 500);
+			setElm(img, getCol(255, 255, 255));
+		}
+
+		void setRange(const double maxv, const double minv) {
+			this->maxv = maxv;
+			this->minv = minv;
+		}
+
+		void saveBMP(char *path) {
+			sp::saveBMP(img, path);
+		}
+
+		void renderLine(const Vec2 &pnt0, const Vec2 &pnt1, const Col3 &val, const int thick = 1) {
+			sp::renderLine(img, cnvPnt(pnt0), cnvPnt(pnt1), val, thick);
+		}
+
+		void renderPoint(const Vec2 &pnt, const Col3 &val, int radius = 1) {
+
+			sp::renderPoint(img, cnvPnt(pnt), val, radius);
+		}
+		
+		void renderPoint(const Mem1<Vec2> &pnts, const Col3 &val, int radius = 1) {
+
+			for (int i = 0; i < pnts.size(); i++) {
+				renderPoint(pnts[i], val, radius);
+			}
+		}
+
+		void renderLine(const Mem1<Vec2> &pnts0, const Mem1<Vec2> &pnts1, const Col3 &val, int radius = 1) {
+
+			for (int i = 0; i < pnts0.size(); i++) {
+				renderLine(pnts0[i], pnts1[i], val, radius);
+			}
+		}
+	};
 
 
 }

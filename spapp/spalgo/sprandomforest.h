@@ -155,8 +155,8 @@ namespace sp{
 
 	public:
 
-		RandomForestReg(const int maxDepth = 10, const int samples = 0) {
-			init(maxDepth, samples);
+		RandomForestReg(const int maxDepth = 10, const int sampleNum = 0) {
+			init(maxDepth, sampleNum);
 		}
 
 
@@ -210,9 +210,9 @@ namespace sp{
 
 	public:
 
-		RandomForestCls(const int classNum, const int maxDepth = 10, const int samples = 0) {
+		RandomForestCls(const int classNum, const int maxDepth = 10, const int sampleNum = 0) {
 			m_classNum = classNum;
-			init(maxDepth, samples);
+			init(maxDepth, sampleNum);
 		}
 
 	private:

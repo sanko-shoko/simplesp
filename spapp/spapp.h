@@ -49,6 +49,7 @@
 #include "spapp/spgeomex/spdotpattern.h"
 
 #include "spapp/spgeomex/spkinectfusion.h"
+//#include "spapp/spgeomex/sptrack3d.h"
 
 // learning
 #include "spapp/splearn/spneubase.h"
