@@ -152,7 +152,6 @@ namespace sp{
 		}
 	}
 
-
 	//--------------------------------------------------------------------------------
 	// merge 
 	//--------------------------------------------------------------------------------
@@ -196,12 +195,56 @@ namespace sp{
 
 		dst.resize(2, src.dsize);
 
+		const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+
 		const int ch = sizeof(TYPE) / sizeof(ELEM);
 
 		for (int v = 0; v < dst.dsize[1]; v++) {
 			for (int u = 0; u < dst.dsize[0]; u++) {
 				for (int c = 0; c < ch; c++) {
-					acs2<TYPE, ELEM>(dst, u, v, c) = SP_BYTEMAX - acs2<TYPE, ELEM>(src, u, v, c);
+					acs2<TYPE, ELEM>(dst, u, v, c) = SP_BYTEMAX - acs2<TYPE, ELEM>(tmp, u, v, c);
+				}
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------
+	// flip 
+	//--------------------------------------------------------------------------------
+
+	template <typename TYPE, typename ELEM = TYPE>
+	SP_CPUFUNC void flipX(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+		SP_ASSERT(isValid(2, src));
+
+		dst.resize(2, src.dsize);
+
+		const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+
+		const int ch = sizeof(TYPE) / sizeof(ELEM);
+
+		for (int v = 0; v < dst.dsize[1]; v++) {
+			for (int u = 0; u < dst.dsize[0]; u++) {
+				for (int c = 0; c < ch; c++) {
+					acs2<TYPE, ELEM>(dst, u, v, c) = acs2<TYPE, ELEM>(tmp, (dst.dsize[0] - 1) - u, v, c);
+				}
+			}
+		}
+	}
+
+	template <typename TYPE, typename ELEM = TYPE>
+	SP_CPUFUNC void flipY(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+		SP_ASSERT(isValid(2, src));
+
+		dst.resize(2, src.dsize);
+
+		const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+
+		const int ch = sizeof(TYPE) / sizeof(ELEM);
+
+		for (int v = 0; v < dst.dsize[1]; v++) {
+			for (int u = 0; u < dst.dsize[0]; u++) {
+				for (int c = 0; c < ch; c++) {
+					acs2<TYPE, ELEM>(dst, u, v, c) = acs2<TYPE, ELEM>(tmp, u, (dst.dsize[1] - 1) - v, c);
 				}
 			}
 		}

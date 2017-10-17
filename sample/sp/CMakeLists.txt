@@ -2,6 +2,7 @@
 add_subdirectory(mat)
 add_subdirectory(rot)
 add_subdirectory(lsm)
+add_subdirectory(pca)
 add_subdirectory(kdtree)
 add_subdirectory(randomforest)
 
