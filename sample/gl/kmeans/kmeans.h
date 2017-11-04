@@ -23,7 +23,7 @@ private:
 		printf("\n");
 	}
 
-	virtual void initialize(){
+	virtual void init(){
 		help();
 
 		m_K = 10;

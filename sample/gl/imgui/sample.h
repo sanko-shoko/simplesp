@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_IMGUI 1
+
+#include "simplesp.h"
 #include "spex/spgl.h"
 
 using namespace sp;
@@ -29,7 +31,7 @@ private:
 		printf("\n");
 	}
 
-	virtual void initialize() {
+	virtual void init() {
 
 		m_cam = getCamParam(640, 480);
 

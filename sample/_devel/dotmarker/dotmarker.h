@@ -40,7 +40,7 @@ class DotMarkerGUI : public TwWindow{
 
 private:
 
-	virtual void initialize(){
+	virtual void init(){
 
 		//if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false){
 		//	exit(0);

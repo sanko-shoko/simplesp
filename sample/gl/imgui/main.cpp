@@ -1,5 +1,4 @@
-﻿#define SP_USE_IMGUI 1
-#include "sample.h"
+﻿#include "sample.h"
 
 int main() {
 

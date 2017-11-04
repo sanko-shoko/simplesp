@@ -80,7 +80,7 @@ namespace sp{
 			}
 		}
 
-		virtual void initialize(){
+		virtual void init(){
 
 			TwBar *bar = TwNewBar("display");
 			TwDefine("display iconified = true");

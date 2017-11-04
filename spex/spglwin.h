@@ -128,10 +128,7 @@ namespace sp{
 		virtual void charFun(unsigned int charInfo){
 		}
 
-		virtual void initialize(){
-		}
-
-		virtual void finalize() {
+		virtual void init(){
 		}
 
 		virtual void display(){
@@ -184,6 +181,7 @@ namespace sp{
 			SP_ASSERT(glfwInit());
 
 #if defined(_WIN32) && SP_USE_GLEW
+			// glew init
 			SP_ASSERT(glewInit() != GLEW_OK);
 #endif
 
@@ -197,18 +195,17 @@ namespace sp{
 				return;
 			}
 
+			// glfw make context
+			glfwMakeContextCurrent(window);
+
+			// glfw set event callbacks
+			setCallback(window);
+
 #if SP_USE_IMGUI
 			ImGui_ImplGlfwGL2_Init(window, true);
 #endif
 
-			// glfw make context
-			glfwMakeContextCurrent(window);
-
-			// set GLFW event callbacks
-			setCallback(window);
-
-			// initialize gui
-			initialize();
+			init();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
 				glfwPollEvents();
@@ -230,11 +227,8 @@ namespace sp{
 				glfwSwapBuffers(window);
 			}
 
-			// terminate GLFW
+			// glfw terminate
 			glfwTerminate();
-
-			// finalize gui
-			finalize();
 
 #if SP_USE_IMGUI
 			ImGui_ImplGlfwGL2_Shutdown();
