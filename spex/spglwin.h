@@ -128,7 +128,7 @@ namespace sp{
 		virtual void charFun(unsigned int charInfo){
 		}
 
-		virtual void initialize(){
+		virtual void init(){
 		}
 
 		virtual void display(){
