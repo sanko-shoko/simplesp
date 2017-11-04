@@ -11,7 +11,7 @@ find_path (GLFW_DIR NAMES include/GLFW/glfw3.h
 )
 
 if (GLFW_DIR)
-	find_path (GLFW_INCLUDE_DIR NAMES glfw3.h PATHS "${GLFW_DIR}/include/GLFW")
+	find_path (GLFW_INCLUDE_DIR NAMES GLFW/glfw3.h PATHS "${GLFW_DIR}/include")
 
 	if (WIN32)
 		if (MSVC11 OR (${MSVC_VERSION} EQUAL 1700))
