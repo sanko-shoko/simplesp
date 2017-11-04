@@ -29,7 +29,7 @@ private:
 		printf("\n");
 	}
 
-	virtual void initialize(){
+	virtual void init(){
 		help();
 
 		m_cam = getCamParam(640, 480);

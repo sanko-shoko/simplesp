@@ -131,9 +131,6 @@ namespace sp{
 		virtual void initialize(){
 		}
 
-		virtual void finalize() {
-		}
-
 		virtual void display(){
 		}
 
@@ -184,6 +181,7 @@ namespace sp{
 			SP_ASSERT(glfwInit());
 
 #if defined(_WIN32) && SP_USE_GLEW
+			// glew init
 			SP_ASSERT(glewInit() != GLEW_OK);
 #endif
 
@@ -197,17 +195,16 @@ namespace sp{
 				return;
 			}
 
+			// glfw make context
+			glfwMakeContextCurrent(window);
+
+			// glfw set event callbacks
+			setCallback(window);
+
 #if SP_USE_IMGUI
 			ImGui_ImplGlfwGL2_Init(window, true);
 #endif
 
-			// glfw make context
-			glfwMakeContextCurrent(window);
-
-			// set GLFW event callbacks
-			setCallback(window);
-
-			// initialize gui
 			initialize();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
@@ -230,11 +227,8 @@ namespace sp{
 				glfwSwapBuffers(window);
 			}
 
-			// terminate GLFW
+			// glfw terminate
 			glfwTerminate();
-
-			// finalize gui
-			finalize();
 
 #if SP_USE_IMGUI
 			ImGui_ImplGlfwGL2_Shutdown();

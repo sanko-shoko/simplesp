@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_IMGUI 1
+
+#include "simplesp.h"
 #include "spex/spgl.h"
 
 using namespace sp;

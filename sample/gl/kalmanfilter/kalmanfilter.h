@@ -12,7 +12,7 @@ private:
 		printf("\n");
 	}
 
-	virtual void initialize(){
+	virtual void init(){
 
 		help();
 	}
