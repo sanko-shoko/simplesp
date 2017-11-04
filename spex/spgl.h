@@ -9,6 +9,10 @@
 #define SP_USE_GLEW 0
 #endif
 
+#ifndef SP_USE_IMGUI
+#define SP_USE_IMGUI 0
+#endif
+
 #include "spex/spglutil.h"
 #include "spex/spglwin.h"
 

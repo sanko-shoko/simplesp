@@ -9,6 +9,11 @@
 #include "GL/glew.h"
 #endif
 
+#if SP_USE_IMGUI
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#endif
+
 #include "simplesp.h"
 #include "GLFW/glfw3.h"
 
@@ -194,7 +199,7 @@ namespace sp{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-			glShadeModel(GL_FLAT);
+			//glShadeModel(GL_FLAT);
 			glColor3d(1.0, 1.0, 1.0);
 			glColorMask(1, 1, 1, 1);
 

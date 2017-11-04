@@ -3,7 +3,7 @@
 
 using namespace sp;
 
-class RenderGUI : public BaseWindow{
+class SampleGUI : public BaseWindow {
 
 	// camera
 	CamParam m_cam;
@@ -29,7 +29,7 @@ private:
 		printf("\n");
 	}
 
-	virtual void initialize(){
+	virtual void initialize() {
 
 		m_cam = getCamParam(640, 480);
 
@@ -37,13 +37,13 @@ private:
 		m_img.zero();
 
 		help();
-	
-		if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false){
+
+		if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
 
 			// if could not find stanford bunny, load dummy model
 			loadGeodesicDorm(m_model, 100.0, 1);
 		}
-		
+
 		m_pnts = getModelPoint(m_model);
 		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
@@ -67,75 +67,40 @@ private:
 		}
 	}
 
-	virtual void display(){
-
+	virtual void display() {
 		{
 			// view 2D
 			glLoadView2D(m_cam, m_viewPos, m_viewScale);
 			glRenderImage(m_img);
 		}
 
+		bool show_test_window = true;
+		bool show_another_window = false;
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+		// 1. Show a simple window.
+		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
 		{
-			// view 3D
-			glLoadView3D(m_cam, m_viewPos, m_viewScale);
-
-			{
-				glLoadIdentity();
-				// glLoadMatrix(m_pose);
-
-				glPointSize(3.f);
-				glBegin(GL_POINTS);
-				glColor3f(0.2f, 0.7f, 0.2f);
-				for (int i = 0; i < m_pnts.size(); i++){
-					// X_C = R * X_M + T
-					glVertex(m_pose.rot * m_pnts[i].vtx + m_pose.trn);
-					//glVertex(m_pnts[i].vtx);
-				}
-				glEnd();
-			}
-
-			// render axis
-			{
-				glLoadMatrix(m_pose);
-				
-				glLineWidth(2.f);
-				glBegin(GL_LINES);
-				glAxis(100.0);
-				glEnd();
-			}
-			
-			// render mesh model
-			//{
-			//	glLoadIdentity();
-
-			//	GLfloat lightPos[4] = { 0.f, 0.f, -1500.f, 1.f };
-			//	glEnable(GL_LIGHTING);
-			//	glEnable(GL_LIGHT0);
-			//	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-			//	const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-			//	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-
-			//	glLoadMatrix(m_pose);
-
-			//	glLineWidth(1.f);
-			//	for (int i = 0; i < m_model.size(); i++){
-			//		glBegin(GL_TRIANGLES);
-			//		glNormal(getMeshNrm(m_model[i]));
-			//		glMesh(m_model[i]);
-			//		glEnd();
-			//	}
-			//}
+			static float f = 0.0f;
+			ImGui::Text("Hello, world!");
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("clear color", (float*)&clear_color);
+			if (ImGui::Button("Test Window")) show_test_window ^= 1;
+			if (ImGui::Button("Another Window")) show_another_window ^= 1;
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 
 	}
 
 	virtual void mousePos(double x, double y) {
-		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		if (ImGui::GetIO().WantCaptureMouse == false) {
+			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
-		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		if (ImGui::GetIO().WantCaptureMouse == false) {
+			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		}
 	}
 
 };
