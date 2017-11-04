@@ -205,7 +205,7 @@ namespace sp{
 			ImGui_ImplGlfwGL2_Init(window, true);
 #endif
 
-			initialize();
+			init();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
 				glfwPollEvents();
