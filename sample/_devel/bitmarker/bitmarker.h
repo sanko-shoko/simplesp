@@ -32,7 +32,7 @@ class BitMarkerGUI : public TwWindow{
 
 private:
 
-	virtual void init(){
+	virtual void initialize(){
 		static Mem1<BitMarkerParam> mrks(4 * 3);
 		for (int i = 0; i < mrks.size(); i++){
 			mrks[i].setImg(i);

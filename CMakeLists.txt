@@ -23,7 +23,7 @@ endif(SP_USE_OPENCV)
 
 ## openGL
 option(SP_USE_OPENGL "SP_USE_OPENGL" OFF)
-if(SP_USE_OPENGL AND WIN32)
+if(SP_USE_OPENGL)
 	find_package(OpenGL REQUIRED)
 	find_package(GLFW REQUIRED)
 	

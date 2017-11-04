@@ -1,0 +1,5 @@
+include_directories(${CMAKE_SOURCE_DIR}/external/imgui)
+file(GLOB IMGUI ${CMAKE_SOURCE_DIR}/external/imgui/*.h ${CMAKE_SOURCE_DIR}/external/imgui/*.cpp)
+source_group("imgui" FILES ${IMGUI})
+
+set(SUB ${SUB} ${IMGUI})

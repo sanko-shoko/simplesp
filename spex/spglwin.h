@@ -9,8 +9,13 @@
 #include "GL/glew.h"
 #endif
 
+#if SP_USE_IMGUI
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#endif
+
 #include "simplesp.h"
-#include "glfw3.h"
+#include "GLFW/glfw3.h"
 
 namespace sp{
 
@@ -123,7 +128,10 @@ namespace sp{
 		virtual void charFun(unsigned int charInfo){
 		}
 
-		virtual void init(){
+		virtual void initialize(){
+		}
+
+		virtual void finalize() {
 		}
 
 		virtual void display(){
@@ -189,6 +197,10 @@ namespace sp{
 				return;
 			}
 
+#if SP_USE_IMGUI
+			ImGui_ImplGlfwGL2_Init(window, true);
+#endif
+
 			// glfw make context
 			glfwMakeContextCurrent(window);
 
@@ -196,23 +208,37 @@ namespace sp{
 			setCallback(window);
 
 			// initialize gui
-			init();
+			initialize();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
+				glfwPollEvents();
+#if SP_USE_IMGUI
+				ImGui_ImplGlfwGL2_NewFrame();
+#endif
+
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				
 				display();
 				action();
 
-				glfwSwapBuffers(window);
-
 				m_keyAction = 0;
-				glfwPollEvents();
+
+#if SP_USE_IMGUI
+				ImGui::Render();
+#endif
+				glfwSwapBuffers(window);
 			}
 
 			// terminate GLFW
 			glfwTerminate();
+
+			// finalize gui
+			finalize();
+
+#if SP_USE_IMGUI
+			ImGui_ImplGlfwGL2_Shutdown();
+#endif
 		}
 
 

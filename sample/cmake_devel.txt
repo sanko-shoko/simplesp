@@ -39,11 +39,12 @@ source_group("spapp\\spgeom" FILES ${SPGEOM})
 source_group("spapp\\spgeomex" FILES ${SPGEOMEX})
 source_group("spapp\\splearn" FILES ${SPLEARN})
 
-
-add_executable(${target} 
-	${MAIN} ${SIMPLESP} ${SPEX} 
+set(SUB ${SUB}
+	${SIMPLESP} ${SPEX} 
 	${SPCORE} ${SPGEN} ${SPCPU}
 	${SPAPP} ${SPDATA} ${SPALGO} ${SPIMG} ${SPIMGEX} ${SPGEOM} ${SPGEOMEX} ${SPLEARN})
+
+add_executable(${target} ${MAIN} ${SUB})
 
 set_target_properties(${target} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/"

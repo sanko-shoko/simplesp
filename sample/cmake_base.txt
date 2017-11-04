@@ -3,7 +3,7 @@ project(${target})
 file(GLOB MAIN *.h *.hpp *.cpp)
 source_group("main" FILES ${MAIN})
 
-add_executable(${target} ${MAIN})
+add_executable(${target} ${MAIN} ${SUB})
 
 set_target_properties(${target} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/

@@ -80,7 +80,7 @@ namespace sp{
 			}
 		}
 
-		virtual void init(){
+		virtual void initialize(){
 
 			TwBar *bar = TwNewBar("display");
 			TwDefine("display iconified = true");
@@ -130,7 +130,7 @@ namespace sp{
 			setCallback(window);
 
 			// initialize gui
-			init();
+			initialize();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
