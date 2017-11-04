@@ -61,6 +61,29 @@ namespace sp{
 		dst.cy *= dscale1;
 	}
 
+	SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
+		SP_ASSERT(isValid(2, src));
+
+		const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
+
+		const int dsize0 = round(tmp.dsize[0] * dscale0);
+		const int dsize1 = round(tmp.dsize[1] * dscale1);
+
+		const int dsize[2] = { dsize0, dsize1 };
+		dst.resize(2, dsize);
+
+		const Byte *pSrc = tmp.ptr;
+		Byte *pDst = dst.ptr;
+
+		for (int v = 0; v < dst.dsize[1]; v++) {
+			for (int u = 0; u < dst.dsize[0]; u++) {
+				const double su = u / dscale0;
+				const double sv = v / dscale1;
+
+				*pDst++ = static_cast<Byte>(acs2<Byte>(tmp, su, sv) + 0.5);
+			}
+		}
+	}
 
 	//--------------------------------------------------------------------------------
 	// pyramid down 
@@ -410,6 +433,38 @@ namespace sp{
 		}
 	}
 
+	SP_CPUFUNC void cnvPtrToGry(Mem<Byte> &dst, const void *src, const int dsize0, const int dsize1, const int ch) {
+		const int dsize[2] = { dsize0, dsize1 };
+		dst.resize(2, dsize);
+
+		const Byte *pSrc = (Byte*)src;
+		Byte *pDst = dst.ptr;
+
+		switch (ch) {
+		case 1:
+		{
+			memcpy(pDst, pSrc, dsize0 * dsize1);
+			break;
+		}
+		case 3:
+		{
+			for (int i = 0; i < dsize0 * dsize1; i++) {
+				*pDst++ = static_cast<Byte>(0.299 * pSrc[i * 3 + 0] + 0.587 *  pSrc[i * 3 + 1] + 0.114 *  pSrc[i * 3 + 2] + 0.5);
+			}
+			break;
+		}
+		case 4:
+		{
+			for (int i = 0; i < dsize0 * dsize1; i++) {
+				*pDst++ = static_cast<Byte>(0.299 * pSrc[i * 4 + 0] + 0.587 *  pSrc[i * 4 + 1] + 0.114 *  pSrc[i * 4 + 2] + 0.5);
+			}
+			break;
+		}
+		default:
+			dst.clear();
+			break;
+		}
+	}
 	template<typename TYPE>
 	SP_CPUFUNC void cnvImgToPtr(void *dst, const Mem<TYPE> &src, const int ch){
 		SP_ASSERT(isValid(2, src));

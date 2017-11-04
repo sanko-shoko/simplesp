@@ -202,9 +202,11 @@ namespace sp{
 		Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
 		sum.zero();
 
-		for (int r = 0; r < mat.rows(); r++){
-			for (int c = 0; c < mat.cols(); c++){
-				sum[(axis == 0) ? c : r] += mat(r, c);
+		const double *pMat = mat.ptr;
+
+		for (int r = 0; r < mat.rows(); r++) {
+			for (int c = 0; c < mat.cols(); c++) {
+				sum[(axis == 0) ? c : r] += *pMat++;
 			}
 		}
 		return sum;
@@ -221,9 +223,11 @@ namespace sp{
 		Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
 		sum.zero();
 
+		const double *pMat = mat.ptr;
+
 		for (int r = 0; r < mat.rows(); r++){
 			for (int c = 0; c < mat.cols(); c++){
-				sum[(axis == 0) ? c : r] += square(mat(r, c));
+				sum[(axis == 0) ? c : r] += square(*pMat++);
 			}
 		}
 		return sum;
@@ -240,9 +244,11 @@ namespace sp{
 		Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
 		sum.zero();
 
+		const double *pMat = mat.ptr;
+
 		for (int r = 0; r < mat.rows(); r++){
 			for (int c = 0; c < mat.cols(); c++){
-				sum[(axis == 0) ? c : r] += fabs(static_cast<double>(mat(r, c)));
+				sum[(axis == 0) ? c : r] += fabs(*pMat++);
 			}
 		}
 		return sum;

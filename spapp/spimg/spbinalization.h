@@ -10,16 +10,24 @@
 
 namespace sp{
 
-	SP_CPUFUNC void binalize(Mem2<Byte> &dst, const Mem2<Byte> &src, const int thresh){
+	SP_CPUFUNC void binalize(Mem2<Byte> &dst, const Mem2<Byte> &src, const int thresh, const bool inv = false){
 		dst.resize(src.dsize);
 		const Mem2<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
-		for (int i = 0; i < dst.size(); i++){
-			dst[i] = (tmp[i] >= thresh) ? 255 : 0;
+		if (inv == false) {
+			for (int i = 0; i < dst.size(); i++) {
+				dst[i] = (tmp[i] >= thresh) ? 255 : 0;
+			}
 		}
+		else {
+			for (int i = 0; i < dst.size(); i++) {
+				dst[i] = (tmp[i] < thresh) ? 255 : 0;
+			}
+		}
+
 	}
 
-	SP_CPUFUNC void binalizeAdapt(Mem2<Byte> &dst, const Mem2<Byte> &src){
+	SP_CPUFUNC void binalizeAdapt(Mem2<Byte> &dst, const Mem2<Byte> &src, const bool inv = false){
 
 		int hist[256] = { 0 };
 		for (int i = 0; i < src.size(); i++) {
@@ -55,12 +63,17 @@ namespace sp{
 			}
 		}
 		SP_PRINTD("binalizeAdapt thresh %d\n", thresh);
-		binalize(dst, src, thresh);
+		binalize(dst, src, thresh, inv);
 	}
 
-	SP_CPUFUNC void binalizeBlock(Mem2<Byte> &dst, const Mem2<Byte> &src, const int blockSize){
+	SP_CPUFUNC void binalizeBlock(Mem2<Byte> &dst, const Mem2<Byte> &src, const int blockSize, const bool inv = false){
 		dst.resize(src.dsize);
 		const Mem2<Byte> &tmp = (&dst != &src) ? src : clone(src);
+
+		const int step = src.dsize[0];
+
+		const Byte *pSrc = tmp.ptr;
+		Byte *pDst = dst.ptr;
 
 		for (int v = 0; v < dst.dsize[1]; v += blockSize){
 			for (int u = 0; u < dst.dsize[0]; u += blockSize){
@@ -73,16 +86,25 @@ namespace sp{
 				const int margin = blockSize / 2;
 				for (int y = v - margin; y < sizeY + margin; y++){
 					for (int x = u - margin; x < sizeX + margin; x++){
-						const Byte val = tmp(x, y);
+						const Byte val = pSrc[y * step + x];
 						maxv = maxVal(maxv, val);
 						minv = minVal(minv, val);
 					}
 				}
 
 				const int thresh = (maxv + minv) / 2;
-				for (int y = v; y < sizeY; y++){
-					for (int x = u; x < sizeX; x++){
-						dst(x, y) = (tmp(x, y) > thresh) ? 255 : 0;
+				if (inv == false) {
+					for (int y = v; y < sizeY; y++) {
+						for (int x = u; x < sizeX; x++) {
+							pDst[y * step + x] = (pSrc[y * step + x] >= thresh) ? 255 : 0;
+						}
+					}
+				}
+				else {
+					for (int y = v; y < sizeY; y++) {
+						for (int x = u; x < sizeX; x++) {
+							pDst[y * step + x] = (pSrc[y * step + x] < thresh) ? 255 : 0;
+						}
 					}
 				}
 			}
@@ -95,23 +117,31 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	SP_CPUFUNC int labeling(Mem2<int> &map, const Mem2<Byte> &bin, const bool near8 = false){
+		
+		const int step = bin.dsize[0];
+
 		map.resize(bin.dsize);
 
 		Mem1<int> table;
+		table.reserve(bin.size());
 
 		const Rect rect = getRect2(bin.dsize);
 
 		const int linkNum = (near8 == true) ? 4 : 2;
 		const int link[][2] = { { -1, 0 }, { 0, -1 }, { -1, -1 }, { +1, -1 } };
 
+		const Byte *pBin = bin.ptr;
+		int *pMap = map.ptr;
+		int *pTable = table.ptr;
+
 		for (int v = 0; v < bin.dsize[1]; v++){
 			for (int u = 0; u < bin.dsize[0]; u++){
-				map(u, v) = -1;
-				if (bin(u, v) == 0) continue;
+				pMap[v * step + u] = -1;
+				if (pBin[v * step + u] == 0) continue;
 
 				int crntLabel = table.size();
 
-				int *pMap[4] = { 0 };
+				int *pTmp[4] = { 0 };
 
 				// check min label
 				for (int i = 0; i < linkNum; i++){
@@ -119,10 +149,10 @@ namespace sp{
 					const int rv = v + link[i][1];
 
 					if (isInRect2(rect, ru, rv) == false) continue;
-					if (bin(ru, rv) == 0) continue;
+					if (pBin[rv * step + ru] == 0) continue;
 
-					const int refLabel = table[map(ru, rv)];
-					pMap[i] = &map(ru, rv);
+					const int refLabel = table[pMap[rv * step + ru]];
+					pTmp[i] = &pMap[rv * step + ru];
 					if (refLabel < crntLabel){
 						crntLabel = refLabel;
 					}
@@ -133,35 +163,38 @@ namespace sp{
 				}
 				else{
 					for (int i = 0; i < linkNum; i++){
-						if (pMap[i] != NULL) {
-							table[*pMap[i]] = crntLabel;
+						if (pTmp[i] != NULL) {
+							pTable[*pTmp[i]] = crntLabel;
 						}
 					}
 				}
 
-				map(u, v) = crntLabel;
+				pMap[v * step + u] = crntLabel;
 			}
 		}
+
+		const int tableNum = table.size();
+
 		// update table
-		for (int i = 0; i < table.size(); i++){
+		for (int i = 0; i < tableNum; i++){
 			int p = i;
-			while (table[p] != p){
-				p = table[p];
+			while (pTable[p] != p){
+				p = pTable[p];
 			}
-			table[i] = p;
+			pTable[i] = p;
 		}
 
 		int labelNum = 0;
 
 		// update label
 		int maxv = -1;
-		for (int i = 0; i < table.size(); i++){
-			if (table[i] > maxv){
-				maxv = table[i];
+		for (int i = 0; i < tableNum; i++){
+			if (pTable[i] > maxv){
+				maxv = pTable[i];
 
-				for (int j = i; j < table.size(); j++){
-					if (table[j] == maxv){
-						table[j] = labelNum;
+				for (int j = i; j < tableNum; j++){
+					if (pTable[j] == maxv){
+						pTable[j] = labelNum;
 					}
 				}
 				labelNum++;
@@ -170,10 +203,10 @@ namespace sp{
 
 		// update map
 		for (int i = 0; i < bin.size(); i++){
-			int &id = map[i];
+			int &id = pMap[i];
 			if (id < 0) continue;
 
-			id = table[id];
+			id = pTable[id];
 		}
 
 		return labelNum;
@@ -181,18 +214,34 @@ namespace sp{
 
 	SP_CPUFUNC Mem1<Rect> getLabelRect(const Mem2<int> &map){
 		const int labelNum = round(maxVal(map) + 1);
+		const int step = map.dsize[0];
 
 		Mem1<Rect> dst(labelNum);
 		dst.zero();
 
+		const int *pMap = map.ptr;
+		Rect *pDst = dst.ptr;
+
 		for (int v = 0; v < map.dsize[1]; v++){
 			for (int u = 0; u < map.dsize[0]; u++){
-				const int id = map(u, v);
+				const int id = *pMap++;
 				if (id < 0) continue;
-				Rect &rect = dst[id];
+				Rect &rect = pDst[id];
+				if (rect.dim == 0) {
+					rect = getRect2(u, v, 1, 1);
+				}
+				else {
+					const int ru = rect.dbase[0];
+					const int rv = rect.dbase[1];
+					const int rw = rect.dsize[0];
+					const int rh = rect.dsize[1];
 
-				const Rect p = getRect2(u, v, 1, 1);
-				rect = (rect.dsize[0] == 0) ? p : orRect(rect, p);
+					rect.dbase[0] = minVal(u, ru);
+					rect.dsize[0] = maxVal(u + 1, ru + rw) - rect.dbase[0];
+
+					rect.dbase[1] = minVal(v, rv);
+					rect.dsize[1] = maxVal(v + 1, rv + rh) - rect.dbase[1];
+				}
 			}
 		}
 		return dst;
