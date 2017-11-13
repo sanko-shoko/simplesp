@@ -22,6 +22,7 @@ private:
 		printf("\n");
 	}
 
+	virtual void init() {
 		help();
 	}
 
