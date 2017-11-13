@@ -43,21 +43,23 @@ namespace sp{
 
 	public:
 
-		void init(int maxDepth, const int sampleNum) {
-			m_maxDepth = maxDepth;
-			m_sampleNum = sampleNum;
-
+		RandomForest() {
+			reset();
+		}
+		void reset() {
 			m_trees.clear();
 		}
 
-		void train(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys) {
+		void train(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const int sampleNum = 100) {
 
-			const int num = m_sampleNum > 0 ? minVal(m_sampleNum, Xs.size()) : Xs.size();
+			const int num = sampleNum > 0 ? minVal(sampleNum, Xs.size()) : Xs.size();
 			Mem1<int> index(num);
 
 			for (int n = 0; n < num; n++) {
-				index[n] = m_sampleNum > 0 ? rand() % Xs.size() : n;
+				index[n] = sampleNum > 0 ? rand() % Xs.size() : n;
 			}
+
+			m_maxDepth = floor(log(Xs.size()) / log(2.0));
 
 			divTree(m_trees.extend(), Xs, Ys, index, 0);
 		}
@@ -155,8 +157,7 @@ namespace sp{
 
 	public:
 
-		RandomForestReg(const int maxDepth = 10, const int sampleNum = 0) {
-			init(maxDepth, sampleNum);
+		RandomForestReg() : RandomForest<double>() {
 		}
 
 
@@ -210,9 +211,8 @@ namespace sp{
 
 	public:
 
-		RandomForestCls(const int classNum, const int maxDepth = 10, const int sampleNum = 0) {
+		RandomForestCls(const int classNum) : RandomForest<int>() {
 			m_classNum = classNum;
-			init(maxDepth, sampleNum);
 		}
 
 	private:

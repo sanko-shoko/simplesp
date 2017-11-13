@@ -43,7 +43,7 @@ void regression(){
 		Ys.push(Y);
 	}
 
-	RandomForestReg rf(10, 100);
+	RandomForestReg rf;
 
 	const int treeNum = 20;
 	for (int i = 0; i < treeNum; i++) {
@@ -79,8 +79,7 @@ void classification(const char *path) {
 
 	SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, path));
 
-	RandomForestCls rf(10, 15, 200);
-	//RandomForestCls rf(10, 15, 1000); // slow
+	RandomForestCls rf(10);
 
 	const int treeNum = 80;
 	for (int i = 0; i < treeNum; i++) {

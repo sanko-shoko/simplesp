@@ -17,13 +17,13 @@
 #include "simplesp.h"
 #include "GLFW/glfw3.h"
 
-namespace sp{
+namespace sp {
 
 	//--------------------------------------------------------------------------------
 	// mouse
 	//--------------------------------------------------------------------------------
 
-	struct Mouse{
+	struct Mouse {
 
 		// cursor position and move
 		Vec2 position, move;
@@ -34,17 +34,17 @@ namespace sp{
 		// button
 		bool bDownL, bDownR, bDownM;
 
-		Mouse(){
+		Mouse() {
 			memset(this, 0, sizeof(Mouse));
 		}
 
-		void setButton(const int button, const int action, const int mods){
+		void setButton(const int button, const int action, const int mods) {
 			bool state = (action) ? true : false;
 
-			if (button == GLFW_MOUSE_BUTTON_LEFT){
+			if (button == GLFW_MOUSE_BUTTON_LEFT) {
 				bDownL = state;
 			}
-			if (button == GLFW_MOUSE_BUTTON_RIGHT){
+			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 				bDownR = state;
 			}
 			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -52,15 +52,15 @@ namespace sp{
 			}
 		}
 
-		void setPosition(const double x, const double y){
+		void setPosition(const double x, const double y) {
 
-			if (bDownL || bDownR || bDownM){
+			if (bDownL || bDownR || bDownM) {
 				move = getVec(x, y) - position;
 			}
 			position = getVec(x, y);
 		}
 
-		void setScroll(const double x, const double y){
+		void setScroll(const double x, const double y) {
 			scroll = y;
 		}
 	};
@@ -69,8 +69,8 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 	// control
 	//--------------------------------------------------------------------------------
-	
-	SP_CPUFUNC void controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse){
+
+	SP_CPUFUNC void controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse) {
 		if (mouse.bDownL) {
 			viewpPos += mouse.move;
 		}
@@ -81,7 +81,7 @@ namespace sp{
 		}
 	}
 
-	SP_CPUFUNC void controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()){
+	SP_CPUFUNC void controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
 
 		Pose cpose = pose * invPose(base);
 		if (cpose.trn.z < 0.0) return;
@@ -198,17 +198,20 @@ namespace sp{
 			// glfw make context
 			glfwMakeContextCurrent(window);
 
+#if SP_USE_IMGUI
+			// imgui init
+			ImGui_ImplGlfwGL2_Init(window, true);
+#endif
+
 			// glfw set event callbacks
 			setCallback(window);
 
-#if SP_USE_IMGUI
-			ImGui_ImplGlfwGL2_Init(window, true);
-#endif
 
 			init();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
 				glfwPollEvents();
+
 #if SP_USE_IMGUI
 				ImGui_ImplGlfwGL2_NewFrame();
 #endif
@@ -224,6 +227,7 @@ namespace sp{
 #if SP_USE_IMGUI
 				ImGui::Render();
 #endif
+
 				glfwSwapBuffers(window);
 			}
 
@@ -242,6 +246,13 @@ namespace sp{
 		// base event process
 		//--------------------------------------------------------------------------------
 		
+		bool _onGUI() {
+#if SP_USE_IMGUI
+			return ImGui::GetIO().WantCaptureMouse;
+#endif
+			return false;
+		}
+
 		void _windowSize(int width, int height){
 			glViewport(0, 0, width, height);
 
@@ -250,12 +261,16 @@ namespace sp{
 		}
 
 		void _mouseButton(int button, int action, int mods){
+			if (_onGUI() == true) return;
+
 			m_mouse.setButton(button, action, mods);
 
 			mouseButton(button, action, mods);
 		}
 
 		void _mousePos(double x, double y){
+			if (_onGUI() == true) return;
+
 			m_mouse.setPosition(x, y);
 
 			// control view
@@ -268,6 +283,8 @@ namespace sp{
 		}
 
 		void _mouseScroll(double x, double y){
+			if (_onGUI() == true) return;
+
 			m_mouse.setScroll(x, y);
 
 			// control view

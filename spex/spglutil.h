@@ -151,6 +151,32 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
+	// get view pos
+	//--------------------------------------------------------------------------------
+
+	SP_CPUFUNC Vec2 glGetViewPos(const double x, const double y, const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		Vec2 dst = getVec(x, y);
+		{
+			const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
+			const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
+			const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
+
+			dst -= shift;
+			dst /= viewScale;
+		}
+		return dst;
+	}
+
+	SP_CPUFUNC Vec2 glGetViewPos(const double x, const double y, const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+
+		return glGetViewPos(x, y, cam.dsize[0], cam.dsize[1], viewPos, viewScale);
+	}
+
+
+	//--------------------------------------------------------------------------------
 	// texture
 	//--------------------------------------------------------------------------------
 

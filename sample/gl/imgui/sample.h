@@ -7,99 +7,73 @@ using namespace sp;
 
 class SampleGUI : public BaseWindow {
 
-	// camera
-	CamParam m_cam;
-
-	// image
-	Mem2<Col3> m_img;
-
-	// object mesh model
-	Mem1<Mesh> m_model;
-
-	// object surface points
-	Mem1<VecVN3> m_pnts;
-
-	// object to cam pose
-	Pose m_pose;
-
 private:
 
 	void help() {
-		printf("'d' key : render depth\n");
-		printf("'n' key : render normal\n");
 		printf("'ESC' key : exit\n");
 		printf("\n");
 	}
 
 	virtual void init() {
-
-		m_cam = getCamParam(640, 480);
-
-		m_img.resize(m_cam.dsize);
-		m_img.zero();
-
 		help();
-
-		if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
-
-			// if could not find stanford bunny, load dummy model
-			loadGeodesicDorm(m_model, 100.0, 1);
-		}
-
-		m_pnts = getModelPoint(m_model);
-		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
-
 	}
 
 	virtual void action() {
-
-		if (m_keyAction == GLFW_KEY_D || m_keyAction == GLFW_KEY_N) {
-			const double distance = getModelDistance(m_model, m_cam);
-			const double radius = getModelRadius(m_model);
-
-			Mem2<VecVN3> map;
-			renderVecVN(map, m_cam, m_pose, m_model);
-
-			if (m_keyAction == GLFW_KEY_D) {
-				cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
-			}
-			if (m_keyAction == GLFW_KEY_N) {
-				cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
-			}
-		}
 	}
 
 	virtual void display() {
-		{
-			// view 2D
-			glLoadView2D(m_cam, m_viewPos, m_viewScale);
-			glRenderImage(m_img);
+
+		// test window
+		if (ImGui::Begin("Test Window", NULL, ImGuiWindowFlags_NoResize)) {
+
+			ImGui::SetWindowPos(ImVec2(50, 50), ImGuiCond_Once);
+			ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
+
+			if (ImGui::Button("Button")) {
+				printf("Button\n");
+			}
+
+			static bool check = true;
+			ImGui::Checkbox("Check", &check);
+
+			static int radio = 0;
+			ImGui::RadioButton("a", &radio, 0); ImGui::SameLine();
+			ImGui::RadioButton("b", &radio, 1); ImGui::SameLine();
+			ImGui::RadioButton("c", &radio, 2); ImGui::SameLine();
+			ImGui::Text("Radio");
+
+			static int id = 1;
+			const char* items[] = { "AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG" };
+			if (ImGui::ListBox("ListBox", &id, items, IM_ARRAYSIZE(items), 4)) {
+				printf("Select %s\n", items[id]);
+			}
+
+			static char text[128] = "Hello, world!";
+			ImGui::InputText("InputText", text, IM_ARRAYSIZE(text));
+
+			static int iVal = 0;
+			ImGui::InputInt("InputInt", &iVal, 1, 100);
+
+			static float fVal = 0.0f;
+			ImGui::InputFloat("InputFloat", &fVal, 0.1f, 100.0f);
+
+			ImGui::End();
 		}
 
-		bool show_test_window = true;
-		bool show_another_window = false;
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-		{
-			static float f = 0.0f;
-			ImGui::Text("Hello, world!");
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-			ImGui::ColorEdit3("clear color", (float*)&clear_color);
-			if (ImGui::Button("Test Window")) show_test_window ^= 1;
-			if (ImGui::Button("Another Window")) show_another_window ^= 1;
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		}
-
+		//{
+		//	static bool show_test_window = true;
+		//	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+		//	ImGui::ShowTestWindow(&show_test_window);
+		//}
 	}
 
 	virtual void mousePos(double x, double y) {
 		if (ImGui::GetIO().WantCaptureMouse == false) {
-			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
 		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
 		if (ImGui::GetIO().WantCaptureMouse == false) {
-			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
 		}
 	}
 
