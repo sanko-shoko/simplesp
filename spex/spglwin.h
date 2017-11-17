@@ -26,7 +26,10 @@ namespace sp {
 	struct Mouse {
 
 		// cursor position and move
-		Vec2 position, move;
+		Vec2 pos, move;
+
+		// drag
+		Vec2 drag;
 
 		// scroll value
 		double scroll;
@@ -50,19 +53,25 @@ namespace sp {
 			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
 				bDownM = state;
 			}
+
+			if (action == 0) {
+				drag = getVec(0.0, 0.0);
+			}
 		}
 
-		void setPosition(const double x, const double y) {
+		void setPos(const double x, const double y) {
 
 			if (bDownL || bDownR || bDownM) {
-				move = getVec(x, y) - position;
+				move = getVec(x, y) - pos;
+				drag += move;
 			}
-			position = getVec(x, y);
+			pos = getVec(x, y);
 		}
 
 		void setScroll(const double x, const double y) {
 			scroll = y;
 		}
+
 	};
 
 
@@ -140,7 +149,7 @@ namespace sp {
 		virtual void drop(int num, const char **paths) {
 		}
 
-	protected:
+	public:
 		
 		// view position
 		Vec2 m_viewPos;
@@ -254,10 +263,11 @@ namespace sp {
 		}
 
 		void _windowSize(int width, int height){
+			m_wcam = getCamParam(width, height);
+
 			glViewport(0, 0, width, height);
 
 			windowSize(width, height);
-
 		}
 
 		void _mouseButton(int button, int action, int mods){
@@ -271,7 +281,7 @@ namespace sp {
 		void _mousePos(double x, double y){
 			if (_onGUI() == true) return;
 
-			m_mouse.setPosition(x, y);
+			m_mouse.setPos(x, y);
 
 			// control view
 			if (m_keyState == GLFW_KEY_SPACE){
