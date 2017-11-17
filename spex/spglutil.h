@@ -86,7 +86,6 @@ namespace sp{
 
 			mat(0, 0) = viewScale;
 			mat(1, 1) = viewScale;
-			mat(2, 2) = viewScale;
 
 			mat(0, 3) = shift.x;
 			mat(1, 3) = shift.y;
@@ -147,32 +146,6 @@ namespace sp{
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-	}
-
-
-	//--------------------------------------------------------------------------------
-	// get view pos
-	//--------------------------------------------------------------------------------
-
-	SP_CPUFUNC Vec2 glGetViewPos(const double x, const double y, const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
-		GLint viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-
-		Vec2 dst = getVec(x, y);
-		{
-			const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
-			const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
-			const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
-
-			dst -= shift;
-			dst /= viewScale;
-		}
-		return dst;
-	}
-
-	SP_CPUFUNC Vec2 glGetViewPos(const double x, const double y, const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
-
-		return glGetViewPos(x, y, cam.dsize[0], cam.dsize[1], viewPos, viewScale);
 	}
 
 
@@ -258,6 +231,25 @@ namespace sp{
 			const Vec2 a = getVec(pos.x + radius * sin(p0), pos.y + radius * cos(p0));
 			const Vec2 b = getVec(pos.x + radius * sin(p1), pos.y + radius * cos(p1));
 			glVertex(a); glVertex(b);
+		}
+	}
+
+	SP_CPUFUNC void glRect(const Rect &rect) {
+		if (rect.dim == 2) {
+			Vec2 pixA = getVec(rect.dbase[0], rect.dbase[1]);
+			Vec2 pixB = getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]);
+
+			glVertex(getVec(pixA.x - 0.5, pixA.y - 0.5));
+			glVertex(getVec(pixB.x + 0.5, pixA.y - 0.5));
+
+			glVertex(getVec(pixB.x + 0.5, pixA.y - 0.5));
+			glVertex(getVec(pixB.x + 0.5, pixB.y + 0.5));
+
+			glVertex(getVec(pixB.x + 0.5, pixB.y + 0.5));
+			glVertex(getVec(pixA.x - 0.5, pixB.y + 0.5));
+
+			glVertex(getVec(pixA.x - 0.5, pixB.y + 0.5));
+			glVertex(getVec(pixA.x - 0.5, pixA.y - 0.5));
 		}
 	}
 

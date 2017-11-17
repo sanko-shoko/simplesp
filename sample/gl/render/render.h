@@ -34,14 +34,14 @@ private:
 
 	virtual void init(){
 
+		help();
+
 		m_mode = 0;
 
 		m_cam = getCamParam(640, 480);
 
 		m_img.resize(m_cam.dsize);
 		m_img.zero();
-
-		help();
 	
 		if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false){
 
@@ -51,7 +51,6 @@ private:
 		
 		m_pnts = getModelPoint(m_model);
 		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
-
 	}
 
 	virtual void action() {
@@ -70,6 +69,7 @@ private:
 				cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
 			}
 		}
+
 		if (m_keyAction == GLFW_KEY_S) {
 			if (++m_mode >= 3) m_mode = 0;
 		}
@@ -105,6 +105,7 @@ private:
 			glPointSize(3.f);
 			glBegin(GL_POINTS);
 			glColor3f(0.2f, 0.7f, 0.2f);
+
 			for (int i = 0; i < m_pnts.size(); i++) {
 				// X_C = R * X_M + T
 				glVertex(m_pose.rot * m_pnts[i].vtx + m_pose.trn);
@@ -118,6 +119,7 @@ private:
 			//glPointSize(3.f);
 			//glBegin(GL_POINTS);
 			//glColor3f(0.2f, 0.7f, 0.2f);
+
 			//for (int i = 0; i < m_pnts.size(); i++) {
 			//	glVertex(m_pnts[i].vtx);
 			//}

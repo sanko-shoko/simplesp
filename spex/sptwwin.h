@@ -130,7 +130,7 @@ namespace sp{
 			setCallback(window);
 
 			// initialize gui
-			initialize();
+			init();
 
 			while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE)){
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);

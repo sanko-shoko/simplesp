@@ -107,12 +107,12 @@ namespace sp{
 			return *this;
 		}
 
-		TYPE& operator [](const int i){
-			return (i >= 0) ? this->ptr[i] : this->ptr[size() - i];
+		TYPE& operator [](const int x){
+			return (x >= 0) ? this->ptr[x] : this->ptr[size() - x];
 		}
 
-		const TYPE& operator [](const int i) const{
-			return (i >= 0) ? this->ptr[i] : this->ptr[size() - i];
+		const TYPE& operator [](const int x) const{
+			return (x >= 0) ? this->ptr[x] : this->ptr[size() - x];
 		}
 
 
@@ -696,12 +696,14 @@ namespace sp{
 			return m_size;
 		}
 
-		TYPE& operator[](const int i) {
-			return m_ptrs[i / m_block][(i % m_block) * m_unit];
+		TYPE& operator[](const int x) {
+			const int id = searchId(x);
+			return m_ptrs[id / m_block][(id % m_block) * m_unit];
 		}
 
-		const TYPE& operator[](const int i) const {
-			return m_ptrs[i / m_block][(i % m_block) * m_unit];
+		const TYPE& operator[](const int x) const {
+			const int id = searchId(x);
+			return m_ptrs[id / m_block][(id % m_block) * m_unit];
 		}
 
 		TYPE* extend(){
@@ -722,6 +724,8 @@ namespace sp{
 			else{
 				m_next = m_refs[m][n];
 			}
+			
+			m_refs[m][n] = -1;
 
 			m_size++;
 
@@ -751,6 +755,20 @@ namespace sp{
 			m_next = crnt;
 		}
 
+	private:
+
+		int searchId(const int x) const {
+			int id = 0;
+
+			int cnt = 0;
+			for (int i = 0; i < m_refs.size(); i++) {
+				for (int j = 0; j < m_block; j++, id++) {
+					if (m_refs[i][j] < 0 && cnt++ == x) goto _exit;
+				}
+			}
+		_exit:;
+			return id;
+		}
 	};
 
 }
