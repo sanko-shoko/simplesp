@@ -20,16 +20,21 @@ class RenderGUI : public BaseWindow{
 	// object to cam pose
 	Pose m_pose;
 
+	int m_mode;
+
 private:
 
 	void help() {
 		printf("'d' key : render depth\n");
 		printf("'n' key : render normal\n");
+		printf("'m' key : switch render mode (->points ->meshes ->outline)");
 		printf("'ESC' key : exit\n");
 		printf("\n");
 	}
 
 	virtual void init(){
+
+		m_mode = 0;
 
 		m_cam = getCamParam(640, 480);
 
@@ -65,6 +70,9 @@ private:
 				cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
 			}
 		}
+		if (m_keyAction == GLFW_KEY_S) {
+			if (++m_mode >= 3) m_mode = 0;
+		}
 	}
 
 	virtual void display(){
@@ -79,55 +87,135 @@ private:
 			// view 3D
 			glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
-			{
-				glLoadIdentity();
-				// glLoadMatrix(m_pose);
+			switch (m_mode) {
+			case 0:	renderPoints(); break;
+			case 1: renderMeshes(); break;
+			case 2: renderOutline(); break;
+			default: break;
+			}
+			renderAxis();
+		}
+	}
 
-				glPointSize(3.f);
-				glBegin(GL_POINTS);
-				glColor3f(0.2f, 0.7f, 0.2f);
-				for (int i = 0; i < m_pnts.size(); i++){
-					// X_C = R * X_M + T
-					glVertex(m_pose.rot * m_pnts[i].vtx + m_pose.trn);
-					//glVertex(m_pnts[i].vtx);
+	void renderPoints() {
+
+		{
+			glLoadIdentity();
+
+			glPointSize(3.f);
+			glBegin(GL_POINTS);
+			glColor3f(0.2f, 0.7f, 0.2f);
+			for (int i = 0; i < m_pnts.size(); i++) {
+				// X_C = R * X_M + T
+				glVertex(m_pose.rot * m_pnts[i].vtx + m_pose.trn);
+			}
+			glEnd();
+		}
+
+		{
+			//glLoadMatrix(m_pose);
+
+			//glPointSize(3.f);
+			//glBegin(GL_POINTS);
+			//glColor3f(0.2f, 0.7f, 0.2f);
+			//for (int i = 0; i < m_pnts.size(); i++) {
+			//	glVertex(m_pnts[i].vtx);
+			//}
+			//glEnd();
+		}
+	}
+
+	void renderMeshes() {
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		{
+			glLoadIdentity();
+
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+
+			GLfloat lightPos[4] = { 0.f, 0.f, -1500.f, 1.f };
+			glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
+
+			glLoadMatrix(m_pose);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+			const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+
+			glBegin(GL_TRIANGLES);
+			for (int i = 0; i < m_model.size(); i++) {
+				glNormal(getMeshNrm(m_model[i]));
+				glMesh(m_model[i]);
+			}
+			glEnd();
+		}
+		glPopAttrib();
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	void renderOutline() {
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		{
+			glLoadMatrix(m_pose);
+
+			glEnable(GL_STENCIL_TEST);
+
+			// fill stencil
+			{
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+				glClearStencil(0);
+				glClear(GL_STENCIL_BUFFER_BIT);
+
+				glStencilFunc(GL_ALWAYS, 1, 0xFFFF);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+
+				glBegin(GL_TRIANGLES);
+				for (int i = 0; i < m_model.size(); i++) {
+					glMesh(m_model[i]);
 				}
 				glEnd();
 			}
 
-			// render axis
+			// draw outline
 			{
-				glLoadMatrix(m_pose);
-				
-				glLineWidth(2.f);
-				glBegin(GL_LINES);
-				glAxis(100.0);
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFFFF);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				glLineWidth(2.0f);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glColor3f(1.0f, 1.0f, 1.0f);
+
+				glBegin(GL_TRIANGLES);
+				for (int i = 0; i < m_model.size(); i++) {
+					glMesh(m_model[i]);
+				}
 				glEnd();
 			}
-			
-			// render mesh model
-			//{
-			//	glLoadIdentity();
-
-			//	GLfloat lightPos[4] = { 0.f, 0.f, -1500.f, 1.f };
-			//	glEnable(GL_LIGHTING);
-			//	glEnable(GL_LIGHT0);
-			//	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-			//	const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-			//	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-
-			//	glLoadMatrix(m_pose);
-
-			//	glLineWidth(1.f);
-			//	for (int i = 0; i < m_model.size(); i++){
-			//		glBegin(GL_TRIANGLES);
-			//		glNormal(getMeshNrm(m_model[i]));
-			//		glMesh(m_model[i]);
-			//		glEnd();
-			//	}
-			//}
 		}
+		glPopAttrib();
 
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	void renderAxis() {
+		{
+			glLoadMatrix(m_pose);
+
+			glLineWidth(2.f);
+			glBegin(GL_LINES);
+			glAxis(100.0);
+			glEnd();
+		}
 	}
 
 	virtual void mousePos(double x, double y) {
