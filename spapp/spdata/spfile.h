@@ -9,6 +9,11 @@
 #include "spapp/spdata/spstr.h"
 #include "spapp/spdata/spformat.h"
 
+#if WIN32
+#include <Windows.h>
+#include <shlobj.h>
+#endif
+
 namespace sp {
 
 	//--------------------------------------------------------------------------------
@@ -41,6 +46,54 @@ namespace sp {
 		}
 		return ret;
 	}
+//
+//	SP_CPUFUNC bool selectFile(char *path, char *filter = "all file(*.*)\0*.*\0\0") {
+//
+//#if WIN32
+//		path[0] = 0;
+//		OPENFILENAME ofn = { 0 };
+//		ofn.lStructSize = sizeof(OPENFILENAME);
+//
+//		ofn.lpstrFile = path;
+//		ofn.nMaxFile = SP_STRMAX;
+//		ofn.lpstrFilter = filter;
+//		ofn.Flags = OFN_FILEMUSTEXIST;
+//		GetOpenFileName(&ofn);
+//		return true;
+//#endif
+//
+//		return false;
+//	}
+//
+//	SP_CPUFUNC bool selectDir(char *path) {
+//#if WIN32
+//		char name[100], dir[100];
+//		BROWSEINFO  binfo;
+//
+//		binfo.hwndOwner = NULL;
+//		binfo.pidlRoot = NULL;
+//		binfo.pszDisplayName = name;
+//		binfo.lpszTitle = "open dir";
+//		binfo.ulFlags = BIF_RETURNONLYFSDIRS;
+//		binfo.lpfn = NULL;
+//		binfo.lParam = 0;
+//		binfo.iImage = 0;
+//
+//		LPITEMIDLIST idlist;
+//		if ((idlist = SHBrowseForFolder(&binfo)) != NULL) {
+//			SHGetPathFromIDList(idlist, dir);
+//			MessageBox(NULL, name, "フォルダ名", MB_OK);
+//			MessageBox(NULL, dir, "フルパス", MB_OK);
+//			CoTaskMemFree(idlist);
+//			return true;
+//		}
+//		else{
+//			return false;
+//		}
+//		return true;
+//#endif
+//		return false;
+//	}
 
 	//--------------------------------------------------------------------------------
 	// file
