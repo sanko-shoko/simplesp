@@ -301,8 +301,8 @@ namespace sp{
 			*extend() = data;
 		}
 
-		void push(const TYPE *data, const int num){
-			for (int i = 0; i < num; i++){
+		void push(const TYPE *data, const int num) {
+			for (int i = 0; i < num; i++) {
 				push(data[i]);
 			}
 		}
@@ -311,8 +311,8 @@ namespace sp{
 			push(data.ptr, data.size());
 		}
 
-		void pop(){
-			if (this->dsize[0] > 0){
+		void pop() {
+			if (this->dsize[0] > 0) {
 				this->dsize[0]--;
 			}
 		}
@@ -665,7 +665,7 @@ namespace sp{
 			clear();
 		}
 
-		void init(const int unit = 1, const int block = 1000){
+		void init(const int unit = 1, const int block = 100){
 			clear();
 
 			m_next = 0;
@@ -697,13 +697,17 @@ namespace sp{
 		}
 
 		TYPE& operator[](const int x) {
-			const int id = searchId(x);
-			return m_ptrs[id / m_block][(id % m_block) * m_unit];
+			const int crnt = searchId(x);
+			const int m = crnt / m_block;
+			const int n = crnt % m_block;
+			return m_ptrs[m][n * m_unit];
 		}
 
 		const TYPE& operator[](const int x) const {
-			const int id = searchId(x);
-			return m_ptrs[id / m_block][(id % m_block) * m_unit];
+			const int crnt = searchId(x);
+			const int m = crnt / m_block;
+			const int n = crnt % m_block;
+			return m_ptrs[m][n * m_unit];
 		}
 
 		TYPE* extend(){

@@ -11,7 +11,13 @@
 
 #if WIN32
 #include <Windows.h>
-#include <shlobj.h>
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
+
+#if WIN32
+#define mkdir _mkdir
 #endif
 
 namespace sp {
@@ -21,6 +27,13 @@ namespace sp {
 	//--------------------------------------------------------------------------------
 
 	using namespace std;
+
+	SP_CPUFUNC string tstamp() {
+		char str[SP_STRMAX];
+		time_t t = time(NULL);
+		strftime(str, sizeof(str), "%Y%m%d_%H%M%S", localtime(&t));
+		return string(str);
+	}
 
 	SP_CPUFUNC bool findFile(const char *path) {
 		FILE *fp = ::fopen(path, "r");
@@ -34,6 +47,8 @@ namespace sp {
 	}
 
 	SP_CPUFUNC bool checkFileExt(const char *path, const char *ext) {
+		if (ext == NULL) return false;
+
 		Mem1<string> exts = strSplit(ext);
 
 		bool ret = false;
@@ -46,54 +61,42 @@ namespace sp {
 		}
 		return ret;
 	}
-//
-//	SP_CPUFUNC bool selectFile(char *path, char *filter = "all file(*.*)\0*.*\0\0") {
-//
-//#if WIN32
-//		path[0] = 0;
-//		OPENFILENAME ofn = { 0 };
-//		ofn.lStructSize = sizeof(OPENFILENAME);
-//
-//		ofn.lpstrFile = path;
-//		ofn.nMaxFile = SP_STRMAX;
-//		ofn.lpstrFilter = filter;
-//		ofn.Flags = OFN_FILEMUSTEXIST;
-//		GetOpenFileName(&ofn);
-//		return true;
-//#endif
-//
-//		return false;
-//	}
-//
-//	SP_CPUFUNC bool selectDir(char *path) {
-//#if WIN32
-//		char name[100], dir[100];
-//		BROWSEINFO  binfo;
-//
-//		binfo.hwndOwner = NULL;
-//		binfo.pidlRoot = NULL;
-//		binfo.pszDisplayName = name;
-//		binfo.lpszTitle = "open dir";
-//		binfo.ulFlags = BIF_RETURNONLYFSDIRS;
-//		binfo.lpfn = NULL;
-//		binfo.lParam = 0;
-//		binfo.iImage = 0;
-//
-//		LPITEMIDLIST idlist;
-//		if ((idlist = SHBrowseForFolder(&binfo)) != NULL) {
-//			SHGetPathFromIDList(idlist, dir);
-//			MessageBox(NULL, name, "フォルダ名", MB_OK);
-//			MessageBox(NULL, dir, "フルパス", MB_OK);
-//			CoTaskMemFree(idlist);
-//			return true;
-//		}
-//		else{
-//			return false;
-//		}
-//		return true;
-//#endif
-//		return false;
-//	}
+
+	SP_CPUFUNC Mem1<string> getFileList(const char *folder, const char *ext = NULL) {
+
+		Mem1<string> list;
+
+#if WIN32
+
+		Mem1<string> all;
+
+		WIN32_FIND_DATA fd;
+
+		const HANDLE handle = FindFirstFile((string(folder) + "\\*.*").c_str(), &fd);
+		SP_ASSERT(handle != INVALID_HANDLE_VALUE);
+
+		do {
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				// directory
+			}
+			else {
+				// file
+				all.push(fd.cFileName);
+			}
+		} while (FindNextFile(handle, &fd));
+
+		FindClose(handle);
+
+		for (int i = 0; i < all.size(); i++) {
+			if (checkFileExt(all[i].c_str(), ext) == true) {
+				list.push(all[i]);
+			}
+		}
+#endif
+
+		return list;
+	}
+
 
 	//--------------------------------------------------------------------------------
 	// file

@@ -68,13 +68,9 @@ private:
 	}
 
 	virtual void mousePos(double x, double y) {
-		if (ImGui::GetIO().WantCaptureMouse == false) {
-		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
-		if (ImGui::GetIO().WantCaptureMouse == false) {
-		}
 	}
 
 };
