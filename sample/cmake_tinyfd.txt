@@ -1,0 +1,8 @@
+set(TINYFD_DIR "${CMAKE_SOURCE_DIR}/external/tinyfd")
+
+include_directories(${TINYFD_DIR})
+
+file(GLOB TINYFD ${TINYFD_DIR}/*.h ${TINYFD_DIR}/*.c)
+source_group("_tinyfd" FILES ${TINYFD})
+
+set(SUB ${SUB} ${TINYFD})
