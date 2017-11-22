@@ -8,6 +8,7 @@
 // data
 #include "spapp/spdata/spstr.h"
 #include "spapp/spdata/spfile.h"
+#include "spapp/spdata/spxml.h"
 #include "spapp/spdata/spply.h"
 #include "spapp/spdata/spbmp.h"
 #include "spapp/spdata/spmodel.h"

@@ -8,7 +8,7 @@ using namespace sp;
 class GTMakerGUI : public BaseWindow {
 
 	BaseMode *m_base;
-	Mem2<Col3> m_img;
+
 private:
 
 	void help() {
@@ -18,10 +18,8 @@ private:
 
 	virtual void init() {
 		help();
-
-		m_img.resize(640, 480);
-		setElm(m_img, getCol(50, 50, 50));
-
+		
+		BaseMode::init(this);
 
 		selectMode(0);
 	}
@@ -30,63 +28,98 @@ private:
 	}
 
 	void selectMode(const int mode) {
-		static RectMode rectmode(this, &m_img);
+		static RectMode rectmode;
 
 		switch (mode) {
 		case 0: m_base = &rectmode; break;
+		default: m_base = NULL; break;
 		}
+	}
+
+	void adjustImg() {
+		const Mem<Col3> &img = BaseMode::m_img;
+		if (img.size() == 0) return;
+
+		m_viewPos = getVec(100.0, 10.0);
+		m_viewScale = 0.92 * minVal(static_cast<double>(m_wcam.dsize[0] - 180) / img.dsize[0], static_cast<double>(m_wcam.dsize[1]) / img.dsize[1]);
 	}
 
 	virtual void display() {
-		m_base->display();
 
-		// test window
-		if (ImGui::Begin("Test Window", NULL, ImGuiWindowFlags_NoResize)) {
+		if (ImGui::BeginMainMenuBar()) {
 
-			ImGui::SetWindowPos(ImVec2(50, 50), ImGuiCond_Once);
-			ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
+			if (ImGui::BeginMenu("file")) {
 
-			if (ImGui::Button("Button")) {
-				printf("Button\n");
+				if (ImGui::MenuItem("open")) {
+					BaseMode::open();
+					m_base->select(0);
+					adjustImg();
+				}
+				if (ImGui::MenuItem("save")) {
+					m_base->save();
+				}
+				ImGui::EndMenu();
 			}
 
-			static bool check = true;
-			ImGui::Checkbox("Check", &check);
+			//if (ImGui::BeginMenu("mode"))
+			//{
+			//	if (ImGui::MenuItem("rect")) { selectMode(0); }
+			//	ImGui::EndMenu();
+			//}
 
-			static int radio = 0;
-			ImGui::RadioButton("a", &radio, 0); ImGui::SameLine();
-			ImGui::RadioButton("b", &radio, 1); ImGui::SameLine();
-			ImGui::RadioButton("c", &radio, 2); ImGui::SameLine();
-			ImGui::Text("Radio");
-
-			static int id = 1;
-			const char* items[] = { "AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG" };
-			if (ImGui::ListBox("ListBox", &id, items, IM_ARRAYSIZE(items), 4)) {
-				printf("Select %s\n", items[id]);
-			}
-
-			static char text[128] = "Hello, world!";
-			ImGui::InputText("InputText", text, IM_ARRAYSIZE(text));
-
-			static int iVal = 0;
-			ImGui::InputInt("InputInt", &iVal, 1, 100);
-
-			static float fVal = 0.0f;
-			ImGui::InputFloat("InputFloat", &fVal, 0.1f, 100.0f);
-
-			ImGui::End();
+			ImGui::EndMainMenuBar();
 		}
 
+		if (m_base != NULL) {
+			m_base->display();
+		}
+
+		if (BaseMode::m_names.size() == 0) return;
+
+		if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block | ImGuiWindowFlags_NoSavedSettings)) {
+			static int imgid = 0;
+
+			ImGui::SetWindowPos(ImVec2(20, 40), ImGuiCond_Always);
+			ImGui::SetWindowSize(ImVec2(180, 60), ImGuiCond_Always);
+
+			ImGui::Text(BaseMode::m_names[imgid].c_str());
+
+			ImGui::PushItemWidth(110);
+
+			if (ImGui::InputInt("", &imgid, 1, 100)) {
+				imgid = maxVal(imgid, 0);
+				imgid = minVal(imgid, BaseMode::m_names.size() - 1);
+				m_base->select(imgid);
+				adjustImg();
+			}
+			{
+				ImGui::SameLine();
+				ImGui::Text("/%d", BaseMode::m_names.size());
+			}
+			ImGui::End();
+		}
 	}
+
+	virtual void windowSize(int width, int height) {
+		adjustImg();
+	}
+
 	virtual void mouseButton(int button, int action, int mods) {
-		m_base->mouseButton(button, action, mods);
+		if (m_base != NULL) {
+			m_base->mouseButton(button, action, mods);
+		}
 	}
+
 	virtual void mousePos(double x, double y) {
-		m_base->mousePos(x, y);
+		if (m_base != NULL) {
+			m_base->mousePos(x, y);
+		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
-		m_base->mouseScroll(x, y);
+		if (m_base != NULL) {
+			m_base->mouseScroll(x, y);
+		}
 	}
 
 };
