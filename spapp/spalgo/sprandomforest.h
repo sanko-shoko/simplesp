@@ -61,7 +61,7 @@ namespace sp{
 
 			m_maxDepth = floor(log(Xs.size()) / log(2.0));
 
-			divTree(m_trees.extend(), Xs, Ys, index, 0);
+			divTree(m_trees.malloc(), Xs, Ys, index, 0);
 		}
 
 		Mem1<TYPE> estimate(const Mem<double> &X){
@@ -79,7 +79,7 @@ namespace sp{
 	private:
 
 		Node* divTree(MemP<Node> *tree, const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
-			Node *node = tree->extend();
+			Node *node = tree->malloc();
 
 			if (index.size() < 2 || depth >= m_maxDepth) {
 				setNode(node, Ys, index);

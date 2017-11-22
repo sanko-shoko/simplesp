@@ -35,23 +35,22 @@ namespace sp {
 		double scroll;
 
 		// button
-		bool bDownL, bDownR, bDownM;
+		int bDownL, bDownR, bDownM;
 
 		Mouse() {
 			memset(this, 0, sizeof(Mouse));
 		}
 
 		void setButton(const int button, const int action, const int mods) {
-			bool state = (action) ? true : false;
 
 			if (button == GLFW_MOUSE_BUTTON_LEFT) {
-				bDownL = state;
+				bDownL = action;
 			}
 			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-				bDownR = state;
+				bDownR = action;
 			}
 			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-				bDownM = state;
+				bDownM = action;
 			}
 
 			if (action == 0) {
@@ -228,8 +227,8 @@ namespace sp {
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				
-				display();
 				action();
+				display();
 
 				m_keyAction = 0;
 
@@ -264,6 +263,7 @@ namespace sp {
 		}
 
 		void _mouseButton(int button, int action, int mods){
+
 			m_mouse.setButton(button, action, mods);
 
 #if SP_USE_IMGUI
@@ -297,14 +297,14 @@ namespace sp {
 
 		void _mouseScroll(double x, double y){
 
+			m_mouse.setScroll(x, y);
+
 #if SP_USE_IMGUI
 			if (m_keyState != GLFW_KEY_SPACE && ImGui::GetIO().WantCaptureMouse) {
 				ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
 				return;
 			}
 #endif
-
-			m_mouse.setScroll(x, y);
 
 			// control view
 			if (m_keyState == GLFW_KEY_SPACE){
@@ -318,6 +318,7 @@ namespace sp {
 		}
 
 		void _keyFun(int key, int scancode, int action, int mods){
+
 			m_keyState = (action >= 1) ? key : 0;
 			m_keyAction = (action == 1) ? key : 0;
 

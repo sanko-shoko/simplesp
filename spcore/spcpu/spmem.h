@@ -656,7 +656,7 @@ namespace sp{
 			init(mem.m_unit, mem.m_block);
 
 			for (int i = 0; i < mem.size(); i++) {
-				*extend() = mem[i];
+				*malloc() = mem[i];
 			}
 			return *this;
 		}
@@ -697,20 +697,20 @@ namespace sp{
 		}
 
 		TYPE& operator[](const int x) {
-			const int crnt = searchId(x);
+			const int crnt = search(x);
 			const int m = crnt / m_block;
 			const int n = crnt % m_block;
 			return m_ptrs[m][n * m_unit];
 		}
 
 		const TYPE& operator[](const int x) const {
-			const int crnt = searchId(x);
+			const int crnt = search(x);
 			const int m = crnt / m_block;
 			const int n = crnt % m_block;
 			return m_ptrs[m][n * m_unit];
 		}
 
-		TYPE* extend(){
+		TYPE* malloc(){
 
 			if (m_size >= m_ptrs.size() * m_block){
 				m_ptrs.push(new TYPE[m_unit * m_block]);
@@ -761,7 +761,7 @@ namespace sp{
 
 	private:
 
-		int searchId(const int x) const {
+		int search(const int x) const {
 			int id = 0;
 
 			int cnt = 0;

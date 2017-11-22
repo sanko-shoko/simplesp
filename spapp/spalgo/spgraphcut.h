@@ -288,7 +288,7 @@ namespace sp{
 		}
 
 		void addOrphanFirst(Node *node){
-			Orphan *np = m_orphanPool.extend();
+			Orphan *np = m_orphanPool.malloc();
 
 			node->parent = ORPHAN;
 			np->node = node;
@@ -298,7 +298,7 @@ namespace sp{
 		}
 
 		void addOrphanLast(Node *node){
-			Orphan *np = m_orphanPool.extend();
+			Orphan *np = m_orphanPool.malloc();
 
 			node->parent = ORPHAN;
 			np->node = node;
