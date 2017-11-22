@@ -91,8 +91,17 @@ namespace sp {
 
 	public:
 
-		void save(char *path) {
+		void save(const char *path) {
 			File file(path, "w");
+
+			Unit *root = &m_units[0];
+			for (int i = 0; i < root->child.size(); i++) {
+				save(file, root->child[i], 0);
+			}
+		}
+
+		void load(const char *path) {
+			File file(path, "r");
 
 			Unit *root = &m_units[0];
 			for (int i = 0; i < root->child.size(); i++) {
