@@ -27,7 +27,7 @@ private:
 	void help() {
 		printf("'d' key : render depth\n");
 		printf("'n' key : render normal\n");
-		printf("'m' key : switch render mode (->points ->meshes ->outline)");
+		printf("'m' key : switch render mode (->points ->meshes ->outline)\n");
 		printf("'ESC' key : exit\n");
 		printf("\n");
 	}
@@ -55,22 +55,22 @@ private:
 
 	virtual void action() {
 
-		if (m_keyAction == GLFW_KEY_D || m_keyAction == GLFW_KEY_N) {
+		if (m_keyAction[GLFW_KEY_D] == 1|| m_keyAction[GLFW_KEY_N] == 1) {
 			const double distance = getModelDistance(m_model, m_cam);
 			const double radius = getModelRadius(m_model);
 
 			Mem2<VecVN3> map;
 			renderVecVN(map, m_cam, m_pose, m_model);
 
-			if (m_keyAction == GLFW_KEY_D) {
+			if (m_keyAction[GLFW_KEY_D] == 1) {
 				cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
 			}
-			if (m_keyAction == GLFW_KEY_N) {
+			if (m_keyAction[GLFW_KEY_N] == 1) {
 				cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
 			}
 		}
 
-		if (m_keyAction == GLFW_KEY_S) {
+		if (m_keyAction[GLFW_KEY_M] == 1) {
 			if (++m_mode >= 3) m_mode = 0;
 		}
 	}
