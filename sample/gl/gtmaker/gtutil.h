@@ -44,30 +44,50 @@ public:
 class BaseMode {
 
 public:
+	static string m_imdir;
+	static string m_gtdir;
+	static Mem1<string> m_names;
+
 	static const BaseWindow *m_parent;
 
 	static void init(const BaseWindow *parent) {
 		m_parent = parent;
 	}
 
-	static string m_folder;
-	static Mem1<string> m_names;
+	static bool open() {
+		const char *path = tinyfd_selectFolderDialog("select image folder", getCrntDir().c_str());
+		if (path == NULL) return false;
 
-	static void open() {
-		const char *path = tinyfd_selectFolderDialog("select image folder", NULL);
-		if (path == NULL) return;
+		m_imdir = path;
+		m_gtdir = getTimeStamp();
+		mkdir(m_gtdir.c_str());
 
-		m_folder = path;
 		m_names = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
+
+		for (int i = 0; i < m_names.size(); i++) {
+			printf("%s\n", m_names[i].c_str());
+		}
+		return true;
 	}
 
 	static Mat m_vmat;
 	static Mem2<Col3> m_img;
 
 public:
+
+	virtual void reset() {
+	}
+
 	virtual void select(const int id) {
 	}
+
 	virtual void save() {
+	}
+
+	virtual void load() {
+	}
+
+	virtual void menu(const char *name) {
 	}
 
 	virtual void display() {
@@ -93,10 +113,11 @@ public:
 
 };
 
-const BaseWindow *BaseMode::m_parent;
-
-string BaseMode::m_folder;
+string BaseMode::m_imdir;
+string BaseMode::m_gtdir;
 Mem1<string> BaseMode::m_names;
+
+const BaseWindow *BaseMode::m_parent;
 
 Mat BaseMode::m_vmat;
 

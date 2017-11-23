@@ -27,50 +27,27 @@ private:
 
 private:
 
-	void displayRect(const RectGT &gt) {
-
-		glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
-		
-		Col3 col[2];
-		col[0] = getCol(0, 100, 100);
-		col[1] = getCol(80, 180, 180);
-	
-		for (int i = 0; i < 2; i++) {
-			glLineWidth(i == 0 ? 3.0f : 1.0f);
-			glBegin(GL_LINES);
-			glColor(col[i]);
-			glRect(gt.rect);
-			glEnd();
-		}
-	}
-
-	void displayRectFocus(const RectGT &gt) {
-
-		glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
-
-		Col3 col[2];
-		col[0] = getCol(160, 160, 100);
-		col[1] = getCol(240, 240, 180);
+	void displayRect(const RectGT &gt, const Col3 &col, bool focus = false) {
 
 		for (int i = 0; i < 2; i++) {
 			glLineWidth(i == 0 ? 3.0f : 1.0f);
 			glBegin(GL_LINES);
-			glColor(col[i]);
+			glColor(i == 0 ? col / 2.0 : col);
 			glRect(gt.rect);
 			glEnd();
 		}
+		if (focus == false) return;
+
 		for (int i = 0; i < 2; i++) {
 			glPointSize(i == 0 ? 5.0f : 3.0f);
 			glBegin(GL_POINTS);
-			glColor(col[i]);
+			glColor(i == 0 ? col / 2.0 : col);
 			glRect(gt.rect);
 			glEnd();
 		}
 	}
 
 	void displayLabel(RectGT &gt) {
-
-		glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
 
 		char str[SP_STRMAX];
 		sprintf(str, "RectGT %p", &gt);
@@ -110,6 +87,24 @@ private:
 		}
 	}
 
+	void delLabel(const int id) {
+		m_labelinfo.del(id);
+
+		for (int i = 0; i < m_database.size(); i++) {
+			MemP<RectGT> &gts = m_database[i];
+
+			for (int j = 0; j < gts.size(); j++) {
+				RectGT &gt = gts[j];
+				if (gt.label == id) {
+					gt.label = -1;
+				}
+				if (gt.label > id) {
+					gt.label--;
+				}
+			}
+		}
+	}
+
 public:
 
 	RectMode(){
@@ -120,9 +115,11 @@ public:
 	}
 
 	virtual void select(const int id) {
-		if (id < 0) return;
+		static int backup = -1;
+		if (id < 0 || backup == id) return;
+		backup = id;
 
-		string path = m_folder + "\\" + m_names[id];
+		const string path = m_imdir + "\\" + m_names[id];
 		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
 
 		m_database.resize(m_names.size());
@@ -137,42 +134,132 @@ public:
 	virtual void save() {
 		if (m_gts == NULL) return;
 
-		char str[SP_STRMAX];
-		sprintf(str, "rect_%s", getTimeStamp().c_str());
+		const string dir = m_gtdir + "\\" + "rect";
+		mkdir(dir.c_str());
 
-		const char *path = tinyfd_saveFileDialog("save", str, 0, NULL, NULL);
+		{
+			File file((dir + "\\" + "_labels.txt").c_str(), "w");
+
+			file.printf("%d, \n", m_labelinfo.size());
+
+			for (int i = 0; i < m_labelinfo.size(); i++) {
+				file.printf("%s, \n", m_labelinfo[i].name);
+			}
+		}
+		for(int i = 0; i < m_database.size(); i++){
+			MemP<RectGT> &gts = m_database[i];
+			if (gts.size() == 0) continue;
+
+			File file((dir + "\\" + m_names[i] + ".txt").c_str(), "w");
+
+			file.printf("%d, \n", gts.size());
+
+			for (int j = 0; j < gts.size(); j++) {
+				const RectGT &gt = gts[j];
+				file.printf("%d, %d, ", j, gt.label);
+				file.printf("%d, %d, %d, %d, ", gt.rect.dbase[0], gt.rect.dbase[1], gt.rect.dsize[0], gt.rect.dsize[1]);
+				file.printf("\n");
+			}
+		}
+	}
+
+	virtual void load() {
+		const char *path = tinyfd_selectFolderDialog("select gt folder", NULL);
 		if (path == NULL) return;
 
-		mkdir(path);
+		const string dir = path;
+		const string tmp = dir + "\\" + "rect";
+
+		const Mem1<string> names = getFileList(tmp.c_str(), "txt");
+
+		{
+			File file((tmp + "\\" + "_labels.txt").c_str(), "r");
+
+			int num;
+			file.scanf("%d, \n", &num);
+
+			m_labelinfo.resize(num);
+			for (int i = 0; i < m_labelinfo.size(); i++) {
+				char str[SP_STRMAX];
+				file.gets(str);
+
+				::strcpy(m_labelinfo[i].name, strSplit(str)[0].c_str());
+			}
+		}
+
+		for (int i = 0; i < m_names.size(); i++) {
+			MemP<RectGT> &gts = m_database[i];
+			gts.clear();
+
+			string name;
+			for (int j = 0; j < names.size(); j++) {
+				if (names[j] == "_labels.txt" || names[j] != (m_names[i] + ".txt")) continue;
+
+				name = names[j];
+				break;
+			}
+			if (name.size() == 0) continue;
+
+			File file((tmp + "\\" + m_names[i] + ".txt").c_str(), "r");
+			int num;
+			file.scanf("%d, \n", &num);
+
+			for (int j = 0; j < num; j++) {
+				int buf;
+				RectGT &gt = *gts.malloc();
+				gt.rect.dim = 2;
+				file.scanf("%d, %d, ", &buf, &buf);
+				file.scanf("%d, %d, %d, %d, ", &gt.rect.dbase[0], &gt.rect.dbase[1], &gt.rect.dsize[0], &gt.rect.dsize[1]);
+				file.scanf("\n");
+			}
+
+		}
+
+	}
+
+	virtual void menu(const char *name) {
+		if (m_gts == NULL) return;
+
+		if (::strcmp(name, "file") == 0) {
+			if (ImGui::MenuItem("save gt")) {
+				save();
+			}
+			if (ImGui::MenuItem("load gt")) {
+				load();
+			}
+		}
 	}
 
 	virtual void display() {
 		if (m_img.size() == 0 || m_gts == NULL) return;
-
-		m_vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
-
 
 		{
 			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
 			glRenderImage(m_img);
 		}
 
-		if (m_make != NULL && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 5) {
-			displayRect(*m_make);
+		{
+			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
+
+			if (m_make != NULL && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 5) {
+				displayRect(*m_make, getCol(80, 180, 180));
+			}
+
+			for (int i = 0; i < m_gts->size(); i++) {
+				if (&(*m_gts)[i] == m_focus) continue;
+				displayRect((*m_gts)[i], getCol(80, 180, 180));
+			}
+
+			if (m_focus != NULL) {
+				displayRect(*m_focus, getCol(240, 240, 180), true);
+			}
 		}
 
-		for (int i = 0; i < m_gts->size(); i++) {
-			if (&(*m_gts)[i] == m_focus) continue;
-
-			displayRect((*m_gts)[i]);
-			displayLabel((*m_gts)[i]);
+		{
+			for (int i = 0; i < m_gts->size(); i++) {
+				displayLabel((*m_gts)[i]);
+			}
 		}
-
-		if (m_focus != NULL) {
-			displayRectFocus(*m_focus);
-			displayLabel(*m_focus);
-		}
-
 
 		if (ImGui::Begin("gt info", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)) {
 
@@ -181,7 +268,6 @@ public:
 
 			ImGui::Text("labels");
 
-			Mem1<LabelInfo> tmp;
 			for (int i = 0; i < m_labelinfo.size(); i++) {
 				char str[SP_STRMAX];
 				sprintf(str, "label%d", i);
@@ -192,14 +278,11 @@ public:
 				ImGui::SameLine();
 
 				if (ImGui::Button("del")) {
-				}
-				else {
-					tmp.push(m_labelinfo[i]);
+					delLabel(i--);
 				}
 				ImGui::EndChild();
 			}
 
-			m_labelinfo = tmp;
 			{
 				ImGui::BeginChild("", ImVec2(0, 24));
 

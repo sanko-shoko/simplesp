@@ -14,6 +14,7 @@
 #include <direct.h>
 #else
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 #if WIN32
@@ -33,6 +34,16 @@ namespace sp {
 		time_t t = time(NULL);
 		strftime(str, sizeof(str), format, localtime(&t));
 		return string(str);
+	}
+
+	SP_CPUFUNC string getCrntDir() {
+		char dir[SP_STRMAX];
+#if WIN32
+		GetCurrentDirectory(SP_STRMAX, dir);
+#else
+		getcwd(dir, SP_STRMAX);
+#endif
+		return string(dir);
 	}
 
 	SP_CPUFUNC bool findFile(const char *path) {
@@ -62,7 +73,7 @@ namespace sp {
 		return ret;
 	}
 
-	SP_CPUFUNC Mem1<string> getFileList(const char *folder, const char *ext = NULL) {
+	SP_CPUFUNC Mem1<string> getFileList(const char *dir, const char *ext = NULL) {
 
 		Mem1<string> list;
 
@@ -72,7 +83,7 @@ namespace sp {
 
 		WIN32_FIND_DATA fd;
 
-		const HANDLE handle = FindFirstFile((string(folder) + "\\*.*").c_str(), &fd);
+		const HANDLE handle = FindFirstFile((string(dir) + "\\*.*").c_str(), &fd);
 		SP_ASSERT(handle != INVALID_HANDLE_VALUE);
 
 		do {

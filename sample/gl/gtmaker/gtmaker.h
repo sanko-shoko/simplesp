@@ -50,54 +50,54 @@ private:
 
 			if (ImGui::BeginMenu("file")) {
 
-				if (ImGui::MenuItem("open")) {
-					BaseMode::open();
-					m_base->select(0);
-					adjustImg();
+				if (ImGui::MenuItem("open dir")) {
+					if (BaseMode::open() == true) {
+						m_base->select(0);
+						adjustImg();
+					}
 				}
-				if (ImGui::MenuItem("save")) {
-					m_base->save();
-				}
+
+				m_base->menu("file");
+
 				ImGui::EndMenu();
 			}
-
-			//if (ImGui::BeginMenu("mode"))
-			//{
-			//	if (ImGui::MenuItem("rect")) { selectMode(0); }
-			//	ImGui::EndMenu();
-			//}
 
 			ImGui::EndMainMenuBar();
 		}
 
-		if (m_base != NULL) {
-			m_base->display();
+		const Mem1<string> &names = BaseMode::m_names;
+		if (names.size() != 0) {
+
+			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
+				static int imgid = 0;
+
+				ImGui::SetWindowPos(ImVec2(20, 40), ImGuiCond_Always);
+				ImGui::SetWindowSize(ImVec2(180, 60), ImGuiCond_Always);
+
+				ImGui::Text(BaseMode::m_names[imgid].c_str());
+
+				ImGui::PushItemWidth(110);
+
+				if (ImGui::InputInt("", &imgid, 1, 100)) {
+					imgid = maxVal(imgid, 0);
+					imgid = minVal(imgid, BaseMode::m_names.size() - 1);
+					m_base->select(imgid);
+					adjustImg();
+				}
+				{
+					ImGui::SameLine();
+					ImGui::Text("/%d", BaseMode::m_names.size());
+				}
+				ImGui::End();
+			}
 		}
 
-		if (BaseMode::m_names.size() == 0) return;
-
-		if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block | ImGuiWindowFlags_NoSavedSettings)) {
-			static int imgid = 0;
-
-			ImGui::SetWindowPos(ImVec2(20, 40), ImGuiCond_Always);
-			ImGui::SetWindowSize(ImVec2(180, 60), ImGuiCond_Always);
-
-			ImGui::Text(BaseMode::m_names[imgid].c_str());
-
-			ImGui::PushItemWidth(110);
-
-			if (ImGui::InputInt("", &imgid, 1, 100)) {
-				imgid = maxVal(imgid, 0);
-				imgid = minVal(imgid, BaseMode::m_names.size() - 1);
-				m_base->select(imgid);
-				adjustImg();
-			}
-			{
-				ImGui::SameLine();
-				ImGui::Text("/%d", BaseMode::m_names.size());
-			}
-			ImGui::End();
+		const Mem2<Col3> &img = BaseMode::m_img;
+		if (img.size() != 0) {
+			BaseMode::m_vmat = getViewMat(img.dsize[0], img.dsize[1], m_viewPos, m_viewScale);
 		}
+
+		m_base->display();
 	}
 
 	virtual void windowSize(int width, int height) {
