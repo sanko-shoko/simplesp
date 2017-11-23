@@ -58,6 +58,7 @@ void mnist(const char *path) {
 		}
 	}
 
+	//model.save("model.csv");
 }
 
 void cifar(const char *path) {
