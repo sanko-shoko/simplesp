@@ -41,15 +41,15 @@ private:
 
 	virtual void action() {
 
-		if (m_keyAction == GLFW_KEY_U) {
+		if (m_keyAction[GLFW_KEY_U] == 1) {
 			update();
 		}
-		if (m_keyAction == GLFW_KEY_C) {
+		if (m_keyAction[GLFW_KEY_C] == 1) {
 			m_sfm.clear();
 			std::system("cls");
 			help();
 		}
-		if (m_keyAction == GLFW_KEY_D) {
+		if (m_keyAction[GLFW_KEY_D] == 1) {
 			m_denoise ^= true;
 		}
 	}

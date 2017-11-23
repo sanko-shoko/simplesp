@@ -8,6 +8,9 @@ class ICPGUI : public BaseWindow{
 	// camera
 	CamParam m_cam;
 
+	// image
+	Mem2<Col3> m_img;
+
 	// model
 	Mem1<Mesh> m_model;
 
@@ -46,14 +49,18 @@ private:
 
 	virtual void action() {
 
-		if (m_keyAction == GLFW_KEY_D) {
+		if (m_keyAction[GLFW_KEY_D] == 1) {
 			m_dataB.resize(2, m_cam.dsize);
 
 			m_dataB.zero();
 			renderVecVN(m_dataB, m_cam, m_poseA, m_model);
+
+			const double distance = getModelDistance(m_model, m_cam);
+			const double radius = getModelRadius(m_model);
+			cnvDepthToImg(m_img, m_dataB, distance - 2 * radius, distance + 2 * radius);
 		}
 
-		if (m_keyAction == GLFW_KEY_P) {
+		if (m_keyAction[GLFW_KEY_P] == 1) {
 			const int dsize[1] = { m_dataA.size() };
 			m_dataB.resize(1, dsize);
 
@@ -62,7 +69,7 @@ private:
 			}
 		}
 
-		if (m_keyAction == GLFW_KEY_C) {
+		if (m_keyAction[GLFW_KEY_C] > 0) {
 
 			// point to point
 			if (m_dataB.dim == 1) {
@@ -92,12 +99,6 @@ private:
 			}
 
 			if (m_dataB.dim == 2) {
-				const double distance = getModelDistance(m_model, m_cam);
-				const double radius = getModelRadius(m_model);
-
-				Mem2<Col3> m_img;
-				cnvDepthToImg(m_img, m_dataB, distance - 2 * radius, distance + 2 * radius);
-
 				glLoadView2D(m_cam, m_viewPos, m_viewScale);
 				glRenderImage(m_img);
 			}
