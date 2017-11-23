@@ -19,6 +19,7 @@ public:
 	Mem<LabelInfo> child;
 
 	LabelInfo() {
+		::strcpy(name, "");
 	}
 
 	LabelInfo(const char *name) {
@@ -44,29 +45,36 @@ public:
 class BaseMode {
 
 public:
+	static const BaseWindow *m_parent;
+	
 	static string m_imdir;
 	static string m_gtdir;
 	static Mem1<string> m_names;
 
-	static const BaseWindow *m_parent;
+	static int m_selectid;
 
 	static void init(const BaseWindow *parent) {
 		m_parent = parent;
 	}
 
 	static bool open() {
-		const char *path = tinyfd_selectFolderDialog("select image folder", getCrntDir().c_str());
+
+		const char *path = tinyfd_selectFolderDialog("select image directory", getCrntDir().c_str());
 		if (path == NULL) return false;
 
-		m_imdir = path;
-		m_gtdir = getTimeStamp();
-		mkdir(m_gtdir.c_str());
-
 		m_names = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
+		if (m_names.size() == 0) return false;
 
 		for (int i = 0; i < m_names.size(); i++) {
 			printf("%s\n", m_names[i].c_str());
 		}
+
+		m_imdir = path;
+		m_gtdir = getTimeStamp();
+
+		m_selectid = -1;
+		mkdir(m_gtdir.c_str());
+
 		return true;
 	}
 
@@ -113,11 +121,14 @@ public:
 
 };
 
+const BaseWindow *BaseMode::m_parent;
+
 string BaseMode::m_imdir;
 string BaseMode::m_gtdir;
 Mem1<string> BaseMode::m_names;
 
-const BaseWindow *BaseMode::m_parent;
+int BaseMode::m_selectid;
+
 
 Mat BaseMode::m_vmat;
 

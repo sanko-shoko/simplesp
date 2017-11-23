@@ -56,8 +56,9 @@ private:
 						adjustImg();
 					}
 				}
-
-				m_base->menu("file");
+				{
+					m_base->menu("file");
+				}
 
 				ImGui::EndMenu();
 			}
@@ -69,19 +70,19 @@ private:
 		if (names.size() != 0) {
 
 			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
-				static int imgid = 0;
+				static int selectid = 0;
 
-				ImGui::SetWindowPos(ImVec2(20, 40), ImGuiCond_Always);
-				ImGui::SetWindowSize(ImVec2(180, 60), ImGuiCond_Always);
+				ImGui::SetWindowPos(ImVec2(15, 35), ImGuiCond_Always);
+				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
 
-				ImGui::Text(BaseMode::m_names[imgid].c_str());
+				ImGui::Text(BaseMode::m_names[selectid].c_str());
 
 				ImGui::PushItemWidth(110);
 
-				if (ImGui::InputInt("", &imgid, 1, 100)) {
-					imgid = maxVal(imgid, 0);
-					imgid = minVal(imgid, BaseMode::m_names.size() - 1);
-					m_base->select(imgid);
+				if (ImGui::InputInt("", &selectid, 1, 100)) {
+					selectid = maxVal(selectid, 0);
+					selectid = minVal(selectid, BaseMode::m_names.size() - 1);
+					m_base->select(selectid);
 					adjustImg();
 				}
 				{

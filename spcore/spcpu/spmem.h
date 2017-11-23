@@ -317,6 +317,14 @@ namespace sp{
 			}
 		}
 
+		void add(const int x, const TYPE &data) {
+			extend();
+			for (int i = this->dsize[0] - 1; i > x; i--) {
+				this->ptr[i] = this->ptr[i - 1];
+			}
+			this->ptr[x] = data;
+		}
+
 		void del(const int x) {
 			for (int i = x; i < this->dsize[0]; i++) {
 				this->ptr[i] = this->ptr[i + 1];
@@ -675,10 +683,6 @@ namespace sp{
 		void init(const int unit = 1, const int block = 100){
 			clear();
 
-			m_next = 0;
-			m_maxs = 0;
-			m_size = 0;
-
 			m_unit = maxVal(1, unit);
 			m_block = block;
 		}
@@ -693,6 +697,10 @@ namespace sp{
 				delete[]m_refs[i];
 			}
 			m_refs.clear();
+
+			m_next = 0;
+			m_maxs = 0;
+			m_size = 0;
 		}
 
 		//--------------------------------------------------------------------------------

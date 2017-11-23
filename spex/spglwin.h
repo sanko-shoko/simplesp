@@ -335,7 +335,7 @@ namespace sp {
 		void _charFun(unsigned int charInfo){
 
 #if SP_USE_IMGUI
-			if (m_keyState != GLFW_KEY_SPACE && ImGui::GetIO().WantCaptureMouse) {
+			if (ImGui::GetIO().WantCaptureMouse) {
 				ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
 				return;
 			}

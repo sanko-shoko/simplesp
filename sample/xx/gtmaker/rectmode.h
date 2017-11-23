@@ -12,13 +12,10 @@ struct RectGT {
 
 class RectMode : public BaseMode {
 private:
-	char *combolist[1000];
 
-	Mem1<MemP<RectGT>> m_database;
+	Mem1<MemP<RectGT>> m_gtdata;
 
 	Mem1<LabelInfo> m_labelinfo;
-
-	MemP<RectGT> *m_gts;
 
 	RectGT *m_make;
 	RectGT *m_edit;
@@ -48,6 +45,10 @@ private:
 	}
 
 	void displayLabel(RectGT &gt) {
+		char *combolist[1000];
+		for (int i = 0; i < m_labelinfo.size(); i++) {
+			combolist[i] = m_labelinfo[i].name;
+		}
 
 		char str[SP_STRMAX];
 		sprintf(str, "RectGT %p", &gt);
@@ -76,7 +77,7 @@ private:
 					m_focus = NULL;
 				}
 				del = true;
-				m_gts->free(&gt);
+				m_gtdata[m_selectid].free(&gt);
 			}
 
 			if (del == false && ImGui::IsWindowHovered() && m_parent->m_mouse.bDownL) {
@@ -87,11 +88,16 @@ private:
 		}
 	}
 
+	void addLabel(const int id) {
+	}
 	void delLabel(const int id) {
 		m_labelinfo.del(id);
+		updateLabel(id, -1);
+	}
 
-		for (int i = 0; i < m_database.size(); i++) {
-			MemP<RectGT> &gts = m_database[i];
+	void updateLabel(const int id, const int val) {
+		for (int i = 0; i < m_gtdata.size(); i++) {
+			MemP<RectGT> &gts = m_gtdata[i];
 
 			for (int j = 0; j < gts.size(); j++) {
 				RectGT &gt = gts[j];
@@ -99,7 +105,7 @@ private:
 					gt.label = -1;
 				}
 				if (gt.label > id) {
-					gt.label--;
+					gt.label += val;
 				}
 			}
 		}
@@ -108,51 +114,54 @@ private:
 public:
 
 	RectMode(){
-		m_gts = NULL;
+		reset();
 
 		m_labelinfo.push(LabelInfo("dog"));
 		m_labelinfo.push(LabelInfo("cat"));
 	}
 
-	virtual void select(const int id) {
-		static int backup = -1;
-		if (id < 0 || backup == id) return;
-		backup = id;
-
-		const string path = m_imdir + "\\" + m_names[id];
-		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
-
-		m_database.resize(m_names.size());
-		m_gts = &m_database[id];
-	
+	virtual void reset() {
 		m_make = NULL;
 		m_edit = NULL;
 		m_focus = NULL;
 		m_act = NULL;
 	}
 
+	virtual void select(const int id) {
+		if (id < 0 || m_selectid == id) return;
+		m_selectid = id;
+
+		reset();
+
+		const string path = m_imdir + "\\" + m_names[id];
+		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
+
+		m_gtdata.resize(m_names.size());
+	}
+
 	virtual void save() {
-		if (m_gts == NULL) return;
+		if (m_selectid < 0) return;
 
 		const string dir = m_gtdir + "\\" + "rect";
 		mkdir(dir.c_str());
 
 		{
-			File file((dir + "\\" + "_labels.txt").c_str(), "w");
+			File file((dir + "\\" + "_labels.csv").c_str(), "w");
 
-			file.printf("%d, \n", m_labelinfo.size());
+			file.printf("num, %d, \n", m_labelinfo.size());
 
 			for (int i = 0; i < m_labelinfo.size(); i++) {
 				file.printf("%s, \n", m_labelinfo[i].name);
 			}
 		}
-		for(int i = 0; i < m_database.size(); i++){
-			MemP<RectGT> &gts = m_database[i];
+		for(int i = 0; i < m_gtdata.size(); i++){
+			MemP<RectGT> &gts = m_gtdata[i];
 			if (gts.size() == 0) continue;
 
-			File file((dir + "\\" + m_names[i] + ".txt").c_str(), "w");
+			File file((dir + "\\" + m_names[i] + ".csv").c_str(), "w");
 
-			file.printf("%d, \n", gts.size());
+			file.printf("num, %d, \n", gts.size());
+			file.printf("index, label, x, y, width, height\n");
 
 			for (int j = 0; j < gts.size(); j++) {
 				const RectGT &gt = gts[j];
@@ -164,51 +173,57 @@ public:
 	}
 
 	virtual void load() {
-		const char *path = tinyfd_selectFolderDialog("select gt folder", NULL);
+		const char *path = tinyfd_selectFolderDialog("select gt directory", getCrntDir().c_str());
 		if (path == NULL) return;
 
-		const string dir = path;
-		const string tmp = dir + "\\" + "rect";
+		reset();
 
-		const Mem1<string> names = getFileList(tmp.c_str(), "txt");
+		const string dir = string(path) + "\\" + "rect";
+		if (findFile((dir + "\\" + "_labels.csv").c_str()) == false) return;
+
+		const Mem1<string> names = getFileList(dir.c_str(), "csv");
 
 		{
-			File file((tmp + "\\" + "_labels.txt").c_str(), "r");
+			File file((dir + "\\" + "_labels.csv").c_str(), "r");
 
-			int num;
-			file.scanf("%d, \n", &num);
+			int num = 0;
+			file.scanf("num, %d, \n", &num);
+			file.scanf("index, label, x, y, width, height\n");
 
 			m_labelinfo.resize(num);
 			for (int i = 0; i < m_labelinfo.size(); i++) {
 				char str[SP_STRMAX];
 				file.gets(str);
 
-				::strcpy(m_labelinfo[i].name, strSplit(str)[0].c_str());
+				const Mem1<string> split = strSplit(str);
+				::strcpy(m_labelinfo[i].name, (split.size() > 0) ? split[0].c_str() : "");
 			}
 		}
 
 		for (int i = 0; i < m_names.size(); i++) {
-			MemP<RectGT> &gts = m_database[i];
+			MemP<RectGT> &gts = m_gtdata[i];
 			gts.clear();
 
 			string name;
 			for (int j = 0; j < names.size(); j++) {
-				if (names[j] == "_labels.txt" || names[j] != (m_names[i] + ".txt")) continue;
+				if (names[j] == "_labels.csv" || names[j] != (m_names[i] + ".csv")) continue;
 
 				name = names[j];
 				break;
 			}
 			if (name.size() == 0) continue;
 
-			File file((tmp + "\\" + m_names[i] + ".txt").c_str(), "r");
-			int num;
-			file.scanf("%d, \n", &num);
+			File file((dir + "\\" + m_names[i] + ".csv").c_str(), "r");
+
+			int num = 0;
+			file.scanf("num, %d, \n", &num);
+			file.scanf("index, label, x, y, width, height\n");
 
 			for (int j = 0; j < num; j++) {
 				int buf;
 				RectGT &gt = *gts.malloc();
 				gt.rect.dim = 2;
-				file.scanf("%d, %d, ", &buf, &buf);
+				file.scanf("%d, %d, ", &buf, &gt.label);
 				file.scanf("%d, %d, %d, %d, ", &gt.rect.dbase[0], &gt.rect.dbase[1], &gt.rect.dsize[0], &gt.rect.dsize[1]);
 				file.scanf("\n");
 			}
@@ -218,7 +233,7 @@ public:
 	}
 
 	virtual void menu(const char *name) {
-		if (m_gts == NULL) return;
+		if (m_selectid < 0) return;
 
 		if (::strcmp(name, "file") == 0) {
 			if (ImGui::MenuItem("save gt")) {
@@ -231,13 +246,14 @@ public:
 	}
 
 	virtual void display() {
-		if (m_img.size() == 0 || m_gts == NULL) return;
+		if (m_img.size() == 0 || m_selectid < 0) return;
 
 		{
 			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
 			glRenderImage(m_img);
 		}
 
+		MemP<RectGT> &gts = m_gtdata[m_selectid];
 		{
 			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
 
@@ -245,9 +261,9 @@ public:
 				displayRect(*m_make, getCol(80, 180, 180));
 			}
 
-			for (int i = 0; i < m_gts->size(); i++) {
-				if (&(*m_gts)[i] == m_focus) continue;
-				displayRect((*m_gts)[i], getCol(80, 180, 180));
+			for (int i = 0; i < gts.size(); i++) {
+				if (&gts[i] == m_focus) continue;
+				displayRect(gts[i], getCol(80, 180, 180));
 			}
 
 			if (m_focus != NULL) {
@@ -256,15 +272,15 @@ public:
 		}
 
 		{
-			for (int i = 0; i < m_gts->size(); i++) {
-				displayLabel((*m_gts)[i]);
+			for (int i = 0; i < gts.size(); i++) {
+				displayLabel(gts[i]);
 			}
 		}
 
 		if (ImGui::Begin("gt info", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)) {
 
-			ImGui::SetWindowPos(ImVec2(20, 110), ImGuiCond_Always);
-			ImGui::SetWindowSize(ImVec2(180, static_cast<float>(m_parent->m_wcam.dsize[1] - 135)), ImGuiCond_Always);
+			ImGui::SetWindowPos(ImVec2(15, 115), ImGuiCond_Always);
+			ImGui::SetWindowSize(ImVec2(190, static_cast<float>(m_parent->m_wcam.dsize[1] - 135)), ImGuiCond_Always);
 
 			ImGui::Text("labels");
 
@@ -275,38 +291,34 @@ public:
 
 				ImGui::PushItemWidth(100);
 				ImGui::InputText("", m_labelinfo[i].name, SP_STRMAX);
+				
+				ImGui::SameLine();
+
+				if (ImGui::Button("add")) {
+					m_labelinfo.add(i + 1, LabelInfo());
+					updateLabel(i + 1, +1);
+				}
+
 				ImGui::SameLine();
 
 				if (ImGui::Button("del")) {
-					delLabel(i--);
+					m_labelinfo.del(i);
+					updateLabel(i, -1);
+					i--;
 				}
-				ImGui::EndChild();
-			}
 
-			{
-				ImGui::BeginChild("", ImVec2(0, 24));
-
-				ImGui::PushItemWidth(100);
-
-				if (ImGui::Button("add")) {
-					m_labelinfo.push(LabelInfo(""));
-				}
 				ImGui::EndChild();
 			}
 
 			ImGui::End();
 		}
 
-		{
-			for (int i = 0; i < m_labelinfo.size(); i++) {
-				combolist[i] = m_labelinfo[i].name;
-			}
-		}
 	}
 
 	virtual void mouseButton(int button, int action, int mods) {
-		if (m_gts == NULL) return;
-		
+		if (m_selectid < 0) return;
+		MemP<RectGT> &gts = m_gtdata[m_selectid];
+
 		const Vec2 pix = invMat(m_vmat) * m_parent->m_mouse.pos;
 
 		if (m_parent->m_mouse.bDownL == 1) {
@@ -351,7 +363,7 @@ public:
 			}
 
 			if (m_make != NULL && m_parent->m_mouse.bDownL == 0 && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 10) {
-				RectGT *gt = m_gts->malloc();
+				RectGT *gt = gts.malloc();
 			
 				*gt = *m_make;
 				m_make = NULL;
@@ -363,7 +375,7 @@ public:
 	}
 
 	virtual void mousePos(double x, double y) {
-		if (m_gts == NULL) return;
+		if (m_selectid < 0) return;
 
 		const Vec2 pix = invMat(m_vmat) * m_parent->m_mouse.pos;
 
