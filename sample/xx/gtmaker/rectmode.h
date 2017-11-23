@@ -5,13 +5,13 @@
 
 using namespace sp;
 
-struct RectGT {
-	Rect rect;
-	int label;
-};
 
 class RectMode : public BaseMode {
 private:
+	struct RectGT {
+		Rect rect;
+		int label;
+	};
 
 	Mem1<MemP<RectGT>> m_gtdata;
 
@@ -128,12 +128,14 @@ public:
 	}
 
 	virtual void select(const int id) {
-		if (id < 0 || m_selectid == id) return;
-		m_selectid = id;
+		const int rid = maxVal(0, minVal(m_names.size() - 1, id));
+
+		if (m_selectid == rid) return;
+		m_selectid = rid;
 
 		reset();
 
-		const string path = m_imdir + "\\" + m_names[id];
+		const string path = m_imdir + "\\" + m_names[m_selectid];
 		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
 
 		m_gtdata.resize(m_names.size());
@@ -277,7 +279,7 @@ public:
 			}
 		}
 
-		if (ImGui::Begin("gt info", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)) {
+		if (ImGui::Begin("gt info", NULL, ImGuiWindowFlags_Block)) {
 
 			ImGui::SetWindowPos(ImVec2(15, 115), ImGuiCond_Always);
 			ImGui::SetWindowSize(ImVec2(190, static_cast<float>(m_parent->m_wcam.dsize[1] - 135)), ImGuiCond_Always);

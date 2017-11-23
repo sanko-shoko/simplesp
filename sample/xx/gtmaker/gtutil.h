@@ -9,7 +9,7 @@
 
 using namespace sp;
 
-#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)
+#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)
 
 
 class LabelInfo {
@@ -26,18 +26,18 @@ public:
 		sprintf(this->name, name);
 	}
 
-	LabelInfo(const LabelInfo &labelinfo) {
-		copy(labelinfo);
+	LabelInfo(const LabelInfo &info) {
+		copy(info);
 	}
 
-	LabelInfo& operator = (const LabelInfo &labelinfo) {
-		copy(labelinfo);
+	LabelInfo& operator = (const LabelInfo &info) {
+		copy(info);
 		return *this;
 	}
 
-	void copy(const LabelInfo &labelinfo) {
-		sprintf(this->name, labelinfo.name);
-		child = labelinfo.child;
+	void copy(const LabelInfo &info) {
+		sprintf(this->name, info.name);
+		child = info.child;
 	}
 };
 

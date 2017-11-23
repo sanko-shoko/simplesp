@@ -13,18 +13,35 @@ private:
 
 	void help() {
 		printf("'ESC' key : exit\n");
+		printf("1. open image directory\n");
+		printf("2. edit labels (dog, cat, ...)\n");
+		printf("3. set rectangles (left click and drag)\n");
+
+		printf("\n");
+		printf("short cut\n");
+		printf("space + mouse : adjust image size and position\n");
 		printf("\n");
 	}
 
 	virtual void init() {
 		help();
-		
+
 		BaseMode::init(this);
 
 		selectMode(0);
 	}
 
 	virtual void action() {
+		if (m_base == NULL) return;
+		if (m_keyAction[GLFW_KEY_A] > 0){
+			m_base->select(BaseMode::m_selectid + 1);
+			adjustImg();
+		}
+		if (m_keyAction[GLFW_KEY_S] > 0) {
+			m_base->select(BaseMode::m_selectid - 1);
+			adjustImg();
+		}
+
 	}
 
 	void selectMode(const int mode) {

@@ -89,7 +89,7 @@ namespace sp{
 					rot[r * 3 + c] = dex.rotation[c * 3 + r];
 				}
 			}
-			m_dpose.rot = getRot(rot);
+			m_dpose.rot = getRot(rot, 3, 3);
 			m_dpose.trn = getVec(dex.translation[0], dex.translation[1], dex.translation[2]) * 1000.0;
 		}
 
