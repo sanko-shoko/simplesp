@@ -142,7 +142,7 @@ namespace sp{
 
 				glfwSwapBuffers(window);
 
-				m_keyAction = 0;
+				memset(m_keyAction, -1, SP_KEYMAX);
 				glfwPollEvents();
 			}
 

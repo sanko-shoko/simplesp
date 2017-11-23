@@ -46,12 +46,12 @@ private:
 		// iteration
 		static int it = 0;
 
-		if (m_keyAction == GLFW_KEY_C) {
+		if (m_keyAction[GLFW_KEY_C] > 0) {
 			it++;
 			m_index = kmeans(2, m_pnts.ptr, m_pnts.size(), m_K, it);
 		}
 
-		if (m_keyAction == GLFW_KEY_R) {
+		if (m_keyAction[GLFW_KEY_R] == 1) {
 			it = 0;
 			m_index.clear();
 		}
