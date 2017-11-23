@@ -44,7 +44,7 @@ private:
 
 	virtual void action() {
 
-		if (m_keyAction == GLFW_KEY_D) {
+		if (m_keyAction[GLFW_KEY_D] == 1) {
 			m_diminish ^= true;
 		}
 
@@ -52,14 +52,14 @@ private:
 		{
 			static Mem1<Mem1<Vec2> > pixsList, objsList;
 
-			if (m_keyAction == GLFW_KEY_A && m_dotMarker.getPose() != NULL) {
+			if (m_keyAction[GLFW_KEY_A] == 1 && m_dotMarker.getPose() != NULL) {
 				printf("add detected points (i = %d)\n", pixsList.size());
 				pixsList.push(m_dotMarker.getCrspPix());
 				objsList.push(m_dotMarker.getCrspObj());
 
 			}
 
-			if (m_keyAction == GLFW_KEY_C) {
+			if (m_keyAction[GLFW_KEY_C] == 1) {
 				CamParam cam;
 				print(m_dotMarker.getCam());
 				const double rms = calibCam(cam, m_dotMarker.getCam().dsize[0], m_dotMarker.getCam().dsize[1], pixsList, objsList);

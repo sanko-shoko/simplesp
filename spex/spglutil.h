@@ -70,38 +70,47 @@ namespace sp{
 	// load view
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+	SP_CPUFUNC Mat getViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
 		GLint viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
 
+		const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
+		const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
+		const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
+
+		Mat vmat = eyeMat(4, 4);
+		vmat(0, 0) = viewScale;
+		vmat(1, 1) = viewScale;
+		vmat(0, 3) = shift.x;
+		vmat(1, 3) = shift.y;
+
+		return vmat;
+	}
+
+	SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Mat &vmat) {
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_CULL_FACE);
 
-		Mat mat = eyeMat(4, 4);
-		{
-			const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
-			const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
-			const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
-
-			mat(0, 0) = viewScale;
-			mat(1, 1) = viewScale;
-
-			mat(0, 3) = shift.x;
-			mat(1, 3) = shift.y;
-		}
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-0.5, viewport[2] - 0.5, viewport[3] - 0.5, -0.5, -1.0, 1.0);
 
 		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrix(mat);
+		glLoadMatrix(vmat);
+	}
+
+	SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+
+		glLoadView2D(dsize0, dsize1, getViewMat(dsize0, dsize1, viewPos, viewScale));
 	}
 
 	SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
-		glLoadView2D(cam.dsize[0], cam.dsize[1], viewPos, viewScale);
+		glLoadView2D(cam.dsize[0], cam.dsize[1], getViewMat(cam.dsize[0], cam.dsize[1], viewPos, viewScale));
 	}
 
 	SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
@@ -154,7 +163,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template<typename TYPE>
-	SP_CPUFUNC unsigned int glLoadTexture(const Mem<TYPE> &src) {
+	SP_CPUFUNC unsigned int getTextureId(const Mem<TYPE> &src) {
 		int format;
 		switch (sizeof(TYPE)) {
 		case 1: format = GL_LUMINANCE; break;
@@ -184,7 +193,7 @@ namespace sp{
 	SP_CPUFUNC void glRenderImage(const Mem<TYPE> &src){
 		if (src.size() == 0) return;
 
-		const unsigned int texId = glLoadTexture(src);
+		const GLuint texId = getTextureId(src);
 		if (texId < 0) return;
 
 		glPushAttrib(GL_ENABLE_BIT);

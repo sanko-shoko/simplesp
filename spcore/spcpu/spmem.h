@@ -301,8 +301,8 @@ namespace sp{
 			*extend() = data;
 		}
 
-		void push(const TYPE *data, const int num){
-			for (int i = 0; i < num; i++){
+		void push(const TYPE *data, const int num) {
+			for (int i = 0; i < num; i++) {
 				push(data[i]);
 			}
 		}
@@ -311,13 +311,28 @@ namespace sp{
 			push(data.ptr, data.size());
 		}
 
-		void pop(){
-			if (this->dsize[0] > 0){
+		void pop() {
+			if (this->dsize[0] > 0) {
 				this->dsize[0]--;
 			}
 		}
 
-		TYPE* last(){
+		void add(const int x, const TYPE &data) {
+			extend();
+			for (int i = this->dsize[0] - 1; i > x; i--) {
+				this->ptr[i] = this->ptr[i - 1];
+			}
+			this->ptr[x] = data;
+		}
+
+		void del(const int x) {
+			for (int i = x; i < this->dsize[0]; i++) {
+				this->ptr[i] = this->ptr[i + 1];
+			}
+			pop();
+		}
+
+		TYPE* last() {
 			return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
 		}
 
@@ -656,7 +671,7 @@ namespace sp{
 			init(mem.m_unit, mem.m_block);
 
 			for (int i = 0; i < mem.size(); i++) {
-				*extend() = mem[i];
+				*malloc() = mem[i];
 			}
 			return *this;
 		}
@@ -665,12 +680,8 @@ namespace sp{
 			clear();
 		}
 
-		void init(const int unit = 1, const int block = 1000){
+		void init(const int unit = 1, const int block = 100){
 			clear();
-
-			m_next = 0;
-			m_maxs = 0;
-			m_size = 0;
 
 			m_unit = maxVal(1, unit);
 			m_block = block;
@@ -686,6 +697,10 @@ namespace sp{
 				delete[]m_refs[i];
 			}
 			m_refs.clear();
+
+			m_next = 0;
+			m_maxs = 0;
+			m_size = 0;
 		}
 
 		//--------------------------------------------------------------------------------
@@ -697,16 +712,20 @@ namespace sp{
 		}
 
 		TYPE& operator[](const int x) {
-			const int id = searchId(x);
-			return m_ptrs[id / m_block][(id % m_block) * m_unit];
+			const int crnt = search(x);
+			const int m = crnt / m_block;
+			const int n = crnt % m_block;
+			return m_ptrs[m][n * m_unit];
 		}
 
 		const TYPE& operator[](const int x) const {
-			const int id = searchId(x);
-			return m_ptrs[id / m_block][(id % m_block) * m_unit];
+			const int crnt = search(x);
+			const int m = crnt / m_block;
+			const int n = crnt % m_block;
+			return m_ptrs[m][n * m_unit];
 		}
 
-		TYPE* extend(){
+		TYPE* malloc(){
 
 			if (m_size >= m_ptrs.size() * m_block){
 				m_ptrs.push(new TYPE[m_unit * m_block]);
@@ -757,7 +776,7 @@ namespace sp{
 
 	private:
 
-		int searchId(const int x) const {
+		int search(const int x) const {
 			int id = 0;
 
 			int cnt = 0;

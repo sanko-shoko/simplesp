@@ -9,6 +9,18 @@
 #include "spapp/spdata/spstr.h"
 #include "spapp/spdata/spformat.h"
 
+#if WIN32
+#include <Windows.h>
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
+#if WIN32
+#define mkdir _mkdir
+#endif
+
 namespace sp {
 
 	//--------------------------------------------------------------------------------
@@ -16,6 +28,23 @@ namespace sp {
 	//--------------------------------------------------------------------------------
 
 	using namespace std;
+
+	SP_CPUFUNC string getTimeStamp(char *format = "%Y%m%d_%H%M%S") {
+		char str[SP_STRMAX];
+		time_t t = time(NULL);
+		strftime(str, sizeof(str), format, localtime(&t));
+		return string(str);
+	}
+
+	SP_CPUFUNC string getCrntDir() {
+		char dir[SP_STRMAX];
+#if WIN32
+		GetCurrentDirectory(SP_STRMAX, dir);
+#else
+		getcwd(dir, SP_STRMAX);
+#endif
+		return string(dir);
+	}
 
 	SP_CPUFUNC bool findFile(const char *path) {
 		FILE *fp = ::fopen(path, "r");
@@ -29,6 +58,8 @@ namespace sp {
 	}
 
 	SP_CPUFUNC bool checkFileExt(const char *path, const char *ext) {
+		if (ext == NULL) return false;
+
 		Mem1<string> exts = strSplit(ext);
 
 		bool ret = false;
@@ -41,6 +72,42 @@ namespace sp {
 		}
 		return ret;
 	}
+
+	SP_CPUFUNC Mem1<string> getFileList(const char *dir, const char *ext = NULL) {
+
+		Mem1<string> list;
+
+#if WIN32
+
+		Mem1<string> all;
+
+		WIN32_FIND_DATA fd;
+
+		const HANDLE handle = FindFirstFile((string(dir) + "\\*.*").c_str(), &fd);
+		SP_ASSERT(handle != INVALID_HANDLE_VALUE);
+
+		do {
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				// directory
+			}
+			else {
+				// file
+				all.push(fd.cFileName);
+			}
+		} while (FindNextFile(handle, &fd));
+
+		FindClose(handle);
+
+		for (int i = 0; i < all.size(); i++) {
+			if (checkFileExt(all[i].c_str(), ext) == true) {
+				list.push(all[i]);
+			}
+		}
+#endif
+
+		return list;
+	}
+
 
 	//--------------------------------------------------------------------------------
 	// file

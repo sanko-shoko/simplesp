@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 
 namespace sp{
@@ -59,6 +60,10 @@ namespace sp{
 
 	SP_CPUFUNC char* strcpy(char *dst, const char *str) {
 		return ::strcpy(dst, str);
+	}
+
+	SP_CPUFUNC char* strcat(char *dst, const char *str) {
+		return ::strcat(dst, str);
 	}
 
 	SP_CPUFUNC int strcmp(const char *str0, const char *str1) {

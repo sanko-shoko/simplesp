@@ -17,6 +17,8 @@
 #include "simplesp.h"
 #include "GLFW/glfw3.h"
 
+#define SP_KEYMAX 400
+
 namespace sp {
 
 	//--------------------------------------------------------------------------------
@@ -35,23 +37,22 @@ namespace sp {
 		double scroll;
 
 		// button
-		bool bDownL, bDownR, bDownM;
+		int bDownL, bDownR, bDownM;
 
 		Mouse() {
 			memset(this, 0, sizeof(Mouse));
 		}
 
 		void setButton(const int button, const int action, const int mods) {
-			bool state = (action) ? true : false;
 
 			if (button == GLFW_MOUSE_BUTTON_LEFT) {
-				bDownL = state;
+				bDownL = action;
 			}
 			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-				bDownR = state;
+				bDownR = action;
 			}
 			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-				bDownM = state;
+				bDownM = action;
 			}
 
 			if (action == 0) {
@@ -150,18 +151,18 @@ namespace sp {
 		}
 
 	public:
-		
+
+		// keybord state
+		bool m_keyState[SP_KEYMAX];
+
+		// keybord action
+		char m_keyAction[SP_KEYMAX];
+
 		// view position
 		Vec2 m_viewPos;
 
 		// view scale
 		double m_viewScale;
-
-		// keybord state
-		int m_keyState;
-
-		// keybord action
-		int m_keyAction;
 
 		// mouse event class
 		Mouse m_mouse;
@@ -174,8 +175,9 @@ namespace sp {
 		BaseWindow(){
 			m_viewPos = getVec(0.0, 0.0);
 			m_viewScale = 1.0;
-			m_keyState = 0;
-			m_keyAction = 0;
+
+			memset(m_keyState, 0, SP_KEYMAX);
+			memset(m_keyAction, -1, SP_KEYMAX);
 		}
 
 		//--------------------------------------------------------------------------------
@@ -228,10 +230,10 @@ namespace sp {
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				
-				display();
 				action();
+				display();
 
-				m_keyAction = 0;
+				memset(m_keyAction, -1, SP_KEYMAX);
 
 #if SP_USE_IMGUI
 				ImGui::Render();
@@ -255,13 +257,6 @@ namespace sp {
 		// base event process
 		//--------------------------------------------------------------------------------
 		
-		bool _onGUI() {
-#if SP_USE_IMGUI
-			return ImGui::GetIO().WantCaptureMouse;
-#endif
-			return false;
-		}
-
 		void _windowSize(int width, int height){
 			m_wcam = getCamParam(width, height);
 
@@ -271,20 +266,31 @@ namespace sp {
 		}
 
 		void _mouseButton(int button, int action, int mods){
-			if (_onGUI() == true) return;
 
 			m_mouse.setButton(button, action, mods);
+
+#if SP_USE_IMGUI
+			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+				ImGui_ImplGlfwGL2_MouseButtonCallback(NULL, button, action, mods);
+				return;
+			}
+#endif
 
 			mouseButton(button, action, mods);
 		}
 
 		void _mousePos(double x, double y){
-			if (_onGUI() == true) return;
 
 			m_mouse.setPos(x, y);
 
+#if SP_USE_IMGUI
+			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+				return;
+			}
+#endif
+
 			// control view
-			if (m_keyState == GLFW_KEY_SPACE){
+			if (m_keyState[GLFW_KEY_SPACE] == true){
   				controlView(m_viewPos, m_viewScale, m_mouse);
 				return;
 			}
@@ -293,12 +299,18 @@ namespace sp {
 		}
 
 		void _mouseScroll(double x, double y){
-			if (_onGUI() == true) return;
 
 			m_mouse.setScroll(x, y);
 
+#if SP_USE_IMGUI
+			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+				ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
+				return;
+			}
+#endif
+
 			// control view
-			if (m_keyState == GLFW_KEY_SPACE){
+			if (m_keyState[GLFW_KEY_SPACE] == true){
 				controlView(m_viewPos, m_viewScale, m_mouse);
 				m_mouse.setScroll(0.0, 0.0);
 				return;
@@ -309,14 +321,29 @@ namespace sp {
 		}
 
 		void _keyFun(int key, int scancode, int action, int mods){
-			m_keyState = (action >= 1) ? key : 0;
-			m_keyAction = (action == 1) ? key : 0;
+			if (key < 0) return;
+			
+			m_keyState[key] = (action > 0) ? true : false;
+			m_keyAction[key] = static_cast<char>(action);
 
+#if SP_USE_IMGUI
+			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+				ImGui_ImplGlfwGL2_KeyCallback(NULL, key, scancode, action, mods);
+				return;
+			}
+#endif
 
 			keyFun(key, scancode, action, mods);
 		}
 
 		void _charFun(unsigned int charInfo){
+
+#if SP_USE_IMGUI
+			if (ImGui::GetIO().WantCaptureMouse) {
+				ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
+				return;
+			}
+#endif
 
 			charFun(charInfo);
 		}

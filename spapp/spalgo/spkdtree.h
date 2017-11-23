@@ -170,8 +170,8 @@ namespace sp{
 		void addNode(Node **parent, const TYPE *data, int div, const int index){
 
 			if (!*parent) {
-				Node *node = nodePool.extend();
-				node->data = dataPool.extend();
+				Node *node = nodePool.malloc();
+				node->data = dataPool.malloc();
 
 				memcpy(node->data, data, m_dim * sizeof(TYPE));
 

@@ -6,6 +6,7 @@
 /external/*
 !/external/.gitkeep
 !/external/imgui
+!/external/tinyfd
 
 # database
 /dataset/*

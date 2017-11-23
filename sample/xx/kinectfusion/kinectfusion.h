@@ -34,10 +34,10 @@ private:
 	}
 
 	virtual void action() {
-		if (m_keyAction == GLFW_KEY_S) {
+		if (m_keyAction[GLFW_KEY_S] == 1) {
 			m_start = true;
 		}
-		if (m_keyAction == GLFW_KEY_R) {
+		if (m_keyAction[GLFW_KEY_R] == 1) {
 			m_kfusion.reset();
 			m_start = false;
 		}
