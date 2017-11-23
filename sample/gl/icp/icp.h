@@ -47,7 +47,7 @@ private:
 		m_dataA = getModelPoint(m_model);
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 
 		if (m_keyAction[GLFW_KEY_D] == 1) {
 			m_dataB.resize(2, m_cam.dsize);

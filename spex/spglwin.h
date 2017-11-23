@@ -144,9 +144,6 @@ namespace sp {
 		virtual void display(){
 		}
 
-		virtual void action() {
-		}
-
 		virtual void drop(int num, const char **paths) {
 		}
 
@@ -230,7 +227,6 @@ namespace sp {
 				glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				
-				action();
 				display();
 
 				memset(m_keyAction, -1, SP_KEYMAX);

@@ -39,7 +39,7 @@ private:
 		m_denoise = false;
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 
 		if (m_keyAction[GLFW_KEY_U] == 1) {
 			update();

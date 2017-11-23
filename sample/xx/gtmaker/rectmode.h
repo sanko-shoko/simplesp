@@ -88,13 +88,6 @@ private:
 		}
 	}
 
-	void addLabel(const int id) {
-	}
-	void delLabel(const int id) {
-		m_labelinfo.del(id);
-		updateLabel(id, -1);
-	}
-
 	void updateLabel(const int id, const int val) {
 		for (int i = 0; i < m_gtdata.size(); i++) {
 			MemP<RectGT> &gts = m_gtdata[i];
@@ -127,10 +120,13 @@ public:
 		m_act = NULL;
 	}
 
-	virtual void select(const int id) {
+	virtual bool select(const int id) {
 		const int rid = maxVal(0, minVal(m_names.size() - 1, id));
 
-		if (m_selectid == rid) return;
+		static int backup = -1;
+		if (rid == backup) return false;
+
+		backup = rid;
 		m_selectid = rid;
 
 		reset();
@@ -139,6 +135,8 @@ public:
 		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
 
 		m_gtdata.resize(m_names.size());
+
+		return true;
 	}
 
 	virtual void save() {
@@ -351,7 +349,9 @@ public:
 				}
 			}
 			if (m_edit != NULL && m_parent->m_mouse.bDownL == 0) {
+				m_edit->rect = andRect(m_edit->rect, getRect2(m_img.dsize));
 				m_edit = NULL;
+				return;
 			}
 
 		}
@@ -365,6 +365,8 @@ public:
 			}
 
 			if (m_make != NULL && m_parent->m_mouse.bDownL == 0 && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 10) {
+				m_make->rect = andRect(m_make->rect, getRect2(m_img.dsize));
+
 				RectGT *gt = gts.malloc();
 			
 				*gt = *m_make;
@@ -372,7 +374,6 @@ public:
 				m_focus = gt;
 			}
 		}
-
 
 	}
 
