@@ -317,7 +317,14 @@ namespace sp{
 			}
 		}
 
-		TYPE* last(){
+		void del(const int x) {
+			for (int i = x; i < this->dsize[0]; i++) {
+				this->ptr[i] = this->ptr[i + 1];
+			}
+			pop();
+		}
+
+		TYPE* last() {
 			return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
 		}
 

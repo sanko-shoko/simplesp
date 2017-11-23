@@ -62,6 +62,10 @@ namespace sp{
 		return ::strcpy(dst, str);
 	}
 
+	SP_CPUFUNC char* strcat(char *dst, const char *str) {
+		return ::strcat(dst, str);
+	}
+
 	SP_CPUFUNC int strcmp(const char *str0, const char *str1) {
 		return ::strcmp(str0, str1);
 	}

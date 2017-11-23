@@ -73,12 +73,12 @@ namespace sp{
 
 	// division
 	SP_GENFUNC Vec2 divVec(const Vec2 &vec, const double val){
-		return (val != 0.0) ? getVec(vec.x / val, vec.y / val) : vec;
+		return (val != 0.0) ? mulVec(vec, 1.0 / val) : vec;
 	}
 
 	// division
 	SP_GENFUNC Vec3 divVec(const Vec3 &vec, const double val){
-		return (val != 0.0) ? getVec(vec.x / val, vec.y / val, vec.z / val) : vec;
+		return (val != 0.0) ? mulVec(vec, 1.0 / val) : vec;
 	}
 
 
