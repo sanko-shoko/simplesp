@@ -123,11 +123,12 @@ public:
 	virtual bool select(const int id) {
 		const int rid = maxVal(0, minVal(m_names.size() - 1, id));
 
+		m_selectid = rid;
+
 		static int backup = -1;
 		if (rid == backup) return false;
 
 		backup = rid;
-		m_selectid = rid;
 
 		reset();
 
@@ -142,7 +143,7 @@ public:
 	virtual void save() {
 		if (m_selectid < 0) return;
 
-		const string dir = m_gtdir + "\\" + "rect";
+		const string dir = getTimeStamp() + "\\" + "rect";
 		mkdir(dir.c_str());
 
 		{

@@ -48,7 +48,6 @@ public:
 	static const BaseWindow *m_parent;
 	
 	static string m_imdir;
-	static string m_gtdir;
 	static Mem1<string> m_names;
 
 	static int m_selectid;
@@ -77,10 +76,7 @@ public:
 			//}
 
 			m_imdir = path;
-			m_gtdir = getTimeStamp();
-
 			m_selectid = -1;
-			mkdir(m_gtdir.c_str());
 
 			return true;
 		}
@@ -130,7 +126,6 @@ public:
 const BaseWindow *BaseMode::m_parent;
 
 string BaseMode::m_imdir;
-string BaseMode::m_gtdir;
 Mem1<string> BaseMode::m_names;
 
 int BaseMode::m_selectid;
