@@ -42,7 +42,7 @@ private:
 		m_diminish = false;
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 
 		if (m_keyAction[GLFW_KEY_D] == 1) {
 			m_diminish ^= true;

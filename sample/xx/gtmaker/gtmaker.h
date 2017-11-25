@@ -12,36 +12,40 @@ class GTMakerGUI : public BaseWindow {
 private:
 
 	void help() {
-		printf("'ESC' key : exit\n");
-		printf("1. open image directory\n");
-		printf("2. edit labels (dog, cat, ...)\n");
-		printf("3. set rectangles (left click and drag)\n");
+		//printf("1. open image directory\n");
+		//printf("2. edit labels (dog, cat, ...)\n");
+		//printf("3. set rectangles (left click and drag)\n");
+		//printf("\n");
 
-		printf("\n");
-		printf("short cut\n");
-		printf("space + mouse : adjust image size and position\n");
-		printf("\n");
+		//printf("[shortcut]\n");
+		//printf("a key : image ++\n");
+		//printf("s key : image --\n");
+		//printf("space key + mouse : adjust image size and position\n");
+		//printf("\n");
 	}
 
 	virtual void init() {
 		help();
+
+		ImGui::GetIO().IniFilename = NULL;
 
 		BaseMode::init(this);
 
 		selectMode(0);
 	}
 
-	virtual void action() {
-		if (m_base == NULL) return;
-		if (m_keyAction[GLFW_KEY_A] > 0){
-			m_base->select(BaseMode::m_selectid + 1);
-			adjustImg();
+	virtual void keyFun(int key, int scancode, int action, int mods) {
+
+		if (m_keyAction[GLFW_KEY_A] > 0) {
+			if (m_base->select(BaseMode::m_selectid + 1)) {
+				adjustImg();
+			}
 		}
 		if (m_keyAction[GLFW_KEY_S] > 0) {
-			m_base->select(BaseMode::m_selectid - 1);
-			adjustImg();
+			if (m_base->select(BaseMode::m_selectid - 1)) {
+				adjustImg();
+			}
 		}
-
 	}
 
 	void selectMode(const int mode) {
@@ -49,7 +53,6 @@ private:
 
 		switch (mode) {
 		case 0: m_base = &rectmode; break;
-		default: m_base = NULL; break;
 		}
 	}
 
@@ -87,24 +90,24 @@ private:
 		if (names.size() != 0) {
 
 			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
-				static int selectid = 0;
+				int &selectid = BaseMode::m_selectid;
 
 				ImGui::SetWindowPos(ImVec2(15, 35), ImGuiCond_Always);
 				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
 
-				ImGui::Text(BaseMode::m_names[selectid].c_str());
-
+				if (selectid >= 0) {
+					ImGui::Text(BaseMode::m_names[selectid].c_str());
+				}
 				ImGui::PushItemWidth(110);
 
 				if (ImGui::InputInt("", &selectid, 1, 100)) {
-					selectid = maxVal(selectid, 0);
-					selectid = minVal(selectid, BaseMode::m_names.size() - 1);
 					m_base->select(selectid);
 					adjustImg();
 				}
+				ImGui::PopItemWidth();
 				{
 					ImGui::SameLine();
-					ImGui::Text("/%d", BaseMode::m_names.size());
+					ImGui::Text("/ %d", BaseMode::m_names.size());
 				}
 				ImGui::End();
 			}

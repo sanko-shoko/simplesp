@@ -246,7 +246,7 @@ namespace sp{
 	SP_CPUFUNC void glRect(const Rect &rect) {
 		if (rect.dim == 2) {
 			Vec2 pixA = getVec(rect.dbase[0], rect.dbase[1]);
-			Vec2 pixB = getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]);
+			Vec2 pixB = getVec(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
 
 			glVertex(getVec(pixA.x - 0.5, pixA.y - 0.5));
 			glVertex(getVec(pixB.x + 0.5, pixA.y - 0.5));

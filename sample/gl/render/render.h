@@ -53,7 +53,7 @@ private:
 		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 
 		if (m_keyAction[GLFW_KEY_D] == 1|| m_keyAction[GLFW_KEY_N] == 1) {
 			const double distance = getModelDistance(m_model, m_cam);

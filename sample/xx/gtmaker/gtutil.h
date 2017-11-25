@@ -48,13 +48,16 @@ public:
 	static const BaseWindow *m_parent;
 	
 	static string m_imdir;
-	static string m_gtdir;
 	static Mem1<string> m_names;
 
 	static int m_selectid;
 
+	static Mat m_vmat;
+	static Mem2<Col3> m_img;
+
 	static void init(const BaseWindow *parent) {
 		m_parent = parent;
+		m_selectid = -1;
 	}
 
 	static bool open() {
@@ -63,30 +66,29 @@ public:
 		if (path == NULL) return false;
 
 		m_names = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
-		if (m_names.size() == 0) return false;
-
-		for (int i = 0; i < m_names.size(); i++) {
-			printf("%s\n", m_names[i].c_str());
+		if (m_names.size() == 0) {
+			printf("no image in the directory");
+			return false;
 		}
+		else {
+			for (int i = 0; i < m_names.size(); i++) {
+				printf("%06d %s\n", i, m_names[i].c_str());
+			}
 
-		m_imdir = path;
-		m_gtdir = getTimeStamp();
+			m_imdir = path;
+			m_selectid = -1;
 
-		m_selectid = -1;
-		mkdir(m_gtdir.c_str());
-
-		return true;
+			return true;
+		}
 	}
-
-	static Mat m_vmat;
-	static Mem2<Col3> m_img;
 
 public:
 
 	virtual void reset() {
 	}
 
-	virtual void select(const int id) {
+	virtual bool select(const int id) {
+		return false;
 	}
 
 	virtual void save() {
@@ -124,11 +126,9 @@ public:
 const BaseWindow *BaseMode::m_parent;
 
 string BaseMode::m_imdir;
-string BaseMode::m_gtdir;
 Mem1<string> BaseMode::m_names;
 
 int BaseMode::m_selectid;
-
 
 Mat BaseMode::m_vmat;
 

@@ -42,7 +42,7 @@ private:
 		}
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 		// iteration
 		static int it = 0;
 

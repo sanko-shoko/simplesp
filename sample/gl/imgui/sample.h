@@ -18,7 +18,7 @@ private:
 		help();
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 	}
 
 	virtual void display() {
