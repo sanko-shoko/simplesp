@@ -19,15 +19,10 @@ namespace sp{
 
 		rect.dim = dim;
 		for (int i = 0; i < SP_DIMMAX; i++){
-			rect.dbase[i] = (i < dim) ? dbase[i] : 0;
-			rect.dsize[i] = (i < dim) ? dsize[i] : 0;
+			rect.dbase[i] = (i < dim && dbase != NULL) ? dbase[i] : 0;
+			rect.dsize[i] = (i < dim && dsize != NULL) ? dsize[i] : 0;
 		}
 		return rect;
-	}
-
-	SP_GENFUNC Rect getRect(const int dim, const int *dsize){
-		const int dbase[SP_DIMMAX] = { 0 };
-		return getRect(dim, dbase, dsize);
 	}
 
 	SP_GENFUNC Rect getRect2(const int dbase0, const int dbase1, const int dsize0, const int dsize1){
@@ -37,7 +32,7 @@ namespace sp{
 	}
 
 	SP_GENFUNC Rect getRect2(const int *dsize){
-		return getRect(2, dsize);
+		return getRect(2, NULL, dsize);
 	}
 
 	SP_GENFUNC Rect getRect2(const Vec2 &vec) {
@@ -51,7 +46,7 @@ namespace sp{
 	}
 
 	SP_GENFUNC Rect getRect3(const int *dsize){
-		return getRect(3, dsize);
+		return getRect(3, NULL, dsize);
 	}
 
 	SP_GENFUNC Rect getRect3(const Vec3 &vec) {
@@ -112,6 +107,9 @@ namespace sp{
 		for (int i = 0; i < rect0.dim; i++){
 			dbase[i] = maxVal(rect0.dbase[i], rect1.dbase[i]);
 			dsize[i] = minVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+			if (dsize[i] < 0) {
+				return getRect(rect0.dim, NULL, NULL);
+			}
 		}
 
 		return getRect(rect0.dim, dbase, dsize);
@@ -124,6 +122,7 @@ namespace sp{
 		for (int i = 0; i < rect0.dim; i++){
 			dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
 			dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+			dsize[i] = maxVal(0, dsize[i]);
 		}
 
 		return getRect(rect0.dim, dbase, dsize);
