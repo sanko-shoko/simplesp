@@ -71,9 +71,9 @@ public:
 			return false;
 		}
 		else {
-			//for (int i = 0; i < m_names.size(); i++) {
-			//	printf("%s\n", m_names[i].c_str());
-			//}
+			for (int i = 0; i < m_names.size(); i++) {
+				printf("%06d %s\n", i, m_names[i].c_str());
+			}
 
 			m_imdir = path;
 			m_selectid = -1;

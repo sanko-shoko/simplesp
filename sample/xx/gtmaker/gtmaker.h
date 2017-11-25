@@ -12,20 +12,22 @@ class GTMakerGUI : public BaseWindow {
 private:
 
 	void help() {
-		printf("1. open image directory\n");
-		printf("2. edit labels (dog, cat, ...)\n");
-		printf("3. set rectangles (left click and drag)\n");
-		printf("\n");
+		//printf("1. open image directory\n");
+		//printf("2. edit labels (dog, cat, ...)\n");
+		//printf("3. set rectangles (left click and drag)\n");
+		//printf("\n");
 
-		printf("[shortcut]\n");
-		printf("a key : image ++\n");
-		printf("s key : image --\n");
-		printf("space key + mouse : adjust image size and position\n");
-		printf("\n");
+		//printf("[shortcut]\n");
+		//printf("a key : image ++\n");
+		//printf("s key : image --\n");
+		//printf("space key + mouse : adjust image size and position\n");
+		//printf("\n");
 	}
 
 	virtual void init() {
 		help();
+
+		ImGui::GetIO().IniFilename = NULL;
 
 		BaseMode::init(this);
 
@@ -93,14 +95,16 @@ private:
 				ImGui::SetWindowPos(ImVec2(15, 35), ImGuiCond_Always);
 				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
 
-				ImGui::Text(BaseMode::m_names[selectid].c_str());
-
+				if (selectid >= 0) {
+					ImGui::Text(BaseMode::m_names[selectid].c_str());
+				}
 				ImGui::PushItemWidth(110);
 
 				if (ImGui::InputInt("", &selectid, 1, 100)) {
 					m_base->select(selectid);
 					adjustImg();
 				}
+				ImGui::PopItemWidth();
 				{
 					ImGui::SameLine();
 					ImGui::Text("/ %d", BaseMode::m_names.size());

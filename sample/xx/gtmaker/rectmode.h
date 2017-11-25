@@ -29,7 +29,7 @@ private:
 		for (int i = 0; i < 2; i++) {
 			glLineWidth(i == 0 ? 3.0f : 1.0f);
 			glBegin(GL_LINES);
-			glColor(i == 0 ? col / 2.0 : col);
+			glColor(i == 0 ? col / 4.0 : col);
 			glRect(gt.rect);
 			glEnd();
 		}
@@ -38,7 +38,7 @@ private:
 		for (int i = 0; i < 2; i++) {
 			glPointSize(i == 0 ? 5.0f : 3.0f);
 			glBegin(GL_POINTS);
-			glColor(i == 0 ? col / 2.0 : col);
+			glColor(i == 0 ? col / 4.0 : col);
 			glRect(gt.rect);
 			glEnd();
 		}
@@ -53,37 +53,48 @@ private:
 		char str[SP_STRMAX];
 		sprintf(str, "RectGT %p", &gt);
 
-		if (ImGui::Begin(str, NULL, ImGuiWindowFlags_Block)) {
-			const Vec2 offset = getVec(0.0, -40.0);
-
-			ImGui::PushItemWidth(100);
+		if (ImGui::Begin(str, NULL, ImGuiWindowFlags_Block | ImGuiWindowFlags_NoFocusOnAppearing)) {
 			{
-				const Vec2 vec = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + offset;
-
-				ImGui::SetWindowPos(ImVec2(static_cast<float>(vec.x), static_cast<float>(vec.y)), ImGuiCond_Always);
-				ImGui::SetWindowSize(ImVec2(180 , 35), ImGuiCond_Always);
+				const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+				ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
 			}
 
-			ImGui::Text(".");
-
-			ImGui::SameLine();
-			ImGui::Combo("", &gt.label, combolist, m_labelinfo.size());
-
-			ImGui::SameLine();
-
-			bool del = false;
-			if (ImGui::Button("del")) {
-				if (&gt == m_focus) {
-					m_focus = NULL;
-				}
-				del = true;
-				m_gtdata[m_selectid].free(&gt);
-			}
-
-			if (del == false && ImGui::IsWindowHovered() && m_parent->m_mouse.bDownL) {
+			if (&gt != m_focus && ImGui::IsMouseClicked(0) == true && ImGui::IsWindowHovered() == true) {
 				m_focus = &gt;
 			}
 
+			ImGui::AlignTextToFramePadding();
+
+			if(&gt != m_focus){
+				ImGui::Text(">");
+
+				const int wsize = (gt.label >= 0) ? sp::strlen(m_labelinfo[gt.label].name) : 0;
+			
+				ImGui::SetWindowSize(ImVec2(wsize * 8.0f + 30.0f, 35.0f), ImGuiCond_Always);
+
+				if (gt.label >= 0) {
+					ImGui::SameLine();
+					ImGui::Text(m_labelinfo[gt.label].name);
+				}
+			}
+			else{
+				ImGui::Text("-");
+
+				ImGui::SetWindowSize(ImVec2(180.0f, 35.0f), ImGuiCond_Always);
+
+				ImGui::SameLine();
+
+				ImGui::PushItemWidth(100);
+				ImGui::Combo("", &gt.label, combolist, m_labelinfo.size());
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("del")) {
+					m_gtdata[m_selectid].free(&gt);
+					m_focus = NULL;
+				}
+			}
 			ImGui::End();
 		}
 	}
@@ -94,10 +105,11 @@ private:
 
 			for (int j = 0; j < gts.size(); j++) {
 				RectGT &gt = gts[j];
-				if (gt.label == id) {
+				if (gt.label == id && val < 0) {
 					gt.label = -1;
+					continue;
 				}
-				if (gt.label > id) {
+				if (gt.label >= id) {
 					gt.label += val;
 				}
 			}
@@ -121,14 +133,7 @@ public:
 	}
 
 	virtual bool select(const int id) {
-		const int rid = maxVal(0, minVal(m_names.size() - 1, id));
-
-		m_selectid = rid;
-
-		static int backup = -1;
-		if (rid == backup) return false;
-
-		backup = rid;
+		m_selectid = maxVal(0, minVal(m_names.size() - 1, id));
 
 		reset();
 
@@ -143,7 +148,7 @@ public:
 	virtual void save() {
 		if (m_selectid < 0) return;
 
-		const string dir = getTimeStamp() + "\\" + "rect";
+		const string dir = string("rect_") + getTimeStamp();
 		mkdir(dir.c_str());
 
 		{
@@ -179,7 +184,7 @@ public:
 
 		reset();
 
-		const string dir = string(path) + "\\" + "rect";
+		const string dir = path;
 		if (findFile((dir + "\\" + "_labels.csv").c_str()) == false) return;
 
 		const Mem1<string> names = getFileList(dir.c_str(), "csv");
@@ -268,10 +273,9 @@ public:
 			}
 
 			if (m_focus != NULL) {
-				displayRect(*m_focus, getCol(240, 240, 180), true);
+				displayRect(*m_focus, getCol(220, 240, 220), true);
 			}
 		}
-
 		{
 			for (int i = 0; i < gts.size(); i++) {
 				displayLabel(gts[i]);
@@ -283,7 +287,20 @@ public:
 			ImGui::SetWindowPos(ImVec2(15, 115), ImGuiCond_Always);
 			ImGui::SetWindowSize(ImVec2(190, static_cast<float>(m_parent->m_wcam.dsize[1] - 135)), ImGuiCond_Always);
 
-			ImGui::Text("labels");
+			{
+				ImGui::BeginChild("label", ImVec2(0, 24));
+
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("labels");
+
+				ImGui::SameLine(0.0f, 67.0f);
+
+				if (ImGui::Button("add")) {
+					m_labelinfo.add(0, LabelInfo());
+					updateLabel(0, +1);
+				}
+				ImGui::EndChild();
+			}
 
 			for (int i = 0; i < m_labelinfo.size(); i++) {
 				char str[SP_STRMAX];
@@ -292,7 +309,8 @@ public:
 
 				ImGui::PushItemWidth(100);
 				ImGui::InputText("", m_labelinfo[i].name, SP_STRMAX);
-				
+				ImGui::PopItemWidth();
+
 				ImGui::SameLine();
 
 				if (ImGui::Button("add")) {
@@ -346,12 +364,14 @@ public:
 					if (normVec(p[i] - pix) * m_parent->m_viewScale < 10) {
 						*m_act = p[(i + 2) % 4];
 						m_edit = m_focus;
+						return;
 					}
 				}
 			}
 			if (m_edit != NULL && m_parent->m_mouse.bDownL == 0) {
 				m_edit->rect = andRect(m_edit->rect, getRect2(m_img.dsize));
 				m_edit = NULL;
+				m_make = NULL;
 				return;
 			}
 
@@ -363,19 +383,23 @@ public:
 				m_make = &gt;
 				m_make->rect = getRect2(pix);
 				m_make->label = -1;
+				return;
 			}
 
-			if (m_make != NULL && m_parent->m_mouse.bDownL == 0 && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 10) {
+			if (m_make != NULL && m_parent->m_mouse.bDownL == 0) {
 				m_make->rect = andRect(m_make->rect, getRect2(m_img.dsize));
-
-				RectGT *gt = gts.malloc();
-			
-				*gt = *m_make;
+				if (minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 5) {
+					RectGT *gt = gts.malloc();
+					*gt = *m_make;
+					m_focus = gt;
+				}
+				else {
+					m_focus = NULL;
+				}
 				m_make = NULL;
-				m_focus = gt;
+				return;
 			}
 		}
-
 	}
 
 	virtual void mousePos(double x, double y) {
