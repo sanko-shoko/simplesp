@@ -323,7 +323,7 @@ namespace sp {
 			m_keyAction[key] = static_cast<char>(action);
 
 #if SP_USE_IMGUI
-			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+			if (ImGui::GetIO().WantCaptureKeyboard) {
 				ImGui_ImplGlfwGL2_KeyCallback(NULL, key, scancode, action, mods);
 				return;
 			}
@@ -335,7 +335,10 @@ namespace sp {
 		void _charFun(unsigned int charInfo){
 
 #if SP_USE_IMGUI
-			ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
+			if (ImGui::GetIO().WantCaptureKeyboard) {
+				ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
+				return;
+		}
 #endif
 
 			charFun(charInfo);
