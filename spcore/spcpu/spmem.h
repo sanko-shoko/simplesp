@@ -326,7 +326,7 @@ namespace sp{
 		}
 
 		void del(const int x) {
-			for (int i = x; i < this->dsize[0]; i++) {
+			for (int i = x; i < this->dsize[0] - 1; i++) {
 				this->ptr[i] = this->ptr[i + 1];
 			}
 			pop();
