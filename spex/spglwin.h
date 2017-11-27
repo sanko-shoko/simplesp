@@ -17,8 +17,6 @@
 #include "simplesp.h"
 #include "GLFW/glfw3.h"
 
-#define SP_KEYMAX 400
-
 namespace sp {
 
 	//--------------------------------------------------------------------------------
@@ -148,6 +146,8 @@ namespace sp {
 		}
 
 	public:
+
+#define SP_KEYMAX 400
 
 		// keybord state
 		bool m_keyState[SP_KEYMAX];
@@ -301,6 +301,7 @@ namespace sp {
 #if SP_USE_IMGUI
 			if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
 				ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
+				m_mouse.setScroll(0.0, 0.0);
 				return;
 			}
 #endif
@@ -338,7 +339,7 @@ namespace sp {
 			if (ImGui::GetIO().WantCaptureKeyboard) {
 				ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
 				return;
-		}
+			}
 #endif
 
 			charFun(charInfo);

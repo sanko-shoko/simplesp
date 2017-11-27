@@ -37,14 +37,12 @@ private:
 	virtual void keyFun(int key, int scancode, int action, int mods) {
 
 		if (m_keyAction[GLFW_KEY_A] > 0) {
-			if (m_base->select(BaseMode::m_selectid + 1)) {
-				adjustImg();
-			}
+			m_base->select(BaseMode::m_selectid + 1);
+			adjustImg();
 		}
 		if (m_keyAction[GLFW_KEY_S] > 0) {
-			if (m_base->select(BaseMode::m_selectid - 1)) {
-				adjustImg();
-			}
+			m_base->select(BaseMode::m_selectid - 1);
+			adjustImg();
 		}
 	}
 
@@ -70,11 +68,9 @@ private:
 
 			if (ImGui::BeginMenu("file")) {
 
-				if (ImGui::MenuItem("open image dir")) {
-					if (BaseMode::open() == true) {
-						m_base->select(0);
-						adjustImg();
-					}
+				if (ImGui::MenuItem("open image dir") && BaseMode::open() == true) {
+					m_base->select(0);
+					adjustImg();
 				}
 				{
 					m_base->menu("file");
@@ -86,34 +82,29 @@ private:
 			ImGui::EndMainMenuBar();
 		}
 
-		if (BaseMode::m_imNames.size() != 0) {
+		if (BaseMode::isValid() == false) return;
 
-			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
-				int &selectid = BaseMode::m_selectid;
+		if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
 
-				ImGui::SetWindowPos(ImVec2(15, 35), ImGuiCond_Always);
-				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
+			ImGui::SetWindowRect(getRect2(15, 35, 190, 70), ImGuiCond_Always);
 
-				if (selectid >= 0) {
-					ImGui::Text(BaseMode::m_imNames[selectid].c_str());
-				}
+			{
+				ImGui::Text(BaseMode::m_imNames[BaseMode::m_selectid].c_str());
+			}
+			{
 				ImGui::PushItemWidth(110);
 
-				if (ImGui::InputInt("", &selectid, 1, 100)) {
-					m_base->select(selectid);
+				if (ImGui::InputInt("", &BaseMode::m_selectid, 1, 100)) {
+					m_base->select(BaseMode::m_selectid);
 					adjustImg();
 				}
 				ImGui::PopItemWidth();
-				{
-					ImGui::SameLine();
-					ImGui::Text("/ %d", BaseMode::m_imNames.size());
-				}
-				ImGui::End();
 			}
-		}
-
-		if (BaseMode::m_img.size() != 0) {
-			BaseMode::m_vmat = getViewMat(BaseMode::m_img.dsize[0], BaseMode::m_img.dsize[1], m_viewPos, m_viewScale);
+			{
+				ImGui::SameLine();
+				ImGui::Text("/ %d", BaseMode::m_imNames.size());
+			}
+			ImGui::End();
 		}
 
 		m_base->display();

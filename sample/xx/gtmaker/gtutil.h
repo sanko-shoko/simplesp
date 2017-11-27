@@ -9,8 +9,6 @@
 
 using namespace sp;
 
-#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)
-
 class BaseMode {
 
 public:
@@ -24,12 +22,10 @@ public:
 
 	static int m_selectid;
 
-	static Mat m_vmat;
 	static Mem2<Col3> m_img;
 
 	static void init(const BaseWindow *parent) {
 		m_parent = parent;
-		m_selectid = -1;
 	}
 
 	static bool open() {
@@ -38,6 +34,8 @@ public:
 		if (path == NULL) return false;
 
 		m_imNames = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
+		m_selectid = -1;
+
 		if (m_imNames.size() == 0) {
 			printf("no image in the directory");
 			return false;
@@ -50,10 +48,11 @@ public:
 			m_imDir = path;
 			m_gtDir = getTimeStamp();
 
-			m_selectid = -1;
-
 			return true;
 		}
+	}
+	static bool isValid() {
+		return (m_imNames.size() > 0 && m_img.size() > 0 && m_selectid >= 0) ? true : false;
 	}
 
 public:
@@ -61,8 +60,11 @@ public:
 	virtual void reset() {
 	}
 
-	virtual bool select(const int id) {
-		return false;
+	virtual void select(const int id) {
+		m_selectid = maxVal(0, minVal(m_imNames.size() - 1, id));
+
+		const string path = m_imDir + "\\" + m_imNames[m_selectid];
+		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
 	}
 
 	virtual void save() {
@@ -106,8 +108,7 @@ Mem1<string> BaseMode::m_gtNames;
 
 int BaseMode::m_selectid;
 
-Mat BaseMode::m_vmat;
-
 Mem2<Col3> BaseMode::m_img;
+
 
 #endif

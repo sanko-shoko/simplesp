@@ -15,45 +15,43 @@ private:
 
 	Mem1<MemP<RectGT>> m_gtdata;
 
-	RectGT *m_make;
-	RectGT *m_edit;
 	RectGT *m_focus;
-	Vec2 *m_act;
+	Vec2 *m_base;
 
 private:
 
-	void displayRect(const RectGT &gt, const Col3 &col, bool focus = false) {
-
-		for (int i = 0; i < 2; i++) {
-			glLineWidth(i == 0 ? 3.0f : 1.0f);
-			glBegin(GL_LINES);
-			glColor(i == 0 ? col / 4.0 : col);
-			glRect(gt.rect);
-			glEnd();
+	void displayRect(const RectGT &gt, const Col3 &col, bool focus) {
+		{
+			for (int i = 0; i < 2; i++) {
+				glLineWidth(i == 0 ? 3.0f : 1.0f);
+				glBegin(GL_LINES);
+				glColor(i == 0 ? col / 4.0 : col);
+				glRect(gt.rect);
+				glEnd();
+			}
 		}
-		if (focus == false) return;
-
-		for (int i = 0; i < 2; i++) {
-			glPointSize(i == 0 ? 5.0f : 3.0f);
-			glBegin(GL_POINTS);
-			glColor(i == 0 ? col / 4.0 : col);
-			glRect(gt.rect);
-			glEnd();
+		if (focus == true) {
+			for (int i = 0; i < 2; i++) {
+				glPointSize(i == 0 ? 5.0f : 3.0f);
+				glBegin(GL_POINTS);
+				glColor(i == 0 ? col / 4.0 : col);
+				glRect(gt.rect);
+				glEnd();
+			}
 		}
 	}
 
 	void displayLabel(RectGT &gt) {
-		const char *combolist[1000];
+		Mem1<const char *> combolist;
 		for (int i = 0; i < m_gtNames.size(); i++) {
-			combolist[i] = m_gtNames[i].c_str();
+			combolist.push(m_gtNames[i].c_str());
 		}
 
-		char str[SP_STRMAX];
-		sprintf(str, "RectGT %p", &gt);
-
-		if (ImGui::Begin(str, NULL, ImGuiWindowFlags_Block | ImGuiWindowFlags_NoFocusOnAppearing)) {
+		const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
+		
+		if (ImGui::Begin(strFormat("RectGT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
 			{
-				const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+				const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
 				ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
 			}
 
@@ -83,7 +81,7 @@ private:
 				ImGui::SameLine();
 
 				ImGui::PushItemWidth(100);
-				ImGui::Combo("", &gt.label, combolist, m_gtNames.size());
+				ImGui::Combo("", &gt.label, combolist.ptr, combolist.size());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
@@ -97,6 +95,7 @@ private:
 		}
 	}
 
+public:
 	void updateLabel(const int id, const int val) {
 		for (int i = 0; i < m_gtdata.size(); i++) {
 			MemP<RectGT> &gts = m_gtdata[i];
@@ -114,7 +113,6 @@ private:
 		}
 	}
 
-public:
 
 	RectMode(){
 		reset();
@@ -124,23 +122,15 @@ public:
 	}
 
 	virtual void reset() {
-		m_make = NULL;
-		m_edit = NULL;
 		m_focus = NULL;
-		m_act = NULL;
+		m_base = NULL;
 	}
 
-	virtual bool select(const int id) {
-		m_selectid = maxVal(0, minVal(m_imNames.size() - 1, id));
+	virtual void select(const int id) {
+		BaseMode::select(id);
 
 		reset();
-
-		const string path = m_imDir + "\\" + m_imNames[m_selectid];
-		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
-
 		m_gtdata.resize(m_imNames.size());
-
-		return true;
 	}
 
 	virtual void save() {
@@ -239,9 +229,9 @@ public:
 	}
 
 	virtual void menu(const char *name) {
-		if (m_selectid < 0) return;
+		if (isValid() == false) return;
 
-		if (::strcmp(name, "file") == 0) {
+		if (sp::strcmp(name, "file") == 0) {
 			if (ImGui::MenuItem("load gt")) {
 				load();
 			}
@@ -252,25 +242,20 @@ public:
 	}
 
 	virtual void display() {
-		if (m_img.size() == 0 || m_selectid < 0) return;
+		if (isValid() == false) return;
 
 		{
-			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
+			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
 			glRenderImage(m_img);
 		}
 
 		MemP<RectGT> &gts = m_gtdata[m_selectid];
 
 		{
-			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
-
-			if (m_make != NULL && minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 5) {
-				displayRect(*m_make, getCol(80, 180, 180));
-			}
+			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
 
 			for (int i = 0; i < gts.size(); i++) {
-				if (&gts[i] == m_focus) continue;
-				displayRect(gts[i], getCol(80, 180, 180));
+				displayRect(gts[i], getCol(80, 180, 180), false);
 			}
 
 			if (m_focus != NULL) {
@@ -282,35 +267,36 @@ public:
 			}
 		}
 
-		if (ImGui::Begin("gt info", NULL, ImGuiWindowFlags_Block)) {
 
-			ImGui::SetWindowPos(ImVec2(15, 115), ImGuiCond_Always);
-			ImGui::SetWindowSize(ImVec2(190, static_cast<float>(m_parent->m_wcam.dsize[1] - 135)), ImGuiCond_Always);
+		if (ImGui::Begin("label info", NULL, ImGuiWindowFlags_Block)) {
+
+			ImGui::SetWindowRect(getRect2(15, 115, 190, m_parent->m_wcam.dsize[1] - 135), ImGuiCond_Always);
 
 			{
 				ImGui::BeginChild("label", ImVec2(0, 24));
 
 				ImGui::AlignTextToFramePadding();
-				ImGui::Text("labels");
+				ImGui::Text("names");
 
-				ImGui::SameLine(0.0f, 67.0f);
+				ImGui::SameLine(0.0f, 74.0f);
 
 				if (ImGui::Button("add")) {
-					m_gtNames.add(0, "");
+					BaseMode::m_gtNames.add(0, "");
 					updateLabel(0, +1);
 				}
 				ImGui::EndChild();
 			}
 
-			for (int i = 0; i < m_gtNames.size(); i++) {
-				ImGui::BeginChild(strFormat("label%d", i).c_str(), ImVec2(0, 24));
+			for (int i = 0; i < BaseMode::m_gtNames.size(); i++) {
+				ImGui::BeginChild(strFormat("name%d", i).c_str(), ImVec2(0, 24));
 
 				{
-					ImGui::PushItemWidth(100);
 					char tmp[SP_STRMAX];
-					sp::strcpy(tmp, m_gtNames[i].c_str());
+					sp::strcpy(tmp, BaseMode::m_gtNames[i].c_str());
+
+					ImGui::PushItemWidth(100);
 					if (ImGui::InputText("", tmp, SP_STRMAX)) {
-						m_gtNames[i] = tmp;
+						BaseMode::m_gtNames[i] = tmp;
 					}
 					ImGui::PopItemWidth();
 				}
@@ -318,7 +304,7 @@ public:
 					ImGui::SameLine();
 
 					if (ImGui::Button("add")) {
-						m_gtNames.add(i + 1, "");
+						BaseMode::m_gtNames.add(i + 1, "");
 						updateLabel(i + 1, +1);
 					}
 				}
@@ -326,7 +312,7 @@ public:
 					ImGui::SameLine();
 
 					if (ImGui::Button("del")) {
-						m_gtNames.del(i);
+						BaseMode::m_gtNames.del(i);
 						updateLabel(i, -1);
 						i--;
 					}
@@ -336,28 +322,27 @@ public:
 
 			ImGui::End();
 		}
-
 	}
 
 	virtual void mouseButton(int button, int action, int mods) {
-		if (m_selectid < 0) return;
+		if (isValid() == false) return;
+
+		const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
+		const Vec2 pix = invMat(vmat) * m_parent->m_mouse.pos;
+
 		MemP<RectGT> &gts = m_gtdata[m_selectid];
 
-		const Vec2 pix = invMat(m_vmat) * m_parent->m_mouse.pos;
+		static Vec2 base;
+		m_base = (m_parent->m_mouse.bDownL == 1) ? &base : NULL;
 
-		if (m_parent->m_mouse.bDownL == 1) {
-			static Vec2 act;
-			act = pix;
-			m_act = &act;
-		}
-		else {
-			m_act = NULL;
-		}
+		static RectGT newgt;
 
-		if (m_focus != NULL) {
-			if (m_edit == NULL && m_parent->m_mouse.bDownL == 1) {
+		const double thresh = 10.0 / m_parent->m_viewScale;
+
+		if (m_focus != &newgt && m_focus != NULL) {
+			if (m_parent->m_mouse.bDownL == 1) {
 				const Vec2 a = getVec(m_focus->rect.dbase[0], m_focus->rect.dbase[1]);
-				const Vec2 b = getVec(m_focus->rect.dsize[0], m_focus->rect.dsize[1]);
+				const Vec2 b = getVec(m_focus->rect.dsize[0] - 1, m_focus->rect.dsize[1] - 1);
 
 				Vec2 p[4];
 				p[0] = a + getVec(0.0, 0.0);
@@ -365,59 +350,59 @@ public:
 				p[2] = a + getVec(b.x, b.y);
 				p[3] = a + getVec(0.0, b.y);
 
+				double minv = thresh;
 				for (int i = 0; i < 4; i++) {
-					if (normVec(p[i] - pix) * m_parent->m_viewScale < 10) {
-						*m_act = p[(i + 2) % 4];
-						m_edit = m_focus;
-						return;
+					const double norm = normVec(p[i] - pix);
+					if (norm < minv) {
+						minv = norm;
+						base = p[(i + 2) % 4];
 					}
 				}
+				if (minv < thresh) {
+					return;
+				}
+
 			}
-			if (m_edit != NULL && m_parent->m_mouse.bDownL == 0) {
-				m_edit->rect = andRect(m_edit->rect, getRect2(m_img.dsize));
-				m_edit = NULL;
-				m_make = NULL;
+			if (m_parent->m_mouse.bDownL == 0) {
+				m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
 				return;
 			}
 		}
 
-		if (m_edit == NULL) {
-			if (m_make == NULL && m_parent->m_mouse.bDownL == 1) {
-				static RectGT gt;
+		{
+			if (m_focus != &newgt && m_parent->m_mouse.bDownL == 1) {
 
-				m_make = &gt;
-				m_make->rect = getRect2(pix);
-				m_make->label = -1;
+				m_focus = &newgt;
+				m_focus->rect = getRect2(pix);
+				m_focus->label = -1;
+
+				base = pix;
 				return;
 			}
 
-			if (m_make != NULL && m_parent->m_mouse.bDownL == 0) {
-				m_make->rect = andRect(m_make->rect, getRect2(m_img.dsize));
-				if (minVal(m_make->rect.dsize[0], m_make->rect.dsize[1]) > 5) {
+			if (m_focus == &newgt && m_parent->m_mouse.bDownL == 0) {
+
+				if (minVal(m_focus->rect.dsize[0], m_focus->rect.dsize[1]) > thresh) {
 					RectGT *gt = gts.malloc();
-					*gt = *m_make;
+					*gt = *m_focus;
 					m_focus = gt;
 				}
 				else {
 					m_focus = NULL;
 				}
-				m_make = NULL;
 				return;
 			}
 		}
 	}
 
 	virtual void mousePos(double x, double y) {
-		if (m_selectid < 0) return;
+		if (isValid() == false) return;
 
-		const Vec2 pix = invMat(m_vmat) * m_parent->m_mouse.pos;
+		const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_parent->m_viewPos, m_parent->m_viewScale);
+		const Vec2 pix = invMat(vmat) * m_parent->m_mouse.pos;
 
-		if (m_make != NULL && m_act != NULL) {
-			m_make->rect = orRect(getRect2(pix), getRect2(*m_act));
-		}
-
-		if (m_edit != NULL && m_act != NULL) {
-			m_edit->rect = orRect(getRect2(pix), getRect2(*m_act));
+		if (m_focus != NULL && m_base != NULL) {
+			m_focus->rect = orRect(getRect2(pix), getRect2(*m_base));
 		}
 	}
 
