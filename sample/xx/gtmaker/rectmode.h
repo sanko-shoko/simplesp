@@ -15,8 +15,6 @@ private:
 
 	Mem1<MemP<RectGT>> m_gtdata;
 
-	Mem1<LabelInfo> m_labelinfo;
-
 	RectGT *m_make;
 	RectGT *m_edit;
 	RectGT *m_focus;
@@ -45,9 +43,9 @@ private:
 	}
 
 	void displayLabel(RectGT &gt) {
-		char *combolist[1000];
-		for (int i = 0; i < m_labelinfo.size(); i++) {
-			combolist[i] = m_labelinfo[i].name;
+		const char *combolist[1000];
+		for (int i = 0; i < m_gtNames.size(); i++) {
+			combolist[i] = m_gtNames[i].c_str();
 		}
 
 		char str[SP_STRMAX];
@@ -68,13 +66,13 @@ private:
 			if(&gt != m_focus){
 				ImGui::Text(">");
 
-				const int wsize = (gt.label >= 0) ? sp::strlen(m_labelinfo[gt.label].name) : 0;
+				const int wsize = (gt.label >= 0) ? sp::strlen(m_gtNames[gt.label].c_str()) : 0;
 			
 				ImGui::SetWindowSize(ImVec2(wsize * 8.0f + 30.0f, 35.0f), ImGuiCond_Always);
 
 				if (gt.label >= 0) {
 					ImGui::SameLine();
-					ImGui::Text(m_labelinfo[gt.label].name);
+					ImGui::Text(m_gtNames[gt.label].c_str());
 				}
 			}
 			else{
@@ -85,7 +83,7 @@ private:
 				ImGui::SameLine();
 
 				ImGui::PushItemWidth(100);
-				ImGui::Combo("", &gt.label, combolist, m_labelinfo.size());
+				ImGui::Combo("", &gt.label, combolist, m_gtNames.size());
 				ImGui::PopItemWidth();
 
 				ImGui::SameLine();
@@ -121,8 +119,8 @@ public:
 	RectMode(){
 		reset();
 
-		m_labelinfo.push(LabelInfo("dog"));
-		m_labelinfo.push(LabelInfo("cat"));
+		m_gtNames.push("dog");
+		m_gtNames.push("cat");
 	}
 
 	virtual void reset() {
@@ -133,14 +131,14 @@ public:
 	}
 
 	virtual bool select(const int id) {
-		m_selectid = maxVal(0, minVal(m_names.size() - 1, id));
+		m_selectid = maxVal(0, minVal(m_imNames.size() - 1, id));
 
 		reset();
 
-		const string path = m_imdir + "\\" + m_names[m_selectid];
+		const string path = m_imDir + "\\" + m_imNames[m_selectid];
 		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
 
-		m_gtdata.resize(m_names.size());
+		m_gtdata.resize(m_imNames.size());
 
 		return true;
 	}
@@ -148,25 +146,26 @@ public:
 	virtual void save() {
 		if (m_selectid < 0) return;
 
-		const string dir = string("rect_") + getTimeStamp();
-		mkdir(dir.c_str());
-
+		mkdir(m_gtDir.c_str());
 		{
-			File file((dir + "\\" + "_labels.csv").c_str(), "w");
+			File file((m_gtDir + "\\" + "names.csv").c_str(), "w");
 
-			file.printf("num, %d, \n", m_labelinfo.size());
+			file.printf("num, \n%d, \n", m_gtNames.size());
+			file.printf("index, name, \n");
 
-			for (int i = 0; i < m_labelinfo.size(); i++) {
-				file.printf("%s, \n", m_labelinfo[i].name);
+			for (int i = 0; i < m_gtNames.size(); i++) {
+				file.printf("%d, %s, \n", i, m_gtNames[i].c_str());
 			}
 		}
+
+		mkdir((m_gtDir + "\\rect").c_str());
 		for(int i = 0; i < m_gtdata.size(); i++){
 			MemP<RectGT> &gts = m_gtdata[i];
 			if (gts.size() == 0) continue;
 
-			File file((dir + "\\" + m_names[i] + ".csv").c_str(), "w");
+			File file((m_gtDir + "\\rect\\" + m_imNames[i] + ".csv").c_str(), "w");
 
-			file.printf("num, %d, \n", gts.size());
+			file.printf("num, \n%d, \n", gts.size());
 			file.printf("index, label, x, y, width, height\n");
 
 			for (int j = 0; j < gts.size(); j++) {
@@ -179,50 +178,51 @@ public:
 	}
 
 	virtual void load() {
-		const char *path = tinyfd_selectFolderDialog("select gt directory", getCrntDir().c_str());
+		const char *path = tinyfd_selectFolderDialog("select gt folder", getCrntDir().c_str());
 		if (path == NULL) return;
+
+		m_gtDir = path;
 
 		reset();
 
-		const string dir = path;
-		if (findFile((dir + "\\" + "_labels.csv").c_str()) == false) return;
-
-		const Mem1<string> names = getFileList(dir.c_str(), "csv");
+		if (findFile((m_gtDir + "\\" + "names.csv").c_str()) == false) return;
 
 		{
-			File file((dir + "\\" + "_labels.csv").c_str(), "r");
+			File file((m_gtDir + "\\" + "names.csv").c_str(), "r");
 
 			int num = 0;
-			file.scanf("num, %d, \n", &num);
-			file.scanf("index, label, x, y, width, height\n");
+			file.scanf("num, \n%d, \n", &num);
+			file.scanf("index, name, \n");
 
-			m_labelinfo.resize(num);
-			for (int i = 0; i < m_labelinfo.size(); i++) {
+			m_gtNames.resize(num);
+			for (int i = 0; i < m_gtNames.size(); i++) {
 				char str[SP_STRMAX];
 				file.gets(str);
 
-				const Mem1<string> split = strSplit(str);
-				::strcpy(m_labelinfo[i].name, (split.size() > 0) ? split[0].c_str() : "");
+				const Mem1<string> split = strSplit(str, ",");
+				m_gtNames[i] = (split.size() > 0) ? strTrim(split[1].c_str(), " ") : "";
 			}
 		}
 
-		for (int i = 0; i < m_names.size(); i++) {
+		const Mem1<string> names = getFileList((m_gtDir + "\\rect").c_str(), "csv");
+
+		for (int i = 0; i < m_imNames.size(); i++) {
 			MemP<RectGT> &gts = m_gtdata[i];
 			gts.clear();
 
 			string name;
 			for (int j = 0; j < names.size(); j++) {
-				if (names[j] == "_labels.csv" || names[j] != (m_names[i] + ".csv")) continue;
+				if (names[j] == "_labels.csv" || names[j] != (m_imNames[i] + ".csv")) continue;
 
 				name = names[j];
 				break;
 			}
 			if (name.size() == 0) continue;
 
-			File file((dir + "\\" + m_names[i] + ".csv").c_str(), "r");
+			File file((m_gtDir + "\\rect\\" + m_imNames[i] + ".csv").c_str(), "r");
 
 			int num = 0;
-			file.scanf("num, %d, \n", &num);
+			file.scanf("num, \n%d, \n", &num);
 			file.scanf("index, label, x, y, width, height\n");
 
 			for (int j = 0; j < num; j++) {
@@ -242,11 +242,11 @@ public:
 		if (m_selectid < 0) return;
 
 		if (::strcmp(name, "file") == 0) {
-			if (ImGui::MenuItem("save gt")) {
-				save();
-			}
 			if (ImGui::MenuItem("load gt")) {
 				load();
+			}
+			if (ImGui::MenuItem("save gt")) {
+				save();
 			}
 		}
 	}
@@ -260,6 +260,7 @@ public:
 		}
 
 		MemP<RectGT> &gts = m_gtdata[m_selectid];
+
 		{
 			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_vmat);
 
@@ -275,8 +276,7 @@ public:
 			if (m_focus != NULL) {
 				displayRect(*m_focus, getCol(220, 240, 220), true);
 			}
-		}
-		{
+		
 			for (int i = 0; i < gts.size(); i++) {
 				displayLabel(gts[i]);
 			}
@@ -296,36 +296,41 @@ public:
 				ImGui::SameLine(0.0f, 67.0f);
 
 				if (ImGui::Button("add")) {
-					m_labelinfo.add(0, LabelInfo());
+					m_gtNames.add(0, "");
 					updateLabel(0, +1);
 				}
 				ImGui::EndChild();
 			}
 
-			for (int i = 0; i < m_labelinfo.size(); i++) {
-				char str[SP_STRMAX];
-				sprintf(str, "label%d", i);
-				ImGui::BeginChild(str, ImVec2(0, 24));
+			for (int i = 0; i < m_gtNames.size(); i++) {
+				ImGui::BeginChild(strFormat("label%d", i).c_str(), ImVec2(0, 24));
 
-				ImGui::PushItemWidth(100);
-				ImGui::InputText("", m_labelinfo[i].name, SP_STRMAX);
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-
-				if (ImGui::Button("add")) {
-					m_labelinfo.add(i + 1, LabelInfo());
-					updateLabel(i + 1, +1);
+				{
+					ImGui::PushItemWidth(100);
+					char tmp[SP_STRMAX];
+					sp::strcpy(tmp, m_gtNames[i].c_str());
+					if (ImGui::InputText("", tmp, SP_STRMAX)) {
+						m_gtNames[i] = tmp;
+					}
+					ImGui::PopItemWidth();
 				}
+				{
+					ImGui::SameLine();
 
-				ImGui::SameLine();
-
-				if (ImGui::Button("del")) {
-					m_labelinfo.del(i);
-					updateLabel(i, -1);
-					i--;
+					if (ImGui::Button("add")) {
+						m_gtNames.add(i + 1, "");
+						updateLabel(i + 1, +1);
+					}
 				}
+				{
+					ImGui::SameLine();
 
+					if (ImGui::Button("del")) {
+						m_gtNames.del(i);
+						updateLabel(i, -1);
+						i--;
+					}
+				}
 				ImGui::EndChild();
 			}
 
@@ -374,8 +379,8 @@ public:
 				m_make = NULL;
 				return;
 			}
-
 		}
+
 		if (m_edit == NULL) {
 			if (m_make == NULL && m_parent->m_mouse.bDownL == 1) {
 				static RectGT gt;

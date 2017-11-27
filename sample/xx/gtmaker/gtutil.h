@@ -11,44 +11,16 @@ using namespace sp;
 
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove)
 
-
-class LabelInfo {
-
-public:
-	char name[SP_STRMAX];
-	Mem<LabelInfo> child;
-
-	LabelInfo() {
-		::strcpy(name, "");
-	}
-
-	LabelInfo(const char *name) {
-		sprintf(this->name, name);
-	}
-
-	LabelInfo(const LabelInfo &info) {
-		copy(info);
-	}
-
-	LabelInfo& operator = (const LabelInfo &info) {
-		copy(info);
-		return *this;
-	}
-
-	void copy(const LabelInfo &info) {
-		sprintf(this->name, info.name);
-		child = info.child;
-	}
-};
-
-
 class BaseMode {
 
 public:
 	static const BaseWindow *m_parent;
 	
-	static string m_imdir;
-	static Mem1<string> m_names;
+	static string m_imDir;
+	static Mem1<string> m_imNames;
+
+	static string m_gtDir;
+	static Mem1<string> m_gtNames;
 
 	static int m_selectid;
 
@@ -62,20 +34,22 @@ public:
 
 	static bool open() {
 
-		const char *path = tinyfd_selectFolderDialog("select image directory", getCrntDir().c_str());
+		const char *path = tinyfd_selectFolderDialog("select image folder", getCrntDir().c_str());
 		if (path == NULL) return false;
 
-		m_names = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
-		if (m_names.size() == 0) {
+		m_imNames = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
+		if (m_imNames.size() == 0) {
 			printf("no image in the directory");
 			return false;
 		}
 		else {
-			for (int i = 0; i < m_names.size(); i++) {
-				printf("%06d %s\n", i, m_names[i].c_str());
+			for (int i = 0; i < m_imNames.size(); i++) {
+				printf("%06d %s\n", i, m_imNames[i].c_str());
 			}
 
-			m_imdir = path;
+			m_imDir = path;
+			m_gtDir = getTimeStamp();
+
 			m_selectid = -1;
 
 			return true;
@@ -125,8 +99,10 @@ public:
 
 const BaseWindow *BaseMode::m_parent;
 
-string BaseMode::m_imdir;
-Mem1<string> BaseMode::m_names;
+string BaseMode::m_imDir;
+string BaseMode::m_gtDir;
+Mem1<string> BaseMode::m_imNames;
+Mem1<string> BaseMode::m_gtNames;
 
 int BaseMode::m_selectid;
 
