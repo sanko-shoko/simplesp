@@ -70,7 +70,7 @@ private:
 
 			if (ImGui::BeginMenu("file")) {
 
-				if (ImGui::MenuItem("open dir")) {
+				if (ImGui::MenuItem("open image dir")) {
 					if (BaseMode::open() == true) {
 						m_base->select(0);
 						adjustImg();
@@ -86,8 +86,7 @@ private:
 			ImGui::EndMainMenuBar();
 		}
 
-		const Mem1<string> &names = BaseMode::m_names;
-		if (names.size() != 0) {
+		if (BaseMode::m_imNames.size() != 0) {
 
 			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
 				int &selectid = BaseMode::m_selectid;
@@ -96,7 +95,7 @@ private:
 				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
 
 				if (selectid >= 0) {
-					ImGui::Text(BaseMode::m_names[selectid].c_str());
+					ImGui::Text(BaseMode::m_imNames[selectid].c_str());
 				}
 				ImGui::PushItemWidth(110);
 
@@ -107,15 +106,14 @@ private:
 				ImGui::PopItemWidth();
 				{
 					ImGui::SameLine();
-					ImGui::Text("/ %d", BaseMode::m_names.size());
+					ImGui::Text("/ %d", BaseMode::m_imNames.size());
 				}
 				ImGui::End();
 			}
 		}
 
-		const Mem2<Col3> &img = BaseMode::m_img;
-		if (img.size() != 0) {
-			BaseMode::m_vmat = getViewMat(img.dsize[0], img.dsize[1], m_viewPos, m_viewScale);
+		if (BaseMode::m_img.size() != 0) {
+			BaseMode::m_vmat = getViewMat(BaseMode::m_img.dsize[0], BaseMode::m_img.dsize[1], m_viewPos, m_viewScale);
 		}
 
 		m_base->display();
