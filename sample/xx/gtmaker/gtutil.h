@@ -79,7 +79,7 @@ public:
 			File file;
 			if (file.open((wkDir + "\\labels.csv").c_str(), "r") == false) return false;
 
-			file.scanf("index, name, \n");
+			file.scanf("index,name,\n");
 
 			char str[SP_STRMAX];
 			while (file.gets(str) == true) {
@@ -98,7 +98,7 @@ public:
 				File file;
 				if (file.open((wkDir + "\\rect\\" + imNames[i] + ".csv").c_str(), "r") == false) continue;
 
-				file.scanf("index, label, x, y, width, height, \n");
+				file.scanf("index,label,x,y,width,height,\n");
 
 				char str[SP_STRMAX];
 				while (file.gets(str) == true) {
@@ -108,7 +108,7 @@ public:
 					int buf;
 					RectGT &gt = *gts.malloc();
 					gt.rect.dim = 2;
-					sscanf(str, "%d, %d, %d, %d, %d, %d, \n", &buf, &gt.label, &gt.rect.dbase[0], &gt.rect.dbase[1], &gt.rect.dsize[0], &gt.rect.dsize[1]);
+					sscanf(str, "%d,%d,%d,%d,%d,%d,\n", &buf, &gt.label, &gt.rect.dbase[0], &gt.rect.dbase[1], &gt.rect.dsize[0], &gt.rect.dsize[1]);
 				}
 			}
 		}
@@ -141,10 +141,10 @@ public:
 			File file;
 			SP_ASSERT(file.open((wkDir + "\\labels.csv").c_str(), "w"));
 
-			file.printf("index, name, \n");
+			file.printf("index,name,\n");
 
 			for (int i = 0; i < gtNames.size(); i++) {
-				file.printf("%d, %s, \n", i, gtNames[i].c_str());
+				file.printf("%d,%s,\n", i, gtNames[i].c_str());
 			}
 		}
 
@@ -159,11 +159,11 @@ public:
 				File file;
 				SP_ASSERT(file.open((wkDir + "\\rect\\" + imNames[i] + ".csv").c_str(), "w"));
 
-				file.printf("index, label, x, y, width, height, \n");
+				file.printf("index,label,x,y,width,height,\n");
 
 				for (int j = 0; j < gts.size(); j++) {
 					const RectGT &gt = gts[j];
-					file.printf("%d, %d, %d, %d, %d, %d, \n", j, gt.label, gt.rect.dbase[0], gt.rect.dbase[1], gt.rect.dsize[0], gt.rect.dsize[1]);
+					file.printf("%d,%d,%d,%d,%d,%d,\n", j, gt.label, gt.rect.dbase[0], gt.rect.dbase[1], gt.rect.dsize[0], gt.rect.dsize[1]);
 				}
 			}
 		}
