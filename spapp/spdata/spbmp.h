@@ -11,7 +11,7 @@
 namespace sp{
 
 	SP_CPUFUNC bool loadBMP(Mem<Col3> &dst, const char *path){
-		if (checkFileExt(path, "bmp,BMP") == false) return false;
+		if (cmpFileExt(path, "bmp, BMP") == false) return false;
 
 		File file;
 		if (file.open(path, "rb") == false) return false;

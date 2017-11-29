@@ -336,6 +336,9 @@ namespace sp{
 			return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
 		}
 
+		const TYPE* last() const {
+			return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
+		}
 	};
 
 

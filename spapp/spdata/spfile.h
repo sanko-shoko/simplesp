@@ -36,28 +36,7 @@ namespace sp {
 		return string(str);
 	}
 
-	SP_CPUFUNC string getCrntDir() {
-		char dir[SP_STRMAX];
-#if WIN32
-		GetCurrentDirectory(SP_STRMAX, dir);
-#else
-		getcwd(dir, SP_STRMAX);
-#endif
-		return string(dir);
-	}
-
-	SP_CPUFUNC bool findFile(const char *path) {
-		FILE *fp = ::fopen(path, "r");
-		if (fp != NULL) {
-			::fclose(fp);
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	SP_CPUFUNC bool checkFileExt(const char *path, const char *ext) {
+	SP_CPUFUNC bool cmpFileExt(const char *path, const char *ext) {
 		if (ext == NULL) return false;
 
 		Mem1<string> exts = strSplit(ext);
@@ -71,6 +50,17 @@ namespace sp {
 			}
 		}
 		return ret;
+	}
+
+
+	SP_CPUFUNC string getCrntDir() {
+		char dir[SP_STRMAX];
+#if WIN32
+		GetCurrentDirectory(SP_STRMAX, dir);
+#else
+		getcwd(dir, SP_STRMAX);
+#endif
+		return string(dir);
 	}
 
 	SP_CPUFUNC Mem1<string> getFileList(const char *dir, const char *ext = NULL) {
@@ -99,7 +89,7 @@ namespace sp {
 		FindClose(handle);
 
 		for (int i = 0; i < all.size(); i++) {
-			if (checkFileExt(all[i].c_str(), ext) == true) {
+			if (cmpFileExt(all[i].c_str(), ext) == true) {
 				list.push(all[i]);
 			}
 		}

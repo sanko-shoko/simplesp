@@ -330,12 +330,6 @@ namespace ImGui {
 		ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
 		ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
 	}
-	void SetWindowPos(const sp::Vec2 &vec, const ImGuiCond cond) {
-		ImGui::SetWindowPos(ImVec2(static_cast<float>(vec.x), static_cast<float>(vec.y)), ImGuiCond_Always);
-	}
-	void SetWindowSize(const sp::Vec2 &vec, const ImGuiCond cond) {
-		ImGui::SetWindowSize(ImVec2(static_cast<float>(vec.x), static_cast<float>(vec.y)), ImGuiCond_Always);
-	}
 }
 #endif
 
