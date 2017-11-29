@@ -320,4 +320,18 @@ namespace sp{
 
 }
 
+#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
+
+#if SP_USE_IMGUI
+namespace ImGui {
+	SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
+		SP_ASSERT(rect.dim == 2);
+
+		ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
+		ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
+	}
+}
+#endif
+
+
 #endif

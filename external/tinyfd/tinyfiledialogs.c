@@ -3004,6 +3004,8 @@ char const * tinyfd_openFileDialog(
     int const aAllowMultipleSelects ) /* 0 or 1 */
 {
 	static char lBuff[MAX_MULTIPLE_FILES*MAX_PATH_OR_CMD];
+	memset(lBuff, 0, MAX_PATH_OR_CMD);
+
 	char const * p ;
 #ifndef TINYFD_NOLIB
 	if ( ( !tinyfd_forceConsole || !( GetConsoleWindow() || dialogPresent() ) )
@@ -3059,6 +3061,8 @@ char const * tinyfd_selectFolderDialog(
 	char const * const aDefaultPath ) /* NULL or "" */
 {
     static char lBuff [MAX_PATH_OR_CMD] ;
+	memset(lBuff, 0, MAX_PATH_OR_CMD);
+	
 	char const * p ;
 #ifndef TINYFD_NOLIB
 	if ( ( !tinyfd_forceConsole || !( GetConsoleWindow() || dialogPresent() ) )

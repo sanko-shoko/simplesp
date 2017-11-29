@@ -1,67 +1,68 @@
-﻿#define SP_USE_IMGUI 1
+﻿#ifndef __GTMAKER__
+#define __GTMAKER__
 
 #include "gtutil.h"
-#include "rectmode.h"
 
 using namespace sp;
 
 class GTMakerGUI : public BaseWindow {
 
-	BaseMode *m_base;
+private:
+	DataBase m_database;
+
+	Mem2<Col3> m_img;
+
+	int m_selectid;
+
+	RectGT *m_focus;
+	Vec2 *m_base;
+
+private:
+	void dispRectGT();
+
+	void dispDataBase();
+
+public:
+
+	GTMakerGUI() {
+		reset();
+
+		m_database.gtNames.push("dog");
+		m_database.gtNames.push("cat");
+	}
+
+	void reset() {
+		m_focus = NULL;
+		m_base = NULL;
+	}
 
 private:
 
-	void help() {
-		//printf("1. open image directory\n");
-		//printf("2. edit labels (dog, cat, ...)\n");
-		//printf("3. set rectangles (left click and drag)\n");
-		//printf("\n");
+	void select(const int id) {
+		m_selectid = maxVal(0, minVal(m_database.imNames.size() - 1, id));
 
-		//printf("[shortcut]\n");
-		//printf("a key : image ++\n");
-		//printf("s key : image --\n");
-		//printf("space key + mouse : adjust image size and position\n");
-		//printf("\n");
-	}
+		const string path = m_database.imDir + "\\" + m_database.imNames[m_selectid];
+		SP_ASSERT(cvLoadImg(m_img, path.c_str()));
+		reset();
+		m_database.gtsList.resize(m_database.imNames.size());
 
-	virtual void init() {
-		help();
-
-		ImGui::GetIO().IniFilename = NULL;
-
-		BaseMode::init(this);
-
-		selectMode(0);
-	}
-
-	virtual void keyFun(int key, int scancode, int action, int mods) {
-
-		if (m_keyAction[GLFW_KEY_A] > 0) {
-			if (m_base->select(BaseMode::m_selectid + 1)) {
-				adjustImg();
-			}
-		}
-		if (m_keyAction[GLFW_KEY_S] > 0) {
-			if (m_base->select(BaseMode::m_selectid - 1)) {
-				adjustImg();
-			}
-		}
-	}
-
-	void selectMode(const int mode) {
-		static RectMode rectmode;
-
-		switch (mode) {
-		case 0: m_base = &rectmode; break;
-		}
+		adjustImg();
 	}
 
 	void adjustImg() {
-		const Mem<Col3> &img = BaseMode::m_img;
-		if (img.size() == 0) return;
+		if (m_img.size() == 0) return;
 
 		m_viewPos = getVec(100.0, 10.0);
-		m_viewScale = 0.92 * minVal(static_cast<double>(m_wcam.dsize[0] - 180) / img.dsize[0], static_cast<double>(m_wcam.dsize[1]) / img.dsize[1]);
+		m_viewScale = 0.92 * minVal(static_cast<double>(m_wcam.dsize[0] - 180) / m_img.dsize[0], static_cast<double>(m_wcam.dsize[1]) / m_img.dsize[1]);
+	}
+
+
+private:
+
+	virtual void init() {
+
+		ImGui::GetIO().IniFilename = NULL;
+
 	}
 
 	virtual void display() {
@@ -70,14 +71,8 @@ private:
 
 			if (ImGui::BeginMenu("file")) {
 
-				if (ImGui::MenuItem("open image dir")) {
-					if (BaseMode::open() == true) {
-						m_base->select(0);
-						adjustImg();
-					}
-				}
-				{
-					m_base->menu("file");
+				if (ImGui::MenuItem("open image dir") && m_database.open_imDir()) {
+					select(0);
 				}
 
 				ImGui::EndMenu();
@@ -86,60 +81,118 @@ private:
 			ImGui::EndMainMenuBar();
 		}
 
-		if (BaseMode::m_imNames.size() != 0) {
-
-			if (ImGui::Begin("dataset", NULL, ImGuiWindowFlags_Block)) {
-				int &selectid = BaseMode::m_selectid;
-
-				ImGui::SetWindowPos(ImVec2(15, 35), ImGuiCond_Always);
-				ImGui::SetWindowSize(ImVec2(190, 70), ImGuiCond_Always);
-
-				if (selectid >= 0) {
-					ImGui::Text(BaseMode::m_imNames[selectid].c_str());
-				}
-				ImGui::PushItemWidth(110);
-
-				if (ImGui::InputInt("", &selectid, 1, 100)) {
-					m_base->select(selectid);
-					adjustImg();
-				}
-				ImGui::PopItemWidth();
-				{
-					ImGui::SameLine();
-					ImGui::Text("/ %d", BaseMode::m_imNames.size());
-				}
-				ImGui::End();
-			}
+		{
+			glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+			glRenderImage(m_img);
 		}
 
-		if (BaseMode::m_img.size() != 0) {
-			BaseMode::m_vmat = getViewMat(BaseMode::m_img.dsize[0], BaseMode::m_img.dsize[1], m_viewPos, m_viewScale);
-		}
+		dispRectGT();
 
-		m_base->display();
+		dispDataBase();
 	}
 
 	virtual void windowSize(int width, int height) {
+		if (m_database.isValid() == false) return;
+
 		adjustImg();
 	}
 
-	virtual void mouseButton(int button, int action, int mods) {
-		if (m_base != NULL) {
-			m_base->mouseButton(button, action, mods);
+	virtual void keyFun(int key, int scancode, int action, int mods) {
+		if (m_database.isValid() == false) return;
+
+		if (m_keyAction[GLFW_KEY_A] > 0) {
+			select(m_selectid + 1);
+		}
+		if (m_keyAction[GLFW_KEY_S] > 0) {
+			select(m_selectid - 1);
 		}
 	}
 
+	virtual void mouseButton(int button, int action, int mods) {
+		if (m_database.isValid() == false) return;
+
+		const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+		const Vec2 pix = invMat(vmat) * m_mouse.pos;
+
+		MemP<RectGT> &gts = m_database.gtsList[m_selectid];
+
+		static Vec2 base;
+		m_base = (m_mouse.bDownL == 1) ? &base : NULL;
+
+		static RectGT newgt;
+
+		const double thresh = 10.0 / m_viewScale;
+
+		if (m_focus != &newgt && m_focus != NULL) {
+			if (m_mouse.bDownL == 1) {
+				const Vec2 a = getVec(m_focus->rect.dbase[0], m_focus->rect.dbase[1]);
+				const Vec2 b = getVec(m_focus->rect.dsize[0] - 1, m_focus->rect.dsize[1] - 1);
+
+				Vec2 p[4];
+				p[0] = a + getVec(0.0, 0.0);
+				p[1] = a + getVec(b.x, 0.0);
+				p[2] = a + getVec(b.x, b.y);
+				p[3] = a + getVec(0.0, b.y);
+
+				double minv = thresh;
+				for (int i = 0; i < 4; i++) {
+					const double norm = normVec(p[i] - pix);
+					if (norm < minv) {
+						minv = norm;
+						base = p[(i + 2) % 4];
+					}
+				}
+				if (minv < thresh) {
+					return;
+				}
+
+			}
+			if (m_mouse.bDownL == 0) {
+				m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
+				return;
+			}
+		}
+
+		{
+			if (m_focus != &newgt && m_mouse.bDownL == 1) {
+
+				m_focus = &newgt;
+				m_focus->rect = getRect2(pix);
+				m_focus->label = -1;
+
+				base = pix;
+				return;
+			}
+
+			if (m_focus == &newgt && m_mouse.bDownL == 0) {
+
+				if (minVal(m_focus->rect.dsize[0], m_focus->rect.dsize[1]) > thresh) {
+					RectGT *gt = gts.malloc();
+					*gt = *m_focus;
+					m_focus = gt;
+					m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
+				}
+				else {
+					m_focus = NULL;
+				}
+				return;
+			}
+		}
+	}
 	virtual void mousePos(double x, double y) {
-		if (m_base != NULL) {
-			m_base->mousePos(x, y);
+		if (m_database.isValid() == false) return;
+
+		const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+		const Vec2 pix = invMat(vmat) * m_mouse.pos;
+
+		if (m_focus != NULL && m_base != NULL) {
+			m_focus->rect = orRect(getRect2(pix), getRect2(*m_base));
 		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
-		if (m_base != NULL) {
-			m_base->mouseScroll(x, y);
-		}
 	}
 
 };
 
+#endif

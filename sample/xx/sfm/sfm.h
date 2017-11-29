@@ -60,7 +60,7 @@ private:
 		
 		// set cam parameter
 		for (int i = 0; i < num; i++) {
-			if (checkFileExt(paths[i], "txt") == true) {
+			if (cmpFileExt(paths[i], "txt") == true) {
 				SP_ASSERT(loadText(cam, paths[i]));
 				break;
 			}
@@ -70,7 +70,7 @@ private:
 		for (int i = 0; i < num; i++) {
 			printf("\raddData [%s]", progressBar(i, num));
 
-			if (checkFileExt(paths[i], "txt") == false) {
+			if (cmpFileExt(paths[i], "txt") == false) {
 				Mem2<Col3> img;
 				SP_ASSERT(cvLoadImg(img, paths[i]));
 
