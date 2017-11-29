@@ -1,6 +1,8 @@
 ﻿#ifndef __GTUTIL__
 #define __GTUTIL__
 
+#define SP_USE_IMGUI 1
+
 #include "simplesp.h"
 #include "spex/spgl.h"
 #include "spex/spcv.h"
@@ -38,6 +40,10 @@ public:
 		wkDir = getTimeStamp();
 	}
 
+	bool isValid() {
+		return (imNames.size() > 0) ? true : false;
+	}
+
 	bool open_imDir() {
 
 		const char *path = tinyfd_selectFolderDialog("open image dir", getCrntDir().c_str());
@@ -48,16 +54,16 @@ public:
 		
 		gtsList.resize(imNames.size());
 
-		if (imNames.size() == 0) {
-			printf("no image in the directory");
-			return false;
-		}
-		else {
+		if (imNames.size() > 0) {
 			for (int i = 0; i < imNames.size(); i++) {
 				printf("%06d %s\n", i, imNames[i].c_str());
 			}
-			return true;
 		}
+		else {
+			printf("no image in the directory");
+		}
+
+		return isValid();
 	}
 
 	bool open_wkDir() {
@@ -71,7 +77,7 @@ public:
 
 		{
 			File file;
-			if (file.open((wkDir + "\\label_names.csv").c_str(), "r") == false) return false;
+			if (file.open((wkDir + "\\labels.csv").c_str(), "r") == false) return false;
 
 			file.scanf("index, name, \n");
 
@@ -133,7 +139,7 @@ public:
 			mkdir(wkDir.c_str());
 
 			File file;
-			SP_ASSERT(file.open((wkDir + "\\label_names.csv").c_str(), "w"));
+			SP_ASSERT(file.open((wkDir + "\\labels.csv").c_str(), "w"));
 
 			file.printf("index, name, \n");
 

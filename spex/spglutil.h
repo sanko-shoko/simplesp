@@ -324,7 +324,7 @@ namespace sp{
 
 #if SP_USE_IMGUI
 namespace ImGui {
-	void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
+	SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
 		SP_ASSERT(rect.dim == 2);
 
 		ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
