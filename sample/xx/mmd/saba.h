@@ -24,7 +24,7 @@
 #include <time.h>
 
 #include "spex/splocale.h"
-#include "glfw3.h"
+#include "GLFW/glfw3.h"
 #include "opencv2/opencv.hpp"
 
 namespace sp {

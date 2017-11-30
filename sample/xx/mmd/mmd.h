@@ -42,29 +42,29 @@ private:
 	virtual void drop(int num, const char **paths) {
 
 		for (int i = 0; i < num; i++) {
-			if (checkFileExt(paths[i], "pmx")) {
+			if (cmpFileExt(paths[i], "pmx")) {
 				m_model.loadPMX(paths[i]);
 			}
-			if (checkFileExt(paths[i], "pmd")) {
+			if (cmpFileExt(paths[i], "pmd")) {
 				m_model.loadPMD(paths[i]);
 			}
-			if (checkFileExt(paths[i], "vmd")) {
+			if (cmpFileExt(paths[i], "vmd")) {
 				m_model.loadVMD(paths[i]);
 				m_timer.start();
 			}
 		}
 	}
 
-	virtual void action() {
+	virtual void keyFun(int key, int scancode, int action, int mods) {
 
-		if (m_keyAction == GLFW_KEY_D) {
+		if (m_keyAction[GLFW_KEY_D]) {
 			m_diminish ^= true;
 		}
-		if (m_keyAction == GLFW_KEY_R) {
+		if (m_keyAction[GLFW_KEY_R]) {
 			m_timer.reset();
 		}
 
-		if (m_keyAction == GLFW_KEY_S) {
+		if (m_keyAction[GLFW_KEY_S]) {
 			if (m_timer.status == true) {
 				m_timer.stop();
 			}
@@ -72,10 +72,10 @@ private:
 				m_timer.start();
 			}
 		}
-		if (m_keyAction == GLFW_KEY_P) {
+		if (m_keyAction[GLFW_KEY_P]) {
 			m_timer.addTime(+0.1f);
 		}
-		if (m_keyAction == GLFW_KEY_M) {
+		if (m_keyAction[GLFW_KEY_M]) {
 			m_timer.addTime(-0.1f);
 		}
 
@@ -90,7 +90,7 @@ private:
 
 			}
 
-			if (m_keyAction == GLFW_KEY_C) {
+			if (m_keyAction[GLFW_KEY_C]) {
 				CamParam cam;
 				const double rms = calibCam(cam, m_dotMarker.getCam().dsize[0], m_dotMarker.getCam().dsize[1], pixsList, objsList);
 				if (rms >= 0.0) {
