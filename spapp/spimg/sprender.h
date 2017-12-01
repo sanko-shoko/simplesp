@@ -368,6 +368,50 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
+	// render calibration board
+	//--------------------------------------------------------------------------------
+
+	SP_CPUFUNC void renderMarker(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem2<Vec2> &mrkMap) {
+		dst.resize(cam.dsize);
+		setElm(dst, 255);
+
+		const double radius = normVec(mrkMap[0] - mrkMap[1]) * 0.1;
+
+		const Vec3 base = pose * getVec(0.0, 0.0, 0.0);
+		const Vec3 A = pose * getVec(1.0, 0.0, 0.0) - base;
+		const Vec3 B = pose * getVec(0.0, 1.0, 0.0) - base;
+
+		double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
+		double val[3] = { base.x, base.y, base.z };
+
+		for (int v = 0; v < dst.dsize[1]; v++) {
+			for (int u = 0; u < dst.dsize[0]; u++) {
+				const Vec2 prj = npxUndist(cam, invCam(cam, getVec(u, v)));
+				const Vec3 vec = getVec(prj.x, prj.y, 1.0);
+
+				mat[0 * 3 + 2] = vec.x;
+				mat[1 * 3 + 2] = vec.y;
+				mat[2 * 3 + 2] = vec.z;
+
+				double inv[3 * 3];
+				if (invMat33(inv, mat) == false) continue;
+
+				double result[3];
+				mulMat(result, 3, 1, inv, 3, 3, val, 3, 1);
+
+				const Vec2 pos = getVec(result[0], result[1]);
+
+				for (int i = 0; i < mrkMap.size(); i++) {
+					if (normVec(pos - mrkMap[i]) < radius) {
+						dst(u, v) = 0;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------
 	// render graph
 	//--------------------------------------------------------------------------------
 
@@ -434,6 +478,7 @@ namespace sp{
 			}
 		}
 	};
+
 
 
 }

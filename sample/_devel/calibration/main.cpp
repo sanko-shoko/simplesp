@@ -2,7 +2,6 @@
 #include "spex/spcv.h"
 
 using namespace sp;
-void renderBoardImg(Mem2<Col3> &dst, const CamParam &cam, const Pose &pose, const Mem2<Vec2> &mrkMap, const double circleRadius);
 
 int main(){
 	
@@ -116,11 +115,11 @@ int main(){
 		printf("cam test (generate test images)\n");
 		printf("--------------------------------------------------------------------------------\n");
 
-		Mem1<Mem2<Col3> > imgList(poses.size());
+		Mem1<Mem2<Byte> > imgList(poses.size());
 
 		// generate test images
 		for (int i = 0; i < poses.size(); i++){
-			renderBoardImg(imgList[i], cam, poses[i], mrkMap, mrk.distance / 10.0);
+			renderMarker(imgList[i], cam, poses[i], mrkMap);
 			char str[256];
 			sprintf(str, "test%02d.bmp", i);
 			saveBMP(imgList[i], str);
@@ -166,8 +165,8 @@ int main(){
 
 			const Size boardSize(mrk.map.dsize[0], mrk.map.dsize[1]);
 			for (int i = 0; i < imgList.size(); i++){
-				cv::Mat img(cam.dsize[1], cam.dsize[0], CV_8UC3);
-				memcpy(img.ptr(), imgList[i].ptr, imgList[i].size() * 3);
+				cv::Mat img(cam.dsize[1], cam.dsize[0], CV_8UC1);
+				memcpy(img.ptr(), imgList[i].ptr, imgList[i].size());
 				imwrite("test.png", img);
 				vector<cv::Point2f> pointbuf;
 				const bool found = findCirclesGrid(img, boardSize, pointbuf);
@@ -289,44 +288,3 @@ int main(){
 	return 0;
 }
 
-
-void renderBoardImg(Mem2<Col3> &dst, const CamParam &cam, const Pose &pose, const Mem2<Vec2> &mrkMap, const double circleRadius){
-	dst.resize(cam.dsize);
-
-	for (int i = 0; i < dst.size(); i++){
-		dst[i] = getCol(255, 255, 255);
-	}
-
-	const Vec3 base = pose * getVec(0.0, 0.0, 0.0);
-	const Vec3 A = pose * getVec(1.0, 0.0, 0.0) - base;
-	const Vec3 B = pose * getVec(0.0, 1.0, 0.0) - base;
-
-	double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
-	double val[3] = { base.x, base.y, base.z };
-
-	for (int v = 0; v < dst.dsize[1]; v++){
-		for (int u = 0; u < dst.dsize[0]; u++){
-			const Vec2 prj = npxUndist(cam, invCam(cam, getVec(u, v)));
-			const Vec3 vec = getVec(prj.x, prj.y, 1.0);
-
-			mat[0 * 3 + 2] = vec.x;
-			mat[1 * 3 + 2] = vec.y;
-			mat[2 * 3 + 2] = vec.z;
-
-			double inv[3 * 3];
-			if (invMat33(inv, mat) == false) continue;
-
-			double result[3];
-			mulMat(result, 3, 1, inv, 3, 3, val, 3, 1);
-
-			const Vec2 pos = getVec(result[0], result[1]);
-
-			for (int i = 0; i < mrkMap.size(); i++){
-				if (normVec(pos - mrkMap[i]) < circleRadius){
-					dst(u, v) = getCol(0, 0, 0);
-					break;
-				}
-			}
-		}
-	}
-}

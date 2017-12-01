@@ -26,7 +26,7 @@ int main(){
 		SP_LOGGER_SET("boxfilter integral");
 	
 		Mem2<int> sum;
-		integral(sum, src);
+		makeIntegral(sum, src);
 		boxFilterIntegral(dst1, sum, 21);
 	}
 
