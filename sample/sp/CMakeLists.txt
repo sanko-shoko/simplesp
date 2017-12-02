@@ -22,6 +22,7 @@ add_subdirectory(opticalflow)
 add_subdirectory(fmat)
 add_subdirectory(rect)
 add_subdirectory(stereo)
+add_subdirectory(robotcam)
 
 ## learn
 add_subdirectory(train)

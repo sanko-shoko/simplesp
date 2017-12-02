@@ -88,11 +88,11 @@ namespace sp {
 	}
 
 	SP_CPUFUNC void print(const Vec2 &vec) {
-		SP_PRINTF("Vec2 [ %.5lf %.5lf ]\n", vec.x, vec.y);
+		SP_PRINTF("Vec2 [ %+.5lf %+.5lf ]\n", vec.x, vec.y);
 	}
 
 	SP_CPUFUNC void print(const Vec3 &vec) {
-		SP_PRINTF("Vec3 [ %.5lf %.5lf %.5lf ]\n", vec.x, vec.y, vec.z);
+		SP_PRINTF("Vec3 [ %+.5lf %+.5lf %+.5lf ]\n", vec.x, vec.y, vec.z);
 	}
 
 	SP_CPUFUNC void print(const Col3 &col) {
@@ -165,7 +165,7 @@ namespace sp {
 	}
 
 	SP_CPUFUNC void print(const Rot &rot) {
-		SP_PRINTF("Rot [ %.5lf %.5lf %.5lf %.5lf ]\n", rot.qx, rot.qy, rot.qz, rot.qw);
+		SP_PRINTF("Rot [ %+.5lf %+.5lf %+.5lf %+.5lf ]\n", rot.qx, rot.qy, rot.qz, rot.qw);
 	}
 
 	SP_CPUFUNC void print(const Pose &pose) {
@@ -180,8 +180,8 @@ namespace sp {
 		SP_PRINTF("size %d %d\n", cam.dsize[0], cam.dsize[1]);
 		SP_PRINTF("fx %.5lf, fy %.5lf\n", cam.fx, cam.fy);
 		SP_PRINTF("cx %.5lf, cy %.5lf\n", cam.cx, cam.cy);
-		SP_PRINTF("k1 %.5lf, k2 %.5lf, k3 %.5lf\n", cam.k1, cam.k2, cam.k3);
-		SP_PRINTF("p1 %.5lf, p2 %.5lf\n", cam.p1, cam.p2);
+		SP_PRINTF("k1 %+.5lf, k2 %+.5lf, k3 %+.5lf\n", cam.k1, cam.k2, cam.k3);
+		SP_PRINTF("p1 %+.5lf, p2 %+.5lf\n", cam.p1, cam.p2);
 		SP_PRINTF("]\n");
 	}
 

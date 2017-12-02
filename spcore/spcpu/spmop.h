@@ -268,12 +268,16 @@ namespace sp{
 
 	SP_CPUFUNC Mat getMat(const Vec2 &vec) {
 		Mat dst(2, 1);
-
+		dst[0] = vec.x;
+		dst[1] = vec.y;
 		return dst;
 	}
 
 	SP_CPUFUNC Mat getMat(const Vec3 &vec) {
 		Mat dst(3, 1);
+		dst[0] = vec.x;
+		dst[1] = vec.y;
+		dst[2] = vec.z;
 		return dst;
 	}
 

@@ -132,18 +132,17 @@ namespace sp{
 		mulMat(jacob, 2, 6, jPosToNpx, 2, 3, jPoseToPos, 3, 6);
 	}
 
-
 	SP_GENFUNC void jacobPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos) {
 		double pmat[3 * 4];
 		getMat(pmat, 3, 4, pose);
 
-		double jPoseToNpx[2 * 6] = { 0 };
-		jacobPoseToNpx(jPoseToNpx, pose, pos);
+		double jPoseToPos[3 * 6] = { 0 };
+		jacobPoseToPos(jPoseToPos, pose, pos);
 
-		double jNpxToPix[2 * 2];
-		jacobNpxToPix(jNpxToPix, cam, prjVec(mulMat(pmat, 3, 4, pos)));
+		double jPosToPix[2 * 3];
+		jacobPosToPix(jPosToPix, cam, mulMat(pmat, 3, 4, pos));
 
-		mulMat(jacob, 2, 6, jNpxToPix, 2, 2, jPoseToNpx, 2, 6);
+		mulMat(jacob, 2, 6, jPosToPix, 2, 3, jPoseToPos, 3, 6);
 	}
 
 	SP_GENFUNC void jacobCamPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos) {
