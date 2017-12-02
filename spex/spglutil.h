@@ -70,7 +70,7 @@ namespace sp{
 	// load view
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC Mat getViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+	SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
 		GLint viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -105,12 +105,12 @@ namespace sp{
 
 	SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
-		glLoadView2D(dsize0, dsize1, getViewMat(dsize0, dsize1, viewPos, viewScale));
+		glLoadView2D(dsize0, dsize1, glGetViewMat(dsize0, dsize1, viewPos, viewScale));
 	}
 
 	SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
-		glLoadView2D(cam.dsize[0], cam.dsize[1], getViewMat(cam.dsize[0], cam.dsize[1], viewPos, viewScale));
+		glLoadView2D(cam.dsize[0], cam.dsize[1], glGetViewMat(cam.dsize[0], cam.dsize[1], viewPos, viewScale));
 	}
 
 	SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){

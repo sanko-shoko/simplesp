@@ -50,7 +50,7 @@ void GTMakerGUI::dispRectGT() {
 		combolist.push(m_database.gtNames[i].c_str());
 	}
 
-	const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+	const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 
 	for (int i = 0; i < gts.size(); i++) {
 		RectGT &gt = gts[i];
@@ -225,7 +225,7 @@ void GTMakerGUI::dispDataBase() {
 
 void GTMakerGUI::mousebuttonRect(int button, int action, int mods) {
 
-	const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+	const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 	const Vec2 pix = invMat(vmat) * m_mouse.pos;
 
 	MemP<RectGT> &gts = m_database.gtsList[m_selectid];
@@ -295,7 +295,7 @@ void GTMakerGUI::mousebuttonRect(int button, int action, int mods) {
 }
 
 void GTMakerGUI::mousePosRect(double x, double y) {
-	const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+	const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 	const Vec2 pix = invMat(vmat) * m_mouse.pos;
 
 	if (m_focus != NULL && m_base != NULL) {
