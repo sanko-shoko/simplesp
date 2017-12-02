@@ -10,58 +10,51 @@
 
 namespace sp {
 
-	SP_CPUFUNC double calcSAD(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
+	SP_CPUFUNC int calcSAD(const Mem2<Byte> &src0, const Mem2<Byte> &src1, const int x, const int y, const Vec2 &flow, const int winSize) {
 
 		const int offset = winSize / 2;
-		const int wx0 = minVal(x, offset);
-		const int wy0 = minVal(y, offset);
-		const int wx1 = minVal(img0.dsize[0] - x, winSize - offset);
-		const int wy1 = minVal(img0.dsize[1] - y, winSize - offset);
 
-		double sad = 0;
-		for (int wy = -wy0; wy <= wy1; wy++) {
-			for (int wx = -wx0; wx <= wx1; wx++) {
-				const double v0 = acs2(img0, x + wx, y + wy);
-				const double v1 = acs2(img1, x + wx + flow.x, y + wy + flow.y);
-				sad += fabs(v0 - v1);
+		const int fx = round(flow.x);
+		const int fy = round(flow.y);
+
+		int sad = 0;
+		for (int wy = 0; wy < winSize; wy++) {
+			for (int wx = 0; wx < winSize; wx++) {
+				const int v0 = acs2(src0, x + wx - offset, y + wy - offset);
+				const int v1 = acs2(src1, x + wx - offset + fx, y + wy - offset + fy);
+				sad += abs(v0 - v1);
 			}
 		}
-		const int cnt = (wx1 + wx0 + 1) * (wy1 + wy0 + 1);
-		const double eval = 1.0 - static_cast<double>(sad) / (SP_BYTEMAX * cnt);
+		const int eval = SP_BYTEMAX * winSize * winSize - sad;
 
 		return eval;
 	}
 
-	SP_CPUFUNC double calcZNCC(const Mem2<Byte> &img0, const Mem2<Byte> &img1, const int x, const int y, const Vec2 &flow, const int winSize) {
+	SP_CPUFUNC double calcZNCC(const Mem2<Byte> &src0, const Mem2<Byte> &src1, const int x, const int y, const Vec2 &flow, const int winSize) {
 
 		const int offset = winSize / 2;
-		const int wx0 = minVal(x, offset);
-		const int wy0 = minVal(y, offset);
-		const int wx1 = minVal(img0.dsize[0] - x, winSize - offset);
-		const int wy1 = minVal(img0.dsize[1] - y, winSize - offset);
 
 		double sum0 = 0.0;
 		double sum1 = 0.0;
-		for (int wy = -wy0; wy <= wy1; wy++) {
-			for (int wx = -wx0; wx <= wx1; wx++) {
-				const double v0 = acs2(img0, x + wx, y + wy);
-				const double v1 = acs2(img1, x + wx + flow.x, y + wy + flow.y);
+		for (int wy = 0; wy < winSize; wy++) {
+			for (int wx = 0; wx < winSize; wx++) {
+				const double v0 = acs2(src0, x + wx - offset, y + wy - offset);
+				const double v1 = acs2(src1, x + wx - offset + flow.x, y + wy - offset + flow.y);
 				sum0 += v0;
 				sum1 += v1;
 			}
 		}
 
-		const int cnt = (wx1 + wx0 + 1) * (wy1 + wy0 + 1);
-		double mean0 = sum0 / cnt;
-		double mean1 = sum1 / cnt;
+		double mean0 = sum0 / (winSize * winSize);
+		double mean1 = sum1 / (winSize * winSize);
 
 		double m00 = 0.0;
 		double m01 = 0.0;
 		double m11 = 0.0;
-		for (int wy = -wy0; wy <= wy1; wy++) {
-			for (int wx = -wx0; wx <= wx1; wx++) {
-				const double v0 = acs2(img0, x + wx, y + wy) - mean0;
-				const double v1 = acs2(img1, x + wx + flow.x, y + wy + flow.y) - mean1;
+		for (int wy = 0; wy < winSize; wy++) {
+			for (int wx = 0; wx < winSize; wx++) {
+				const double v0 = acs2(src0, x + wx - offset, y + wy - offset) - mean0;
+				const double v1 = acs2(src1, x + wx - offset + flow.x, y + wy - offset + flow.y) - mean1;
 				m00 += v0 * v0;
 				m01 += v0 * v1;
 				m11 += v1 * v1;
