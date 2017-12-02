@@ -1,4 +1,4 @@
-﻿#define SP_USE_DEBUG 1
+﻿//#define SP_USE_DEBUG 1
 
 #include "simplesp.h"
 
@@ -9,21 +9,6 @@ int main(){
 	// test camera parameter
 	const CamParam cam = getCamParam(640, 480);
 
-	// detector
-	DotMarker detector;
-	{
-		const DotMarkerParam mrk(5, 5, 30);
-		detector.setCam(cam);
-		detector.setMrk(mrk);
-	}
-
-	// base to mrk pose
-	const Pose base2mrkPose = getPose(getRotAngleZ(+0.1 * SP_PI), getVec(0.0, 0.0, -600.0));
-
-	// hand to cam pose
-	const Pose hand2camPose = getPose(getRotAngleZ(-0.1 * SP_PI), getVec(0.0, 100.0, 0.0));
-
-
 	// detected marker pos[pixel], and marker pos[mm]
 	Mem1<Mem1<Vec2> > pixsList, objsList;
 
@@ -32,6 +17,17 @@ int main(){
 
 	// init dataset
 	{
+		// hand to cam pose
+		const Pose hand2camPose = getPose(getRotAngleZ(-0.1 * SP_PI), getVec(0.0, 100.0, 0.0));
+
+		// base to mrk pose
+		const Pose base2mrkPose = getPose(getRotAngleZ(+0.1 * SP_PI), getVec(0.0, 0.0, -600.0));
+
+		printf("ground truth\n");
+		print(hand2camPose);
+		print(base2mrkPose);
+		printf("\n");
+
 		// generate test pose
 		Mem1<Pose> mrk2camPoses;
 		{
@@ -42,7 +38,8 @@ int main(){
 			mrk2camPoses.push(getPose(getVec(-10.0, +0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0));
 		}
 
-		const Mem2<Vec2> mrkMap = detector.getMrk().map * detector.getMrk().distance;
+		const DotMarkerParam mrk(5, 5, 30);
+		const Mem2<Vec2> mrkMap = mrk.map * mrk.distance;
 
 		for (int i = 0; i < mrk2camPoses.size(); i++) {
 			Mem1<Vec2> pixs, objs;
@@ -66,6 +63,9 @@ int main(){
 				renderMarker(gry, cam, mrk2camPoses[i], mrkMap);
 				saveBMP(gry, strFormat("test%02d.bmp", i).c_str());
 
+				DotMarker detector;
+				detector.setCam(cam);
+				detector.setMrk(mrk);
 				detector.execute(gry);
 
 				pixs = detector.getCrspPix();
@@ -80,12 +80,16 @@ int main(){
 		}
 	}
 
-	Pose hand2camPoseEst;
-	calibRobotCam(hand2camPoseEst, cam, hand2basePoses, pixsList, objsList);
+	{
+		Pose hand2camPose;
+		Pose base2mrkPose;
+		calibRobotCam(hand2camPose, base2mrkPose, cam, hand2basePoses, pixsList, objsList);
 
-	print(hand2camPoseEst);
-	print(hand2camPose);
-
+		printf("estimate\n");
+		print(hand2camPose);
+		print(base2mrkPose);
+		printf("\n");
+	}
 
 	return 0;
 }
