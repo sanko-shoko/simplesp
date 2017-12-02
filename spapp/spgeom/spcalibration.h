@@ -318,7 +318,7 @@ namespace sp{
 			return rms;
 		}
 
-		SP_CPUFUNC bool initCamRobot(Pose &X, Pose &Z, const Mem1<Pose> &As, const Mem1<Pose> &Bs) {
+		SP_CPUFUNC bool initRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &As, const Mem1<Pose> &Bs) {
 			const int num = As.size();
 
 			auto calcQ = [](const Rot &rot)-> Mat {
@@ -400,7 +400,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUFUNC double optCamRobot(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
+		SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
 			const int num = Bs.size();
 
 			Pose iZ = invPose(Z);
@@ -554,35 +554,36 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// calibrate camera to robot
+	// calibrate robot to cam
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC double calibRobotCam(Pose &hand2camPose, const CamParam &cam, const Mem1<Pose> &hand2basePoses, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+	// 
 
-		Mem1<Pose> cam2mrkPoses;
+	SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+
+		Mem1<Pose> As;
 
 		{
-			const int num = hand2basePoses.size();
+			const int num = Bs.size();
 
 			for (int i = 0; i < num; i++) {
 				Pose mrk2camPose;
 				calcPose(mrk2camPose, cam, pixsList[i], objsList[i]);
-				cam2mrkPoses.push(invPose(mrk2camPose));
+				As.push(invPose(mrk2camPose));
 			}
 		}
 
 		double rms = -1.0;
 
 		try {
-			if (hand2basePoses.size() < 5 || hand2basePoses.size() != pixsList.size() || hand2basePoses.size() != objsList.size()) throw "data size";
+			if (Bs.size() < 5 || Bs.size() != pixsList.size() || Bs.size() != objsList.size()) throw "data size";
 
-			Pose base2mrkPose;
-			if (initCamRobot(hand2camPose, base2mrkPose, cam2mrkPoses, hand2basePoses) == false) throw "initCamRobot";
+			if (initRobotCam(X, Z, As, Bs) == false) throw "initRobotCam";
 			
-			if ((rms = optCamRobot(hand2camPose, base2mrkPose, cam, hand2basePoses, pixsList, objsList)) < 0.0) throw "optCamRobot";
+			if ((rms = optRobotCam(X, Z, cam, Bs, pixsList, objsList)) < 0.0) throw "optRobotCam";
 		}
 		catch (const char *str) {
-			SP_PRINTD("calibCamRobot [%s]\n", str);
+			SP_PRINTD("calibRobotCam [%s]\n", str);
 		}
 
 		return rms;

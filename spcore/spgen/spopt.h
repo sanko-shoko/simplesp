@@ -20,20 +20,6 @@ namespace sp{
 	// jacob
 	//--------------------------------------------------------------------------------
 
-	SP_GENFUNC void jacobPoseToPos(double *jacob, const Pose &pose, const Vec3 &pos) {
-		double rmat[3 * 3];
-		getMat(rmat, 3, 3, pose.rot);
-		const Vec3 v = mulMat(rmat, 3, 3, pos);
-		jacob[0 * 6 + 0] = +0.0; jacob[0 * 6 + 1] = +v.z; jacob[0 * 6 + 2] = -v.y;
-		jacob[1 * 6 + 0] = -v.z; jacob[1 * 6 + 1] = +0.0; jacob[1 * 6 + 2] = +v.x;
-		jacob[2 * 6 + 0] = +v.y; jacob[2 * 6 + 1] = -v.x; jacob[2 * 6 + 2] = +0.0;
-
-		jacob[0 * 6 + 3] = 1.0; jacob[0 * 6 + 4] = 0.0; jacob[0 * 6 + 5] = 0.0;
-		jacob[1 * 6 + 3] = 0.0; jacob[1 * 6 + 4] = 1.0; jacob[1 * 6 + 5] = 0.0;
-		jacob[2 * 6 + 3] = 0.0; jacob[2 * 6 + 4] = 0.0; jacob[2 * 6 + 5] = 1.0;
-
-	}
-
 	SP_GENFUNC void jacobCamToPix(double *jacob, const CamParam &cam, const Vec2 &npx) {
 		const double x2 = npx.x * npx.x;
 		const double y2 = npx.y * npx.y;
@@ -119,6 +105,20 @@ namespace sp{
 		mulMat(jacob, 2, 3, jNpxToPix, 2, 2, jPosToNpz, 2, 3);
 	}
 
+	SP_GENFUNC void jacobPoseToPos(double *jacob, const Pose &pose, const Vec3 &pos) {
+		double rmat[3 * 3];
+		getMat(rmat, 3, 3, pose.rot);
+		const Vec3 v = mulMat(rmat, 3, 3, pos);
+		jacob[0 * 6 + 0] = +0.0; jacob[0 * 6 + 1] = +v.z; jacob[0 * 6 + 2] = -v.y;
+		jacob[1 * 6 + 0] = -v.z; jacob[1 * 6 + 1] = +0.0; jacob[1 * 6 + 2] = +v.x;
+		jacob[2 * 6 + 0] = +v.y; jacob[2 * 6 + 1] = -v.x; jacob[2 * 6 + 2] = +0.0;
+
+		jacob[0 * 6 + 3] = 1.0; jacob[0 * 6 + 4] = 0.0; jacob[0 * 6 + 5] = 0.0;
+		jacob[1 * 6 + 3] = 0.0; jacob[1 * 6 + 4] = 1.0; jacob[1 * 6 + 5] = 0.0;
+		jacob[2 * 6 + 3] = 0.0; jacob[2 * 6 + 4] = 0.0; jacob[2 * 6 + 5] = 1.0;
+
+	}
+
 	SP_GENFUNC void jacobPoseToNpx(double *jacob, const Pose &pose, const Vec3 &pos) {
 		double pmat[3 * 4];
 		getMat(pmat, 3, 4, pose);
@@ -143,27 +143,6 @@ namespace sp{
 		jacobPosToPix(jPosToPix, cam, mulMat(pmat, 3, 4, pos));
 
 		mulMat(jacob, 2, 6, jPosToPix, 2, 3, jPoseToPos, 3, 6);
-	}
-
-	SP_GENFUNC void jacobCamPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos) {
-		double pmat[3 * 4];
-		getMat(pmat, 3, 4, pose);
-
-		double jPoseToPix[2 * 6] = { 0 };
-		jacobPoseToPix(jPoseToPix, pose, cam, pos);
-
-		double jCamToPix[2 * 9] = { 0 };
-		jacobCamToPix(jCamToPix, cam, prjVec(mulMat(pmat, 3, 4, pos)));
-
-		for (int r = 0; r < 2; r++) {
-			const double f = (r == 0) ? cam.fx : cam.fy;
-			for (int c = 0; c < 9; c++) {
-				jacob[r * 15 + (0 + c)] = jCamToPix[r * 9 + c];
-			}
-			for (int c = 0; c < 6; c++) {
-				jacob[r * 15 + (9 + c)] = jPoseToPix[r * 6 + c];
-			}
-		}
 	}
 
 
