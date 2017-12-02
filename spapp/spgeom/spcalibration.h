@@ -86,20 +86,20 @@ namespace sp{
 			}
 
 
-			int num = 0;
+			int pmax = 0;
 			for (int i = 0; i < vposes.size(); i++){
-				num += vpixsList[i].size();
+				pmax += vpixsList[i].size();
 			}
 
 			double ret = -1.0;
 
 			// gauss-newton
 			for (int it = 0; it < maxit; it++){
-				Mat J(num * 2, 9 + 6 * vposes.size());
+				Mat J(pmax * 2, 9 + 6 * vposes.size());
 				J.zero();
 
-				Mat E(num * 2, 1);
-				Mem1<double> errs(num);
+				Mat E(pmax * 2, 1);
+				Mem1<double> errs(pmax);
 
 				int cnt = 0;
 				for (int i = 0; i < vposes.size(); i++){
@@ -212,9 +212,9 @@ namespace sp{
 			}
 
 
-			int num = 0;
+			int pmax = 0;
 			for (int i = 0; i < vposes.size(); i++){
-				num += vpixsList0[i].size();
+				pmax += vpixsList0[i].size();
 			}
 
 			double rms = -1.0;
@@ -266,11 +266,11 @@ namespace sp{
 
 				// refine stereo
 				{
-					Mat J(num * 2, 6);
+					Mat J(pmax * 2, 6);
 					J.zero();
 
-					Mat E(num * 2, 1);
-					Mem1<double> errs(num);
+					Mat E(pmax * 2, 1);
+					Mem1<double> errs(pmax);
 
 					int cnt = 0;
 					for (int i = 0; i < vposes.size(); i++){
@@ -317,6 +317,165 @@ namespace sp{
 
 			return rms;
 		}
+
+		SP_CPUFUNC bool initCamRobot(Pose &X, Pose &Z, const Mem1<Pose> &As, const Mem1<Pose> &Bs) {
+			const int num = As.size();
+
+			auto calcQ = [](const Rot &rot)-> Mat {
+				double m[4 * 4] = {
+					+rot.qw, -rot.qx, -rot.qy, -rot.qz,
+					+rot.qx, +rot.qw, -rot.qz, +rot.qy,
+					+rot.qy, +rot.qz, +rot.qw, -rot.qx,
+					+rot.qz, -rot.qy, +rot.qx, +rot.qw
+				};
+				return Mat(4, 4, m);
+			};
+			auto calcW = [](const Rot &rot)-> Mat {
+				double m[4 * 4] = {
+					+rot.qw, -rot.qx, -rot.qy, -rot.qz,
+					+rot.qx, +rot.qw, +rot.qz, -rot.qy,
+					+rot.qy, -rot.qz, +rot.qw, +rot.qx,
+					+rot.qz, +rot.qy, -rot.qx, +rot.qw
+				};
+				return Mat(4, 4, m);
+			};
+
+			Mat C = zeroMat(4, 4);
+			for (int i = 0; i < num; i++) {
+				const Mat Q = calcQ(As[i].rot);
+				const Mat W = calcW(Bs[i].rot);
+
+				C += trnMat(Q) * W;
+			}
+
+			Mat eigVec, eigVal;
+			if(eigMat(eigVec, eigVal, covMat(C)) == false) return false;
+
+			int id = -1;
+			double minv = SP_INFINITY;
+
+			for (int i = 0; i < 4; i++) {
+				const double lambda1 = num - sqrt(eigVal(i, i));
+				const double lambda2 = num + sqrt(eigVal(i, i));
+
+				const double v = (lambda1 > SP_SMALL) ? lambda1 : lambda2;
+				if (v < minv) {
+					minv = v;
+					id = i;
+				}
+			}
+			if (id < 0) return false;
+
+			const double q[4] = { eigVec(0, id), eigVec(1, id), eigVec(2, id), eigVec(3, id) };
+
+			const Mat zmat(4, 1, q);
+			const Rot zrot = getRot(zmat[1], zmat[2], zmat[3], zmat[0]);
+
+			const Mat xmat = C * zmat / (minv - num);
+			const Rot xrot = getRot(xmat[1], xmat[2], xmat[3], xmat[0]);
+
+			Mat mat0(num * 3, 1);
+			Mat mat1(num * 3, 6);
+
+			for (int i = 0; i < num; i++) {
+				const Mat tmat = getMat(zrot * Bs[i].trn - As[i].trn);
+
+				const Mat rmat = getMat(As[i].rot);
+				const Mat imat = eyeMat(3, 3);
+
+				for (int r = 0; r < 3; r++) {
+					mat0(i * 3 + r, 0) = tmat(r, 0);
+
+					for (int c = 0; c < 3; c++) {
+						mat1(i * 3 + r, c + 0) = rmat(r, c);
+						mat1(i * 3 + r, c + 3) = imat(r, c) * -1.0;
+					}
+				}
+			}
+			const Mat txy = invMat(trnMat(mat1) * mat1) * trnMat(mat1) * mat0;
+
+			X = getPose(xrot, getVec(txy[0], txy[1], txy[2]));
+			Z = getPose(zrot, getVec(txy[3], txy[4], txy[5]));
+
+			return true;
+		}
+
+		SP_CPUFUNC double optCamRobot(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
+			const int num = Bs.size();
+
+			Pose iZ = invPose(Z);
+
+			int pmax = 0;
+			for (int i = 0; i < num; i++) {
+				pmax += pixsList[i].size();
+			}
+
+			double rms = -1.0;
+
+			for (int it = 0; it < maxit; it++) {
+			
+				Mat J(2 * pmax, 6 + 6);
+				Mat E(2 * pmax, 1);
+				Mem1<double> errs(pmax);
+
+				int cnt = 0;
+
+				for (int i = 0; i < num; i++) {
+					const Pose iB = invPose(Bs[i]);
+
+					const Mem1<Vec2> &pixs = pixsList[i];
+					const Mem1<Vec2> &objs = objsList[i];
+
+					Mat J0(2, 6);
+					Mat J1(2, 6);
+					for (int j = 0; j < objs.size(); j++) {
+						{
+							jacobPoseToPix(J0.ptr, X, cam, (iB * iZ) * objs[j]);
+						}
+						{
+							Mat J1_6D3D(3, 6);
+							jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(objs[j], 0.0));
+
+							Mat J1_3D2D(2, 3);
+							jacobPosToPix(J1_3D2D.ptr, cam, iZ * objs[j]);
+
+							J1 = J1_3D2D * getMat((X * iB).rot) * J1_6D3D;
+						}
+
+						for (int p = 0; p < 6; p++) {
+							J(cnt * 2 + 0, p + 0) = J0(0, p);
+							J(cnt * 2 + 1, p + 0) = J0(1, p);
+
+							J(cnt * 2 + 0, p + 6) = J1(0, p);
+							J(cnt * 2 + 1, p + 6) = J1(1, p);
+						}
+
+						const Vec2 err = pixs[j] - mulCam(cam, npxDist(cam, prjVec((X * iB * iZ) * objs[j])));
+						E(cnt * 2 + 0, 0) = err.x;
+						E(cnt * 2 + 1, 0) = err.y;
+						errs[cnt] = normVec(err);
+
+						cnt++;
+					}
+				}
+
+				Mat delta;
+				if (solveEq(delta, J, E, errs) == false) return false;
+
+				X = updatePose(X, &delta[0]);
+				iZ = updatePose(iZ, &delta[6]);
+				Z = invPose(iZ);
+
+				const double mean = meanVal(errs);
+				const double median = medianVal(errs);
+				rms = sqrt(meanSq(errs));
+
+				SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+			}
+
+			return rms;
+		}
+
 	}
 
 	using namespace _calibration;
@@ -362,7 +521,7 @@ namespace sp{
 			if ((rms = optStereo(stereo, cam0, cam1, pixsList0, pixsList1, objsList, maxit)) < 0.0) throw "optStereo";
 		}
 		catch (const char *str){
-			SP_PRINTD("optStereo [%s]\n", str);
+			SP_PRINTD("calibStereo [%s]\n", str);
 		}
 
 		return rms;
@@ -389,7 +548,44 @@ namespace sp{
 			cpixsList1.push(cpixs1);
 			cobjsList.push(cobjs);
 		}
+
 		return calibStereo(stereo, cam0, cam1, cpixsList0, cpixsList1, cobjsList, maxit);
+	}
+
+
+	//--------------------------------------------------------------------------------
+	// calibrate camera to robot
+	//--------------------------------------------------------------------------------
+
+	SP_CPUFUNC double calibRobotCam(Pose &hand2camPose, const CamParam &cam, const Mem1<Pose> &hand2basePoses, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+
+		Mem1<Pose> cam2mrkPoses;
+
+		{
+			const int num = hand2basePoses.size();
+
+			for (int i = 0; i < num; i++) {
+				Pose mrk2camPose;
+				calcPose(mrk2camPose, cam, pixsList[i], objsList[i]);
+				cam2mrkPoses.push(invPose(mrk2camPose));
+			}
+		}
+
+		double rms = -1.0;
+
+		try {
+			if (hand2basePoses.size() < 5 || hand2basePoses.size() != pixsList.size() || hand2basePoses.size() != objsList.size()) throw "data size";
+
+			Pose base2mrkPose;
+			if (initCamRobot(hand2camPose, base2mrkPose, cam2mrkPoses, hand2basePoses) == false) throw "initCamRobot";
+			
+			if ((rms = optCamRobot(hand2camPose, base2mrkPose, cam, hand2basePoses, pixsList, objsList)) < 0.0) throw "optCamRobot";
+		}
+		catch (const char *str) {
+			SP_PRINTD("calibCamRobot [%s]\n", str);
+		}
+
+		return rms;
 	}
 
 

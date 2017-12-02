@@ -336,12 +336,11 @@ namespace sp{
 				SP_LOGGER_SET("calcPose");
 
 				getFineCrsp(m_cpixs, m_cobjs, m_hom, m_mrk.map, pixs, kdtree);
+				m_cobjs *= m_mrk.distance;
 
 				if (calcPose(m_pose, m_cam, m_cpixs, m_cobjs) == false){
 					throw "calcPose";
 				}
-
-				m_pose.trn *= m_mrk.distance;
 			}
 		}
 

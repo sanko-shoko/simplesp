@@ -7,36 +7,42 @@ void GTMakerGUI::dispRectGT() {
 
 	glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 
-	auto dispRect = [](const Rect &rect, const Col3 &col, bool focus)-> void {
-		{
-			for (int i = 0; i < 2; i++) {
-				glLineWidth(i == 0 ? 3.0f : 1.0f);
-				glBegin(GL_LINES);
-				glColor(i == 0 ? col / 4.0 : col);
-				glRect(rect);
-				glEnd();
-			}
-		}
-		if (focus == true) {
-			for (int i = 0; i < 2; i++) {
-				glPointSize(i == 0 ? 5.0f : 3.0f);
-				glBegin(GL_POINTS);
-				glColor(i == 0 ? col / 4.0 : col);
-				glRect(rect);
-				glEnd();
-			}
+	auto dispRectLine = [](const Rect &rect, const Col3 &col, float size)-> void {
+		for (int i = 0; i < 2; i++) {
+			glLineWidth(i == 0 ? size : size - 2.0f);
+			glBegin(GL_LINES);
+			glColor(i == 0 ? col / 3.0 : col);
+			glRect(rect);
+			glEnd();
 		}
 	};
-
+	auto dispRectPoint = [](const Rect &rect, const Col3 &col, float size)-> void {
+		for (int i = 0; i < 2; i++) {
+			glPointSize(i == 0 ? size : size - 2.0f);
+			glBegin(GL_POINTS);
+			glColor(i == 0 ? col / 3.0 : col);
+			glRect(rect);
+			glEnd();
+		}
+	};
 
 	MemP<RectGT> &gts = m_database.gtsList[m_selectid];
 
 	for (int i = 0; i < gts.size(); i++) {
-		dispRect(gts[i].rect, getCol(80, 180, 180), false);
+		RectGT &gt = gts[i];
+		if (&gt != m_focus && m_mode >= 0) continue;
+
+		dispRectLine(gt.rect, getCol(80, 180, 180), 3.0f);
 	}
 
 	if (m_focus != NULL) {
-		dispRect(m_focus->rect, getCol(220, 240, 220), true);
+		if (m_mode == Mode::Base) {
+			dispRectLine(m_focus->rect, getCol(220, 240, 220), 3.0f);
+			dispRectPoint(m_focus->rect, getCol(220, 240, 220), 7.0f);
+		}
+		if (m_mode == Mode::Paint) {
+			dispRectLine(m_focus->rect, getCol(180, 240, 180), 3.0f);
+		}
 	}
 
 	Mem1<const char *> combolist;
@@ -49,6 +55,7 @@ void GTMakerGUI::dispRectGT() {
 	for (int i = 0; i < gts.size(); i++) {
 		RectGT &gt = gts[i];
 
+		if (&gt != m_focus && m_mode >= 0) continue;
 
 		if (ImGui::Begin(strFormat("RectGT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
 			{
@@ -65,9 +72,9 @@ void GTMakerGUI::dispRectGT() {
 			if (&gt != m_focus) {
 				ImGui::Text(">");
 
-				const int wsize = (gt.label >= 0) ? sp::strlen(m_database.gtNames[gt.label].c_str()) : 0;
+				const int wsize = (gt.label >= 0) ? static_cast<int>(m_database.gtNames[gt.label].size()) : 0;
 
-				ImGui::SetWindowSize(ImVec2(wsize * 8.0f + 30.0f, 35.0f), ImGuiCond_Always);
+				ImGui::SetWindowSize(ImVec2(wsize * 7.0f + 30.0f, 35.0f), ImGuiCond_Always);
 
 				if (gt.label >= 0) {
 					ImGui::SameLine();
@@ -77,7 +84,10 @@ void GTMakerGUI::dispRectGT() {
 			else {
 				ImGui::Text("-");
 
-				ImGui::SetWindowSize(ImVec2(180.0f, 35.0f), ImGuiCond_Always);
+				int size = 0;
+				if (m_usePaint == true) size += 50;
+
+				ImGui::SetWindowSize(ImVec2(168.0f + size, 35.0f), ImGuiCond_Always);
 
 				ImGui::SameLine();
 
@@ -87,8 +97,14 @@ void GTMakerGUI::dispRectGT() {
 
 				ImGui::SameLine();
 
+				if (m_usePaint == true && ImGui::Button("paint")) {
+					m_mode = (m_mode == Mode::Base) ? Mode::Paint : Mode::Base;
+				}
+
+				ImGui::SameLine();
+
 				if (ImGui::Button("del")) {
-					m_database.gtsList[m_selectid].free(&gt);
+					gts.free(&gt);
 					m_focus = NULL;
 				}
 			}
@@ -163,9 +179,8 @@ void GTMakerGUI::dispDataBase() {
 				m_database.updateLabel(0, +1);
 			}
 			ImGui::EndChild();
-		}
 
-		{
+
 			ImGui::BeginChild("names", ImVec2(180, 140));
 
 			for (int i = 0; i < m_database.gtNames.size(); i++) {
@@ -208,5 +223,91 @@ void GTMakerGUI::dispDataBase() {
 	}
 }
 
+void GTMakerGUI::mousebuttonRect(int button, int action, int mods) {
+
+	const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+	const Vec2 pix = invMat(vmat) * m_mouse.pos;
+
+	MemP<RectGT> &gts = m_database.gtsList[m_selectid];
+
+	static Vec2 base;
+	m_base = (m_mouse.bDownL == 1) ? &base : NULL;
+
+	static RectGT newgt;
+
+	const double thresh = 10.0 / m_viewScale;
+
+	if (m_focus != &newgt && m_focus != NULL) {
+		if (m_mouse.bDownL == 1) {
+			const Vec2 a = getVec(m_focus->rect.dbase[0], m_focus->rect.dbase[1]);
+			const Vec2 b = getVec(m_focus->rect.dsize[0] - 1, m_focus->rect.dsize[1] - 1);
+
+			Vec2 p[4];
+			p[0] = a + getVec(0.0, 0.0);
+			p[1] = a + getVec(b.x, 0.0);
+			p[2] = a + getVec(b.x, b.y);
+			p[3] = a + getVec(0.0, b.y);
+
+			double minv = thresh;
+			for (int i = 0; i < 4; i++) {
+				const double norm = normVec(p[i] - pix);
+				if (norm < minv) {
+					minv = norm;
+					base = p[(i + 2) % 4];
+				}
+			}
+			if (minv < thresh) {
+				return;
+			}
+
+		}
+		if (m_mouse.bDownL == 0) {
+			m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
+			return;
+		}
+	}
+
+	{
+		if (m_focus != &newgt && m_mouse.bDownL == 1) {
+
+			m_focus = &newgt;
+			m_focus->rect = getRect2(pix);
+			m_focus->label = -1;
+
+			base = pix;
+			return;
+		}
+
+		if (m_focus == &newgt && m_mouse.bDownL == 0) {
+
+			if (minVal(m_focus->rect.dsize[0], m_focus->rect.dsize[1]) > thresh) {
+				RectGT *gt = gts.malloc();
+				*gt = *m_focus;
+				m_focus = gt;
+				m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
+			}
+			else {
+				m_focus = NULL;
+			}
+			return;
+		}
+	}
+}
+
+void GTMakerGUI::mousePosRect(double x, double y) {
+	const Mat vmat = getViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+	const Vec2 pix = invMat(vmat) * m_mouse.pos;
+
+	if (m_focus != NULL && m_base != NULL) {
+		m_focus->rect = orRect(getRect2(pix), getRect2(*m_base));
+	}
+}
 
 
+void GTMakerGUI::mousebuttonPaint(int button, int action, int mods) {
+
+}
+
+void GTMakerGUI::mousePosPaint(double x, double y) {
+
+}
