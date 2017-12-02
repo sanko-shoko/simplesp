@@ -328,6 +328,16 @@ namespace sp{
 		dst.b = static_cast<Byte>(255 * (1.0 - nrm.z) / 2);
 	}
 
+	SP_GENFUNC void cnvDispToImg(Byte &dst, const DispData &disp, const int maxDisp, const int minDisp) {
+		const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+		dst = static_cast<Byte>(255 * rate);
+	}
+
+	SP_GENFUNC void cnvDispToImg(Col3 &dst, const DispData &disp, const int maxDisp, const int minDisp) {
+		const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+		cnvPhaseToCol(dst, rate);
+	}
+
 }
 
 #endif

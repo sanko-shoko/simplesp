@@ -24,7 +24,7 @@ namespace sp{
 		masks.resize(img0.dsize);
 		masks.zero();
 
-		Mem2<double> evals(img0.dsize);
+		Mem2<int> evals(img0.dsize);
 		evals.zero();
 
 		srand(0);
@@ -42,7 +42,7 @@ namespace sp{
 					const Vec2 flow = flows(u, v) + randVecUnif(range, range);
 					if (isInRect2(rect, u + round(flow.x), v + round(flow.y)) == false) continue;
 
-					const double eval = calcSAD(img0, img1, u, v, flow, winSize);
+					const int eval = calcSAD(img0, img1, u, v, flow, winSize);
 
 					if (eval > evals(u, v)) {
 						flows(u, v) = flow;
@@ -62,7 +62,7 @@ namespace sp{
 					if (evals(u - prop, v) > evals(u, v)) {
 						const Vec2 &flow = flows(u - prop, v);
 						if (isInRect2(rect, u + round(flow.x), v + round(flow.y)) == false) continue;
-						const double eval = calcSAD(img0, img1, u, v, flow, winSize);
+						const int eval = calcSAD(img0, img1, u, v, flow, winSize);
 						if (eval > evals(u, v)) {
 							flows(u, v) = flow;
 							evals(u, v) = eval;
@@ -71,7 +71,7 @@ namespace sp{
 					if (evals(u, v - prop) > evals(u, v)) {
 						const Vec2 &flow = flows(u, v - prop);
 						if (isInRect2(rect, u + round(flow.x), v + round(flow.y)) == false) continue;
-						const double eval = calcSAD(img0, img1, u, v, flow, winSize);
+						const int eval = calcSAD(img0, img1, u, v, flow, winSize);
 						if (eval > evals(u, v)) {
 							flows(u, v) = flow;
 							evals(u, v) = eval;
