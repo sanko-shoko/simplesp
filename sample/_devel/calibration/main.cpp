@@ -51,7 +51,7 @@ int main(){
 			Mem1<Vec2> pixs, objs;
 			for (int n = 0; n < mrkMap.size(); n++){
 				const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
-				const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pos))) + randVecGauss(0.1, 0.1);
+				const Vec2 pix = cam * npxDist(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
 
 				pixs.push(pix);
 				objs.push(mrkMap[n]);
@@ -207,8 +207,8 @@ int main(){
 			Mem1<Vec2> pixs0, pixs1, objs;
 			for (int n = 0; n < mrkMap.size(); n++){
 				const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
-				const Vec2 pix0 = mulCam(cam, npxDist(cam, prjVec(pos))) + randVecGauss(0.1, 0.1);
-				const Vec2 pix1 = mulCam(cam, npxDist(cam, prjVec(stereo * pos))) + randVecGauss(0.1, 0.1);
+				const Vec2 pix0 = cam * npxDist(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
+				const Vec2 pix1 = cam * npxDist(cam, prjVec(stereo * pos)) + randVecGauss(0.1, 0.1);
 
 				pixs0.push(pix0);
 				pixs1.push(pix1);

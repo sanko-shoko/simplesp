@@ -38,7 +38,7 @@ namespace sp{
 
 		const Vec3 p = pose * pnt;
 		if (p.z > 0){
-			renderPoint(dst, mulCam(cam, prjVec(p)), val, radius);
+			renderPoint(dst, cam * prjVec(p), val, radius);
 		}
 	}
 
@@ -94,7 +94,7 @@ namespace sp{
 		const Vec3 p0 = pose * pnt0;
 		const Vec3 p1 = pose * pnt1;
 		if (p0.z > 0 && p1.z > 0){
-			renderLine(dst, mulCam(cam, prjVec(p0)), mulCam(cam, prjVec(p1)), val, thick);
+			renderLine(dst, cam * prjVec(p0), cam * prjVec(p1), val, thick);
 		}
 	}
 
@@ -306,7 +306,7 @@ namespace sp{
 
 				valid |= true;
 
-				const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pm.vtx[i])));
+				const Vec2 pix = cam * npxDist(cam, prjVec(pm.vtx[i]));
 
 				xs = minVal(xs, floor(pix.x + 1));
 				xe = maxVal(xe, floor(pix.x + 1));
