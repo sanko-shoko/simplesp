@@ -525,7 +525,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE, typename ELEM = TYPE>
-	SP_CPUFUNC void normalizeFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
+	SP_CPUFUNC void normalizeFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize, const int maxv = SP_BYTEMAX) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -547,7 +547,7 @@ namespace sp{
 			for (int u = 0; u < dst.dsize[0]; u++) {
 
 				for (int c = 0; c < ch; c++) {
-					acs2<TYPE, ELEM>(dst, u, v, c) = (acs2<TYPE, ELEM>(src, u, v, c) - acs2<TYPE, ELEM>(tmp, u, v, c) + SP_BYTEMAX) / 2 ;
+					acs2<TYPE, ELEM>(dst, u, v, c) = (acs2<TYPE, ELEM>(src, u, v, c) - acs2<TYPE, ELEM>(tmp, u, v, c) + maxv) / 2 ;
 				}
 			}
 		}
