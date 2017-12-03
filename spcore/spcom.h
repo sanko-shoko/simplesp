@@ -199,9 +199,9 @@ namespace sp{
 	// disparity data
 	//--------------------------------------------------------------------------------
 
-	struct DispData {
+	struct Disp {
 		float disp;
-		int eval;
+		float eval;
 	};
 
 

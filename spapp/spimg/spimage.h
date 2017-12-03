@@ -392,14 +392,14 @@ namespace sp{
 	}
 
 	template <typename TYPE>
-	SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<DispData> &src, const int maxDisp, const int minDisp) {
+	SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<Disp> &src, const int maxDisp, const int minDisp) {
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
 		dst.zero();
 
 		for (int i = 0; i < dst.size(); i++) {
-			const DispData &disp = src[i];
+			const Disp &disp = src[i];
 
 			if (disp.eval > 0.0) {
 				cnvDispToImg(dst[i], disp, maxDisp, minDisp);

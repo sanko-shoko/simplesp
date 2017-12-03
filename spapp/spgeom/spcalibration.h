@@ -400,7 +400,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
+		SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
 			const int num = Bs.size();
 
 			Pose iZ = invPose(Z);
@@ -559,7 +559,7 @@ namespace sp{
 
 	// 
 
-	SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+	SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
 
 		Mem1<Pose> As;
 
@@ -580,7 +580,7 @@ namespace sp{
 
 			if (initRobotCam(X, Z, As, Bs) == false) throw "initRobotCam";
 			
-			if ((rms = optRobotCam(X, Z, cam, Bs, pixsList, objsList)) < 0.0) throw "optRobotCam";
+			if ((rms = optRobotCam(X, Z, Bs, cam, pixsList, objsList)) < 0.0) throw "optRobotCam";
 		}
 		catch (const char *str) {
 			SP_PRINTD("calibRobotCam [%s]\n", str);
