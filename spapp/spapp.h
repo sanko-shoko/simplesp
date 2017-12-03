@@ -36,6 +36,7 @@
 #include "spapp/spimgex/spslic.h"
 #include "spapp/spimgex/spcanny.h"
 #include "spapp/spimgex/spfourier.h"
+#include "spapp/spimgex/spstereo.h"
 
 // geometry
 #include "spapp/spgeom/spgeometry.h"

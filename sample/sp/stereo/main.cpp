@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_DEBUG 1
+
+#include "simplesp.h"
 
 using namespace sp;
 
@@ -8,37 +10,90 @@ int main(){
 	SP_ASSERT(loadBMP(imgs[0], SP_DATA_DIR  "/image/shiba02.bmp"));
 	SP_ASSERT(loadBMP(imgs[1], SP_DATA_DIR  "/image/shiba04.bmp"));
 
-	CamParam cam;
-	SP_ASSERT(loadText(cam, SP_DATA_DIR  "/image/shiba.txt"));
+	// get camera parameter
+	CamParam cam0, cam1;
+	SP_ASSERT(loadText(cam0, SP_DATA_DIR  "/image/shiba.txt"));
+	SP_ASSERT(loadText(cam1, SP_DATA_DIR  "/image/shiba.txt"));
 
-	Mem2<Col3> rimgs[2];
+	// get camera pose
+	Pose stereo;
 	{
 		SfM sfm;
-		sfm.addData(imgs[0], cam);
-		sfm.addData(imgs[1], cam);
+		sfm.addData(imgs[0], cam0);
+		sfm.addData(imgs[1], cam1);
 
 		for (int i = 0; i < 10; i++) {
 			sfm.update();
 		}
 
-		Pose stereo = sfm.m_views[1].pose * invPose(sfm.m_views[0].pose);
-		print(stereo);
+		stereo = sfm.m_views[1].pose * invPose(sfm.m_views[0].pose);
+		//print(stereo);
+	}
 
-		RectParam rects[2];
-		rectify(rects[0], rects[1], cam, cam, stereo);
 
-		Mem2<Vec2> tables[2];
+	RectParam rects[2];
+	Mem2<Vec2> tables[2];
+	
+	// make remap table
+	{
+		rectify(rects[0], rects[1], cam0, cam1, stereo);
 
 		for (int i = 0; i < 2; i++) {
 			makeRemapTable(tables[i], rects[i]);
-			remap<Col3, Byte>(rimgs[i], imgs[i], tables[i]);
-
-			char str[SP_STRMAX];
-			sprintf(str, "rect%d.bmp", i);
-			saveBMP(rimgs[i], str);
 		}
 	}
 
+
+	// pre filter
+	if(0){
+		for (int i = 0; i < 2; i++) {
+			normalizeFilter<Col3, Byte>(imgs[i], imgs[i], 7);
+		}
+	}
+
+	Mem2<Col3> rimgs[2];
+
+	// remap
+	{
+		for (int i = 0; i < 2; i++) {
+			remap<Col3, Byte>(rimgs[i], imgs[i], tables[i]);
+
+			saveBMP(rimgs[i], strFormat("rect%d.bmp", i).c_str());
+		}
+	}
+
+	const int maxDisp = 140;
+	const int minDisp = 90;
+
+	StereoBase estimator;
+
+	// matching
+	{
+		estimator.setCam(rects[0].cam, rects[1].cam);
+		estimator.setRange(maxDisp, minDisp);
+
+		estimator.execute(rimgs[0], rimgs[1]);
+	}
+
+	// output
+	{
+		Mem2<Col3> imgs[2];
+		cnvDispToImg(imgs[0], estimator.getDispMap(StereoBase::StereoL), maxDisp, minDisp);
+		cnvDispToImg(imgs[1], estimator.getDispMap(StereoBase::StereoR), maxDisp, minDisp);
+		
+		saveBMP(imgs[0], "dispL.bmp");
+		saveBMP(imgs[1], "dispR.bmp");
+
+		const Mem2<Vec3> &depthMap = estimator.getDepthMap(StereoBase::StereoL);
+
+		Mem1<Vec3> pnts;
+		for (int i = 0; i < depthMap.size(); i++) {
+			if (depthMap[i].z > 0.0) {
+				pnts.push(depthMap[i]);
+			}
+		}
+		savePLY(pnts, "test.ply");
+	}
 
 	return 0;
 }
