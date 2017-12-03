@@ -114,7 +114,7 @@ namespace sp{
 					for (int p = 0; p < vpixs.size(); p++){
 						const Vec2 pix = vpixs[p];
 						const Vec3 obj = getVec(vobjs[p].x, vobjs[p].y, 0.0);
-						const Vec2 vec = mulCam(cam, npxDist(cam, prjVec(pose * obj)));
+						const Vec2 vec = cam * npxDist(cam, prjVec(pose * obj));
 
 						const Vec2 err = pix - vec;
 						E(cnt * 2 + 0, 0) = err.x;
@@ -249,8 +249,8 @@ namespace sp{
 							mulMat(&J(p * 4 + 0, 0), 2, 6, jPosToPix0, 2, 3, jPoseToPos0, 3, 6);
 							mulMat(&J(p * 4 + 2, 0), 2, 6, jPosToPix1, 2, 3, jPoseToPos1, 3, 6);
 
-							const Vec2 err0 = vpixsList0[i][p] - mulCam(cam0, npxDist(cam0, prjVec(pose0 * obj)));
-							const Vec2 err1 = vpixsList1[i][p] - mulCam(cam1, npxDist(cam1, prjVec(pose1 * obj)));
+							const Vec2 err0 = vpixsList0[i][p] - cam0 * npxDist(cam0, prjVec(pose0 * obj));
+							const Vec2 err1 = vpixsList1[i][p] - cam1 * npxDist(cam1, prjVec(pose1 * obj));
 
 							E(p * 4 + 0, 0) = err0.x;
 							E(p * 4 + 1, 0) = err0.y;
@@ -283,7 +283,7 @@ namespace sp{
 							const Vec2 pix = vpixs[p];
 							const Vec3 obj = getVec(vobjs[p].x, vobjs[p].y, 0.0);
 
-							const Vec2 vec = mulCam(cam1, npxDist(cam1, prjVec(stereo * pose * obj)));
+							const Vec2 vec = cam1 * npxDist(cam1, prjVec(stereo * pose * obj));
 
 							const Vec2 err = pix - vec;
 							E(cnt * 2 + 0, 0) = err.x;
@@ -400,7 +400,7 @@ namespace sp{
 			return true;
 		}
 
-		SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
+		SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
 			const int num = Bs.size();
 
 			Pose iZ = invPose(Z);
@@ -450,7 +450,7 @@ namespace sp{
 							J(cnt * 2 + 1, p + 6) = J1(1, p);
 						}
 
-						const Vec2 err = pixs[j] - mulCam(cam, npxDist(cam, prjVec((X * iB * iZ) * objs[j])));
+						const Vec2 err = pixs[j] - cam * npxDist(cam, prjVec((X * iB * iZ) * objs[j]));
 						E(cnt * 2 + 0, 0) = err.x;
 						E(cnt * 2 + 1, 0) = err.y;
 						errs[cnt] = normVec(err);
@@ -559,7 +559,7 @@ namespace sp{
 
 	// 
 
-	SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const CamParam &cam, const Mem1<Pose> &Bs, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+	SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
 
 		Mem1<Pose> As;
 
@@ -580,7 +580,7 @@ namespace sp{
 
 			if (initRobotCam(X, Z, As, Bs) == false) throw "initRobotCam";
 			
-			if ((rms = optRobotCam(X, Z, cam, Bs, pixsList, objsList)) < 0.0) throw "optRobotCam";
+			if ((rms = optRobotCam(X, Z, Bs, cam, pixsList, objsList)) < 0.0) throw "optRobotCam";
 		}
 		catch (const char *str) {
 			SP_PRINTD("calibRobotCam [%s]\n", str);
@@ -641,7 +641,7 @@ namespace sp{
 				const Vec2 npx = npxUndist(pRect[i]->pre, invCam(pRect[i]->pre, cent));
 				const Vec2 wrp = prjVec(pRect[i]->rot * prjVec(npx));
 
-				const Vec2 pix = mulCam(pRect[i]->cam, npxDist(pRect[i]->cam, wrp));
+				const Vec2 pix = pRect[i]->cam * npxDist(pRect[i]->cam, wrp);
 
 				const Vec2 dif = cent - pix;
 				pRect[i]->cam.cx += dif.x;
@@ -682,7 +682,7 @@ namespace sp{
 				const Vec2 npx = npxUndist(rect.cam, invCam(rect.cam, src));
 				const Vec2 wrp = prjVec(rot * prjVec(npx));
 
-				const Vec2 dst = mulCam(rect.pre, npxDist(rect.pre, wrp));
+				const Vec2 dst = rect.pre * npxDist(rect.pre, wrp);
 				table(u, v) = dst - src;
 			}
 		}

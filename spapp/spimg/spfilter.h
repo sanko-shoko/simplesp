@@ -521,6 +521,40 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
+	// normalize filter 
+	//--------------------------------------------------------------------------------
+
+	template <typename TYPE, typename ELEM = TYPE>
+	SP_CPUFUNC void normalizeFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
+		SP_ASSERT(isValid(2, src));
+
+		dst.resize(2, src.dsize);
+
+		Mem2<TYPE> tmp;
+		{
+			Mem1<double> kernel(winSize);
+			for (int k = 0; k < winSize; k++) {
+				kernel(k) = 1.0;
+			}
+
+			filterX<TYPE, ELEM>(tmp, src, kernel);
+			filterY<TYPE, ELEM>(tmp, tmp, kernel);
+		}
+
+		const int ch = sizeof(TYPE) / sizeof(ELEM);
+
+		for (int v = 0; v < dst.dsize[1]; v++) {
+			for (int u = 0; u < dst.dsize[0]; u++) {
+
+				for (int c = 0; c < ch; c++) {
+					acs2<TYPE, ELEM>(dst, u, v, c) = (acs2<TYPE, ELEM>(src, u, v, c) - acs2<TYPE, ELEM>(tmp, u, v, c) + SP_BYTEMAX) / 2 ;
+				}
+			}
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------
 	//  bilateral filter 
 	//--------------------------------------------------------------------------------
 

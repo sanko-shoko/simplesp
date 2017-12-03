@@ -157,11 +157,6 @@ namespace sp{
 		// util
 		//--------------------------------------------------------------------------------
 
-		int find(const TYPE &data) {
-			const int p = round(&data - this->ptr) / sizeof(TYPE);
-			return (p >= 0 && p < size()) ? p : -1;
-		}
-
 		Mem<TYPE> slice(const int axis, const int start, const int end) const{
 			const int s = start;
 			const int e = minVal(end, this->dsize[axis]);
