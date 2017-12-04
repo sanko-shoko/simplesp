@@ -10,8 +10,6 @@ int main() {
 		// principal component analysis (2D)
 		//--------------------------------------------------------------------------------
 
-		Graph2D graph(100, 0);
-
 		Mem1<Vec2> data;
 
 		// generate data
@@ -29,11 +27,8 @@ int main() {
 				const Vec2 vec = mat * randVecGauss(20.0, 5.0) + getVec(50.0, 50.0);
 				data.push(vec);
 			}
-
-			graph.renderPoint(data, getCol(0, 200, 0), 3);
-			graph.saveBMP("graphA.bmp");
 		}
-
+	
 		{
 			const Vec2 mean = meanVec(data);
 
@@ -46,26 +41,19 @@ int main() {
 			Mat eigVec, eigVal;
 			eigMat(eigVec, eigVal, covMat(mat) / data.size(), false);
 
+
+			printf("eigVec\n");
 			print(eigVec);
+
+			printf("eigVal\n");
 			print(eigVal);
 
-			// first principal component
-			{
-				const double val = ::sqrt(eigVal(0, 0));
-				const Vec2 vec = getVec(eigVec(0, 0), eigVec(1, 0));
-				graph.renderLine(mean - vec * val * 2, mean + vec * val * 2, getCol(200, 0, 0), 2);
-			}
+			printf("first principal component\n");
+			printf("%+.3lf, %+.3lf\n", eigVec(0, 0), eigVec(1, 0));
+			printf("second principal component\n");
+			printf("%+.3lf, %+.3lf\n", eigVec(0, 1), eigVec(1, 1));
 
-			// second principal component
-			{
-				const double val = ::sqrt(eigVal(1, 1));
-				const Vec2 vec = getVec(eigVec(0, 1), eigVec(1, 1));
-				graph.renderLine(mean - vec * val * 2, mean + vec * val * 2, getCol(0, 0, 200), 2);
-			}
-			
-			graph.renderPoint(mean, getCol(0, 0, 0), 5);
-
-			graph.saveBMP("graphB.bmp");
+			printf("\n\n");
 		}
 	}
 
