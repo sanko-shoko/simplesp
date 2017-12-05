@@ -351,7 +351,7 @@ namespace sp{
 
 				valid |= true;
 
-				const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pm.vtx[i])));
+				const Vec2 pix = mulCamD(cam, prjVec(pm.vtx[i]));
 
 				xs = minVal(xs, floor(pix.x + 1));
 				xe = maxVal(xe, floor(pix.x + 1));
@@ -469,7 +469,7 @@ namespace sp{
 
 				const Vec3 ppos = cam2prj * cpos;
 				const Vec2 pnpx = prjVec(ppos);
-				const Vec2 ppix = mulCam(prj, npxDist(prj, pnpx));
+				const Vec2 ppix = mulCamD(prj, pnpx);
 
 				const double div = acs2(pmask, ppix.x, ppix.y);
 				if (div < SP_SMALL) continue;

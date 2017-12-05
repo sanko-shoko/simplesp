@@ -118,7 +118,7 @@ namespace sp{
 				jacob = jacob * R;
 				memcpy(&J(i * 2, 0), jacob.ptr, jacob.size() * sizeof(double));
 
-				const Vec2 err = pixs[i] - mulCam(cams[i], npxDist(cams[i], prjVec(pos)));
+				const Vec2 err = pixs[i] - mulCamD(cams[i], prjVec(pos));
 				E(i * 2 + 0, 0) = err.x;
 				E(i * 2 + 1, 0) = err.y;
 				errs[i] = normVec(err);
@@ -468,7 +468,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
-		return normVec(pix - mulCam(cam, npxDist(cam, prjVec(pose * obj))));
+		return normVec(pix - mulCamD(cam, prjVec(pose * obj)));
 	}
 
 	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
@@ -503,7 +503,7 @@ namespace sp{
 			for (int i = 0; i < pixs.size(); i++) {
 				jacobPoseToPix(&J(i * 2, 0), pose, cam, objs[i]);
 
-				const Vec2 err = pixs[i] - mulCam(cam, npxDist(cam, prjVec(pose * objs[i])));
+				const Vec2 err = pixs[i] - mulCamD(cam, prjVec(pose * objs[i]));
 				E(i * 2 + 0, 0) = err.x;
 				E(i * 2 + 1, 0) = err.y;
 				errs[i] = normVec(err);

@@ -199,6 +199,15 @@ namespace sp{
 		return mulCam(cam, npxUndist(cam, invCam(cam, pix)));
 	}
 
+	// ideal to pix
+	SP_GENFUNC Vec2 mulCamD(const CamParam &cam, const Vec2 &npx) {
+		return mulCam(cam, npxDist(cam, npx));
+	}
+
+	// pix to ideal
+	SP_GENFUNC Vec2 invCamD(const CamParam &cam, const Vec2 &pix) {
+		return npxUndist(cam, invCam(cam, pix));
+	}
 
 }
 

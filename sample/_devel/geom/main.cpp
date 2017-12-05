@@ -25,8 +25,8 @@ int main() {
 	const Vec3 pos = getVec(0.0, 0.0, 400);
 	Vec3 test = getVec(0.0, 0.0, 410);
 
-	Vec2 pix0 = mulCam(cam, npxDist(cam, prjVec(pos)));
-	Vec2 pix1 = mulCam(cam, npxDist(cam, prjVec(stereo * pos)));
+	Vec2 pix0 = mulCamD(cam, prjVec(pos));
+	Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos));
 
 	Mem1<Vec2> pixs;
 	pixs.push(pix0);
