@@ -110,7 +110,7 @@ namespace sp{
 			for (int i = 0; i < src.size(); i++){
 				const TYEP0 vec = pose * src[i];
 
-				const Vec2 pix = cam * prjVec(getPos(vec));
+				const Vec2 pix = mulCam(cam, prjVec(getPos(vec)));
 				if (isInRect2(ref.dsize, pix.x, pix.y) == false) continue;
 
 				const int c = acsid2(ref.dsize, round(pix.x), round(pix.y));

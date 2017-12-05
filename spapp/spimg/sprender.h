@@ -94,7 +94,7 @@ namespace sp{
 		const Vec3 p0 = pose * pnt0;
 		const Vec3 p1 = pose * pnt1;
 		if (p0.z > 0 && p1.z > 0){
-			renderLine(dst, cam * prjVec(p0), cam * prjVec(p1), val, thick);
+			renderLine(dst, mulCam(cam, prjVec(p0)), mulCam(cam, prjVec(p1)), val, thick);
 		}
 	}
 
@@ -280,95 +280,7 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// render vector vn
-	//--------------------------------------------------------------------------------
-
-	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mesh &mesh){
-
-		if (cmpSize(2, map.dsize, cam.dsize) == false){
-			map.resize(2, cam.dsize);
-			map.zero();
-		}
-
-		Rect rect;
-		
-		const Mesh pm = pose * mesh;
-		{
-			int xs = map.dsize[0];
-			int xe = 0;
-
-			int ys = map.dsize[1];
-			int ye = 0;
-
-			bool valid = false;
-			for (int i = 0; i < 3; i++){
-				if (pm.vtx[i].z < SP_SMALL) continue;
-
-				valid |= true;
-
-				const Vec2 pix = cam * npxDist(cam, prjVec(pm.vtx[i]));
-
-				xs = minVal(xs, floor(pix.x + 1));
-				xe = maxVal(xe, floor(pix.x + 1));
-
-				ys = minVal(ys, floor(pix.y + 1));
-				ye = maxVal(ye, floor(pix.y + 1));
-			}
-			if (valid == false) return;
-
-			rect = andRect(getRect2(map.dsize), getRect2(xs, ys, xe - xs, ye - ys));
-		}
-
-		const Vec3 nrm = getMeshNrm(pm);
-
-		const Vec3 base = pm.vtx[0];
-		const Vec3 A = pm.vtx[1] - base;
-		const Vec3 B = pm.vtx[2] - base;
-
-		double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
-		double val[3] = { base.x, base.y, base.z };
-
-		for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++){
-			for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++){
-				const Vec2 prj = npxUndist(cam, invCam(cam, getVec(u, v)));
-				const Vec3 vec = getVec(prj.x, prj.y, 1.0);
-
-				mat[0 * 3 + 2] = vec.x;
-				mat[1 * 3 + 2] = vec.y;
-				mat[2 * 3 + 2] = vec.z;
-
-				double inv[3 * 3];
-				if(invMat33(inv, mat) == false) continue;
-
-				double result[3];
-				mulMat(result, 3, 1, inv, 3, 3, val, 3, 1);
-
-				if (result[0] < 0.0 || result[1] < 0.0 || result[0] + result[1] > 1.0) continue;
-
-				const double depth = result[2];
-				if (depth < SP_SMALL) continue;
-
-				const double ref = extractDepth(acs2(map, u, v));
-				if (ref == 0.0 || depth < ref){
-					acs2(map, u, v) = getVecVN(vec * depth, nrm);
-				}
-			}
-		}
-
-	}
-
-	template <typename TYPE>
-	SP_CPUFUNC void renderVecVN(Mem<TYPE> &map, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes){
-
-		for (int i = 0; i < meshes.size(); i++){
-			renderVecVN(map, cam, pose, meshes[i]);
-		}
-	}
-
-
-
-	//--------------------------------------------------------------------------------
-	// render calibration board
+	// render calibration marker
 	//--------------------------------------------------------------------------------
 
 	SP_CPUFUNC void renderMarker(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem2<Vec2> &mrkMap) {
@@ -411,6 +323,172 @@ namespace sp{
 		}
 	}
 
+
+	//--------------------------------------------------------------------------------
+	// render vector vn
+	//--------------------------------------------------------------------------------
+
+	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
+
+		if (cmpSize(2, map.dsize, cam.dsize) == false) {
+			map.resize(2, cam.dsize);
+			map.zero();
+		}
+
+		Rect rect;
+
+		const Mesh pm = pose * mesh;
+		{
+			int xs = map.dsize[0];
+			int xe = 0;
+
+			int ys = map.dsize[1];
+			int ye = 0;
+
+			bool valid = false;
+			for (int i = 0; i < 3; i++) {
+				if (pm.vtx[i].z < SP_SMALL) continue;
+
+				valid |= true;
+
+				const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pm.vtx[i])));
+
+				xs = minVal(xs, floor(pix.x + 1));
+				xe = maxVal(xe, floor(pix.x + 1));
+
+				ys = minVal(ys, floor(pix.y + 1));
+				ye = maxVal(ye, floor(pix.y + 1));
+			}
+			if (valid == false) return;
+
+			rect = andRect(getRect2(map.dsize), getRect2(xs, ys, xe - xs, ye - ys));
+		}
+
+		const Vec3 nrm = getMeshNrm(pm);
+
+		const Vec3 base = pm.vtx[0];
+		const Vec3 A = pm.vtx[1] - base;
+		const Vec3 B = pm.vtx[2] - base;
+
+		double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
+		double val[3] = { base.x, base.y, base.z };
+
+		for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
+			for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
+				const Vec2 prj = npxUndist(cam, invCam(cam, getVec(u, v)));
+				const Vec3 vec = getVec(prj.x, prj.y, 1.0);
+
+				mat[0 * 3 + 2] = vec.x;
+				mat[1 * 3 + 2] = vec.y;
+				mat[2 * 3 + 2] = vec.z;
+
+				double inv[3 * 3];
+				if (invMat33(inv, mat) == false) continue;
+
+				double result[3];
+				mulMat(result, 3, 1, inv, 3, 3, val, 3, 1);
+
+				if (result[0] < 0.0 || result[1] < 0.0 || result[0] + result[1] > 1.0) continue;
+
+				const double depth = result[2];
+				if (depth < SP_SMALL) continue;
+
+				const double ref = extractDepth(acs2(map, u, v));
+				if (ref == 0.0 || depth < ref) {
+					acs2(map, u, v) = getVecVN(vec * depth, nrm);
+				}
+			}
+		}
+
+	}
+
+	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+
+		for (int i = 0; i < meshes.size(); i++) {
+			renderVecVN(map, cam, pose, meshes[i]);
+		}
+	}
+
+	SP_CPUFUNC void renderDepth(Mem<double> &map, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+
+		Mem<VecVN3> vnmap;
+		for (int i = 0; i < meshes.size(); i++) {
+			renderVecVN(vnmap, cam, pose, meshes[i]);
+		}
+
+		map.resize(2, cam.dsize);
+		for (int i = 0; i < map.size(); i++) {
+			map[i] = extractDepth(vnmap[i]);
+		}
+	}
+
+
+	SP_CPUFUNC void renderImage(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes) {
+
+		dst.resize(cam.dsize);
+		dst.zero();
+
+		Mem<VecVN3> map;
+		renderVecVN(map, cam, pose, meshes);
+
+		for (int i = 0; i < dst.size(); i++) {
+			const Vec3 nrm = map[i].nrm;
+			if (nrm.z < 0.0) {
+				cnvVal(dst[i], -nrm.z * SP_BYTEMAX);
+			}
+		}
+	}
+
+
+	SP_CPUFUNC void renderPattern(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
+		const CamParam &prj, const Pose &cam2prj, const Mem2<Byte> &ptn) {
+
+		dst.resize(cam.dsize);
+		dst.zero();
+
+		Mem2<VecVN3> cmap;
+		renderVecVN(cmap, cam, pose, meshes);
+
+		Mem2<VecVN3> pmap;
+		renderVecVN(pmap, prj, cam2prj * pose, meshes);
+
+		Mem2<double> pdepth(pmap.dsize);
+		Mem2<double> pmask(pmap.dsize);
+		for (int i = 0; i < pmap.size(); i++) {
+			pdepth[i] = pmap[i].vtx.z;
+			pmask[i] = (pmap[i].vtx.z > 0.0) ? 1.0 : 0.0;
+		}
+
+		for (int v = 0; v < cam.dsize[1]; v++) {
+			for (int u = 0; u < cam.dsize[0]; u++) {
+				if (cmap(u, v).vtx.z == 0.0) continue;
+
+				const Vec2 cpix = getVec(u, v);
+				const Vec2 cnpx = invCam(cam, cpix);
+				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).vtx.z;
+
+				const Vec3 ppos = cam2prj * cpos;
+				const Vec2 pnpx = prjVec(ppos);
+				const Vec2 ppix = mulCam(prj, npxDist(prj, pnpx));
+
+				const double div = acs2(pmask, ppix.x, ppix.y);
+				if (div < SP_SMALL) continue;
+				
+				const double depth = acs2(pdepth, ppix.x, ppix.y) / div;
+				if (depth < ppos.z - 1.0) continue;
+
+				if (isInRect2(ptn.dsize, round(ppix.x), round(ppix.y)) == false) continue;
+				const double val = acs2(ptn, ppix.x, ppix.y);
+
+				const Vec3 nrm = cmap(u, v).nrm;
+				if (nrm.z < 0.0) {
+					cnvVal(dst(u, v), -nrm.z * val);
+				}
+
+			}
+		}
+
+	}
 
 }
 

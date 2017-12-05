@@ -45,7 +45,7 @@ namespace sp{
 					const Vec3 mpos = getVec(x, y, z);
 					const Vec3 cpos = pose * ((mpos - cent) * unit);
 
-					const Vec2 pix = cam * prjVec(cpos);
+					const Vec2 pix = mulCam(cam, prjVec(cpos));
 					if (isInRect2(depth.dsize, pix.x, pix.y) == false) continue;
 
 					const double d = depth(round(pix.x), round(pix.y));

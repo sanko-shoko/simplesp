@@ -567,10 +567,6 @@ namespace sp{
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
 	}
 
-	SP_CPUFUNC Vec2 operator * (const CamParam &cam, const Vec2 vec) {
-		return mulCam(cam, vec);
-	}
-
 	SP_CPUFUNC VecVN2 operator * (const Mat &mat, const VecVN2 vec){
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
 	}

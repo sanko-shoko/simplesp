@@ -61,7 +61,7 @@ int main(){
 				const double sigma = 0.1;
 				for (int n = 0; n < mrkMap.size(); n++) {
 					const Vec3 pos = mrk2camPoses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
-					const Vec2 pix = cam * npxDist(cam, prjVec(pos)) + randVecGauss(sigma, sigma);
+					const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pos))) + randVecGauss(sigma, sigma);
 
 					pixs.push(pix);
 					objs.push(mrkMap[n]);
