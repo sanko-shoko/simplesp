@@ -9,19 +9,7 @@
 
 namespace sp{
 
-	//SP_CPUFUNC void cnvDepth(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src) {
-	//	SP_ASSERT(isValid(2, src));
 
-	//	dst.resize(2, src.dsize);
-	//	dst.zero();
-
-	//	for (int v = 0; v < dst.dsize[1]; v++) {
-	//		for (int u = 0; u < dst.dsize[0]; u++) {
-	//		}
-	//	}
-	//}
-	//
-	
 	//--------------------------------------------------------------------------------
 	//  bilateral filter
 	//--------------------------------------------------------------------------------

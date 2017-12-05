@@ -75,6 +75,9 @@ namespace sp{
 		return npx;
 	}
 
+	//SP_CPUFUNC Vec2 operator * (const CamParam &cam, const Vec2 vec) {
+	//	return mulCam(cam, vec);
+	//}
 
 }
 

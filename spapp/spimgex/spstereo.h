@@ -87,6 +87,7 @@ namespace sp{
 			return m_depthMap[order == Order::StereoL ? 0 : 1];
 		}
 
+
 		//--------------------------------------------------------------------------------
 		// execute stereo matching
 		//--------------------------------------------------------------------------------
@@ -142,8 +143,8 @@ namespace sp{
 			const int lx = maxVal(+m_winSize + maxv - layers / 2, 0);
 			const int rx = maxVal(+m_winSize - minv - layers / 2, 0);
 
-			rect.dbase[0] = lx;
-			rect.dsize[0] = rect.dsize[0] - lx - rx;
+			rect.dbase[0] += lx;
+			rect.dsize[0] -= lx + rx;
 
 			return rect;
 		}
