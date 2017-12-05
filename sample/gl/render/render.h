@@ -167,14 +167,14 @@ private:
 
 			glEnable(GL_STENCIL_TEST);
 
+			glClearStencil(0);
+			glClear(GL_STENCIL_BUFFER_BIT);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
 			// fill stencil
 			{
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-				glClearStencil(0);
-				glClear(GL_STENCIL_BUFFER_BIT);
-
 				glStencilFunc(GL_ALWAYS, 1, 0xFFFF);
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 

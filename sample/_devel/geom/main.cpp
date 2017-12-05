@@ -39,7 +39,7 @@ int main() {
 	poses.push(zeroPose());
 	poses.push(stereo);
 
-	refinePnt3d(test, poses, cams, pixs);
+	refinePnt3d(test, poses, cams, pixs, 5);
 
 	print(test);
 	return 0;
