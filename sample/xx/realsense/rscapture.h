@@ -89,7 +89,7 @@ private:
 						if (d == 0.0) continue;
 						
 						Col3 col;
-						cnvDepthToImg(col, d, nearPlane, farPlane);
+						cnvDepthToCol(col, d, nearPlane, farPlane);
 						glColor(col);
 
 						const Vec3 pnt = prjVec(invCam(*m_rs.getDepthCam(), getVec(u, v))) * d;

@@ -270,33 +270,33 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// convert image element
+	// convert color
 	//--------------------------------------------------------------------------------
 
 	template <typename TYPE>
-	SP_GENFUNC void cnvImg(TYPE &dst, const TYPE &src){
+	SP_GENFUNC void cnvCol(TYPE &dst, const TYPE &src){
 		dst = src;
 	}
 
-	SP_GENFUNC void cnvImg(Col3 &dst, const Byte &src){
+	SP_GENFUNC void cnvCol(Col3 &dst, const Byte &src){
 		dst = getCol(src, src, src);
 	}
 
-	SP_GENFUNC void cnvImg(Byte &dst, const Col3 &src){
+	SP_GENFUNC void cnvCol(Byte &dst, const Col3 &src){
 		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
 	}
 
-	SP_GENFUNC void cnvImg(Byte &dst, const Col4 &src) {
+	SP_GENFUNC void cnvCol(Byte &dst, const Col4 &src) {
 		dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
 	}
 
-	SP_GENFUNC void cnvImg(Col3 &dst, const Col4 &src) {
+	SP_GENFUNC void cnvCol(Col3 &dst, const Col4 &src) {
 		dst.r = src.r;
 		dst.g = src.g;
 		dst.b = src.b;
 	}
 
-	SP_GENFUNC void cnvImg(Col4 &dst, const Col3 &src) {
+	SP_GENFUNC void cnvCol(Col4 &dst, const Col3 &src) {
 		dst.r = src.r;
 		dst.g = src.g;
 		dst.b = src.b;
@@ -308,32 +308,32 @@ namespace sp{
 	// convert geom to image
 	//--------------------------------------------------------------------------------
 
-	SP_GENFUNC void cnvDepthToImg(Byte &dst, const double depth, const double nearPlane, const double farPlane){
+	SP_GENFUNC void cnvDepthToCol(Byte &dst, const double depth, const double nearPlane, const double farPlane){
 		const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
 		dst = static_cast<Byte>(255 * rate);
 	}
 
-	SP_GENFUNC void cnvDepthToImg(Col3 &dst, const double depth, const double nearPlane, const double farPlane){
+	SP_GENFUNC void cnvDepthToCol(Col3 &dst, const double depth, const double nearPlane, const double farPlane){
 		const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
 		cnvPhaseToCol(dst, rate);
 	}
 
-	SP_GENFUNC void cnvNormalToImg(Byte &dst, const Vec3 &nrm){
+	SP_GENFUNC void cnvNormalToCol(Byte &dst, const Vec3 &nrm){
 		dst = (nrm.z < 0) ? static_cast<Byte>(-255 * nrm.z) : 0;
 	}
 
-	SP_GENFUNC void cnvNormalToImg(Col3 &dst, const Vec3 &nrm){
+	SP_GENFUNC void cnvNormalToCol(Col3 &dst, const Vec3 &nrm){
 		dst.r = static_cast<Byte>(255 * (1.0 - nrm.x) / 2);
 		dst.g = static_cast<Byte>(255 * (1.0 - nrm.y) / 2);
 		dst.b = static_cast<Byte>(255 * (1.0 - nrm.z) / 2);
 	}
 
-	SP_GENFUNC void cnvDispToImg(Byte &dst, const Disp &disp, const int maxDisp, const int minDisp) {
+	SP_GENFUNC void cnvDispToCol(Byte &dst, const Disp &disp, const int maxDisp, const int minDisp) {
 		const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
 		dst = static_cast<Byte>(255 * rate);
 	}
 
-	SP_GENFUNC void cnvDispToImg(Col3 &dst, const Disp &disp, const int maxDisp, const int minDisp) {
+	SP_GENFUNC void cnvDispToCol(Col3 &dst, const Disp &disp, const int maxDisp, const int minDisp) {
 		const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
 		cnvPhaseToCol(dst, rate);
 	}

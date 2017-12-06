@@ -15,10 +15,10 @@
 #include "spcore/spgen/spacs.h"
 #include "spcore/spgen/spvec.h"
 #include "spcore/spgen/spcol.h"
-#include "spcore/spgen/spcam.h"
 #include "spcore/spgen/spmath.h"
+
+#include "spcore/spgen/spcam.h"
 #include "spcore/spgen/sppose.h"
-#include "spcore/spgen/spopt.h"
 
 // cpu
 #include "spcore/spcpu/spmem.h"
