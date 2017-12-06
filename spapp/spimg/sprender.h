@@ -452,11 +452,11 @@ namespace sp{
 		Mem2<VecVN3> pmap;
 		renderVecVN(pmap, prj, cam2prj * pose, meshes);
 
-		Mem2<double> pdepth(pmap.dsize);
-		Mem2<double> pmask(pmap.dsize);
+		typedef MemA<double, 2> Double2;
+		Mem2<Double2> ptmp(pmap.dsize);
 		for (int i = 0; i < pmap.size(); i++) {
-			pdepth[i] = pmap[i].vtx.z;
-			pmask[i] = (pmap[i].vtx.z > 0.0) ? 1.0 : 0.0;
+			ptmp[i][0] = pmap[i].vtx.z > 0.0 ? 1.0 : 0.0;
+			ptmp[i][1] = pmap[i].vtx.z;
 		}
 
 		for (int v = 0; v < cam.dsize[1]; v++) {
@@ -471,10 +471,10 @@ namespace sp{
 				const Vec2 pnpx = prjVec(ppos);
 				const Vec2 ppix = mulCamD(prj, pnpx);
 
-				const double div = acs2(pmask, ppix.x, ppix.y);
+				const double div = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 0);
 				if (div < SP_SMALL) continue;
 				
-				const double depth = acs2(pdepth, ppix.x, ppix.y) / div;
+				const double depth = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 1) / div;
 				if (depth < ppos.z - 1.0) continue;
 
 				if (isInRect2(ptn.dsize, round(ppix.x), round(ppix.y)) == false) continue;
