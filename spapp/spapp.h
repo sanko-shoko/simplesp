@@ -49,6 +49,7 @@
 #include "spapp/spgeomex/spdotmarker.h"
 #include "spapp/spgeomex/spbitmarker.h"
 #include "spapp/spgeomex/spdotpattern.h"
+#include "spapp/spgeomex/spprojector.h"
 
 #include "spapp/spgeomex/spkinectfusion.h"
 //#include "spapp/spgeomex/sptrack3d.h"
