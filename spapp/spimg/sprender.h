@@ -477,7 +477,7 @@ namespace sp{
 				const double depth = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 1) / div;
 				if (depth < ppos.z - 1.0) continue;
 
-				if (isInRect2(ptn.dsize, round(ppix.x), round(ppix.y)) == false) continue;
+				if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
 				const double val = acs2(ptn, ppix.x, ppix.y);
 
 				const Vec3 nrm = cmap(u, v).nrm;
@@ -490,6 +490,50 @@ namespace sp{
 
 	}
 
+	SP_CPUFUNC void renderCrsp(Mem2<Vec2> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
+		const CamParam &prj, const Pose &cam2prj) {
+
+		dst.resize(cam.dsize);
+		setElm(dst, getVec(-1.0, -1.0));
+
+		Mem2<VecVN3> cmap;
+		renderVecVN(cmap, cam, pose, meshes);
+
+		Mem2<VecVN3> pmap;
+		renderVecVN(pmap, prj, cam2prj * pose, meshes);
+
+		typedef MemA<double, 2> Double2;
+		Mem2<Double2> ptmp(pmap.dsize);
+		for (int i = 0; i < pmap.size(); i++) {
+			ptmp[i][0] = pmap[i].vtx.z > 0.0 ? 1.0 : 0.0;
+			ptmp[i][1] = pmap[i].vtx.z;
+		}
+
+		for (int v = 0; v < cam.dsize[1]; v++) {
+			for (int u = 0; u < cam.dsize[0]; u++) {
+				if (cmap(u, v).vtx.z == 0.0) continue;
+
+				const Vec2 cpix = getVec(u, v);
+				const Vec2 cnpx = invCam(cam, cpix);
+				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).vtx.z;
+
+				const Vec3 ppos = cam2prj * cpos;
+				const Vec2 pnpx = prjVec(ppos);
+				const Vec2 ppix = mulCamD(prj, pnpx);
+
+				const double div = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 0);
+				if (div < SP_SMALL) continue;
+
+				const double depth = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 1) / div;
+				if (depth < ppos.z - 1.0) continue;
+
+				if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
+				dst(u, v) = ppix;
+
+			}
+		}
+
+	}
 }
 
 #endif

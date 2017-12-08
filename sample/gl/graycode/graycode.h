@@ -8,6 +8,12 @@ class GrayCodeGUI : public BaseWindow{
 	// camera
 	CamParam m_cam;
 
+	// projector
+	CamParam m_prj;
+
+	// cam to prj pose
+	Pose m_cam2prj;
+
 	// image
 	Mem2<Col3> m_img;
 
@@ -17,11 +23,11 @@ class GrayCodeGUI : public BaseWindow{
 	// object to cam pose
 	Pose m_pose;
 
-	// projector
-	CamParam m_prj;
+	// view pose
+	Pose m_view;
 
-	// cam to prj pose
-	Pose m_cam2prj;
+	// pnts
+	Mem1<Vec3> m_pnts;
 
 	// pattern
 	Mem2<Byte> m_ptn;
@@ -31,6 +37,7 @@ class GrayCodeGUI : public BaseWindow{
 
 	int m_capture;
 
+	bool m_view3d;
 
 private:
 
@@ -45,7 +52,7 @@ private:
 
 		{
 			m_cam = getCamParam(640, 480);
-
+			
 			m_img.resize(m_cam.dsize);
 			m_img.zero();
 		}
@@ -53,16 +60,16 @@ private:
 		{
 			m_prj = getCamParam(320, 240);
 
-			m_ptn.resize(m_prj.dsize);
-			m_ptn.zero();
+			m_prj.k1 = 0.2;
+			m_prj.k2 = 0.1;
+			m_prj.k3 = 0.1;
+			m_prj.p1 = 0.1;
+			m_prj.p2 = 0.1;
 
-			for (int v = 0; v < m_ptn.dsize[1]; v++) {
-				for (int u = 0; u < m_ptn.dsize[0]; u++) {
-					m_ptn(u, v) = ((v / 5) % 2 == 0) ? 255 : 0;
-				}
-			}
-
-			m_cam2prj = getPose(getRotAngleY(- 10.0 / 180.0 * SP_PI), getVec(100.0, 0.0, 0.0));
+			m_cam2prj = getPose(getRotAngleY(- 10.0 / 180.0 * SP_PI), getVec(0.0, 100.0, 0.0));
+		
+			m_graycode.setSize(m_prj.dsize[0], m_prj.dsize[1]);
+			m_capture = -1;
 		}
 
 		{
@@ -74,10 +81,8 @@ private:
 
 			m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
-		}
-		{
-			m_graycode.setSize(m_prj.dsize[0], m_prj.dsize[1]);
-			m_capture = -1;
+			m_view3d = false;
+			m_view = zeroPose();
 		}
 	}
 
@@ -85,6 +90,7 @@ private:
 		const int axis = 0;
 
 		static Mem1<Mem2<Byte> > ptns;
+
 		static Mem2<Byte> wimg, bimg;
 		static Mem1<Mem2<Byte> > imgs;
 
@@ -114,14 +120,33 @@ private:
 				m_capture++;
 			}
 			else {
-				const Mem2<int> map = m_graycode.decode(axis, imgs, wimg, bimg);
+				const Mem2<double> map = m_graycode.decode(axis, imgs, wimg, bimg);
 				m_img.zero();
+				Mem2<Vec2> vmap;
+				renderCrsp(vmap, m_cam, m_pose, m_model, m_prj, m_cam2prj);
 
 				for (int i = 0; i < m_img.size(); i++) {
-					if (map[i] < 0) continue;
-					cnvPhaseToCol(m_img[i], static_cast<double>(map[i]) / m_prj.dsize[0]);
+					if (map[i] < 0.0) continue;
+					cnvPhaseToCol(m_img[i], map[i] / m_prj.dsize[0]);
 				}
 
+				Mem2<VecVN3> vnmap;
+				renderVecVN(vnmap, m_cam, m_pose, m_model);
+
+				m_pnts.clear();
+				Mem1<double> diff;
+				for (int v = 0; v < map.dsize[1]; v++) {
+					for (int u = 0; u < map.dsize[0]; u++) {
+						if (vmap(u, v).y < 0) continue;
+						Vec3 pnt;
+						if (calcPnt3dY(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, vmap(u, v).y) == true) {
+							m_pnts.push(pnt);
+						}
+						diff.push(::fabs(pnt.z - vnmap(u, v).vtx.z));
+					}
+				}
+
+				printf("mean diff%lf\n", meanVal(diff));
 				m_capture = -1;
 			}
 			return;
@@ -141,6 +166,9 @@ private:
 		if (m_keyAction[GLFW_KEY_C] == 1) {
 			m_capture = 0;
 		}
+		if (m_keyAction[GLFW_KEY_D] == 1) {
+			m_view3d ^= true;
+		}
 	}
 
 	virtual void display() {
@@ -152,16 +180,32 @@ private:
 			}
 		}
 
-		{
-			// view 2D
-			glLoadView2D(m_cam, m_viewPos, m_viewScale);
-			glRenderImage(m_img);
-		}
 
-		{
-			// view 3D
+		if (m_view3d == false) {
+			{
+				// view 2D
+				glLoadView2D(m_cam, m_viewPos, m_viewScale);
+				glRenderImage(m_img);
+			}
+			{
+				// view 3D
+				glLoadView3D(m_cam, m_viewPos, m_viewScale);
+				renderOutline();
+			}
+		}
+		else {
 			glLoadView3D(m_cam, m_viewPos, m_viewScale);
-			renderOutline();
+
+			// render points
+			glLoadMatrix(m_view);
+
+			glPointSize(1.f);
+			glColor3d(1.0, 1.0, 1.0);
+			glBegin(GL_POINTS);
+			for(int i= 0 ; i < m_pnts.size(); i++){
+				glVertex(m_pnts[i]);
+			}
+			glEnd();
 		}
 	}
 
@@ -185,7 +229,7 @@ private:
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+				glColor4d(0.0, 0.0, 0.0, 0.0);
 
 				glBegin(GL_TRIANGLES);
 				for (int i = 0; i < m_model.size(); i++) {
@@ -201,7 +245,7 @@ private:
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glLineWidth(2.0f);
-				glColor3f(1.0f, 1.0f, 1.0f);
+				glColor3d(1.0, 1.0, 1.0);
 
 				glBegin(GL_TRIANGLES);
 				for (int i = 0; i < m_model.size(); i++) {
@@ -218,13 +262,24 @@ private:
 	virtual void mousePos(double x, double y) {
 		if (m_capture >= 0) return;
 
-		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		if (m_view3d == false) {
+			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		}
+		else {
+			controlPose(m_view, m_mouse, m_wcam, m_viewScale, invPose(m_pose));
+		}
 	}
 
 	virtual void mouseScroll(double x, double y) {
 		if (m_capture >= 0) return;
 
-		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		if (m_view3d == false) {
+			controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+		}
+		else {
+			controlPose(m_view, m_mouse, m_wcam, m_viewScale, invPose(m_pose));
+		}
+
 	}
 
 };

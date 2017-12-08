@@ -110,13 +110,13 @@ namespace sp{
 		const double r6 = r4 * r2;
 
 		const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
-		const double k2 = 2 * cam.k1 + 4 * cam.k2 * r2 + 6 * cam.k3 * r4;
+		const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
 
-		jacob[0 * 2 + 0] = x2 * k2 + k1 + 6 * cam.p2 * npx.x + 2 * cam.p1 * npx.y;
-		jacob[1 * 2 + 1] = y2 * k2 + k1 + 2 * cam.p2 * npx.x + 6 * cam.p1 * npx.y;
+		jacob[0 * 2 + 0] = x2 * k2 + k1 + 2.0 * cam.p1 * npx.y + 6.0 * cam.p2 * npx.x;
+		jacob[1 * 2 + 1] = y2 * k2 + k1 + 6.0 * cam.p1 * npx.y + 2.0 * cam.p2 * npx.x;
 
-		jacob[0 * 2 + 1] = xy * k2 + 2 * cam.p1 * npx.x + 2 * cam.p2 * npx.y;
-		jacob[1 * 2 + 0] = xy * k2 + 2 * cam.p1 * npx.x + 2 * cam.p2 * npx.y;
+		jacob[0 * 2 + 1] = xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y;
+		jacob[1 * 2 + 0] = xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y;
 	}
 
 	SP_GENFUNC void jacobNpxToPix(double *jacob, const CamParam &cam, const Vec2 &npx) {
@@ -209,6 +209,77 @@ namespace sp{
 		return npxUndist(cam, invCam(cam, pix));
 	}
 
+	// undistortion x
+	SP_GENFUNC Vec2 npxUndistX(const CamParam &cam, const Vec3 &epi, const double &npxx) {
+		const int maxit = 10;
+
+		const double a = -epi.x / epi.y;
+		const double b = -epi.z / epi.y;
+
+		double x = npxx;
+		for (int i = 0; i < maxit; i++) {
+			const double y = a * x + b;
+
+			const double x2 = x * x;
+			const double y2 = y * y;
+			const double xy = x * y;
+
+			const double r2 = x2 + y2;
+			const double r4 = r2 * r2;
+			const double r6 = r4 * r2;
+
+			const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+			const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
+
+			const double err = npxx - (x * k1 + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+
+			// dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
+			// dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
+			// j = d(err) / d(npx.x)
+
+			const double j = x * k2 + k1 + 2.0 * cam.p1 * y + 6.0 * cam.p2 * x;
+
+			if (fabs(j) < SP_SMALL) break;
+			x += err / j;
+		}
+		return getVec(x, a * x + b);
+	}
+
+	// undistortion y
+	SP_GENFUNC Vec2 npxUndistY(const CamParam &cam, const Vec3 &epi, const double &npxy) {
+		const int maxit = 10;
+
+		const double a = -epi.y / epi.x;
+		const double b = -epi.z / epi.x;
+
+		double y = npxy;
+		for (int i = 0; i < maxit; i++) {
+			const double x = a * y + b;
+
+			const double x2 = x * x;
+			const double y2 = y * y;
+			const double xy = x * y;
+
+			const double r2 = x2 + y2;
+			const double r4 = r2 * r2;
+			const double r6 = r4 * r2;
+
+			const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+			const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
+
+			const double err = npxy - (y * k1 + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
+
+			// dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
+			// dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
+			// j = d(err) / d(npx.y)
+
+			const double j = y * k2 + k1 + 6.0 * cam.p1 * y + 2.0 * cam.p2 * x;
+
+			if (fabs(j) < SP_SMALL) break;
+			y += err / j;
+		}
+		return getVec(a * y + b, y);
+	}
 }
 
 

@@ -79,10 +79,10 @@ namespace sp{
 			return imgs;
 		}
 
-		Mem2<int> decode(const int axis, const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
+		Mem2<double> decode(const int axis, const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
 			SP_ASSERT(isValid() == true);
 
-			Mem2<int> map(imgs[0].dsize);
+			Mem2<double> map(imgs[0].dsize);
 
 			const int size = ceil(log(m_dsize[axis]) / log(2.0));
 			Mem1<Byte> bits(size);
@@ -97,7 +97,7 @@ namespace sp{
 					map[i] = getIndex(bits);
 				}
 				else {
-					map[i] = -1;
+					map[i] = -1.0;
 				}
 			}
 
