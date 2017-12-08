@@ -193,8 +193,8 @@ private:
 				glStencilFunc(GL_NOTEQUAL, 1, 0xFFFF);
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-				glLineWidth(2.0f);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glLineWidth(2.0f);
 				glColor3f(1.0f, 1.0f, 1.0f);
 
 				glBegin(GL_TRIANGLES);

@@ -3,13 +3,12 @@
 
 using namespace sp;
 
+#define AXIS 0
+
 class GrayCodeGUI : public BaseWindow{
 
-	// camera
-	CamParam m_cam;
-
-	// projector
-	CamParam m_prj;
+	// camera &
+	CamParam m_cam, m_prj;
 
 	// cam to prj pose
 	Pose m_cam2prj;
@@ -29,15 +28,19 @@ class GrayCodeGUI : public BaseWindow{
 	// pnts
 	Mem1<Vec3> m_pnts;
 
-	// pattern
-	Mem2<Byte> m_ptn;
-
 	// GrayCode
 	GrayCode m_graycode;
+	PhaseShift m_phaseshift;
 
 	int m_capture;
 
 	bool m_view3d;
+
+	struct {
+		Mem2<Byte> wimg, bimg;
+		Mem1<Mem2<Byte> > gcimgs;
+		Mem1<Mem2<Byte> > psimgs;
+	}m_imgSet;
 
 private:
 
@@ -60,15 +63,16 @@ private:
 		{
 			m_prj = getCamParam(320, 240);
 
-			m_prj.k1 = 0.2;
-			m_prj.k2 = 0.1;
-			m_prj.k3 = 0.1;
-			m_prj.p1 = 0.1;
-			m_prj.p2 = 0.1;
+			m_prj.k1 = +0.1;
+			m_prj.k2 = -0.1;
+			m_prj.k3 = +0.1;
+			m_prj.p1 = -0.1;
+			m_prj.p2 = +0.1;
 
-			m_cam2prj = getPose(getRotAngleY(- 10.0 / 180.0 * SP_PI), getVec(0.0, 100.0, 0.0));
+			m_cam2prj = getPose(getRotAngleY(- 10.0 / 180.0 * SP_PI), getVec(100.0, 0.0, 0.0));
 		
-			m_graycode.setSize(m_prj.dsize[0], m_prj.dsize[1]);
+			m_graycode.init(m_prj.dsize[0], m_prj.dsize[1]);
+			m_phaseshift.init(m_prj.dsize[0], m_prj.dsize[1]);
 			m_capture = -1;
 		}
 
@@ -86,112 +90,157 @@ private:
 		}
 	}
 
+	void decodeGC() {
+		if (m_imgSet.gcimgs.size() == 0) return;
+
+		const Mem2<double> map = m_graycode.decode(AXIS, m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
+		
+		m_img.zero();
+		for (int i = 0; i < m_img.size(); i++) {
+			if (map[i] < 0.0) continue;
+			cnvPhaseToCol(m_img[i], map[i] / m_prj.dsize[AXIS]);
+		}
+
+		Mem2<VecVN3> vnmap;
+		renderVecVN(vnmap, m_cam, m_pose, m_model);
+
+		Mem2<Vec2> vmap;
+		renderCrsp(vmap, m_cam, m_pose, m_model, m_prj, m_cam2prj);
+
+		m_pnts.clear();
+		Mem1<double> diff;
+		for (int v = 0; v < map.dsize[1]; v++) {
+			for (int u = 0; u < map.dsize[0]; u++) {
+				if (map(u, v) < 0.0) continue;
+				Vec3 pnt;
+				if (calcPnt3dX(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
+					m_pnts.push(pnt);
+				}
+				//diff.push(::fabs(pnt.z - vnmap(u, v).vtx.z));
+			}
+		}
+
+		//printf("mean diff%lf\n", meanVal(diff));
+	}
+
+	void decodeGCPS() {
+		if (m_imgSet.gcimgs.size() == 0) return;
+
+		const Mem2<double> gcmap = m_graycode.decode(AXIS, m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> psmap = m_phaseshift.decode(AXIS, m_imgSet.psimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> map = m_phaseshift.refineGrayCode(AXIS, psmap, gcmap);
+
+		m_img.zero();
+		for (int i = 0; i < m_img.size(); i++) {
+			if (map[i] < 0.0) continue;
+			cnvPhaseToCol(m_img[i], map[i] / m_prj.dsize[AXIS]);
+		}
+
+		Mem2<VecVN3> vnmap;
+		renderVecVN(vnmap, m_cam, m_pose, m_model);
+
+		Mem2<Vec2> vmap;
+		renderCrsp(vmap, m_cam, m_pose, m_model, m_prj, m_cam2prj);
+
+		m_pnts.clear();
+		Mem1<double> diff;
+		for (int v = 0; v < map.dsize[1]; v++) {
+			for (int u = 0; u < map.dsize[0]; u++) {
+				if (psmap(u, v) < 0.0) continue;
+
+				const double vv = (vmap(u, v).x - (sp::floor(vmap(u, v).x) / 16) * 16);
+
+				if (::fabs(psmap(u, v) - vv) > 1.0) {
+					printf("%.3lf %.3lf \n", psmap(u, v), vv);
+				}
+				Vec3 pnt;
+				if (calcPnt3dX(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
+					m_pnts.push(pnt);
+				}
+				//diff.push(::fabs(pnt.z - vnmap(u, v).vtx.z));
+			}
+		}
+
+		//printf("mean diff%lf\n", meanVal(diff));
+	}
 	void capture() {
 		const int axis = 0;
 
-		static Mem1<Mem2<Byte> > ptns;
+		static Mem1<Mem2<Byte> > gcptns = m_graycode.encode(axis);
+		static Mem1<Mem2<Byte> > psptns = m_phaseshift.encode(axis);
+		m_imgSet.gcimgs.resize(gcptns.size());
+		m_imgSet.psimgs.resize(psptns.size());
 
-		static Mem2<Byte> wimg, bimg;
-		static Mem1<Mem2<Byte> > imgs;
+		int cnt = m_capture;
 
-		if (m_capture == 0){
-			renderPattern(wimg, m_cam, m_pose, m_model, m_prj, m_cam2prj, m_graycode.getPlain(255));
-			cnvImg(m_img, wimg);
+		if (cnt == 0){
+			renderPattern(m_imgSet.wimg, m_cam, m_pose, m_model, m_prj, m_cam2prj, m_graycode.getPlain(255));
+			cnvImg(m_img, m_imgSet.wimg);
 			m_capture++;
 			return;
 		}
-		if (m_capture == 1) {
-			renderPattern(bimg, m_cam, m_pose, m_model, m_prj, m_cam2prj, m_graycode.getPlain(0));
-			cnvImg(m_img, bimg);
+		cnt--;
+
+		if (cnt == 0) {
+			renderPattern(m_imgSet.bimg, m_cam, m_pose, m_model, m_prj, m_cam2prj, m_graycode.getPlain(0));
+			cnvImg(m_img, m_imgSet.bimg);
 			m_capture++;
 			return;
 		}
+		cnt--;
 
-		if (m_capture >= 2) {
-			const int c = m_capture - 2;
-			if (c == 0) {
-				ptns = m_graycode.encode(axis);
-				imgs.resize(ptns.size());
-			}
-
-			if (c < imgs.size()){
-				renderPattern(imgs[c], m_cam, m_pose, m_model, m_prj, m_cam2prj, ptns[c]);
-				cnvImg(m_img, imgs[c]);
-				m_capture++;
-			}
-			else {
-				const Mem2<double> map = m_graycode.decode(axis, imgs, wimg, bimg);
-				m_img.zero();
-				Mem2<Vec2> vmap;
-				renderCrsp(vmap, m_cam, m_pose, m_model, m_prj, m_cam2prj);
-
-				for (int i = 0; i < m_img.size(); i++) {
-					if (map[i] < 0.0) continue;
-					cnvPhaseToCol(m_img[i], map[i] / m_prj.dsize[0]);
-				}
-
-				Mem2<VecVN3> vnmap;
-				renderVecVN(vnmap, m_cam, m_pose, m_model);
-
-				m_pnts.clear();
-				Mem1<double> diff;
-				for (int v = 0; v < map.dsize[1]; v++) {
-					for (int u = 0; u < map.dsize[0]; u++) {
-						if (vmap(u, v).y < 0) continue;
-						Vec3 pnt;
-						if (calcPnt3dY(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, vmap(u, v).y) == true) {
-							m_pnts.push(pnt);
-						}
-						diff.push(::fabs(pnt.z - vnmap(u, v).vtx.z));
-					}
-				}
-
-				printf("mean diff%lf\n", meanVal(diff));
-				m_capture = -1;
-			}
+		if (cnt >= 0 && cnt < gcptns.size()) {
+			renderPattern(m_imgSet.gcimgs[cnt], m_cam, m_pose, m_model, m_prj, m_cam2prj, gcptns[cnt]);
+			cnvImg(m_img, m_imgSet.gcimgs[cnt]);
+			m_capture++;
 			return;
 		}
+		cnt -= gcptns.size();
 
+		if (cnt >= 0 && cnt < psptns.size()) {
+			renderPattern(m_imgSet.psimgs[cnt], m_cam, m_pose, m_model, m_prj, m_cam2prj, psptns[cnt]);
+			cnvImg(m_img, m_imgSet.psimgs[cnt]);
+			m_capture++;
+			return;
+		}
+		cnt -= psptns.size();
+
+		m_capture = -1;
 	}
 
 	virtual void keyFun(int key, int scancode, int action, int mods) {
+
 		if (m_keyAction[GLFW_KEY_A] == 1) {
-			//renderImage(m_img, m_cam, m_pose, m_model);
-			m_img /= 2;
-		}
-		if (m_keyAction[GLFW_KEY_S] == 1) {
-			//renderPattern(m_img, m_cam, m_pose, m_model, m_prj, m_cam2prj, m_ptn);
-			//m_img /= 2;
-		}
-		if (m_keyAction[GLFW_KEY_C] == 1) {
 			m_capture = 0;
 		}
+		if (m_keyAction[GLFW_KEY_S] == 1) {
+			decodeGC();
+		}
 		if (m_keyAction[GLFW_KEY_D] == 1) {
+			decodeGCPS();
+		}
+		if (m_keyAction[GLFW_KEY_F] == 1) {
 			m_view3d ^= true;
 		}
 	}
 
 	virtual void display() {
 		if (m_capture >= 0) {
-			static double c = 0.0;
-			if (static_cast<double>(clock() - c) / CLOCKS_PER_SEC > 0.1) {
+			static double tmp = 0.0;
+			if (static_cast<double>(clock() - tmp) / CLOCKS_PER_SEC > 0.1) {
 				capture();
-				c = clock();
+				tmp = clock();
 			}
 		}
 
-
 		if (m_view3d == false) {
-			{
-				// view 2D
-				glLoadView2D(m_cam, m_viewPos, m_viewScale);
-				glRenderImage(m_img);
-			}
-			{
-				// view 3D
-				glLoadView3D(m_cam, m_viewPos, m_viewScale);
-				renderOutline();
-			}
+			// view 2D
+			glLoadView2D(m_cam, m_viewPos, m_viewScale);
+			glRenderImage(m_img);
+
+			// view 3D
+			glLoadView3D(m_cam, m_viewPos, m_viewScale);
+			renderOutline();
 		}
 		else {
 			glLoadView3D(m_cam, m_viewPos, m_viewScale);
@@ -279,7 +328,6 @@ private:
 		else {
 			controlPose(m_view, m_mouse, m_wcam, m_viewScale, invPose(m_pose));
 		}
-
 	}
 
 };
