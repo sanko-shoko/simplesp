@@ -3,7 +3,7 @@
 
 using namespace sp;
 
-#define AXIS 0
+#define AXIS 1
 
 class ActiveStereoGUI : public BaseWindow{
 
@@ -65,7 +65,12 @@ private:
 
 			m_prj = getCamParam(320, 240);
 
-			m_cam2prj = getPose(getRotAngleY(- 10.0 / 180.0 * SP_PI), getVec(100.0, 0.0, 0.0));
+			if (AXIS == 0) {
+				m_cam2prj = getPose(getRotAngleY(-10.0 / 180.0 * SP_PI), getVec(100.0, 0.0, 0.0));
+			}
+			else {
+				m_cam2prj = getPose(getRotAngleX(+10.0 / 180.0 * SP_PI), getVec(0.0, 100.0, 0.0));
+			}
 		
 			m_graycode.init(m_prj.dsize[0], m_prj.dsize[1]);
 			m_phaseshift.init(m_prj.dsize[0], m_prj.dsize[1]);
