@@ -1,4 +1,4 @@
-﻿set(target "gl_graycode")
+﻿set(target "gl_activestereo")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)
