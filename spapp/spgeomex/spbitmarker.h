@@ -488,7 +488,7 @@ namespace sp{
 
 					bool check = true;
 					for (int c = 0; c < unit.size(); c++){
-						const Vec2 pix = mulCam(m_cam, npxDist(m_cam, prjVec(pose * unit[c])));
+						const Vec2 pix = mulCamD(m_cam, prjVec(pose * unit[c]));
 						if (normVec(pix - corners[i][c]) > 5.0){
 							check = false;
 						}
@@ -530,9 +530,9 @@ namespace sp{
 						const Vec2 drc2 = mulMat(jNpxToDist, 2, 2, getVec(drc.x, drc.y));
 						const Vec2 nrm = unitVec(getVec(-drc2.y, drc2.x));
 
-						const Vec2 pixA = mulCam(m_cam, npxDist(m_cam, prjVec(pos + drc * 0.1)));
-						const Vec2 pixB = mulCam(m_cam, npxDist(m_cam, prjVec(pos - drc * 0.1)));
-						const Vec2 pixC = mulCam(m_cam, npxDist(m_cam, prjVec(pos)));
+						const Vec2 pixA = mulCamD(m_cam, prjVec(pos + drc * 0.1));
+						const Vec2 pixB = mulCamD(m_cam, prjVec(pos - drc * 0.1));
+						const Vec2 pixC = mulCamD(m_cam, prjVec(pos));
 
 						double sum = 0.0;
 						for (int k = -CHECK_SIZE; k <= CHECK_SIZE; k++){
@@ -573,7 +573,7 @@ namespace sp{
 						const Vec2 vec = getVec(u, v) - offset;
 						const Vec3 obj = getVec(vec.x / dsize[0], vec.y / dsize[1], 0.0);
 
-						const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(pose * obj)));
+						const Vec2 pix = mulCamD(cam, prjVec(pose * obj));
 
 						pimg(u, v) = img(round(pix.x), round(pix.y));
 					}
@@ -670,7 +670,7 @@ namespace sp{
 
 				for (int c = 0; c < unit.size(); c++){
 					const Vec2 obj = unit[c] * m_mrks[i].length;
-					const Vec2 pix = mulCam(m_cam, npxDist(m_cam, prjVec(pose * obj)));
+					const Vec2 pix = mulCamD(m_cam, prjVec(pose * obj));
 					objs.push(obj);
 					pixs.push(pix);
 				}

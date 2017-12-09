@@ -118,7 +118,7 @@ namespace sp{
 				jacob = jacob * R;
 				memcpy(&J(i * 2, 0), jacob.ptr, jacob.size() * sizeof(double));
 
-				const Vec2 err = pixs[i] - mulCam(cams[i], npxDist(cams[i], prjVec(pos)));
+				const Vec2 err = pixs[i] - mulCamD(cams[i], prjVec(pos));
 				E(i * 2 + 0, 0) = err.x;
 				E(i * 2 + 1, 0) = err.y;
 				errs[i] = normVec(err);
@@ -144,7 +144,7 @@ namespace sp{
 		Mat V(poses.size() * 2, 1);
 
 		for (int i = 0; i < poses.size(); i++) {
-			const Vec2 &npx = npxUndist(cams[i], invCam(cams[i], pixs[i]));
+			const Vec2 &npx = invCamD(cams[i], pixs[i]);
 
 			const Mat R = getMat(poses[i].rot);
 			const Vec3 &trn = poses[i].trn;
@@ -185,6 +185,52 @@ namespace sp{
 		return calcPnt3d(pnt, poses, cams, pixs);
 	}
 
+	SP_CPUFUNC bool calcPnt3dX(Vec3 &pnt, const Pose &pose0, const CamParam &cam0, const Vec2 &pix0, const Pose &pose1, const CamParam &cam1, const double pix1x) {
+		const Vec2 &npx0 = invCamD(cam0, pix0);
+
+		const Pose stereo = pose1 * invPose(pose0);
+		const Mat mat = getMat(stereo);
+
+		const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
+
+		const Vec3 epi = E * getVec(npx0.x, npx0.y, 1.0);
+		const Vec2 npx1 = npxUndistX(cam1, epi, (pix1x - cam1.cx) / cam1.fx);
+
+		const double div
+			= (mat(0, 0) - npx1.x * mat(2, 0)) * npx0.x
+			+ (mat(0, 1) - npx1.x * mat(2, 1)) * npx0.y
+			+ (mat(0, 2) - npx1.x * mat(2, 2));
+
+		if (fabs(div) < SP_SMALL) return false;
+
+		const double depth = (npx1.x * mat(2, 3) - mat(0, 3)) / div;
+
+		pnt = pose0 * (getVec(npx0.x, npx0.y, 1.0) * depth);
+		return true;
+	}
+
+	SP_CPUFUNC bool calcPnt3dY(Vec3 &pnt, const Pose &pose0, const CamParam &cam0, const Vec2 &pix0, const Pose &pose1, const CamParam &cam1, const double pix1y) {
+		const Vec2 &npx0 = invCamD(cam0, pix0);
+
+		const Pose stereo = pose1 * invPose(pose0);
+		const Mat mat = getMat(stereo);
+
+		const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
+
+		const Vec3 epi = E * getVec(npx0.x, npx0.y, 1.0);
+		const Vec2 npx1 = npxUndistY(cam1, epi, (pix1y - cam1.cy) / cam1.fy);
+
+		const double div
+			= (mat(1, 0) - npx1.y * mat(2, 0)) * npx0.x
+			+ (mat(1, 1) - npx1.y * mat(2, 1)) * npx0.y
+			+ (mat(1, 2) - npx1.y * mat(2, 2));
+
+		if (fabs(div) < SP_SMALL) return false;
+
+		const double depth = (npx1.y * mat(2, 3) - mat(1, 3)) / div;
+		pnt = pose0 * (getVec(npx0.x, npx0.y, 1.0) * depth);
+		return true;
+	}
 
 	//--------------------------------------------------------------------------------
 	// homography
@@ -468,7 +514,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
-		return normVec(pix - mulCam(cam, npxDist(cam, prjVec(pose * obj))));
+		return normVec(pix - mulCamD(cam, prjVec(pose * obj)));
 	}
 
 	SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
@@ -503,7 +549,7 @@ namespace sp{
 			for (int i = 0; i < pixs.size(); i++) {
 				jacobPoseToPix(&J(i * 2, 0), pose, cam, objs[i]);
 
-				const Vec2 err = pixs[i] - mulCam(cam, npxDist(cam, prjVec(pose * objs[i])));
+				const Vec2 err = pixs[i] - mulCamD(cam, prjVec(pose * objs[i]));
 				E(i * 2 + 0, 0) = err.x;
 				E(i * 2 + 1, 0) = err.y;
 				errs[i] = normVec(err);

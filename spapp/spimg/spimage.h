@@ -345,7 +345,7 @@ namespace sp{
 		dst.resize(2, src.dsize);
 
 		for (int i = 0; i < dst.size(); i++){
-			cnvImg(dst[i], src[i]);
+			cnvCol(dst[i], src[i]);
 		}
 	}
 
@@ -370,7 +370,7 @@ namespace sp{
 			const double depth = extractDepth(src[i]);
 
 			if (depth >= nearPlane && depth <= farPlane){
-				cnvDepthToImg(dst[i], depth, nearPlane, farPlane);
+				cnvDepthToCol(dst[i], depth, nearPlane, farPlane);
 			}
 		}
 	}
@@ -386,7 +386,7 @@ namespace sp{
 			const double depth = extractDepth(src[i]);
 
 			if (depth >= nearPlane && depth <= farPlane){
-				cnvNormalToImg(dst[i], src[i].nrm);
+				cnvNormalToCol(dst[i], src[i].nrm);
 			}
 		}
 	}
@@ -402,7 +402,7 @@ namespace sp{
 			const Disp &disp = src[i];
 
 			if (disp.eval > 0.0) {
-				cnvDispToImg(dst[i], disp, maxDisp, minDisp);
+				cnvDispToCol(dst[i], disp, maxDisp, minDisp);
 			}
 		}
 	}
@@ -449,38 +449,6 @@ namespace sp{
 		}
 	}
 
-	SP_CPUFUNC void cnvPtrToGry(Mem<Byte> &dst, const void *src, const int dsize0, const int dsize1, const int ch) {
-		const int dsize[2] = { dsize0, dsize1 };
-		dst.resize(2, dsize);
-
-		const Byte *pSrc = (Byte*)src;
-		Byte *pDst = dst.ptr;
-
-		switch (ch) {
-		case 1:
-		{
-			memcpy(pDst, pSrc, dsize0 * dsize1);
-			break;
-		}
-		case 3:
-		{
-			for (int i = 0; i < dsize0 * dsize1; i++) {
-				*pDst++ = static_cast<Byte>(0.299 * pSrc[i * 3 + 0] + 0.587 *  pSrc[i * 3 + 1] + 0.114 *  pSrc[i * 3 + 2] + 0.5);
-			}
-			break;
-		}
-		case 4:
-		{
-			for (int i = 0; i < dsize0 * dsize1; i++) {
-				*pDst++ = static_cast<Byte>(0.299 * pSrc[i * 4 + 0] + 0.587 *  pSrc[i * 4 + 1] + 0.114 *  pSrc[i * 4 + 2] + 0.5);
-			}
-			break;
-		}
-		default:
-			dst.clear();
-			break;
-		}
-	}
 	template<typename TYPE>
 	SP_CPUFUNC void cnvImgToPtr(void *dst, const Mem<TYPE> &src, const int ch){
 		SP_ASSERT(isValid(2, src));

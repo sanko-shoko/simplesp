@@ -53,7 +53,7 @@ int main(){
 
 		for (int p = 0; p < list.size(); p++){
 			const Vec2 npx = prjVec(poses[i] * list[p]);
-			const Vec2 pix = mulCam(cams[i], npxDist(cams[i], npx));
+			const Vec2 pix = mulCamD(cams[i], npx);
 
 			renderPoint<Byte>(imgs[i], pix, 255, 4);
 		}

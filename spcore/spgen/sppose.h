@@ -466,6 +466,69 @@ namespace sp{
 		return mulPose(pose, getPose(rot));
 	}
 
+
+	//--------------------------------------------------------------------------------
+	// jacob
+	//--------------------------------------------------------------------------------
+
+	SP_GENFUNC void jacobPosToNpx(double *jacob, const Vec3 &pos) {
+		double divz = (pos.z != 0) ? 1.0 / pos.z : 0.0;
+
+		jacob[0 * 3 + 0] = divz; jacob[0 * 3 + 1] = 0.0; jacob[0 * 3 + 2] = -pos.x * divz * divz;
+		jacob[1 * 3 + 0] = 0.0; jacob[1 * 3 + 1] = divz; jacob[1 * 3 + 2] = -pos.y * divz * divz;
+	}
+
+	SP_GENFUNC void jacobPosToPix(double *jacob, const CamParam &cam, const Vec3 &pos) {
+
+		double jPosToNpz[2 * 3] = { 0 };
+		jacobPosToNpx(jPosToNpz, pos);
+
+		double jNpxToPix[2 * 2];
+		jacobNpxToPix(jNpxToPix, cam, prjVec(pos));
+
+		mulMat(jacob, 2, 3, jNpxToPix, 2, 2, jPosToNpz, 2, 3);
+	}
+
+	SP_GENFUNC void jacobPoseToPos(double *jacob, const Pose &pose, const Vec3 &pos) {
+		double rmat[3 * 3];
+		getMat(rmat, 3, 3, pose.rot);
+		const Vec3 v = mulMat(rmat, 3, 3, pos);
+		jacob[0 * 6 + 0] = +0.0; jacob[0 * 6 + 1] = +v.z; jacob[0 * 6 + 2] = -v.y;
+		jacob[1 * 6 + 0] = -v.z; jacob[1 * 6 + 1] = +0.0; jacob[1 * 6 + 2] = +v.x;
+		jacob[2 * 6 + 0] = +v.y; jacob[2 * 6 + 1] = -v.x; jacob[2 * 6 + 2] = +0.0;
+
+		jacob[0 * 6 + 3] = 1.0; jacob[0 * 6 + 4] = 0.0; jacob[0 * 6 + 5] = 0.0;
+		jacob[1 * 6 + 3] = 0.0; jacob[1 * 6 + 4] = 1.0; jacob[1 * 6 + 5] = 0.0;
+		jacob[2 * 6 + 3] = 0.0; jacob[2 * 6 + 4] = 0.0; jacob[2 * 6 + 5] = 1.0;
+
+	}
+
+	SP_GENFUNC void jacobPoseToNpx(double *jacob, const Pose &pose, const Vec3 &pos) {
+		double pmat[3 * 4];
+		getMat(pmat, 3, 4, pose);
+
+		double jPoseToPos[3 * 6] = { 0 };
+		jacobPoseToPos(jPoseToPos, pose, pos);
+
+		double jPosToNpx[2 * 3] = { 0 };
+		jacobPosToNpx(jPosToNpx, mulMat(pmat, 3, 4, pos));
+
+		mulMat(jacob, 2, 6, jPosToNpx, 2, 3, jPoseToPos, 3, 6);
+	}
+
+	SP_GENFUNC void jacobPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos) {
+		double pmat[3 * 4];
+		getMat(pmat, 3, 4, pose);
+
+		double jPoseToPos[3 * 6] = { 0 };
+		jacobPoseToPos(jPoseToPos, pose, pos);
+
+		double jPosToPix[2 * 3];
+		jacobPosToPix(jPosToPix, cam, mulMat(pmat, 3, 4, pos));
+
+		mulMat(jacob, 2, 6, jPosToPix, 2, 3, jPoseToPos, 3, 6);
+	}
+
 }
 
 

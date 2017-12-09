@@ -26,7 +26,7 @@ namespace sp{
 			for (int i = 0; i < objs.size(); i++){
 				const Vec3 obj = pose * objs[i];
 				const Vec3 drc = pose.rot * drcs[i];
-				const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(obj)));
+				const Vec2 pix = mulCamD(cam, prjVec(obj));
 
 				double jNpxToDist[2 * 2];
 				jacobNpxToDist(jNpxToDist, cam, prjVec(obj));
@@ -76,7 +76,7 @@ namespace sp{
 
 				for (int i = 0; i < cobjs.size(); i++){
 					const Vec3 obj = pose * cobjs[i];
-					const Vec2 pix = mulCam(cam, npxDist(cam, prjVec(obj)));
+					const Vec2 pix = mulCamD(cam, prjVec(obj));
 
 					const Vec2 nrm = cnrms[i];
 

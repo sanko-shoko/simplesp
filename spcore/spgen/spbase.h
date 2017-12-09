@@ -18,6 +18,11 @@ namespace sp{
 		return static_cast<int>((val > 0) ? (val + 0.5) : (val - 0.5));
 	}
 
+	// get ceil (ex. 1.5 -> 2)
+	SP_GENFUNC int ceil(const double val) {
+		return static_cast<int>((val > 0) ? (val + 1.0) : (val - 1.0));
+	}
+
 	// get floor (ex. 1.5 -> 1)
 	SP_GENFUNC int floor(const double val){
 		return static_cast<int>(val);
