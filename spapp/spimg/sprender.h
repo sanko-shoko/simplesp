@@ -441,7 +441,7 @@ namespace sp{
 
 
 	SP_CPUFUNC void renderPattern(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
-		const CamParam &prj, const Pose &cam2prj, const Mem2<Byte> &ptn) {
+		const Pose &cam2prj, const CamParam &prj, const Mem2<Byte> &ptn) {
 
 		dst.resize(cam.dsize);
 		dst.zero();
@@ -482,7 +482,7 @@ namespace sp{
 
 				const Vec3 nrm = cmap(u, v).nrm;
 				if (nrm.z < 0.0) {
-					cnvVal(dst(u, v), -nrm.z * val);
+					cnvVal(dst(u, v), -nrm.z * val * 0.9);
 				}
 
 			}
@@ -491,7 +491,7 @@ namespace sp{
 	}
 
 	SP_CPUFUNC void renderCrsp(Mem2<Vec2> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
-		const CamParam &prj, const Pose &cam2prj) {
+		const Pose &cam2prj, const CamParam &prj) {
 
 		dst.resize(cam.dsize);
 		setElm(dst, getVec(-1.0, -1.0));
