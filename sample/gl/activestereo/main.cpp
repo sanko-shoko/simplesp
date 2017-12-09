@@ -1,8 +1,8 @@
-﻿#include "graycode.h"
+﻿#include "activestereo.h"
 
 int main(){
 
-	GrayCodeGUI win;
+	ActiveStereoGUI win;
 	win.execute("render", 800, 600);
 
 	return 0;

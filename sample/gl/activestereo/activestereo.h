@@ -5,7 +5,7 @@ using namespace sp;
 
 #define AXIS 0
 
-class GrayCodeGUI : public BaseWindow{
+class ActiveStereoGUI : public BaseWindow{
 
 	// camera & projector param
 	CamParam m_cam, m_prj;
