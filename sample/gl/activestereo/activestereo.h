@@ -3,7 +3,7 @@
 
 using namespace sp;
 
-#define AXIS 1
+#define AXIS 0
 
 class ActiveStereoGUI : public BaseWindow{
 

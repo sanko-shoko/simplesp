@@ -1,30 +1,34 @@
-﻿#define SP_USE_DEBUG 1
+﻿//#define SP_USE_DEBUG 1
 
 #include "simplesp.h"
 
 using namespace sp;
 
-int main(){
+int main() {
 
 	Mem2<Col3> imgs[2];
-	SP_ASSERT(loadBMP(imgs[0], SP_DATA_DIR  "/image/shiba02.bmp"));
-	SP_ASSERT(loadBMP(imgs[1], SP_DATA_DIR  "/image/shiba04.bmp"));
+	{
+		SP_ASSERT(loadBMP(imgs[0], SP_DATA_DIR  "/image/shiba02.bmp"));
+		SP_ASSERT(loadBMP(imgs[1], SP_DATA_DIR  "/image/shiba04.bmp"));
+
+		saveBMP(imgs[0], "src0.bmp");
+		saveBMP(imgs[1], "src1.bmp");
+	}
 
 	// get camera parameter
 	CamParam cam0, cam1;
-	SP_ASSERT(loadText(cam0, SP_DATA_DIR  "/image/shiba.txt"));
-	SP_ASSERT(loadText(cam1, SP_DATA_DIR  "/image/shiba.txt"));
+	{
+		SP_ASSERT(loadText(cam0, SP_DATA_DIR  "/image/shiba.txt"));
+		SP_ASSERT(loadText(cam1, SP_DATA_DIR  "/image/shiba.txt"));
+	}
 
-	// get camera pose
+	// estimate camera pose
 	Pose stereo;
 	{
 		SfM sfm;
 		sfm.addData(imgs[0], cam0);
 		sfm.addData(imgs[1], cam1);
-
-		for (int i = 0; i < 10; i++) {
-			sfm.update();
-		}
+		sfm.update(10);
 
 		stereo = sfm.m_views[1].pose * invPose(sfm.m_views[0].pose);
 		//print(stereo);
@@ -66,12 +70,11 @@ int main(){
 	const int minDisp = 90;
 
 	StereoBase estimator;
+	estimator.setRange(maxDisp, minDisp);
+	estimator.setCam(rects[0].cam, rects[1].cam);
 
 	// matching
 	{
-		estimator.setCam(rects[0].cam, rects[1].cam);
-		estimator.setRange(maxDisp, minDisp);
-
 		estimator.execute(rimgs[0], rimgs[1]);
 	}
 

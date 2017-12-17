@@ -118,31 +118,34 @@ namespace sp {
 			addData(m_views, m_mdmat, img, cam);
 		}
 
-		bool update() {
-			SP_LOGGER_SET("-update");
+		bool update(const int itmax = 1) {
+			for (int it = 0; it < itmax; it++) {
 
-			try {
-				if (m_views.size() < 2) throw "data size < 2";
+				SP_LOGGER_SET("-update");
 
-				if (m_update == 0) {
-					if (initPair(m_gpnts, m_views, m_mdmat) == false) throw "initPair";
+				try {
+					if (m_views.size() < 2) throw "data size < 2";
+
+					if (m_update == 0) {
+						if (initPair(m_gpnts, m_views, m_mdmat) == false) throw "initPair";
+					}
+					else {
+						// update invalid -> valid and calc pose
+						updateValid(m_gpnts, m_views, m_mdmat, m_update);
+
+						// update pnt 3d
+						updatePnt(m_gpnts, m_views, m_mdmat, m_update);
+
+						// update valid view pose
+						updatePose(m_gpnts, m_views, m_mdmat, m_update);
+					}
+					m_update++;
 				}
-				else {
-					// update invalid -> valid and calc pose
-					updateValid(m_gpnts, m_views, m_mdmat, m_update);
+				catch (const char *str) {
+					SP_PRINTD("SfM.update [%s]\n", str);
 
-					// update pnt 3d
-					updatePnt(m_gpnts, m_views, m_mdmat, m_update);
-
-					// update valid view pose
-					updatePose(m_gpnts, m_views, m_mdmat, m_update);
+					return false;
 				}
-				m_update++;
-			}
-			catch (const char *str) {
-				SP_PRINTD("SfM.update [%s]\n", str);
-
-				return false;
 			}
 
 			return true;
