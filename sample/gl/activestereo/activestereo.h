@@ -36,11 +36,10 @@ class ActiveStereoGUI : public BaseWindow{
 	// pnts
 	Mem1<Vec3> m_pnts;
 
-	struct {
-		Mem2<Byte> wimg, bimg;
-		Mem1<Mem2<Byte> > gcimgs;
-		Mem1<Mem2<Byte> > psimgs;
-	}m_imgSet;
+	// capture images
+	Mem2<Byte> m_wimg, m_bimg;
+	Mem1<Mem2<Byte> > m_gcimgs;
+	Mem1<Mem2<Byte> > m_psimgs;
 
 private:
 
@@ -136,27 +135,21 @@ private:
 	}
 
 	void decodeGC() {
-		if (m_imgSet.gcimgs.size() == 0) return;
 
-		const Mem2<double> map = m_graycode.decode(m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
 		
-		calcPnt3d(map);
+		calcPnt3d(gcmap);
 	}
 
 	void decodeGCPS() {
-		if (m_imgSet.gcimgs.size() == 0) return;
 
-		const Mem2<double> gcmap = m_graycode.decode(m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
-		const Mem2<double> psmap = m_phaseshift.decode(m_imgSet.psimgs, m_imgSet.wimg, m_imgSet.bimg);
-		const Mem2<double> map = m_phaseshift.refineGrayCode(psmap, gcmap);
+		const Mem2<double> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
+		const Mem2<double> psmap = m_phaseshift.decode(m_psimgs, m_wimg, m_bimg, gcmap);
 
-		calcPnt3d(map);
+		calcPnt3d(psmap);
 	}
 
 	void capture() {
-		static double pre = 0.0;
-		if (static_cast<double>(clock() - pre) / CLOCKS_PER_SEC < 0.1) return;
-		pre = clock();
 
 		static Mem1<Mem2<Byte> > ptns;
 		static Mem1<Mem2<Byte> > caps;
@@ -182,11 +175,11 @@ private:
 			m_capture++;
 		}
 		else {
-			m_imgSet.wimg = caps[0];
-			m_imgSet.bimg = caps[1];
+			m_wimg = caps[0];
+			m_bimg = caps[1];
 
-			m_imgSet.gcimgs = caps.slice(0, 2, 2 + m_graycode.getCodeNum());
-			m_imgSet.psimgs = caps.slice(0, 2 + m_graycode.getCodeNum(), 2 + m_graycode.getCodeNum() + m_phaseshift.getCodeNum());
+			m_gcimgs = caps.slice(0, 2, 2 + m_graycode.getCodeNum());
+			m_psimgs = caps.slice(0, 2 + m_graycode.getCodeNum(), 2 + m_graycode.getCodeNum() + m_phaseshift.getCodeNum());
 			
 			m_capture = -1;
 		}
@@ -194,8 +187,14 @@ private:
 	}
 
 	virtual void display() {
-		if (m_capture >= 0) {
-			capture();
+		{
+			static double pre = 0.0;
+			const double dif = static_cast<double>(clock() - pre) / CLOCKS_PER_SEC;
+
+			if (m_capture >= 0 && dif > 0.1) {
+				pre = clock();
+				capture();
+			}
 		}
 
 		if (m_view3d == false) {

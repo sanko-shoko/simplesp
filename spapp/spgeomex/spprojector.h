@@ -234,8 +234,10 @@ namespace sp{
 			return map;
 		}
 
-		Mem2<double> refineGrayCode(const Mem2<double> &psmap, const Mem2<double> &gcmap) const {
+		Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const Mem2<double> &gcmap, const int thresh = 10) const {
 			SP_ASSERT(isValid() == true);
+
+			const Mem2<double> &psmap = decode(imgs, wimg, bimg, thresh);
 
 			Mem2<double> map(psmap.dsize);
 			setElm(map, -1.0);
