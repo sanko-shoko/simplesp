@@ -198,7 +198,10 @@ namespace sp{
 
 		glPushAttrib(GL_ENABLE_BIT);
 		glEnable(GL_TEXTURE_2D);
+
 		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 			glBindTexture(GL_TEXTURE_2D, texId);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -318,6 +321,78 @@ namespace sp{
 		}
 	}
 
+	SP_CPUFUNC void glModel(const Mem1<Mesh> &model) {
+
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < model.size(); i++) {
+			glNormal(getMeshNrm(model[i]));
+			glMesh(model[i]);
+		}
+		glEnd();
+	}
+
+	SP_CPUFUNC void glModelSurface(const Mem1<Mesh> &model) {
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		{
+			glPushMatrix();
+			glLoadIdentity();
+
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+
+			GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 1.f };
+			glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+			glPopMatrix();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+			glModel(model);
+		}
+		glPopAttrib();
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	SP_CPUFUNC void glModelOutline(const Mem1<Mesh> &model) {
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		{
+			glEnable(GL_STENCIL_TEST);
+
+			glClearStencil(0);
+			glClear(GL_STENCIL_BUFFER_BIT);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+			// fill stencil
+			{
+				glStencilFunc(GL_ALWAYS, 1, 0xFFFF);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+
+				glModel(model);
+			}
+
+			// draw outline
+			{
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFFFF);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glLineWidth(2.0f);
+				glColor3f(1.0f, 1.0f, 1.0f);
+
+				glModel(model);
+			}
+		}
+		glPopAttrib();
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 }
 
 #if SP_USE_IMGUI

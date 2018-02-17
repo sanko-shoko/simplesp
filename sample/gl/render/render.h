@@ -89,10 +89,11 @@ private:
 
 			switch (m_mode) {
 			case 0:	renderPoints(); break;
-			case 1: renderMeshes(); break;
-			case 2: renderOutline(); break;
+			case 1: renderModelSurface(); break;
+			case 2: renderModelOutline(); break;
 			default: break;
 			}
+
 			renderAxis();
 		}
 	}
@@ -127,96 +128,28 @@ private:
 		}
 	}
 
-	void renderMeshes() {
+	void renderModelSurface() {
+		glLoadMatrix(m_pose);
 
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		{
-			glLoadIdentity();
+		const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 
-			glEnable(GL_LIGHTING);
-			glEnable(GL_LIGHT0);
-
-			GLfloat lightPos[4] = { 0.f, 0.f, -1500.f, 1.f };
-			glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-			glLoadMatrix(m_pose);
-
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-			const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-
-			glBegin(GL_TRIANGLES);
-			for (int i = 0; i < m_model.size(); i++) {
-				glNormal(getMeshNrm(m_model[i]));
-				glMesh(m_model[i]);
-			}
-			glEnd();
-		}
-		glPopAttrib();
-
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glModelSurface(m_model);
 	}
 
-	void renderOutline() {
+	void renderModelOutline() {
+		glLoadMatrix(m_pose);
 
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		{
-			glLoadMatrix(m_pose);
-
-			glEnable(GL_STENCIL_TEST);
-
-			glClearStencil(0);
-			glClear(GL_STENCIL_BUFFER_BIT);
-
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-			// fill stencil
-			{
-				glStencilFunc(GL_ALWAYS, 1, 0xFFFF);
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-
-				glBegin(GL_TRIANGLES);
-				for (int i = 0; i < m_model.size(); i++) {
-					glMesh(m_model[i]);
-				}
-				glEnd();
-			}
-
-			// draw outline
-			{
-				glStencilFunc(GL_NOTEQUAL, 1, 0xFFFF);
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				glLineWidth(2.0f);
-				glColor3f(1.0f, 1.0f, 1.0f);
-
-				glBegin(GL_TRIANGLES);
-				for (int i = 0; i < m_model.size(); i++) {
-					glMesh(m_model[i]);
-				}
-				glEnd();
-			}
-		}
-		glPopAttrib();
-
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glModelOutline(m_model);
 	}
 
 	void renderAxis() {
-		{
-			glLoadMatrix(m_pose);
+		glLoadMatrix(m_pose);
 
-			glLineWidth(2.f);
-			glBegin(GL_LINES);
-			glAxis(100.0);
-			glEnd();
-		}
+		glLineWidth(2.f);
+		glBegin(GL_LINES);
+		glAxis(100.0);
+		glEnd();
 	}
 
 	virtual void mousePos(double x, double y) {

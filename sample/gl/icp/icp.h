@@ -120,15 +120,19 @@ private:
 					glVertex(m_dataA[i].pos);
 				}
 				glEnd();
-				
-				// render axis
-				glLineWidth(2.f);
-				glBegin(GL_LINES);
-				glAxis(100.0);
-				glEnd();
 			}
-		}
 
+			renderAxis();
+		}
+	}
+
+	void renderAxis() {
+		glLoadMatrix(m_poseA);
+
+		glLineWidth(2.f);
+		glBegin(GL_LINES);
+		glAxis(100.0);
+		glEnd();
 	}
 
 	virtual void mousePos(double x, double y) {
