@@ -1,8 +1,10 @@
 add_subdirectory(testcore)
+add_subdirectory(cvmat)
 add_subdirectory(geom)
 add_subdirectory(calibration)
 add_subdirectory(sift)
 add_subdirectory(dotmarker)
 add_subdirectory(bitmarker)
 add_subdirectory(realsense)
+add_subdirectory(realsense2)
 
