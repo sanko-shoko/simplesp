@@ -328,21 +328,21 @@ namespace sp{
 	// render vector vn
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
+	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
 
-		if (cmpSize(2, map.dsize, cam.dsize) == false) {
-			map.resize(2, cam.dsize);
-			map.zero();
+		if (cmpSize(2, dst.dsize, cam.dsize) == false) {
+			dst.resize(2, cam.dsize);
+			dst.zero();
 		}
 
 		Rect rect;
 
 		const Mesh pm = pose * mesh;
 		{
-			int xs = map.dsize[0];
+			int xs = dst.dsize[0];
 			int xe = 0;
 
-			int ys = map.dsize[1];
+			int ys = dst.dsize[1];
 			int ye = 0;
 
 			bool valid = false;
@@ -361,7 +361,7 @@ namespace sp{
 			}
 			if (valid == false) return;
 
-			rect = andRect(getRect2(map.dsize), getRect2(xs, ys, xe - xs, ye - ys));
+			rect = andRect(getRect2(dst.dsize), getRect2(xs, ys, xe - xs, ye - ys));
 		}
 
 		const Vec3 nrm = getMeshNrm(pm);
@@ -393,37 +393,37 @@ namespace sp{
 				const double depth = result[2];
 				if (depth < SP_SMALL) continue;
 
-				const double ref = extractDepth(acs2(map, u, v));
+				const double ref = extractDepth(acs2(dst, u, v));
 				if (ref == 0.0 || depth < ref) {
-					acs2(map, u, v) = getVecVN(vec * depth, nrm);
+					acs2(dst, u, v) = getVecVN(vec * depth, nrm);
 				}
 			}
 		}
 
 	}
 
-	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &map, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
 
 		for (int i = 0; i < meshes.size(); i++) {
-			renderVecVN(map, cam, pose, meshes[i]);
+			renderVecVN(dst, cam, pose, meshes[i]);
 		}
 	}
 
-	SP_CPUFUNC void renderDepth(Mem<double> &map, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+	SP_CPUFUNC void renderDepth(Mem<double> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
 
 		Mem<VecVN3> vnmap;
 		for (int i = 0; i < meshes.size(); i++) {
 			renderVecVN(vnmap, cam, pose, meshes[i]);
 		}
 
-		map.resize(2, cam.dsize);
-		for (int i = 0; i < map.size(); i++) {
-			map[i] = extractDepth(vnmap[i]);
+		dst.resize(2, cam.dsize);
+		for (int i = 0; i < dst.size(); i++) {
+			dst[i] = extractDepth(vnmap[i]);
 		}
 	}
 
 
-	SP_CPUFUNC void renderImage(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes) {
+	SP_CPUFUNC void renderNormal(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes) {
 
 		dst.resize(cam.dsize);
 		dst.zero();
@@ -432,10 +432,7 @@ namespace sp{
 		renderVecVN(map, cam, pose, meshes);
 
 		for (int i = 0; i < dst.size(); i++) {
-			const Vec3 nrm = map[i].nrm;
-			if (nrm.z < 0.0) {
-				cnvVal(dst[i], -nrm.z * SP_BYTEMAX);
-			}
+			cnvNormalToCol(dst[i], map[i].nrm);
 		}
 	}
 
