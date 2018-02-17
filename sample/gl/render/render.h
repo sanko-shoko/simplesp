@@ -139,7 +139,6 @@ private:
 			GLfloat lightPos[4] = { 0.f, 0.f, -1500.f, 1.f };
 			glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
-
 			glLoadMatrix(m_pose);
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

@@ -13,18 +13,24 @@ namespace sp{
 
 	protected:
 		int m_dsize[2];
+		int m_axis;
 
 	public:
 
-		void init(const int dsize0, const int dsize1) {
+		void init(const int dsize0, const int dsize1, const int axis) {
 			m_dsize[0] = dsize0;
 			m_dsize[1] = dsize1;
+			m_axis = axis;
 		}
 
 		virtual bool isValid() const {
 			return (m_dsize[0] > 0 && m_dsize[1] > 0) ? true : false;
 		}
 
+		virtual int getCodeNum() const {
+			return 0;
+		}
+		
 		Mem2<Byte> getPlain(const Byte val) const {
 			SP_ASSERT(isValid() == true);
 
@@ -40,30 +46,34 @@ namespace sp{
 
 	public:
 		GrayCode() {
-			StructuredLight::init(0, 0);
+			StructuredLight::init(0, 0, 0);
 		}
 
-		GrayCode(const int dsize0, const int dsize1) {
-			init(dsize0, dsize1);
+		GrayCode(const int dsize0, const int dsize1, const int axis) {
+			init(dsize0, dsize1, axis);
 		}
 
-		void init(const int dsize0, const int dsize1) {
-			StructuredLight::init(dsize0, dsize1);
+		void init(const int dsize0, const int dsize1, const int axis) {
+			StructuredLight::init(dsize0, dsize1, axis);
 		}
 
-		Mem1<Mem2<Byte> > encode(const int axis) const{
+		virtual int getCodeNum() const {
+			return ceil(log(m_dsize[m_axis]) / log(2.0));
+		}
+
+		Mem1<Mem2<Byte> > encode() const{
 			SP_ASSERT(isValid() == true);
 
 			Mem1<Mem2<Byte> > imgs;
 
-			const int size = ceil(log(m_dsize[axis]) / log(2.0));
+			const int num = getCodeNum();
 
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < num; i++) {
 				Mem2<Byte> img(m_dsize);
 
-				if (axis == 0) {
+				if (m_axis == 0) {
 					for (int u = 0; u < m_dsize[0]; u++) {
-						const Byte bit = getBits(size, u)[i];
+						const Byte bit = getBits(num, u)[i];
 						for (int v = 0; v < m_dsize[1]; v++) {
 							img(u, v) = bit * SP_BYTEMAX;
 						}
@@ -71,7 +81,7 @@ namespace sp{
 				}
 				else {
 					for (int v = 0; v < m_dsize[1]; v++) {
-						const Byte bit = getBits(size, v)[i];
+						const Byte bit = getBits(num, v)[i];
 						for (int u = 0; u < m_dsize[0]; u++) {
 							img(u, v) = bit * SP_BYTEMAX;
 						}
@@ -83,21 +93,22 @@ namespace sp{
 			return imgs;
 		}
 
-		Mem2<double> decode(const int axis, const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
+		Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
 			SP_ASSERT(isValid() == true);
 
 			Mem2<double> map(imgs[0].dsize);
 			setElm(map, -1.0);
 
-			const int size = ceil(log(m_dsize[axis]) / log(2.0));
-			Mem1<Byte> bits(size);
+			const int num = getCodeNum();
+
+			Mem1<Byte> bits(num);
 
 			for (int i = 0; i < map.size(); i++) {
 
 				const Byte w = wimg[i];
 				const Byte b = bimg[i];
 				if (w - b > thresh) {
-					for (int j = 0; j < size; j++) {
+					for (int j = 0; j < num; j++) {
 						bits[j] = (2 * imgs[j][i] > w + b) ? 1 : 0;
 					}
 					map[i] = getIndex(bits);
@@ -145,20 +156,24 @@ namespace sp{
 
 	public:
 		PhaseShift() {
-			StructuredLight::init(0, 0);
+			StructuredLight::init(0, 0, 0);
 			m_period = 0;
 		}
 
-		PhaseShift(const int dsize0, const int dsize1, const int period = 16) {
-			init(dsize0, dsize1, period);
+		PhaseShift(const int dsize0, const int dsize1, const int axis, const int period = 16) {
+			init(dsize0, dsize1, axis, period);
 		}
 
-		void init(const int dsize0, const int dsize1, const int period = 16) {
-			StructuredLight::init(dsize0, dsize1);
+		void init(const int dsize0, const int dsize1, const int axis, const int period = 16) {
+			StructuredLight::init(dsize0, dsize1, axis);
 			m_period = period;
 		}
 
-		Mem1<Mem2<Byte> > encode(const int axis) const {
+		virtual int getCodeNum() const {
+			return 3;
+		}
+
+		Mem1<Mem2<Byte> > encode() const {
 			SP_ASSERT(isValid() == true);
 
 			Mem1<Mem2<Byte> > imgs;
@@ -168,7 +183,7 @@ namespace sp{
 			for (int i = 0; i < 3; i++) {
 				Mem2<Byte> img(m_dsize);
 
-				if (axis == 0) {
+				if (m_axis == 0) {
 					for (int u = 0; u < m_dsize[0]; u++) {
 						const double s = sin(u * 2.0 * SP_PI / m_period + shift[i]);
 						for (int v = 0; v < m_dsize[1]; v++) {
@@ -190,14 +205,11 @@ namespace sp{
 			return imgs;
 		}
 
-		Mem2<double> decode(const int axis, const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
+		Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
 			SP_ASSERT(isValid() == true);
 
 			Mem2<double> map(imgs[0].dsize);
 			setElm(map, -1.0);
-
-			const int size = ceil(log(m_dsize[axis]) / log(2.0));
-			Mem1<Byte> bits(size);
 
 			for (int i = 0; i < map.size(); i++) {
 				const Byte w = wimg[i];
@@ -222,7 +234,7 @@ namespace sp{
 			return map;
 		}
 
-		Mem2<double> refineGrayCode(const int axis, const Mem2<double> &psmap, const Mem2<double> &gcmap) const {
+		Mem2<double> refineGrayCode(const Mem2<double> &psmap, const Mem2<double> &gcmap) const {
 			SP_ASSERT(isValid() == true);
 
 			Mem2<double> map(psmap.dsize);

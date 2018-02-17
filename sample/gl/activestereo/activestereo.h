@@ -66,14 +66,14 @@ private:
 			m_prj = getCamParam(320, 240);
 
 			if (AXIS == 0) {
-				m_cam2prj = getPose(getRotAngleY(-10.0 / 180.0 * SP_PI), getVec(100.0, 0.0, 0.0));
+				m_cam2prj = getPose(getRotAngleY(+10.0 / 180.0 * SP_PI), getVec(-100.0, 0.0, 0.0));
 			}
 			else {
 				m_cam2prj = getPose(getRotAngleX(+10.0 / 180.0 * SP_PI), getVec(0.0, 100.0, 0.0));
 			}
 		
-			m_graycode.init(m_prj.dsize[0], m_prj.dsize[1]);
-			m_phaseshift.init(m_prj.dsize[0], m_prj.dsize[1]);
+			m_graycode.init(m_prj.dsize[0], m_prj.dsize[1], AXIS);
+			m_phaseshift.init(m_prj.dsize[0], m_prj.dsize[1], AXIS);
 			m_capture = -1;
 		}
 
@@ -119,6 +119,7 @@ private:
 		for (int v = 0; v < map.dsize[1]; v++) {
 			for (int u = 0; u < map.dsize[0]; u++) {
 				if (map(u, v) < 0.0) continue;
+
 				Vec3 pnt;
 				if (AXIS == 0) {
 					if (calcPnt3dX(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
@@ -132,13 +133,12 @@ private:
 				}
 			}
 		}
-
 	}
 
 	void decodeGC() {
 		if (m_imgSet.gcimgs.size() == 0) return;
 
-		const Mem2<double> map = m_graycode.decode(AXIS, m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> map = m_graycode.decode(m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
 		
 		calcPnt3d(map);
 	}
@@ -146,9 +146,9 @@ private:
 	void decodeGCPS() {
 		if (m_imgSet.gcimgs.size() == 0) return;
 
-		const Mem2<double> gcmap = m_graycode.decode(AXIS, m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
-		const Mem2<double> psmap = m_phaseshift.decode(AXIS, m_imgSet.psimgs, m_imgSet.wimg, m_imgSet.bimg);
-		const Mem2<double> map = m_phaseshift.refineGrayCode(AXIS, psmap, gcmap);
+		const Mem2<double> gcmap = m_graycode.decode(m_imgSet.gcimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> psmap = m_phaseshift.decode(m_imgSet.psimgs, m_imgSet.wimg, m_imgSet.bimg);
+		const Mem2<double> map = m_phaseshift.refineGrayCode(psmap, gcmap);
 
 		calcPnt3d(map);
 	}
@@ -158,46 +158,39 @@ private:
 		if (static_cast<double>(clock() - pre) / CLOCKS_PER_SEC < 0.1) return;
 		pre = clock();
 
-		static Mem1<Mem2<Byte> > gcptns = m_graycode.encode(AXIS);
-		static Mem1<Mem2<Byte> > psptns = m_phaseshift.encode(AXIS);
-		m_imgSet.gcimgs.resize(gcptns.size());
-		m_imgSet.psimgs.resize(psptns.size());
+		static Mem1<Mem2<Byte> > ptns;
+		static Mem1<Mem2<Byte> > caps;
 
-		int cnt = m_capture;
+		if (m_capture == 0) {
+			Mem1<Mem2<Byte> > gcptns = m_graycode.encode();
+			Mem1<Mem2<Byte> > psptns = m_phaseshift.encode();
 
-		if (cnt == 0){
-			renderPattern(m_imgSet.wimg, m_cam, m_pose, m_model, m_cam2prj, m_prj, m_graycode.getPlain(255));
-			cnvImg(m_img, m_imgSet.wimg);
-			m_capture++;
-			return;
+			ptns.clear();
+			ptns.push(m_graycode.getPlain(255));
+			ptns.push(m_graycode.getPlain(0));
+			ptns.push(gcptns);
+			ptns.push(psptns);
+
+			caps.clear();
+			caps.resize(ptns.size());
 		}
-		cnt--;
 
-		if (cnt == 0) {
-			renderPattern(m_imgSet.bimg, m_cam, m_pose, m_model, m_cam2prj, m_prj, m_graycode.getPlain(0));
-			cnvImg(m_img, m_imgSet.bimg);
+		if(m_capture < ptns.size()){
+			renderPattern(caps[m_capture], m_cam, m_pose, m_model, m_cam2prj, m_prj, ptns[m_capture]);
+			cnvImg(m_img, caps[m_capture]);
+
 			m_capture++;
-			return;
 		}
-		cnt--;
+		else {
+			m_imgSet.wimg = caps[0];
+			m_imgSet.bimg = caps[1];
 
-		if (cnt >= 0 && cnt < gcptns.size()) {
-			renderPattern(m_imgSet.gcimgs[cnt], m_cam, m_pose, m_model, m_cam2prj, m_prj, gcptns[cnt]);
-			cnvImg(m_img, m_imgSet.gcimgs[cnt]);
-			m_capture++;
-			return;
+			m_imgSet.gcimgs = caps.slice(0, 2, 2 + m_graycode.getCodeNum());
+			m_imgSet.psimgs = caps.slice(0, 2 + m_graycode.getCodeNum(), 2 + m_graycode.getCodeNum() + m_phaseshift.getCodeNum());
+			
+			m_capture = -1;
 		}
-		cnt -= gcptns.size();
 
-		if (cnt >= 0 && cnt < psptns.size()) {
-			renderPattern(m_imgSet.psimgs[cnt], m_cam, m_pose, m_model, m_cam2prj, m_prj, psptns[cnt]);
-			cnvImg(m_img, m_imgSet.psimgs[cnt]);
-			m_capture++;
-			return;
-		}
-		cnt -= psptns.size();
-
-		m_capture = -1;
 	}
 
 	virtual void display() {

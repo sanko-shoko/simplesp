@@ -320,9 +320,10 @@ namespace sp{
 
 }
 
+#if SP_USE_IMGUI
+
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
 
-#if SP_USE_IMGUI
 namespace ImGui {
 	SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
 		SP_ASSERT(rect.dim == 2);
@@ -332,6 +333,5 @@ namespace ImGui {
 	}
 }
 #endif
-
 
 #endif
