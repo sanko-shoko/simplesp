@@ -20,8 +20,8 @@ namespace sp{
 		// tsdf map
 		Mem3<TSDF> m_tsdf;
 
-		// casted vn
-		Mem2<VecVN3> m_cast;
+		// casted pn
+		Mem2<VecPN3> m_cast;
 
 		// map pose
 		Pose m_pose;
@@ -69,7 +69,7 @@ namespace sp{
 			return &m_pose;
 		}
 
-		const Mem2<VecVN3>& getCast() const{
+		const Mem2<VecPN3>& getCast() const{
 			return m_cast;
 		}
 
@@ -102,19 +102,19 @@ namespace sp{
 			}
 
 			try{
-				Mem2<VecVN3> vnmap;
+				Mem2<VecPN3> pnmap;
 
 				if (m_track == true){
 					SP_LOGGER_SET("measurement");
 					Mem2<double> bilateral;
 					bilateralFilterDepth(bilateral, depth, 0.8, 10.0);
 						
-					cnvDepthToVecVN(vnmap, m_cam, bilateral);
+					cnvDepthToVecPN(pnmap, m_cam, bilateral);
 				}
 
 				if (m_track == true){
 					SP_LOGGER_SET("update pose");
-					updatePose(m_pose, m_cam, vnmap, m_cast);
+					updatePose(m_pose, m_cam, pnmap, m_cast);
 				}
 
 				{
@@ -137,18 +137,18 @@ namespace sp{
 			return true;
 		}
 
-		bool updatePose(Pose &pose, const CamParam &cam, const Mem2<VecVN3> &vnmap, const Mem2<VecVN3> &cast){
+		bool updatePose(Pose &pose, const CamParam &cam, const Mem2<VecPN3> &pnmap, const Mem2<VecPN3> &cast){
 
-			Mem1<VecVN3> sample;
-			sample.reserve(vnmap.size());
+			Mem1<VecPN3> sample;
+			sample.reserve(pnmap.size());
 
 			const int block = 4;
-			for (int v = block; v < vnmap.dsize[1] - block; v += block){
-				for (int u = block; u < vnmap.dsize[0] - block; u += block){
-					const VecVN3 &vn = vnmap(u, v);
-					if (vn.vtx.z == 0.0) continue;
+			for (int v = block; v < pnmap.dsize[1] - block; v += block){
+				for (int u = block; u < pnmap.dsize[0] - block; u += block){
+					const VecPN3 &pn = pnmap(u, v);
+					if (pn.pos.z == 0.0) continue;
 
-					sample.push(vn);
+					sample.push(pn);
 				}
 			}
 

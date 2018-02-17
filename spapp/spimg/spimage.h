@@ -376,7 +376,7 @@ namespace sp{
 	}
 
 	template <typename TYPE>
-	SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecVN3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
+	SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);

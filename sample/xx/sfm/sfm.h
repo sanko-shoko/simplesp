@@ -133,7 +133,7 @@ private:
 				if (m_denoise == true && m_sfm.m_gpnts[i].index.size() < thresh) continue;
 
 				glColor(m_sfm.m_gpnts[i].col);
-				glVertex(m_sfm.m_gpnts[i].vtx);
+				glVertex(m_sfm.m_gpnts[i].pos);
 			}
 			glEnd();
 		}

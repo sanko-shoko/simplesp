@@ -15,7 +15,7 @@ class RenderGUI : public BaseWindow{
 	Mem1<Mesh> m_model;
 
 	// object surface points
-	Mem1<VecVN3> m_pnts;
+	Mem1<VecPN3> m_pnts;
 
 	// object to cam pose
 	Pose m_pose;
@@ -59,8 +59,8 @@ private:
 			const double distance = getModelDistance(m_model, m_cam);
 			const double radius = getModelRadius(m_model);
 
-			Mem2<VecVN3> map;
-			renderVecVN(map, m_cam, m_pose, m_model);
+			Mem2<VecPN3> map;
+			renderVecPN(map, m_cam, m_pose, m_model);
 
 			if (m_keyAction[GLFW_KEY_D] == 1) {
 				cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
@@ -108,7 +108,7 @@ private:
 
 			for (int i = 0; i < m_pnts.size(); i++) {
 				// X_C = R * X_M + T
-				glVertex(m_pose.rot * m_pnts[i].vtx + m_pose.trn);
+				glVertex(m_pose.rot * m_pnts[i].pos + m_pose.trn);
 			}
 			glEnd();
 		}
@@ -121,7 +121,7 @@ private:
 			//glColor3f(0.2f, 0.7f, 0.2f);
 
 			//for (int i = 0; i < m_pnts.size(); i++) {
-			//	glVertex(m_pnts[i].vtx);
+			//	glVertex(m_pnts[i].pos);
 			//}
 			//glEnd();
 		}

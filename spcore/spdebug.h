@@ -99,25 +99,25 @@ namespace sp {
 		SP_PRINTF("Col3 [ %d %d %d ]\n", col.r, col.g, col.b);
 	}
 
-	SP_CPUFUNC void print(const VecVN2 &vec) {
-		SP_PRINTF("VecVN2 [\n");
-		print(vec.vtx);
+	SP_CPUFUNC void print(const VecPN2 &vec) {
+		SP_PRINTF("VecPN2 [\n");
+		print(vec.pos);
 		print(vec.nrm);
 		SP_PRINTF("]\n");
 	}
 
-	SP_CPUFUNC void print(const VecVN3 &vec) {
-		SP_PRINTF("VecVN3 [\n");
-		print(vec.vtx);
+	SP_CPUFUNC void print(const VecPN3 &vec) {
+		SP_PRINTF("VecPN3 [\n");
+		print(vec.pos);
 		print(vec.nrm);
 		SP_PRINTF("]\n");
 	}
 
 	SP_CPUFUNC void print(const Mesh &mesh) {
 		SP_PRINTF("Mesh [\n");
-		print(mesh.vtx[0]);
-		print(mesh.vtx[1]);
-		print(mesh.vtx[2]);
+		print(mesh.pos[0]);
+		print(mesh.pos[1]);
+		print(mesh.pos[2]);
 		SP_PRINTF("]\n");
 	}
 

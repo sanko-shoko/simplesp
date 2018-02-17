@@ -223,13 +223,13 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecVN2 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecPN2 *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
-			ftextf(fp, mode, "VecVN2,");
+			ftextf(fp, mode, "VecPN2,");
 
-			ftext(fp, mode, &val[i].vtx.x, 1);
-			ftext(fp, mode, &val[i].vtx.y, 1);
+			ftext(fp, mode, &val[i].pos.x, 1);
+			ftext(fp, mode, &val[i].pos.y, 1);
 			ftext(fp, mode, &val[i].nrm.x, 1);
 			ftext(fp, mode, &val[i].nrm.y, 1);
 		}
@@ -248,14 +248,14 @@ namespace sp{
 		return true;
 	}
 
-	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecVN3 *val, const int num) {
+	SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const VecPN3 *val, const int num) {
 
 		for (int i = 0; i < num; i++) {
-			ftextf(fp, mode, "VecVN3,");
+			ftextf(fp, mode, "VecPN3,");
 
-			ftext(fp, mode, &val[i].vtx.x, 1);
-			ftext(fp, mode, &val[i].vtx.y, 1);
-			ftext(fp, mode, &val[i].vtx.z, 1);
+			ftext(fp, mode, &val[i].pos.x, 1);
+			ftext(fp, mode, &val[i].pos.y, 1);
+			ftext(fp, mode, &val[i].pos.z, 1);
 			ftext(fp, mode, &val[i].nrm.x, 1);
 			ftext(fp, mode, &val[i].nrm.y, 1);
 			ftext(fp, mode, &val[i].nrm.z, 1);

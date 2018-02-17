@@ -382,7 +382,7 @@ namespace sp{
 		return mulPose(pose, getVec(vec.x, vec.y, 0.0));
 	}
 
-	SP_GENFUNC VecVN3 mulPose(const Pose &pose, const VecVN3 &vec){
+	SP_GENFUNC VecPN3 mulPose(const Pose &pose, const VecPN3 &vec){
 		double poseMat[3 * 4];
 		getMat(poseMat, 3, 4, pose);
 
@@ -409,7 +409,7 @@ namespace sp{
 		return mulPose(pose, vec);
 	}
 
-	SP_GENFUNC VecVN3 operator * (const Pose &pose, const VecVN3 &vec){
+	SP_GENFUNC VecPN3 operator * (const Pose &pose, const VecPN3 &vec){
 		return mulPose(pose, vec);
 	}
 

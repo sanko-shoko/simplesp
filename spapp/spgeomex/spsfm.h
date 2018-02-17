@@ -49,7 +49,7 @@ namespace sp {
 
 		struct PointData {
 
-			Vec3 vtx;
+			Vec3 pos;
 
 			Col3 col;
 
@@ -64,7 +64,7 @@ namespace sp {
 			}
 
 			PointData& operator = (const PointData &pd) {
-				vtx = pd.vtx;
+				pos = pd.pos;
 				col = pd.col;
 				index = pd.index;
 				return *this;
@@ -155,7 +155,7 @@ namespace sp {
 			Mem1<Vec3> pnts;
 			Mem1<Col3> cols;
 			for (int i = 0; i < m_gpnts.size(); i++) {
-				pnts.push(m_gpnts[i].vtx);
+				pnts.push(m_gpnts[i].pos);
 				cols.push(m_gpnts[i].col);
 			}
 
@@ -321,7 +321,7 @@ namespace sp {
 
 					PointData *gp = gpnts.extend();
 
-					gp->vtx = pnt;
+					gp->pos = pnt;
 					addIndex(gpnts, views, gpnts.size() - 1, a, i);
 					addIndex(gpnts, views, gpnts.size() - 1, b, j);
 
@@ -445,7 +445,7 @@ namespace sp {
 					const int j = index[i][0];
 					const int g = index[i][1];
 					pixs.push(fts0[j].pix);
-					objs.push(gpnts[g].vtx);
+					objs.push(gpnts[g].pos);
 				}
 
 				// calc pose
@@ -457,7 +457,7 @@ namespace sp {
 					const int j = index[i][0];
 					const int g = index[i][1];
 
-					const double err = errPose(views[a].pose, views[a].cam, fts0[j].pix, gpnts[g].vtx);
+					const double err = errPose(views[a].pose, views[a].cam, fts0[j].pix, gpnts[g].pos);
 					if (evalErr(err) == 0.0)continue;
 					cnt++;
 				}
@@ -470,7 +470,7 @@ namespace sp {
 					const int j = index[i][0];
 					const int g = index[i][1];
 
-					const double err = errPose(views[a].pose, views[a].cam, fts0[j].pix, gpnts[g].vtx);
+					const double err = errPose(views[a].pose, views[a].cam, fts0[j].pix, gpnts[g].pos);
 					if (evalErr(err) == 0.0)continue;
 
 					addIndex(gpnts, views, g, a, j);
@@ -535,7 +535,7 @@ namespace sp {
 						const int g = views[v].index[j];
 						if (g < 0) continue;
 
-						const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, gpnts[g].vtx);
+						const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, gpnts[g].pos);
 						if (evalErr(err) < 1.0) continue;
 
 						find = g;
@@ -556,7 +556,7 @@ namespace sp {
 					if (evalErr(err) < 1.0) continue;
 
 					PointData *gp = gpnts.extend();
-					gp->vtx = pnt;
+					gp->pos = pnt;
 
 					addIndex(gpnts, views, gpnts.size() - 1, a, i);
 					addIndex(gpnts, views, gpnts.size() - 1, b, j);
@@ -587,10 +587,10 @@ namespace sp {
 						pixs[i] = views[v].fts[m].pix;
 					}
 
-					Vec3 pnt = gpnts[g].vtx;
+					Vec3 pnt = gpnts[g].pos;
 					if (refinePnt3d(pnt, poses, cams, pixs) == false) continue;
 					
-					gpnts[g].vtx = pnt;
+					gpnts[g].pos = pnt;
 
 					setCol(gpnts, views, g);
 				}
@@ -619,7 +619,7 @@ namespace sp {
 					if (g < 0) continue;
 
 					pixs.push(views[a].fts[m].pix);
-					objs.push(gpnts[g].vtx);
+					objs.push(gpnts[g].pos);
 				}
 
 				// calc pose

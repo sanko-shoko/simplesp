@@ -291,34 +291,34 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// vector pd (position and direction)
+	// vector pn (position and direction)
 	//--------------------------------------------------------------------------------
 	
 	// get vector pd
-	SP_GENFUNC VecVN2 getVecVN(const Vec2 &vtx, const Vec2 &nrm){
-		VecVN2 dst;
-		dst.vtx = vtx;
+	SP_GENFUNC VecPN2 getVecPN(const Vec2 &vtx, const Vec2 &nrm){
+		VecPN2 dst;
+		dst.pos = vtx;
 		dst.nrm = nrm;
 		return dst;
 	}
 
 	// get vector pd
-	SP_GENFUNC VecVN3 getVecVN(const Vec3 &vtx, const Vec3 &nrm){
-		VecVN3 dst;
-		dst.vtx = vtx;
+	SP_GENFUNC VecPN3 getVecPN(const Vec3 &vtx, const Vec3 &nrm){
+		VecPN3 dst;
+		dst.pos = vtx;
 		dst.nrm = nrm;
 		return dst;
 	}
 
 
 	//--------------------------------------------------------------------------------
-	// matrix * vector vn
+	// matrix * vector pn
 	//--------------------------------------------------------------------------------
 
-	SP_GENFUNC VecVN2 mulMat(const double *mat, const int rows, const int cols, const VecVN2 &vec){
-		VecVN2 dst;
+	SP_GENFUNC VecPN2 mulMat(const double *mat, const int rows, const int cols, const VecPN2 &vec){
+		VecPN2 dst;
 
-		dst.vtx = mulMat(mat, rows, cols, vec.vtx);
+		dst.pos = mulMat(mat, rows, cols, vec.pos);
 
 		double rot[2 * 2] = { 0 };
 		{
@@ -329,7 +329,7 @@ namespace sp{
 			}
 		}
 		if (rows == 3 && cols == 3){
-			const double pos[2] = { dst.vtx.x, dst.vtx.y };
+			const double pos[2] = { dst.pos.x, dst.pos.y };
 			for (int r = 0; r < 2; r++){
 				for (int c = 0; c < 2; c++){
 					rot[r * 2 + c] -= mat[2 * cols + c] * pos[r];
@@ -343,10 +343,10 @@ namespace sp{
 	}
 
 
-	SP_GENFUNC VecVN3 mulMat(const double *mat, const int rows, const int cols, const VecVN3 &vec){
-		VecVN3 dst;
+	SP_GENFUNC VecPN3 mulMat(const double *mat, const int rows, const int cols, const VecPN3 &vec){
+		VecPN3 dst;
 
-		dst.vtx = mulMat(mat, rows, cols, vec.vtx);
+		dst.pos = mulMat(mat, rows, cols, vec.pos);
 
 		double rot[3 * 3] = { 0 };
 		{
@@ -357,7 +357,7 @@ namespace sp{
 			}
 		}
 		if (rows == 4 && cols == 4){
-			const double pos[3] = { dst.vtx.x, dst.vtx.y, dst.vtx.z };
+			const double pos[3] = { dst.pos.x, dst.pos.y, dst.pos.z };
 			for (int r = 0; r < 3; r++){
 				for (int c = 0; c < 3; c++){
 					rot[r * 3 + c] -= mat[3 * cols + c] * pos[r];
@@ -374,8 +374,8 @@ namespace sp{
 	// extract depth element
 	//--------------------------------------------------------------------------------
 
-	SP_GENFUNC double extractDepth(const VecVN3 &src){
-		return src.vtx.z;
+	SP_GENFUNC double extractDepth(const VecPN3 &src){
+		return src.pos.z;
 	}
 
 	SP_GENFUNC double extractDepth(const Vec3 &src){
@@ -394,45 +394,45 @@ namespace sp{
 	// get mesh
 	SP_GENFUNC Mesh getMesh(const Vec3 &vec0, const Vec3 &vec1, const Vec3 &vec2){
 		Mesh dst;
-		dst.vtx[0] = vec0;
-		dst.vtx[1] = vec1;
-		dst.vtx[2] = vec2;
+		dst.pos[0] = vec0;
+		dst.pos[1] = vec1;
+		dst.pos[2] = vec2;
 		return dst;
 	}
 
 	// addition
 	SP_GENFUNC Mesh addMesh(const Mesh &mesh, const Vec3 vec){
 		Mesh dst;
-		dst.vtx[0] = mesh.vtx[0] + vec;
-		dst.vtx[1] = mesh.vtx[1] + vec;
-		dst.vtx[2] = mesh.vtx[2] + vec;
+		dst.pos[0] = mesh.pos[0] + vec;
+		dst.pos[1] = mesh.pos[1] + vec;
+		dst.pos[2] = mesh.pos[2] + vec;
 		return dst;
 	}
 
 	// subtraction
 	SP_GENFUNC Mesh subMesh(const Mesh &mesh, const Vec3 vec){
 		Mesh dst;
-		dst.vtx[0] = mesh.vtx[0] - vec;
-		dst.vtx[1] = mesh.vtx[1] - vec;
-		dst.vtx[2] = mesh.vtx[2] - vec;
+		dst.pos[0] = mesh.pos[0] - vec;
+		dst.pos[1] = mesh.pos[1] - vec;
+		dst.pos[2] = mesh.pos[2] - vec;
 		return dst;
 	}
 
 	// multiple
 	SP_GENFUNC Mesh mulMesh(const Mesh &mesh, const double val){
 		Mesh dst;
-		dst.vtx[0] = mesh.vtx[0] * val;
-		dst.vtx[1] = mesh.vtx[1] * val;
-		dst.vtx[2] = mesh.vtx[2] * val;
+		dst.pos[0] = mesh.pos[0] * val;
+		dst.pos[1] = mesh.pos[1] * val;
+		dst.pos[2] = mesh.pos[2] * val;
 		return dst;
 	}
 
 	// division
 	SP_GENFUNC Mesh divMesh(const Mesh &mesh, const double val){
 		Mesh dst;
-		dst.vtx[0] = mesh.vtx[0] / val;
-		dst.vtx[1] = mesh.vtx[1] / val;
-		dst.vtx[2] = mesh.vtx[2] / val;
+		dst.pos[0] = mesh.pos[0] / val;
+		dst.pos[1] = mesh.pos[1] / val;
+		dst.pos[2] = mesh.pos[2] / val;
 		return dst;
 	}
 
@@ -480,9 +480,9 @@ namespace sp{
 
 	SP_GENFUNC Mesh mulMat(const double *mat, const int rows, const int cols, const Mesh &mesh){
 		Mesh dst;
-		dst.vtx[0] = mulMat(mat, rows, cols, mesh.vtx[0]);
-		dst.vtx[1] = mulMat(mat, rows, cols, mesh.vtx[1]);
-		dst.vtx[2] = mulMat(mat, rows, cols, mesh.vtx[2]);
+		dst.pos[0] = mulMat(mat, rows, cols, mesh.pos[0]);
+		dst.pos[1] = mulMat(mat, rows, cols, mesh.pos[1]);
+		dst.pos[2] = mulMat(mat, rows, cols, mesh.pos[2]);
 		return dst;
 	}
 
@@ -493,12 +493,12 @@ namespace sp{
 
 	// get normal vector
 	SP_GENFUNC Vec3 getMeshNrm(const Mesh &mesh){
-		return unitVec(crsVec(mesh.vtx[1] - mesh.vtx[0], mesh.vtx[2] - mesh.vtx[0]));
+		return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
 	}
 
 	// get center vector
 	SP_GENFUNC Vec3 getMeshPos(const Mesh &mesh){
-		return (mesh.vtx[0] + mesh.vtx[1] + mesh.vtx[2]) / 3.0;
+		return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
 	}
 
 
@@ -552,7 +552,7 @@ namespace sp{
 			for (int i = 0; i < 20; i++){
 				Mesh &m = model[i];
 				if (dotVec(getMeshNrm(m), getMeshPos(m)) < 0.0){
-					swap(m.vtx[1], m.vtx[2]);
+					swap(m.pos[1], m.pos[2]);
 				}
 			}
 		}
@@ -563,15 +563,15 @@ namespace sp{
 
 		Mesh dst = model[tmp / num];
 		for (int d = 0; d < div; d++){
-			const Vec3 p0 = unitVec(addVec(dst.vtx[0], dst.vtx[1]));
-			const Vec3 p1 = unitVec(addVec(dst.vtx[1], dst.vtx[2]));
-			const Vec3 p2 = unitVec(addVec(dst.vtx[2], dst.vtx[0]));
+			const Vec3 p0 = unitVec(addVec(dst.pos[0], dst.pos[1]));
+			const Vec3 p1 = unitVec(addVec(dst.pos[1], dst.pos[2]));
+			const Vec3 p2 = unitVec(addVec(dst.pos[2], dst.pos[0]));
 
 			Mesh mesh[4];
 			mesh[0] = getMesh(p0, p1, p2);
-			mesh[1] = getMesh(dst.vtx[0], p0, p2);
-			mesh[2] = getMesh(dst.vtx[1], p1, p0);
-			mesh[3] = getMesh(dst.vtx[2], p2, p1);
+			mesh[1] = getMesh(dst.pos[0], p0, p2);
+			mesh[2] = getMesh(dst.pos[1], p1, p0);
+			mesh[3] = getMesh(dst.pos[2], p2, p1);
 
 			tmp %= num;
 			num /= 4;

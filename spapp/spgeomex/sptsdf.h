@@ -64,9 +64,9 @@ namespace sp{
 	}
 
 
-	SP_CPUFUNC void rayCasting(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
-		vnmap.resize(cam.dsize);
-		vnmap.zero();
+	SP_CPUFUNC void rayCasting(Mem2<VecPN3> &pnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
+		pnmap.resize(cam.dsize);
+		pnmap.zero();
 
 		const Vec3 cent = getVec(tsdfmap.dsize[0] - 1, tsdfmap.dsize[1] - 1, tsdfmap.dsize[2] - 1) * 0.5;
 		const double mu = SP_TSDF_MU * unit;
@@ -77,8 +77,8 @@ namespace sp{
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-		for (int v = 0; v < vnmap.dsize[1]; v++){
-			for (int u = 0; u < vnmap.dsize[0]; u++){
+		for (int v = 0; v < pnmap.dsize[1]; v++){
+			for (int u = 0; u < pnmap.dsize[0]; u++){
 				const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
 
 				double maxv;
@@ -138,15 +138,15 @@ namespace sp{
 					const Vec3 cpos = cvec * detect;
 					const Vec3 cnrm = pose.rot * mnrm;
 
-					vnmap(u, v) = getVecVN(cpos, cnrm);
+					pnmap(u, v) = getVecPN(cpos, cnrm);
 				}
 			}
 		}
 	}
 
-//	SP_CPUFUNC void rayCastingFast(Mem2<VecVN3> &vnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
-//		SP_ASSERT(isValid(vnmap, 2));
-//		vnmap.zero();
+//	SP_CPUFUNC void rayCastingFast(Mem2<VecPN3> &pnmap, const CamParam &cam, const Pose &pose, const Mem3<TSDF> &tsdfmap, const double unit){
+//		SP_ASSERT(isValid(pnmap, 2));
+//		pnmap.zero();
 //
 //		const Vec3 cent = getVec(tsdfmap.dsize[0] - 1, tsdfmap.dsize[1] - 1, tsdfmap.dsize[2] - 1) * 0.5 * unit;
 //		const double mu = SP_TSDF_MU * unit;
@@ -155,14 +155,14 @@ namespace sp{
 //		const double radius = normVec(cent);
 //
 //
-//		Mem2<double> depth(vnmap.dsize);
+//		Mem2<double> depth(pnmap.dsize);
 //		for (int v = 0; v < depth.dsize[1]; v++){
 //			for (int u = 0; u < depth.dsize[0]; u++){
 //				depth(u, v) = radius * randValUnif() + pose.trn.z;
 //			}
 //		}
 //
-//		Mem2<double> eval(vnmap.dsize);
+//		Mem2<double> eval(pnmap.dsize);
 //		setElm(eval, 1.0);
 //
 //		for (int it = 0; it < 2; it++){
@@ -289,7 +289,7 @@ namespace sp{
 //					const Vec3 cpos = cvec * detect;
 //					const Vec3 cnrm = pose.rot * mnrm;
 //
-//					vnmap(u, v) = getVecVN(cpos, cnrm);
+//					pnmap(u, v) = getVecPN(cpos, cnrm);
 //				}
 //			}
 //		}

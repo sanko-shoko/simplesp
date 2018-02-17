@@ -116,10 +116,10 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	//  vector vn
+	//  vector pn
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC void cnvDepthToVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Mem<double> &src){
+	SP_CPUFUNC void cnvDepthToVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Mem<double> &src){
 		SP_ASSERT(isValid(2, src));
 
 		dst.resize(2, src.dsize);
@@ -145,7 +145,7 @@ namespace sp{
 
 				const Vec3 nrm = unitVec(crsVec(vec2 - vec0, vec1 - vec0));
 
-				acs2(dst, u, v) = getVecVN(vec0, nrm);
+				acs2(dst, u, v) = getVecPN(vec0, nrm);
 			}
 		}
 	}

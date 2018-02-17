@@ -263,9 +263,9 @@ namespace sp{
 	}
 
 	SP_CPUFUNC void glMesh(const Mesh &mesh){
-		glVertex(mesh.vtx[0]);
-		glVertex(mesh.vtx[1]);
-		glVertex(mesh.vtx[2]);
+		glVertex(mesh.pos[0]);
+		glVertex(mesh.pos[1]);
+		glVertex(mesh.pos[2]);
 	}
 
 	SP_CPUFUNC void glAxis(const double size){

@@ -40,21 +40,21 @@ namespace sp{
 		return distance;
 	}
 
-	SP_CPUFUNC Mem1<VecVN3> getModelPoint(const Mem1<Mesh> &model, const int density = 60){
+	SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh> &model, const int density = 60){
 		const CamParam cam = getCamParam(density, density);
 		const double distance = getModelDistance(model, cam);
 		
-		Mem1<VecVN3> tmp;
+		Mem1<VecPN3> tmp;
 		const int num = getGeodesicMeshNum(0);
 		for (int i = 0; i < num; i++){
 			const Vec3 v = getMeshPos(getGeodesicMesh(0, i)) * (-1.0);
 			const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
-			Mem2<VecVN3> map;
-			renderVecVN(map, cam, pose, model);
+			Mem2<VecPN3> map;
+			renderVecPN(map, cam, pose, model);
 
 			const Mat mat = getMat(invPose(pose));
 			for (int j = 0; j < map.size(); j++){
-				if (map[j].vtx.z > 0 && dotVec(map[j].vtx, map[j].nrm) < 0){
+				if (map[j].pos.z > 0 && dotVec(map[j].pos, map[j].nrm) < 0){
 					tmp.push(mat * map[j]);
 				}
 			}
@@ -62,13 +62,13 @@ namespace sp{
 
 		tmp = shuffle(tmp);
 
-		Mem1<VecVN3> dst;
+		Mem1<VecPN3> dst;
 		const double unit = 2 * distance / (cam.fx + cam.fy);
 
 		for (int i = 0; i < tmp.size(); i++){
 			bool check = true;
 			for (int j = 0; j < dst.size(); j++){
-				if (dotVec(dst[j].nrm, tmp[i].nrm) > 0.5 && normVec(dst[j].vtx - tmp[i].vtx) < unit){
+				if (dotVec(dst[j].nrm, tmp[i].nrm) > 0.5 && normVec(dst[j].pos - tmp[i].pos) < unit){
 					check = false;
 					break;
 				}

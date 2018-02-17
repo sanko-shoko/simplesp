@@ -16,10 +16,10 @@ class ICPGUI : public BaseWindow{
 
 	// data A
 	Pose m_poseA;
-	Mem<VecVN3> m_dataA;
+	Mem<VecPN3> m_dataA;
 
 	// datd B
-	Mem<VecVN3> m_dataB;
+	Mem<VecPN3> m_dataB;
 
 private:
 
@@ -53,7 +53,7 @@ private:
 			m_dataB.resize(2, m_cam.dsize);
 
 			m_dataB.zero();
-			renderVecVN(m_dataB, m_cam, m_poseA, m_model);
+			renderVecPN(m_dataB, m_cam, m_poseA, m_model);
 
 			const double distance = getModelDistance(m_model, m_cam);
 			const double radius = getModelRadius(m_model);
@@ -93,7 +93,7 @@ private:
 				glBegin(GL_POINTS);
 				glColor3f(0.2f, 0.2f, 0.7f);
 				for (int i = 0; i < m_dataB.size(); i++) {
-					glVertex(m_dataB[i].vtx);
+					glVertex(m_dataB[i].pos);
 				}
 				glEnd();
 			}
@@ -117,7 +117,7 @@ private:
 				glBegin(GL_POINTS);
 				glColor3f(0.2f, 0.7f, 0.2f);
 				for (int i = 0; i < m_dataA.size(); i++){
-					glVertex(m_dataA[i].vtx);
+					glVertex(m_dataA[i].pos);
 				}
 				glEnd();
 				

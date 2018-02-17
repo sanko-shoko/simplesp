@@ -567,11 +567,11 @@ namespace sp{
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
 	}
 
-	SP_CPUFUNC VecVN2 operator * (const Mat &mat, const VecVN2 vec){
+	SP_CPUFUNC VecPN2 operator * (const Mat &mat, const VecPN2 vec){
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
 	}
 
-	SP_CPUFUNC VecVN3 operator * (const Mat &mat, const VecVN3 vec){
+	SP_CPUFUNC VecPN3 operator * (const Mat &mat, const VecPN3 vec){
 		return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
 	}
 

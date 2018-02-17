@@ -131,15 +131,15 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// vertex and normal
+	// position and normal
 	//--------------------------------------------------------------------------------
 	
-	struct VecVN2{
-		Vec2 vtx, nrm;
+	struct VecPN2{
+		Vec2 pos, nrm;
 	};
 
-	struct VecVN3{
-		Vec3 vtx, nrm;
+	struct VecPN3{
+		Vec3 pos, nrm;
 	};
 
 
@@ -148,7 +148,7 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 	
 	struct Mesh{
-		Vec3 vtx[3];
+		Vec3 pos[3];
 	};
 
 

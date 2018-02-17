@@ -144,9 +144,9 @@ namespace sp{
 	SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh, const TYPE &val, const int thick = 1){
 		SP_ASSERT(isValid(2, dst));
 
-		renderLine(dst, cam, pose, mesh.vtx[0], mesh.vtx[1], val, thick);
-		renderLine(dst, cam, pose, mesh.vtx[1], mesh.vtx[2], val, thick);
-		renderLine(dst, cam, pose, mesh.vtx[2], mesh.vtx[0], val, thick);
+		renderLine(dst, cam, pose, mesh.pos[0], mesh.pos[1], val, thick);
+		renderLine(dst, cam, pose, mesh.pos[1], mesh.pos[2], val, thick);
+		renderLine(dst, cam, pose, mesh.pos[2], mesh.pos[0], val, thick);
 	}
 
 	template<typename TYPE>
@@ -325,10 +325,10 @@ namespace sp{
 
 
 	//--------------------------------------------------------------------------------
-	// render vector vn
+	// render vector PN
 	//--------------------------------------------------------------------------------
 
-	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
+	SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
 
 		if (cmpSize(2, dst.dsize, cam.dsize) == false) {
 			dst.resize(2, cam.dsize);
@@ -347,11 +347,11 @@ namespace sp{
 
 			bool valid = false;
 			for (int i = 0; i < 3; i++) {
-				if (pm.vtx[i].z < SP_SMALL) continue;
+				if (pm.pos[i].z < SP_SMALL) continue;
 
 				valid |= true;
 
-				const Vec2 pix = mulCamD(cam, prjVec(pm.vtx[i]));
+				const Vec2 pix = mulCamD(cam, prjVec(pm.pos[i]));
 
 				xs = minVal(xs, floor(pix.x + 1));
 				xe = maxVal(xe, floor(pix.x + 1));
@@ -366,9 +366,9 @@ namespace sp{
 
 		const Vec3 nrm = getMeshNrm(pm);
 
-		const Vec3 base = pm.vtx[0];
-		const Vec3 A = pm.vtx[1] - base;
-		const Vec3 B = pm.vtx[2] - base;
+		const Vec3 base = pm.pos[0];
+		const Vec3 A = pm.pos[1] - base;
+		const Vec3 B = pm.pos[2] - base;
 
 		double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
 		double val[3] = { base.x, base.y, base.z };
@@ -395,30 +395,30 @@ namespace sp{
 
 				const double ref = extractDepth(acs2(dst, u, v));
 				if (ref == 0.0 || depth < ref) {
-					acs2(dst, u, v) = getVecVN(vec * depth, nrm);
+					acs2(dst, u, v) = getVecPN(vec * depth, nrm);
 				}
 			}
 		}
 
 	}
 
-	SP_CPUFUNC void renderVecVN(Mem<VecVN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+	SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
 
 		for (int i = 0; i < meshes.size(); i++) {
-			renderVecVN(dst, cam, pose, meshes[i]);
+			renderVecPN(dst, cam, pose, meshes[i]);
 		}
 	}
 
 	SP_CPUFUNC void renderDepth(Mem<double> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
 
-		Mem<VecVN3> vnmap;
+		Mem<VecPN3> pnmap;
 		for (int i = 0; i < meshes.size(); i++) {
-			renderVecVN(vnmap, cam, pose, meshes[i]);
+			renderVecPN(pnmap, cam, pose, meshes[i]);
 		}
 
 		dst.resize(2, cam.dsize);
 		for (int i = 0; i < dst.size(); i++) {
-			dst[i] = extractDepth(vnmap[i]);
+			dst[i] = extractDepth(pnmap[i]);
 		}
 	}
 
@@ -428,8 +428,8 @@ namespace sp{
 		dst.resize(cam.dsize);
 		dst.zero();
 
-		Mem<VecVN3> map;
-		renderVecVN(map, cam, pose, meshes);
+		Mem<VecPN3> map;
+		renderVecPN(map, cam, pose, meshes);
 
 		for (int i = 0; i < dst.size(); i++) {
 			cnvNormalToCol(dst[i], map[i].nrm);
@@ -443,26 +443,26 @@ namespace sp{
 		dst.resize(cam.dsize);
 		dst.zero();
 
-		Mem2<VecVN3> cmap;
-		renderVecVN(cmap, cam, pose, meshes);
+		Mem2<VecPN3> cmap;
+		renderVecPN(cmap, cam, pose, meshes);
 
-		Mem2<VecVN3> pmap;
-		renderVecVN(pmap, prj, cam2prj * pose, meshes);
+		Mem2<VecPN3> pmap;
+		renderVecPN(pmap, prj, cam2prj * pose, meshes);
 
 		typedef MemA<double, 2> Double2;
 		Mem2<Double2> ptmp(pmap.dsize);
 		for (int i = 0; i < pmap.size(); i++) {
-			ptmp[i][0] = pmap[i].vtx.z > 0.0 ? 1.0 : 0.0;
-			ptmp[i][1] = pmap[i].vtx.z;
+			ptmp[i][0] = pmap[i].pos.z > 0.0 ? 1.0 : 0.0;
+			ptmp[i][1] = pmap[i].pos.z;
 		}
 
 		for (int v = 0; v < cam.dsize[1]; v++) {
 			for (int u = 0; u < cam.dsize[0]; u++) {
-				if (cmap(u, v).vtx.z == 0.0) continue;
+				if (cmap(u, v).pos.z == 0.0) continue;
 
 				const Vec2 cpix = getVec(u, v);
 				const Vec2 cnpx = invCam(cam, cpix);
-				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).vtx.z;
+				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).pos.z;
 
 				const Vec3 ppos = cam2prj * cpos;
 				const Vec2 pnpx = prjVec(ppos);
@@ -493,26 +493,26 @@ namespace sp{
 		dst.resize(cam.dsize);
 		setElm(dst, getVec(-1.0, -1.0));
 
-		Mem2<VecVN3> cmap;
-		renderVecVN(cmap, cam, pose, meshes);
+		Mem2<VecPN3> cmap;
+		renderVecPN(cmap, cam, pose, meshes);
 
-		Mem2<VecVN3> pmap;
-		renderVecVN(pmap, prj, cam2prj * pose, meshes);
+		Mem2<VecPN3> pmap;
+		renderVecPN(pmap, prj, cam2prj * pose, meshes);
 
 		typedef MemA<double, 2> Double2;
 		Mem2<Double2> ptmp(pmap.dsize);
 		for (int i = 0; i < pmap.size(); i++) {
-			ptmp[i][0] = pmap[i].vtx.z > 0.0 ? 1.0 : 0.0;
-			ptmp[i][1] = pmap[i].vtx.z;
+			ptmp[i][0] = pmap[i].pos.z > 0.0 ? 1.0 : 0.0;
+			ptmp[i][1] = pmap[i].pos.z;
 		}
 
 		for (int v = 0; v < cam.dsize[1]; v++) {
 			for (int u = 0; u < cam.dsize[0]; u++) {
-				if (cmap(u, v).vtx.z == 0.0) continue;
+				if (cmap(u, v).pos.z == 0.0) continue;
 
 				const Vec2 cpix = getVec(u, v);
 				const Vec2 cnpx = invCam(cam, cpix);
-				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).vtx.z;
+				const Vec3 cpos = getVec(cnpx.x, cnpx.y, 1.0) * cmap(u, v).pos.z;
 
 				const Vec3 ppos = cam2prj * cpos;
 				const Vec2 pnpx = prjVec(ppos);
