@@ -41,26 +41,20 @@ private:
         }
 
         printf("please wait...\n");
-        {
-            const int level = 2;
-            const double distance = getModelDistance(m_model, m_cam);
-            m_pmodels = getPoseModel(m_model, level, distance);
-        }
+        const double distance = getModelDistance(m_model, m_cam);
+        m_pmodels = getPoseModel(m_model, distance);
 
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_pose = getPose(getVec(0.0, 0.0, distance));
 
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_N] == 1) {
-            const double distance = getModelDistance(m_model, m_cam);
-            const double radius = getModelRadius(m_model);
-
             Mem2<VecPN3> map;
             renderVecPN(map, m_cam, m_pose, m_model);
 
-            cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
+            cnvNormalToImg(m_img, map);
         }
 
         if (m_keyAction[GLFW_KEY_C] > 0) {
@@ -68,13 +62,8 @@ private:
 
             Mem2<Byte> gry;
             cnvImg(gry, m_img);
-            Mem1<Vec3> objs, drcs;
-            const int id = findPoseModel(m_pmodels, m_pose);
-            for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
-                objs.push(m_pmodels[id].edges[i].pos);
-                drcs.push(m_pmodels[id].edges[i].drc);
-            }
-            fitting2D(m_pose, gry, m_cam, objs, drcs, 50, 1);
+
+            track2D(m_pose, gry, m_cam, m_pmodels, 50, 1);
         }
     }
 

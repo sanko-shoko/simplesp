@@ -45,7 +45,7 @@
 #include "spapp/spgeom/spicp.h"
 
 #include "spapp/spgeomex/spsfm.h"
-#include "spapp/spgeomex/spfitting.h"
+#include "spapp/spgeomex/sptrack.h"
 #include "spapp/spgeomex/spdotmarker.h"
 #include "spapp/spgeomex/spbitmarker.h"
 #include "spapp/spgeomex/spdotpattern.h"
