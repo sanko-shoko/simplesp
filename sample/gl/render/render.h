@@ -88,9 +88,9 @@ private:
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
             switch (m_mode) {
-            case 0:    renderPoints(); break;
-            case 1: renderModelSurface(); break;
-            case 2: renderModelOutline(); break;
+            case 0: renderPoint(); break;
+            case 1: renderSurface(); break;
+            case 2: renderOutline(); break;
             default: break;
             }
 
@@ -98,7 +98,7 @@ private:
         }
     }
 
-    void renderPoints() {
+    void renderPoint() {
 
         {
             glLoadIdentity();
@@ -128,19 +128,19 @@ private:
         }
     }
 
-    void renderModelSurface() {
+    void renderSurface() {
         glLoadMatrix(m_pose);
 
         const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
         glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 
-        glModelSurface(m_model);
+        glRenderSurface(m_model);
     }
 
-    void renderModelOutline() {
+    void renderOutline() {
         glLoadMatrix(m_pose);
 
-        glModelOutline(m_model);
+        glRenderOutline(m_model);
     }
 
     void renderAxis() {

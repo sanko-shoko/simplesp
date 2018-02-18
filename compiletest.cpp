@@ -10,8 +10,8 @@
 #include "simplesp.h"
 using namespace sp;
 
-int main(){
-	printf("compile test\n");
-	
+int main() {
+    printf("compile test\n");
+
     return 0;
 }

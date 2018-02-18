@@ -24,7 +24,7 @@ private:
 
     void help() {
         printf("'n' key : render normal\n");
-        printf("'c' key : calc track\n");
+        printf("'c' key : track\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -84,7 +84,7 @@ private:
             {
                 glLoadMatrix(m_pose);
 
-                glModelOutline(m_model);
+                glRenderOutline(m_model);
 
                 // render points
                 glPointSize(5.f);
@@ -96,15 +96,20 @@ private:
                     glVertex(m_pmodels[id].edges[i].pos);
                 }
                 glEnd();
-                
-                // render axis
-                glLineWidth(2.f);
-                glBegin(GL_LINES);
-                glAxis(100.0);
-                glEnd();
             }
+
+            renderAxis();
         }
 
+    }
+
+    void renderAxis() {
+        glLoadMatrix(m_pose);
+
+        glLineWidth(2.f);
+        glBegin(GL_LINES);
+        glAxis(100.0);
+        glEnd();
     }
 
     virtual void mousePos(double x, double y) {
