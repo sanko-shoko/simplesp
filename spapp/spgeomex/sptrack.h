@@ -136,7 +136,7 @@ namespace sp{
         for (int i = 0; i < maxit; i++) {
             const int id = findPoseModel(pmodels, pose);
 
-            ret = calcICP(pose, cam, pmodels[i].pnts, map, 1);
+            ret = calcICP(pose, cam, pmodels[id].pnts, map, 1);
             if (ret == false) break;
         }
 

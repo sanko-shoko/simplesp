@@ -52,7 +52,7 @@ private:
         printf("please wait...\n");
 
         const double distance = getModelDistance(m_model, m_cam);
-        const int level = 3;
+        const int level = 2;
         m_pmodels = getPoseModel(m_model, distance, level);
 
         m_pose = getPose(getVec(0.0, 0.0, distance));
