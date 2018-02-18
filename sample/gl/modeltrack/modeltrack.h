@@ -11,6 +11,9 @@ class ModelTrackGUI : public BaseWindow{
     // image
     Mem2<Col3> m_img;
 
+    // map
+    Mem2<VecPN3> m_map;
+
     // model
     Mem1<Mesh> m_model;
 
@@ -20,17 +23,23 @@ class ModelTrackGUI : public BaseWindow{
     // pose model
     Mem1<PoseModel> m_pmodels;
 
+    // mode
+    int m_mode;
+
 private:
 
     void help() {
-        printf("'n' key : render normal\n");
-        printf("'c' key : track\n");
+        printf("'r' key : render\n");
+        printf("'c' key : track 2d\n");
+        printf("'v' key : track 3d\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
 
     virtual void init(){
         help();
+
+        m_mode = 0;
 
         m_cam = getCamParam(640, 480);
 
@@ -50,20 +59,26 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_N] == 1) {
-            Mem2<VecPN3> map;
-            renderVecPN(map, m_cam, m_pose, m_model);
-
-            cnvNormalToImg(m_img, map);
+        if (m_keyAction[GLFW_KEY_R] == 1) {
+            renderVecPN(m_map, m_cam, m_pose, m_model);
+            cnvNormalToImg(m_img, m_map);
         }
 
         if (m_keyAction[GLFW_KEY_C] > 0) {
             if (m_img.size() == 0) return;
+            m_mode = 0;
 
             Mem2<Byte> gry;
             cnvImg(gry, m_img);
 
             track2D(m_pose, gry, m_cam, m_pmodels, 50, 1);
+        }
+
+        if (m_keyAction[GLFW_KEY_V] > 0) {
+            if (m_map.size() == 0) return;
+            m_mode = 1;
+
+            track3D(m_pose, m_map, m_cam, m_pmodels, 1);
         }
     }
 
@@ -92,8 +107,16 @@ private:
                 glColor3f(0.2f, 0.7f, 0.2f);
 
                 const int id = findPoseModel(m_pmodels, m_pose);
-                for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
-                    glVertex(m_pmodels[id].edges[i].pos);
+
+                if (m_mode == 0) {
+                    for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
+                        glVertex(m_pmodels[id].edges[i].pos);
+                    }
+                }
+                else {
+                    for (int i = 0; i < m_pmodels[id].pnts.size(); i++) {
+                        glVertex(m_pmodels[id].pnts[i].pos);
+                    }
                 }
                 glEnd();
             }

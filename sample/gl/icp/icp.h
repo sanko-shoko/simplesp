@@ -19,7 +19,7 @@ class ICPGUI : public BaseWindow{
     // data A
     Mem<VecPN3> m_dataA;
 
-    // datd B
+    // data B
     Mem<VecPN3> m_dataB;
 
 private:
