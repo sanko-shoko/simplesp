@@ -2,8 +2,8 @@
 
 int main(){
 
-	KinectFusionGUI win;
-	win.execute("kinectfusion", 800, 600);
+    KinectFusionGUI win;
+    win.execute("kinectfusion", 800, 600);
 
-	return 0;
+    return 0;
 }

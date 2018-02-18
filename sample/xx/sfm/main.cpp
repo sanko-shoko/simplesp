@@ -2,8 +2,8 @@
 
 int main() {
 
-	SfMGUI win;
-	win.execute("sfm", 800, 600);
+    SfMGUI win;
+    win.execute("sfm", 800, 600);
 
-	return 0;
+    return 0;
 }

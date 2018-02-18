@@ -14,8 +14,8 @@ file(GLOB EX_LIBS ${CMAKE_SOURCE_DIR}/external/*.lib)
 ## openCV
 option(SP_USE_OPENCV "SP_USE_OPENCV" OFF)
 if(SP_USE_OPENCV)
-	find_package(OpenCV REQUIRED)
-	
+    find_package(OpenCV REQUIRED)
+    
     include_directories(${OpenCV_INCLUDE_DIRS})
     link_directories(${OpenCV_LIB_DIRS})
 endif(SP_USE_OPENCV)
@@ -24,18 +24,18 @@ endif(SP_USE_OPENCV)
 ## openGL
 option(SP_USE_OPENGL "SP_USE_OPENGL" OFF)
 if(SP_USE_OPENGL)
-	find_package(OpenGL REQUIRED)
-	find_package(GLFW REQUIRED)
-	
+    find_package(OpenGL REQUIRED)
+    find_package(GLFW REQUIRED)
+    
     include_directories(${GLFW_INCLUDE_DIR})
-	set(OpenGL_LIBS ${OPENGL_LIBRARY} ${GLFW_LIB})
+    set(OpenGL_LIBS ${OPENGL_LIBRARY} ${GLFW_LIB})
 endif()
 
 
 ## OpenMP
 option(SP_USE_OPENMP "SP_USE_OPENMP" ON)
 if(SP_USE_OPENMP) 
-	find_package(OpenMP)
+    find_package(OpenMP)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()

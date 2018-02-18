@@ -1,4 +1,4 @@
-﻿set(target "gl_kmeans")
+﻿set(target "gl_modeltrack")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)

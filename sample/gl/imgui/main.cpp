@@ -2,9 +2,9 @@
 
 int main() {
 
-	SampleGUI win;
-	win.execute("sample", 800, 600);
+    SampleGUI win;
+    win.execute("sample", 800, 600);
 
-	return 0;
+    return 0;
 }
 

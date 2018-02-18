@@ -2,8 +2,8 @@
 
 int main(){
 
-	KmeansGUI win;
-	win.execute("kmeans", 800, 600);
+    KmeansGUI win;
+    win.execute("kmeans", 800, 600);
 
-	return 0;
+    return 0;
 }

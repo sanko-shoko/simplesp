@@ -16,438 +16,438 @@
 
 namespace sp{
 
-	//--------------------------------------------------------------------------------
-	// graph cut
-	//--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    // graph cut
+    //--------------------------------------------------------------------------------
 
-	class GraphCut{
+    class GraphCut{
 
-	private:
-		struct Node;
-		struct Link;
+    private:
+        struct Node;
+        struct Link;
 
-		struct Node{
-			// label (0: source / 1: sink)
-			int label;
+        struct Node{
+            // label (0: source / 1: sink)
+            int label;
 
-			// cap > 0 : residual source capacity
-			// cap < 0 : residual sink capacity
-			int cap;
+            // cap > 0 : residual source capacity
+            // cap < 0 : residual sink capacity
+            int cap;
 
-			// first link pointer
-			Link *link;
+            // first link pointer
+            Link *link;
 
-			// parent link pointer
-			Link *parent;
+            // parent link pointer
+            Link *parent;
 
-			// next active node
-			Node *next;
+            // next active node
+            Node *next;
 
-			// timestamp
-			int time;
+            // timestamp
+            int time;
 
-			// distance to the terminal
-			int dist;
-		};
+            // distance to the terminal
+            int dist;
+        };
 
-		struct Link{
-			// residual capacity
-			int cap;
+        struct Link{
+            // residual capacity
+            int cap;
 
-			// connected node (root -> targ)
-			Node *root;
+            // connected node (root -> targ)
+            Node *root;
 
-			// connected node (root -> targ)
-			Node *targ;
+            // connected node (root -> targ)
+            Node *targ;
 
-			// next link
-			Link *next;
+            // next link
+            Link *next;
 
-			// pair link (<=>)
-			Link *pair;
-		};
+            // pair link (<=>)
+            Link *pair;
+        };
 
-		struct Orphan {
-			Node *node;
-			Orphan *next;
-		};
+        struct Orphan {
+            Node *node;
+            Orphan *next;
+        };
 
-		template<typename TYPE> struct List{
-			TYPE *first, *last;
-		};
+        template<typename TYPE> struct List{
+            TYPE *first, *last;
+        };
 
-		Mem1<Node> m_nodes;
-		Mem1<Link> m_links;
+        Mem1<Node> m_nodes;
+        Mem1<Link> m_links;
 
-		MemP<Orphan> m_orphanPool;
-		
-		// active m_nodes
-		List<Node> m_actives;
+        MemP<Orphan> m_orphanPool;
+        
+        // active m_nodes
+        List<Node> m_actives;
 
-		// orphans
-		List<Orphan> m_orphans;
+        // orphans
+        List<Orphan> m_orphans;
 
-		Link *const TERMINAL = (Link *const)1;
-		Link *const ORPHAN = (Link *const)2;
+        Link *const TERMINAL = (Link *const)1;
+        Link *const ORPHAN = (Link *const)2;
 
-	public:
+    public:
 
-		GraphCut(){
-		}
+        GraphCut(){
+        }
 
-		GraphCut(const int nodeMax, const int linkMax){
-			init(nodeMax, linkMax);
-		}
+        GraphCut(const int nodeMax, const int linkMax){
+            init(nodeMax, linkMax);
+        }
 
-		void init(const int nodeMax, const int linkMax){
-			m_actives.first = m_actives.last = NULL;
-			m_orphans.first = m_orphans.last = NULL;
+        void init(const int nodeMax, const int linkMax){
+            m_actives.first = m_actives.last = NULL;
+            m_orphans.first = m_orphans.last = NULL;
 
-			m_nodes.clear();
-			m_nodes.resize(nodeMax);
-			m_nodes.zero();
+            m_nodes.clear();
+            m_nodes.resize(nodeMax);
+            m_nodes.zero();
 
-			m_links.clear();
-			m_links.reserve(2 * linkMax);
-		}
+            m_links.clear();
+            m_links.reserve(2 * linkMax);
+        }
 
-		void setNode(int i, int source, int sink){
-			Node *node = &m_nodes[i];
+        void setNode(int i, int source, int sink){
+            Node *node = &m_nodes[i];
 
-			node->cap = source - sink;
+            node->cap = source - sink;
 
-			if (node->cap != 0){
-				node->label = (node->cap > 0) ? 0 : 1;
-				node->parent = TERMINAL;
-				node->dist = 1;
+            if (node->cap != 0){
+                node->label = (node->cap > 0) ? 0 : 1;
+                node->parent = TERMINAL;
+                node->dist = 1;
 
-				addActive(node);
-			}
-		}
+                addActive(node);
+            }
+        }
 
-		void setLink(int i, int j, int cap){
+        void setLink(int i, int j, int cap){
 
-			Link *linkAB = m_links.extend();
-			Link *linkBA = m_links.extend();
+            Link *linkAB = m_links.extend();
+            Link *linkBA = m_links.extend();
 
-			Node* A = &m_nodes[i];
-			Node* B = &m_nodes[j];
+            Node* A = &m_nodes[i];
+            Node* B = &m_nodes[j];
 
-			linkAB->pair = linkBA;
-			linkAB->next = A->link;
-			linkAB->root = A;
-			linkAB->targ = B;
-			linkAB->cap = cap;
-			A->link = linkAB;
+            linkAB->pair = linkBA;
+            linkAB->next = A->link;
+            linkAB->root = A;
+            linkAB->targ = B;
+            linkAB->cap = cap;
+            A->link = linkAB;
 
-			linkBA->pair = linkAB;
-			linkBA->next = B->link;
-			linkBA->root = B;
-			linkBA->targ = A;
-			linkBA->cap = cap;
-			B->link = linkBA;
-		}
+            linkBA->pair = linkAB;
+            linkBA->next = B->link;
+            linkBA->root = B;
+            linkBA->targ = A;
+            linkBA->cap = cap;
+            B->link = linkBA;
+        }
 
-		int getLabel(int i){
-			return m_nodes[i].label;
-		}
+        int getLabel(int i){
+            return m_nodes[i].label;
+        }
 
-		//--------------------------------------------------------------------------------
-		// execute min-cut / max-flow algorithm
-		//--------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------
+        // execute min-cut / max-flow algorithm
+        //--------------------------------------------------------------------------------
 
-		int execute(){
+        int execute(){
 
-			SP_LOGGER_INSTANCE;
-			SP_LOGGER_SET("-graphcut");
+            SP_LOGGER_INSTANCE;
+            SP_LOGGER_SET("-graphcut");
 
-			Node *node = NULL;
+            Node *node = NULL;
 
-			int maxflow = 0;
+            int maxflow = 0;
 
-			for (int time = 0;; time++){
+            for (int time = 0;; time++){
 
-				if (node == NULL || node->parent == NULL){
-					node = getActive();
-					if (node == NULL) break;
-				}
+                if (node == NULL || node->parent == NULL){
+                    node = getActive();
+                    if (node == NULL) break;
+                }
 
-				// grow
-				Link *orphan = grow(node);
+                // grow
+                Link *orphan = grow(node);
 
-				if (orphan == NULL){
-					node = NULL;
-					continue;
-				}
+                if (orphan == NULL){
+                    node = NULL;
+                    continue;
+                }
 
-				// set active
-				node->next = node;
+                // set active
+                node->next = node;
 
-				// augmentation
-				maxflow += augment(orphan);
+                // augmentation
+                maxflow += augment(orphan);
 
-				// adoption
-				Orphan *que = m_orphans.first;
-				while (que != NULL){
+                // adoption
+                Orphan *que = m_orphans.first;
+                while (que != NULL){
 
-					Orphan *next = que->next;
-					que->next = NULL;
+                    Orphan *next = que->next;
+                    que->next = NULL;
 
-					while (que != NULL){
-						m_orphans.first = que->next;
-						if (m_orphans.first == NULL) m_orphans.last = NULL;
+                    while (que != NULL){
+                        m_orphans.first = que->next;
+                        if (m_orphans.first == NULL) m_orphans.last = NULL;
 
-						adopt(que->node, time + 1);
-						m_orphanPool.free(que);
+                        adopt(que->node, time + 1);
+                        m_orphanPool.free(que);
 
-						que = m_orphans.first;
-					}
+                        que = m_orphans.first;
+                    }
 
-					que = next;
-				}
+                    que = next;
+                }
 
-				// remove active
-				node->next = NULL;
+                // remove active
+                node->next = NULL;
 
-			}
+            }
 
-			return maxflow;
-		}
+            return maxflow;
+        }
 
-	public:
+    public:
 
-		void addActive(Node *node){
-			if (node->next != NULL) return;
+        void addActive(Node *node){
+            if (node->next != NULL) return;
 
-			if (m_actives.last != NULL){
-				m_actives.last->next = node;
-			}
-			else{
-				m_actives.first = node;
-			}
-			m_actives.last = node;
+            if (m_actives.last != NULL){
+                m_actives.last->next = node;
+            }
+            else{
+                m_actives.first = node;
+            }
+            m_actives.last = node;
 
-			// end of list
-			node->next = node;
-		}
+            // end of list
+            node->next = node;
+        }
 
-		Node* getActive(){
+        Node* getActive(){
 
-			while (m_actives.first != NULL){
-				Node *node = m_actives.first;
+            while (m_actives.first != NULL){
+                Node *node = m_actives.first;
 
-				m_actives.first = node->next;
-				node->next = NULL;
+                m_actives.first = node->next;
+                node->next = NULL;
 
-				// check end of list
-				if (m_actives.first == node){
-					m_actives.first = NULL;
-					m_actives.last = NULL;
-				}
+                // check end of list
+                if (m_actives.first == node){
+                    m_actives.first = NULL;
+                    m_actives.last = NULL;
+                }
 
-				if (node->parent != NULL){
-					return node;
-				}
-			}
+                if (node->parent != NULL){
+                    return node;
+                }
+            }
 
-			return NULL;
-		}
+            return NULL;
+        }
 
-		Link* grow(Node *node){
-			Link *orphan = NULL;
+        Link* grow(Node *node){
+            Link *orphan = NULL;
 
-			for (Link *link = node->link; link != NULL; link = link->next){
-				Link *base = (node->label == 0) ? link : link->pair;
-				Node *ref = link->targ;
+            for (Link *link = node->link; link != NULL; link = link->next){
+                Link *base = (node->label == 0) ? link : link->pair;
+                Node *ref = link->targ;
 
-				if (base->cap == 0) continue;
+                if (base->cap == 0) continue;
 
-				if (ref->parent == NULL){
+                if (ref->parent == NULL){
 
-					ref->label = node->label;
-					ref->parent = link->pair;
-					ref->time = node->time;
-					ref->dist = node->dist + 1;
+                    ref->label = node->label;
+                    ref->parent = link->pair;
+                    ref->time = node->time;
+                    ref->dist = node->dist + 1;
 
-					addActive(ref);
-				}
-				else if (ref->label != node->label){
-					orphan = base;
-					break;
-				}
-				else if (ref->time <= node->time && ref->dist > node->dist){
+                    addActive(ref);
+                }
+                else if (ref->label != node->label){
+                    orphan = base;
+                    break;
+                }
+                else if (ref->time <= node->time && ref->dist > node->dist){
 
-					// update
-					ref->parent = link->pair;
-					ref->time = node->time;
-					ref->dist = node->dist + 1;
-				}
-			}
+                    // update
+                    ref->parent = link->pair;
+                    ref->time = node->time;
+                    ref->dist = node->dist + 1;
+                }
+            }
 
-			return orphan;
-		}
+            return orphan;
+        }
 
-		void addOrphanFirst(Node *node){
-			Orphan *np = m_orphanPool.malloc();
+        void addOrphanFirst(Node *node){
+            Orphan *np = m_orphanPool.malloc();
 
-			node->parent = ORPHAN;
-			np->node = node;
+            node->parent = ORPHAN;
+            np->node = node;
 
-			np->next = m_orphans.first;
-			m_orphans.first = np;
-		}
+            np->next = m_orphans.first;
+            m_orphans.first = np;
+        }
 
-		void addOrphanLast(Node *node){
-			Orphan *np = m_orphanPool.malloc();
+        void addOrphanLast(Node *node){
+            Orphan *np = m_orphanPool.malloc();
 
-			node->parent = ORPHAN;
-			np->node = node;
+            node->parent = ORPHAN;
+            np->node = node;
 
-			if (m_orphans.last){
-				m_orphans.last->next = np;
-			}
-			else{
-				m_orphans.first = np;
-			}
-			m_orphans.last = np;
-			np->next = NULL;
-		}
+            if (m_orphans.last){
+                m_orphans.last->next = np;
+            }
+            else{
+                m_orphans.first = np;
+            }
+            m_orphans.last = np;
+            np->next = NULL;
+        }
 
-		int augment(Link *middle){
+        int augment(Link *middle){
 
-			int bottleneck = middle->cap;
+            int bottleneck = middle->cap;
 
-			// find bottleneck (0: to source / 1: to sink)
-			for (int i = 0; i < 2; i++){
-				Node *node = (i == 0) ? middle->root : node = middle->targ;
+            // find bottleneck (0: to source / 1: to sink)
+            for (int i = 0; i < 2; i++){
+                Node *node = (i == 0) ? middle->root : node = middle->targ;
 
-				while (1){
-					Link *link = node->parent;
-					if (link == TERMINAL) break;
+                while (1){
+                    Link *link = node->parent;
+                    if (link == TERMINAL) break;
 
-					const int cap = (i == 0) ? link->pair->cap : link->cap;
-					if (cap < bottleneck) bottleneck = cap;
+                    const int cap = (i == 0) ? link->pair->cap : link->cap;
+                    if (cap < bottleneck) bottleneck = cap;
 
-					node = link->targ;
-				}
+                    node = link->targ;
+                }
 
-				const int cap = (i == 0) ? node->cap : -node->cap;
-				if (cap < bottleneck) bottleneck = cap;
-			}
+                const int cap = (i == 0) ? node->cap : -node->cap;
+                if (cap < bottleneck) bottleneck = cap;
+            }
 
-			middle->pair->cap += bottleneck;
-			middle->cap -= bottleneck;
+            middle->pair->cap += bottleneck;
+            middle->cap -= bottleneck;
 
-			// augment (0: to source / 1: to sink)
-			for (int i = 0; i < 2; i++){
-				Node *node = (i == 0) ? middle->root : node = middle->targ;
-				int sign = (i == 0) ? +1 : -1;
+            // augment (0: to source / 1: to sink)
+            for (int i = 0; i < 2; i++){
+                Node *node = (i == 0) ? middle->root : node = middle->targ;
+                int sign = (i == 0) ? +1 : -1;
 
-				while (1){
-					Link *link = node->parent;
-					if (link == TERMINAL) break;
+                while (1){
+                    Link *link = node->parent;
+                    if (link == TERMINAL) break;
 
-					link->cap += sign * bottleneck;
-					link->pair->cap -= sign * bottleneck;
+                    link->cap += sign * bottleneck;
+                    link->pair->cap -= sign * bottleneck;
 
-					const int cap = (i == 0) ? link->pair->cap : link->cap;
-					if (cap == 0){
+                    const int cap = (i == 0) ? link->pair->cap : link->cap;
+                    if (cap == 0){
 
-						// add orphane (start of list)
-						addOrphanFirst(node);
-					}
+                        // add orphane (start of list)
+                        addOrphanFirst(node);
+                    }
 
-					node = link->targ;
-				}
+                    node = link->targ;
+                }
 
-				node->cap -= sign * bottleneck;
-				if (node->cap == 0){
+                node->cap -= sign * bottleneck;
+                if (node->cap == 0){
 
-					// add orphane (start of list)
-					addOrphanFirst(node);
-				}
-			}
-			return bottleneck;
-		}
+                    // add orphane (start of list)
+                    addOrphanFirst(node);
+                }
+            }
+            return bottleneck;
+        }
 
-		void adopt(Node *node, const int time){
+        void adopt(Node *node, const int time){
 
-			int minv = SP_INTMAX;
-			Link *parent = NULL;
+            int minv = SP_INTMAX;
+            Link *parent = NULL;
 
-			// find parent
-			for (Link *link = node->link; link != NULL; link = link->next){
+            // find parent
+            for (Link *link = node->link; link != NULL; link = link->next){
 
-				Link *base = ((node->label != 0) ? link : link->pair);
-				if (base->cap == 0) continue;
+                Link *base = ((node->label != 0) ? link : link->pair);
+                if (base->cap == 0) continue;
 
-				int dist = 0;
+                int dist = 0;
 
-				// search path
-				for (Node *ref = link->targ;; ref = ref->parent->targ){
+                // search path
+                for (Node *ref = link->targ;; ref = ref->parent->targ){
 
-					if (node->label != ref->label || ref->parent == NULL || ref->parent == ORPHAN){
-						dist = SP_INTMAX;
-						break;
-					}
+                    if (node->label != ref->label || ref->parent == NULL || ref->parent == ORPHAN){
+                        dist = SP_INTMAX;
+                        break;
+                    }
 
-					if (ref->time == time){
+                    if (ref->time == time){
 
-						dist += ref->dist;
-						break;
-					}
-					dist++;
+                        dist += ref->dist;
+                        break;
+                    }
+                    dist++;
 
-					if (ref->parent == TERMINAL){
-						ref->time = time;
-						ref->dist = 1;
-						break;
-					}
-				}
-				if (dist == SP_INTMAX) continue;
+                    if (ref->parent == TERMINAL){
+                        ref->time = time;
+                        ref->dist = 1;
+                        break;
+                    }
+                }
+                if (dist == SP_INTMAX) continue;
 
-				if (dist < minv){
-					parent = link;
-					minv = dist;
-				}
+                if (dist < minv){
+                    parent = link;
+                    minv = dist;
+                }
 
-				// set mark
-				for (Node *ref = link->targ;; ref = ref->parent->targ){
-					if (ref->time == time){
-						break;
-					}
-					ref->time = time;
-					ref->dist = dist--;
-				}
-			}
+                // set mark
+                for (Node *ref = link->targ;; ref = ref->parent->targ){
+                    if (ref->time == time){
+                        break;
+                    }
+                    ref->time = time;
+                    ref->dist = dist--;
+                }
+            }
 
-			node->parent = parent;
+            node->parent = parent;
 
-			if (parent){
-				node->time = time;
-				node->dist = minv + 1;
-			}
-			else{
+            if (parent){
+                node->time = time;
+                node->dist = minv + 1;
+            }
+            else{
 
-				for (Link *link = node->link; link != NULL; link = link->next){
-					Link *base = (node->label != 0) ? link : link->pair;
-					Node *ref = link->targ;
+                for (Link *link = node->link; link != NULL; link = link->next){
+                    Link *base = (node->label != 0) ? link : link->pair;
+                    Node *ref = link->targ;
 
-					if (node->label != ref->label || ref->parent == NULL) continue;
+                    if (node->label != ref->label || ref->parent == NULL) continue;
 
-					if (base->cap){
-						addActive(ref);
-					}
+                    if (base->cap){
+                        addActive(ref);
+                    }
 
-					if (ref->parent != TERMINAL && ref->parent != ORPHAN && ref->parent->targ == node){
+                    if (ref->parent != TERMINAL && ref->parent != ORPHAN && ref->parent->targ == node){
 
-						// add orphane (end of list)
-						addOrphanLast(ref);
-					}
-				}
-			}
-		}
-	};
+                        // add orphane (end of list)
+                        addOrphanLast(ref);
+                    }
+                }
+            }
+        }
+    };
 
 }
 

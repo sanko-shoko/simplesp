@@ -10,29 +10,29 @@
 
 namespace sp{
 
-	class GrayCode {
-		int m_dsize[2];
+    class GrayCode {
+        int m_dsize[2];
 
-	public:
-		GrayCode() {
-			m_dsize[0] = 0;
-			m_dsize[1] = 0;
-		}
+    public:
+        GrayCode() {
+            m_dsize[0] = 0;
+            m_dsize[1] = 0;
+        }
 
-		void setSize(const int dsize0, const int dsize1) {
-			m_dsize[0] = dsize0;
-			m_dsize[1] = dsize1;
-		}
+        void setSize(const int dsize0, const int dsize1) {
+            m_dsize[0] = dsize0;
+            m_dsize[1] = dsize1;
+        }
 
-		void genCodeH(Mem1<Mem2<Byte> > &himgs) {
+        void genCodeH(Mem1<Mem2<Byte> > &himgs) {
 
-		}
+        }
 
-		void genCodeV(Mem1<Mem2<Byte> > &vimgs) {
+        void genCodeV(Mem1<Mem2<Byte> > &vimgs) {
 
-		}
+        }
 
-	};
+    };
 
 }
 #endif

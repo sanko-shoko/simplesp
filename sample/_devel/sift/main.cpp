@@ -2,8 +2,8 @@
 
 int main() {
 
-	SIFTGUI win;
-	win.execute("sift", 800, 600);
+    SIFTGUI win;
+    win.execute("sift", 800, 600);
 
-	return 0;
+    return 0;
 }

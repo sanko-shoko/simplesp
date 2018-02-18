@@ -10,136 +10,136 @@ using namespace sp;
 
 class DotMarkerGUI : public BaseWindow{
 
-	// model
-	Mem1<Mesh> m_model;
+    // model
+    Mem1<Mesh> m_model;
 
-	// marker detector
-	DotMarker m_dotMarker;
+    // marker detector
+    DotMarker m_dotMarker;
 
-	// diminish flag
-	bool m_diminish;
+    // diminish flag
+    bool m_diminish;
 
 private:
 
-	void help() {
-		printf("'d' key : diminish marker\n");
-		printf("'ESC' key : exit\n");
-		printf("\n");
-	}
+    void help() {
+        printf("'d' key : diminish marker\n");
+        printf("'ESC' key : exit\n");
+        printf("\n");
+    }
 
-	virtual void init(){
+    virtual void init(){
 
-		help();
+        help();
 
-		if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
+        if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
 
-			// if could not find stanford bunny, load dummy model
-			loadGeodesicDorm(m_model, 100.0, 1);
-		}
+            // if could not find stanford bunny, load dummy model
+            loadGeodesicDorm(m_model, 100.0, 1);
+        }
 
-		m_dotMarker.setMrk(DotMarkerParam(MARKER_DSIZE0, MARKER_DSIZE1, MARKER_DISTANCE));
+        m_dotMarker.setMrk(DotMarkerParam(MARKER_DSIZE0, MARKER_DSIZE1, MARKER_DISTANCE));
 
-		m_diminish = false;
-	}
+        m_diminish = false;
+    }
 
-	virtual void keyFun(int key, int scancode, int action, int mods) {
+    virtual void keyFun(int key, int scancode, int action, int mods) {
 
-		if (m_keyAction[GLFW_KEY_D] == 1) {
-			m_diminish ^= true;
-		}
+        if (m_keyAction[GLFW_KEY_D] == 1) {
+            m_diminish ^= true;
+        }
 
-		// calibration
-		{
-			static Mem1<Mem1<Vec2> > pixsList, objsList;
+        // calibration
+        {
+            static Mem1<Mem1<Vec2> > pixsList, objsList;
 
-			if (m_keyAction[GLFW_KEY_A] == 1 && m_dotMarker.getPose() != NULL) {
-				printf("add detected points (i = %d)\n", pixsList.size());
-				pixsList.push(m_dotMarker.getCrspPix());
-				objsList.push(m_dotMarker.getCrspObj());
+            if (m_keyAction[GLFW_KEY_A] == 1 && m_dotMarker.getPose() != NULL) {
+                printf("add detected points (i = %d)\n", pixsList.size());
+                pixsList.push(m_dotMarker.getCrspPix());
+                objsList.push(m_dotMarker.getCrspObj());
 
-			}
+            }
 
-			if (m_keyAction[GLFW_KEY_C] == 1) {
-				CamParam cam;
-				print(m_dotMarker.getCam());
-				const double rms = calibCam(cam, m_dotMarker.getCam().dsize[0], m_dotMarker.getCam().dsize[1], pixsList, objsList);
-				if (rms >= 0.0) {
-					printf("rms %lf\n", rms);
-					saveText(cam, "cam.txt");
-					m_dotMarker.setCam(cam);
-				}
-				print(m_dotMarker.getCam());
-			}
-		}
-	}
+            if (m_keyAction[GLFW_KEY_C] == 1) {
+                CamParam cam;
+                print(m_dotMarker.getCam());
+                const double rms = calibCam(cam, m_dotMarker.getCam().dsize[0], m_dotMarker.getCam().dsize[1], pixsList, objsList);
+                if (rms >= 0.0) {
+                    printf("rms %lf\n", rms);
+                    saveText(cam, "cam.txt");
+                    m_dotMarker.setCam(cam);
+                }
+                print(m_dotMarker.getCam());
+            }
+        }
+    }
 
-	virtual void display(){
-		static Mem2<Col3> img;
+    virtual void display(){
+        static Mem2<Col3> img;
 
-		// capture image
-		{
-			static cv::VideoCapture cap;
-			if (cvCaptureImg(img, cap) == false){
+        // capture image
+        {
+            static cv::VideoCapture cap;
+            if (cvCaptureImg(img, cap) == false){
 
-				// if no camera
-				if (img.size() == 0) {
-					loadBMP(img, SP_DATA_DIR "/marker/dotmarker.bmp");
-				}
-			}
-		}
+                // if no camera
+                if (img.size() == 0) {
+                    loadBMP(img, SP_DATA_DIR "/marker/dotmarker.bmp");
+                }
+            }
+        }
 
-		// detect dot marker
-		m_dotMarker.execute(img);
+        // detect dot marker
+        m_dotMarker.execute(img);
 
-		if (m_diminish == true) {
-			m_dotMarker.diminish(img);
-		}
+        if (m_diminish == true) {
+            m_dotMarker.diminish(img);
+        }
 
-		{
-			glLoadView2D(getCamParam(img.dsize), m_viewPos, m_viewScale);
-			glRenderImage(img);
-		}
+        {
+            glLoadView2D(getCamParam(img.dsize), m_viewPos, m_viewScale);
+            glRenderImage(img);
+        }
 
-		if (m_dotMarker.getPose() != NULL) {
-			
-			// cam           /
-			//       model  / board (5 deg)
-			//             /  
+        if (m_dotMarker.getPose() != NULL) {
+            
+            // cam           /
+            //       model  / board (5 deg)
+            //             /  
 
-			const Pose boardToCamPose = *m_dotMarker.getPose();
-			const Pose worldToBoardPose = getPose(getRotAngleX(5 * SP_PI / 180.0));
-			const Pose worldToModelPose = getPose(getRotAngleX(180 * SP_PI / 180.0), getVec(0.0, 30.0, 0.0));
+            const Pose boardToCamPose = *m_dotMarker.getPose();
+            const Pose worldToBoardPose = getPose(getRotAngleX(5 * SP_PI / 180.0));
+            const Pose worldToModelPose = getPose(getRotAngleX(180 * SP_PI / 180.0), getVec(0.0, 30.0, 0.0));
 
-			const Pose modelToCamPose = boardToCamPose * worldToBoardPose * invPose(worldToModelPose);
-			
-			glLoadView3D(m_dotMarker.getCam(), m_viewPos, m_viewScale);
+            const Pose modelToCamPose = boardToCamPose * worldToBoardPose * invPose(worldToModelPose);
+            
+            glLoadView3D(m_dotMarker.getCam(), m_viewPos, m_viewScale);
 
-			// light
-			{
-				glLoadMatrix(zeroPose());
+            // light
+            {
+                glLoadMatrix(zeroPose());
 
-				const GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 0.f };
-				glEnable(GL_LIGHTING);
-				glEnable(GL_LIGHT0);
-				glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-			}
+                const GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 0.f };
+                glEnable(GL_LIGHTING);
+                glEnable(GL_LIGHT0);
+                glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+            }
 
-			// model
-			{
-				glLoadMatrix(modelToCamPose);
+            // model
+            {
+                glLoadMatrix(modelToCamPose);
 
-				const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-				for (int i = 0; i < m_model.size(); i++) {
-					glBegin(GL_TRIANGLES);
-					glNormal(getMeshNrm(m_model[i]));
-					glMesh(m_model[i]);
-					glEnd();
-				}
-			}
-		}
+                const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+                for (int i = 0; i < m_model.size(); i++) {
+                    glBegin(GL_TRIANGLES);
+                    glNormal(getMeshNrm(m_model[i]));
+                    glMesh(m_model[i]);
+                    glEnd();
+                }
+            }
+        }
 
-	}
+    }
 
 
 };

@@ -4,4 +4,4 @@ add_subdirectory(icp)
 add_subdirectory(kmeans)
 add_subdirectory(kalmanfilter)
 add_subdirectory(activestereo)
-
+add_subdirectory(modeltrack)
