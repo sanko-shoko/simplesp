@@ -7,11 +7,12 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spdata/spmodel.h"
+#include "spapp/spgeom/spicp.h"
 
 namespace sp{
 
     //--------------------------------------------------------------------------------
-    // tracking
+    // tracking 2d
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
@@ -123,6 +124,24 @@ namespace sp{
 
         return ret;
     }
-  
+
+
+    //--------------------------------------------------------------------------------
+    // tracking 3d
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC bool track3D(Pose &pose, const Mem2<VecPN3> &map, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int maxit = 10) {
+
+        bool ret = false;
+        for (int i = 0; i < maxit; i++) {
+            const int id = findPoseModel(pmodels, pose);
+
+            ret = calcICP(pose, cam, pmodels[i].pnts, map, 1);
+            if (ret == false) break;
+        }
+
+        return ret;
+    }
+
 }
 #endif
