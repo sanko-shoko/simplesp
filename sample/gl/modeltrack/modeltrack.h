@@ -60,7 +60,10 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_R] == 1) {
+            m_map.zero();
             renderVecPN(m_map, m_cam, m_pose, m_model);
+
+            m_img.zero();
             cnvNormalToImg(m_img, m_map);
         }
 
