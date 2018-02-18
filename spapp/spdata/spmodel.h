@@ -220,9 +220,12 @@ namespace sp{
 							const VecPN3 &vec = map(x + u, y + v);
 							if (vec.pos.z == 0) {
 								contour = true;
+								goto _exit;
 							}
 						}
 					}
+				_exit:
+
 					if (contour == true) {
 						const Vec3 nrm0 = rmat * edges[j].nrm[0];
 						const Vec3 nrm1 = rmat * edges[j].nrm[1];
@@ -245,6 +248,22 @@ namespace sp{
 		return pmodels;
 	}
 
+	SP_CPUFUNC int findPoseModel(const Mem1<PoseModel> &pmodels, const Pose &pose) {
+		int id = -1;
+		double minv = SP_INFINITY;
+		for (int i = 0; i < pmodels.size(); i++) {
+			Vec3 vec0 = getEuler(pose.rot);
+			Vec3 vec1 = getEuler(pmodels[i].pose.rot);
+			vec0.z = 0.0;
+			vec1.z = 0.0;
+			const double dif = difRot(getRotEuler(vec0), getRotEuler(vec1));
+			if (dif < minv) {
+				minv = dif;
+				id = i;
+			}
+		}
+		return id;
+	}
 
 	//--------------------------------------------------------------------------------
 	// sample model

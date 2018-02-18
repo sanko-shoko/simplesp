@@ -17,13 +17,14 @@ class ModelTrackGUI : public BaseWindow{
 	// pose
 	Pose m_pose;
 
+	// pose model
+	Mem1<PoseModel> m_pmodels;
+
 private:
 
 	void help() {
-		printf("dataA (point cloud) controlled by mouse\n");
-		printf("'p' key : render dataB (point cloud)\n");
-		printf("'d' key : render dataB (depth map)\n");
-		printf("'c' key : calc ICP (dataA <-> dataB)\n");
+		printf("'n' key : render normal\n");
+		printf("'c' key : calc track\n");
 		printf("'ESC' key : exit\n");
 		printf("\n");
 	}
@@ -39,12 +40,20 @@ private:
 			loadGeodesicDorm(m_model, 100.0, 1);
 		}
 
+		printf("please wait...\n");
+		{
+			const int level = 2;
+			const double distance = getModelDistance(m_model, m_cam);
+			m_pmodels = getPoseModel(m_model, level, distance);
+		}
+
 		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+
 	}
 
 	virtual void keyFun(int key, int scancode, int action, int mods) {
 
-		if (m_keyAction[GLFW_KEY_D] == 1) {
+		if (m_keyAction[GLFW_KEY_N] == 1) {
 			const double distance = getModelDistance(m_model, m_cam);
 			const double radius = getModelRadius(m_model);
 
@@ -54,10 +63,18 @@ private:
 			cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
 		}
 
-		if (m_keyAction[GLFW_KEY_P] == 1) {
-		}
-
 		if (m_keyAction[GLFW_KEY_C] > 0) {
+			if (m_img.size() == 0) return;
+
+			Mem2<Byte> gry;
+			cnvImg(gry, m_img);
+			Mem1<Vec3> objs, drcs;
+			const int id = findPoseModel(m_pmodels, m_pose);
+			for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
+				objs.push(m_pmodels[id].edges[i].pos);
+				drcs.push(m_pmodels[id].edges[i].drc);
+			}
+			fitting2D(m_pose, gry, m_cam, objs, drcs, 50, 1);
 		}
 	}
 
@@ -78,13 +95,17 @@ private:
 			{
 				glLoadMatrix(m_pose);
 
+				glModelOutline(m_model);
+
 				// render points
-				glPointSize(3.f);
+				glPointSize(5.f);
 				glBegin(GL_POINTS);
 				glColor3f(0.2f, 0.7f, 0.2f);
-				//for (int i = 0; i < m_dataA.size(); i++){
-				//	glVertex(m_dataA[i].pos);
-				//}
+
+				const int id = findPoseModel(m_pmodels, m_pose);
+				for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
+					glVertex(m_pmodels[id].edges[i].pos);
+				}
 				glEnd();
 				
 				// render axis
