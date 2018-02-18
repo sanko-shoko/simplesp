@@ -2,8 +2,8 @@
 
 int main(){
 
-	ModelTrackGUI win;
-	win.execute("modeltrack", 800, 600);
+    ModelTrackGUI win;
+    win.execute("modeltrack", 800, 600);
 
-	return 0;
+    return 0;
 }
