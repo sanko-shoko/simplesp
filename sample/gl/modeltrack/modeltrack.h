@@ -69,14 +69,14 @@ private:
 
     virtual void display(){
 
-        // render dataB
+        // render image
         {
 
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
             glRenderImage(m_img);
         }
 
-        // render dataA
+        // render model
         {
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
