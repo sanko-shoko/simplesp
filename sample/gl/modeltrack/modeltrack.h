@@ -50,8 +50,10 @@ private:
         }
 
         printf("please wait...\n");
+
         const double distance = getModelDistance(m_model, m_cam);
-        m_pmodels = getPoseModel(m_model, distance);
+        const int level = 3;
+        m_pmodels = getPoseModel(m_model, distance, level);
 
         m_pose = getPose(getVec(0.0, 0.0, distance));
 
@@ -63,7 +65,6 @@ private:
             m_map.zero();
             renderVecPN(m_map, m_cam, m_pose, m_model);
 
-            m_img.zero();
             cnvNormalToImg(m_img, m_map);
         }
 
