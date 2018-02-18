@@ -112,7 +112,7 @@ namespace sp{
         }
     };
 
-    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh> &model, const int level, const double distance, const int density = 60) {
+    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh> &model, const double distance, const int level = 2, const int density = 60) {
         Mem1<PoseModel::Edge> edges;
         
         const double radius = getModelRadius(model);

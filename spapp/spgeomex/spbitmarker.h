@@ -10,7 +10,7 @@
 #include "spapp/spimg/spbinalization.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spgeom/spgeometry.h"
-#include "spapp/spgeomex/spfitting.h"
+#include "spapp/spgeomex/sptrack.h"
 
 namespace sp{
 
@@ -484,7 +484,7 @@ namespace sp{
                     Pose pose;
                     if (calcPose(pose, m_cam, corners[i], unit) == false) continue;
 
-                    if (fitting2D(pose, img, m_cam, objs, drcs) == false) continue;
+                    if (track2D(pose, img, m_cam, objs, drcs) == false) continue;
 
                     bool check = true;
                     for (int c = 0; c < unit.size(); c++){

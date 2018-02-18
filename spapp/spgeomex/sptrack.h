@@ -2,18 +2,19 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_FITTING_H__
-#define __SP_FITTING_H__
+#ifndef __SP_TRACK_H__
+#define __SP_TRACK_H__
 
 #include "spcore/spcore.h"
+#include "spapp/spdata/spmodel.h"
 
 namespace sp{
 
     //--------------------------------------------------------------------------------
-    // fitting
+    // tracking
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
+    SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
         const Rect rect = getRect2(img.dsize);
 
         for (int it = 0; it < maxit; it++){
@@ -100,9 +101,28 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool fitting2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
-        return fitting2D(pose, img, cam, getVec(objs, 0.0), getVec(drcs, 0.0), searchLng, maxit);
+    SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
+        return track2D(pose, img, cam, getVec(objs, 0.0), getVec(drcs, 0.0), searchLng, maxit);
     }
 
+    SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int searchLng = 10, const int maxit = 10) {
+
+        bool ret = false;
+        for (int i = 0; i < maxit; i++) {
+            const int id = findPoseModel(pmodels, pose);
+
+            Mem1<Vec3> objs, drcs;
+            for (int i = 0; i < pmodels[id].edges.size(); i++) {
+                objs.push(pmodels[id].edges[i].pos);
+                drcs.push(pmodels[id].edges[i].drc);
+            }
+
+            ret = track2D(pose, img, cam, objs, drcs, searchLng, 1);
+            if (ret == false) break;
+        }
+
+        return ret;
+    }
+  
 }
 #endif
