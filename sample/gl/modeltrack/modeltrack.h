@@ -84,7 +84,7 @@ private:
             {
                 glLoadMatrix(m_pose);
 
-                glModelOutline(m_model);
+                glRenderOutline(m_model);
 
                 // render points
                 glPointSize(5.f);

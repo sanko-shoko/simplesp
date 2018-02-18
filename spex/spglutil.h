@@ -322,16 +322,13 @@ namespace sp{
     }
 
     SP_CPUFUNC void glModel(const Mem1<Mesh> &model) {
-
-        glBegin(GL_TRIANGLES);
         for (int i = 0; i < model.size(); i++) {
             glNormal(getMeshNrm(model[i]));
             glMesh(model[i]);
         }
-        glEnd();
     }
 
-    SP_CPUFUNC void glModelSurface(const Mem1<Mesh> &model) {
+    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh> &model) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -347,14 +344,16 @@ namespace sp{
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+            glBegin(GL_TRIANGLES);
             glModel(model);
+            glEnd();
         }
         glPopAttrib();
 
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    SP_CPUFUNC void glModelOutline(const Mem1<Mesh> &model) {
+    SP_CPUFUNC void glRenderOutline(const Mem1<Mesh> &model) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -374,7 +373,9 @@ namespace sp{
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 
+                glBegin(GL_TRIANGLES);
                 glModel(model);
+                glEnd();
             }
 
             // draw outline
@@ -386,7 +387,9 @@ namespace sp{
                 glLineWidth(2.0f);
                 glColor3f(1.0f, 1.0f, 1.0f);
 
+                glBegin(GL_TRIANGLES);
                 glModel(model);
+                glEnd();
             }
         }
         glPopAttrib();
