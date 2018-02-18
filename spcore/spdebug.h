@@ -34,11 +34,11 @@
 
 namespace sp {
 
-	//--------------------------------------------------------------------------------
-	// stdio 
-	//--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    // stdio 
+    //--------------------------------------------------------------------------------
 
-#if	SP_USE_CONSOLE
+#if    SP_USE_CONSOLE
 #define SP_PRINTF(...) ::printf(__VA_ARGS__);
 #else
 #define SP_PRINTF(...)
@@ -57,154 +57,154 @@ namespace sp {
 #endif
 
 
-	//--------------------------------------------------------------------------------
-	// print 
-	//--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    // print 
+    //--------------------------------------------------------------------------------
 
-	SP_CPUFUNC void print(const int dim, const int *dsize) {
-		SP_PRINTF("dim %d, ", dim);
+    SP_CPUFUNC void print(const int dim, const int *dsize) {
+        SP_PRINTF("dim %d, ", dim);
 
-		SP_PRINTF("dsize [ ");
-		for (int d = 0; d < dim; d++){
-			SP_PRINTF("%d ", dsize[d]);
-		}
-		SP_PRINTF("]\n");
-	}
+        SP_PRINTF("dsize [ ");
+        for (int d = 0; d < dim; d++){
+            SP_PRINTF("%d ", dsize[d]);
+        }
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const Rect &rect) {
-		SP_PRINTF("Rect dim %d, ", rect.dim);
+    SP_CPUFUNC void print(const Rect &rect) {
+        SP_PRINTF("Rect dim %d, ", rect.dim);
 
-		SP_PRINTF("dbase [ ");
-		for (int i = 0; i < rect.dim; i++) {
-			SP_PRINTF("%d ", rect.dbase[i]);
-		}
-		SP_PRINTF("], ");
+        SP_PRINTF("dbase [ ");
+        for (int i = 0; i < rect.dim; i++) {
+            SP_PRINTF("%d ", rect.dbase[i]);
+        }
+        SP_PRINTF("], ");
 
-		SP_PRINTF("dsize [ ");
-		for (int i = 0; i < rect.dim; i++) {
-			SP_PRINTF("%d ", rect.dsize[i]);
-		}
-		SP_PRINTF("]\n");
-	}
+        SP_PRINTF("dsize [ ");
+        for (int i = 0; i < rect.dim; i++) {
+            SP_PRINTF("%d ", rect.dsize[i]);
+        }
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const Vec2 &vec) {
-		SP_PRINTF("Vec2 [ %+.5lf %+.5lf ]\n", vec.x, vec.y);
-	}
+    SP_CPUFUNC void print(const Vec2 &vec) {
+        SP_PRINTF("Vec2 [ %+.5lf %+.5lf ]\n", vec.x, vec.y);
+    }
 
-	SP_CPUFUNC void print(const Vec3 &vec) {
-		SP_PRINTF("Vec3 [ %+.5lf %+.5lf %+.5lf ]\n", vec.x, vec.y, vec.z);
-	}
+    SP_CPUFUNC void print(const Vec3 &vec) {
+        SP_PRINTF("Vec3 [ %+.5lf %+.5lf %+.5lf ]\n", vec.x, vec.y, vec.z);
+    }
 
-	SP_CPUFUNC void print(const Col3 &col) {
-		SP_PRINTF("Col3 [ %d %d %d ]\n", col.r, col.g, col.b);
-	}
+    SP_CPUFUNC void print(const Col3 &col) {
+        SP_PRINTF("Col3 [ %d %d %d ]\n", col.r, col.g, col.b);
+    }
 
-	SP_CPUFUNC void print(const VecPN2 &vec) {
-		SP_PRINTF("VecPN2 [\n");
-		print(vec.pos);
-		print(vec.nrm);
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const VecPN2 &vec) {
+        SP_PRINTF("VecPN2 [\n");
+        print(vec.pos);
+        print(vec.nrm);
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const VecPN3 &vec) {
-		SP_PRINTF("VecPN3 [\n");
-		print(vec.pos);
-		print(vec.nrm);
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const VecPN3 &vec) {
+        SP_PRINTF("VecPN3 [\n");
+        print(vec.pos);
+        print(vec.nrm);
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const Mesh &mesh) {
-		SP_PRINTF("Mesh [\n");
-		print(mesh.pos[0]);
-		print(mesh.pos[1]);
-		print(mesh.pos[2]);
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const Mesh &mesh) {
+        SP_PRINTF("Mesh [\n");
+        print(mesh.pos[0]);
+        print(mesh.pos[1]);
+        print(mesh.pos[2]);
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
-		SP_PRINTF("Mat %d %d [\n", rows, cols);
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < cols; c++) {
-				SP_PRINTF("%g ", mat[r * cols + c]);
-			}
-			SP_PRINTF("\n");
-		}
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
+        SP_PRINTF("Mat %d %d [\n", rows, cols);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                SP_PRINTF("%g ", mat[r * cols + c]);
+            }
+            SP_PRINTF("\n");
+        }
+        SP_PRINTF("]\n");
+    }
 
-	template <typename TYPE>
-	SP_CPUFUNC void print(const ExPtr<TYPE> &mem) {
-		SP_PRINTF("Mem ");
+    template <typename TYPE>
+    SP_CPUFUNC void print(const ExPtr<TYPE> &mem) {
+        SP_PRINTF("Mem ");
 
-		print(mem.dim, mem.dsize);
+        print(mem.dim, mem.dsize);
 
-		int size = 1;
-		int unit[SP_DIMMAX] = { 0 };
-		for (int i = 0; i < mem.dim; i++){
-			size *= mem.dsize[i];
-			unit[i] = size;
-		}
+        int size = 1;
+        int unit[SP_DIMMAX] = { 0 };
+        for (int i = 0; i < mem.dim; i++){
+            size *= mem.dsize[i];
+            unit[i] = size;
+        }
 
-		for (int i = 0; i < size; i++){
-			for (int j = mem.dim - 1; j >= 0; j--){
-				if ((i + 0) % unit[j] == 0){
-					SP_PRINTF((j == 0) ? " [ " : "[\n");
-				}
-			}
-			
-			double val;
-			cnvVal(val, mem.ptr[i]);
-			SP_PRINTF("%g ", val);
+        for (int i = 0; i < size; i++){
+            for (int j = mem.dim - 1; j >= 0; j--){
+                if ((i + 0) % unit[j] == 0){
+                    SP_PRINTF((j == 0) ? " [ " : "[\n");
+                }
+            }
+            
+            double val;
+            cnvVal(val, mem.ptr[i]);
+            SP_PRINTF("%g ", val);
 
-			for (int j = mem.dim - 1; j >= 0; j--){
-				if ((i + 1) % unit[j] == 0){
-					SP_PRINTF("]\n");
-				}
-			}
-		}
-	}
+            for (int j = mem.dim - 1; j >= 0; j--){
+                if ((i + 1) % unit[j] == 0){
+                    SP_PRINTF("]\n");
+                }
+            }
+        }
+    }
 
-	SP_CPUFUNC void print(const Rot &rot) {
-		SP_PRINTF("Rot [ %+.5lf %+.5lf %+.5lf %+.5lf ]\n", rot.qx, rot.qy, rot.qz, rot.qw);
-	}
+    SP_CPUFUNC void print(const Rot &rot) {
+        SP_PRINTF("Rot [ %+.5lf %+.5lf %+.5lf %+.5lf ]\n", rot.qx, rot.qy, rot.qz, rot.qw);
+    }
 
-	SP_CPUFUNC void print(const Pose &pose) {
-		SP_PRINTF("Pose [\n");
-		print(pose.rot);
-		print(pose.trn);
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const Pose &pose) {
+        SP_PRINTF("Pose [\n");
+        print(pose.rot);
+        print(pose.trn);
+        SP_PRINTF("]\n");
+    }
 
-	SP_CPUFUNC void print(const CamParam &cam) {
-		SP_PRINTF("CamParam [\n");
-		SP_PRINTF("size %d %d\n", cam.dsize[0], cam.dsize[1]);
-		SP_PRINTF("fx %.5lf, fy %.5lf\n", cam.fx, cam.fy);
-		SP_PRINTF("cx %.5lf, cy %.5lf\n", cam.cx, cam.cy);
-		SP_PRINTF("k1 %+.5lf, k2 %+.5lf, k3 %+.5lf\n", cam.k1, cam.k2, cam.k3);
-		SP_PRINTF("p1 %+.5lf, p2 %+.5lf\n", cam.p1, cam.p2);
-		SP_PRINTF("]\n");
-	}
+    SP_CPUFUNC void print(const CamParam &cam) {
+        SP_PRINTF("CamParam [\n");
+        SP_PRINTF("size %d %d\n", cam.dsize[0], cam.dsize[1]);
+        SP_PRINTF("fx %.5lf, fy %.5lf\n", cam.fx, cam.fy);
+        SP_PRINTF("cx %.5lf, cy %.5lf\n", cam.cx, cam.cy);
+        SP_PRINTF("k1 %+.5lf, k2 %+.5lf, k3 %+.5lf\n", cam.k1, cam.k2, cam.k3);
+        SP_PRINTF("p1 %+.5lf, p2 %+.5lf\n", cam.p1, cam.p2);
+        SP_PRINTF("]\n");
+    }
 
-	template<typename TYPE>
-	SP_CPUFUNC void print(const TYPE &data, const char *name) {
-		SP_PRINTF("%s ", name);
-		print(data);
-	}
+    template<typename TYPE>
+    SP_CPUFUNC void print(const TYPE &data, const char *name) {
+        SP_PRINTF("%s ", name);
+        print(data);
+    }
 
 
-	//--------------------------------------------------------------------------------
-	// util
-	//--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
 
-	SP_CPUFUNC char* progressBar(const double crnt, const double size){
-		const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
+    SP_CPUFUNC char* progressBar(const double crnt, const double size){
+        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
 
-		static char bar[11] = { 0 };
-		for (int i = 0; i < 10; i++){
-			bar[i] = (i <= 10 * rate) ? '>' : '-';
-		}
-		return bar;
-	}
+        static char bar[11] = { 0 };
+        for (int i = 0; i < 10; i++){
+            bar[i] = (i <= 10 * rate) ? '>' : '-';
+        }
+        return bar;
+    }
 }
 
 //--------------------------------------------------------------------------------
@@ -229,60 +229,60 @@ namespace sp {
 #if SP_USE_HOLDER
 
 namespace sp {
-	using namespace std;
+    using namespace std;
 
-	class Holder{
+    class Holder{
 
-	private:
+    private:
 
-		vector<string> strs;
-		vector<void *> ptrs;
+        vector<string> strs;
+        vector<void *> ptrs;
 
-	public:
+    public:
 
-		void reset(){
-			strs.clear();
-			ptrs.clear();
-		}
+        void reset(){
+            strs.clear();
+            ptrs.clear();
+        }
 
-		~Holder(){
-			reset();
-		}
+        ~Holder(){
+            reset();
+        }
 
-		template <typename TYPE>
-		void set(const char *str, const TYPE &data){
+        template <typename TYPE>
+        void set(const char *str, const TYPE &data){
 
-			for (int i = 0; i < strs.size(); i++){
-				if (str == strs[i]){
-					*((TYPE*)ptrs[i]) = data;
-					return;
-				}
-			}
+            for (int i = 0; i < strs.size(); i++){
+                if (str == strs[i]){
+                    *((TYPE*)ptrs[i]) = data;
+                    return;
+                }
+            }
 
-			static int cnt = 0;
-			static TYPE buff[256];
-			if (cnt + 1 == 256) {
-				SP_PRINTF("buffer limit!\n");
-				return;
-			}
-			{
-				buff[cnt] = data;
-				strs.push_back(str);
-				ptrs.push_back(&buff[cnt]);
-				cnt++;
-			}
-		}
+            static int cnt = 0;
+            static TYPE buff[256];
+            if (cnt + 1 == 256) {
+                SP_PRINTF("buffer limit!\n");
+                return;
+            }
+            {
+                buff[cnt] = data;
+                strs.push_back(str);
+                ptrs.push_back(&buff[cnt]);
+                cnt++;
+            }
+        }
 
-		const void* get(const char *str){
+        const void* get(const char *str){
 
-			for (int i = 0; i < strs.size(); i++){
-				if (str == strs[i]){
-					return ptrs[i];
-				}
-			}
-			return NULL;
-		}
-	};
+            for (int i = 0; i < strs.size(); i++){
+                if (str == strs[i]){
+                    return ptrs[i];
+                }
+            }
+            return NULL;
+        }
+    };
 }
 #endif
 
@@ -305,112 +305,112 @@ namespace sp {
 #if SP_USE_LOGGER
 
 namespace sp {
-	using namespace std;
+    using namespace std;
 
-	class Logger{
+    class Logger{
 
-	private:
+    private:
 
 #if WIN32
-		typedef LARGE_INTEGER sptime;
-		sptime freq;
+        typedef LARGE_INTEGER sptime;
+        sptime freq;
 
-		LARGE_INTEGER getCounter(){
-			LARGE_INTEGER v;
-			QueryPerformanceCounter(&v);
-			return v;
-		}
+        LARGE_INTEGER getCounter(){
+            LARGE_INTEGER v;
+            QueryPerformanceCounter(&v);
+            return v;
+        }
 
-		double getTime(const sptime start, const sptime end){
-			return static_cast<double>(end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
-		}
+        double getTime(const sptime start, const sptime end){
+            return static_cast<double>(end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
+        }
 
-	public:
+    public:
 
-		Logger(){
-			QueryPerformanceFrequency(&freq);
-		}
+        Logger(){
+            QueryPerformanceFrequency(&freq);
+        }
 #else
-		typedef chrono::system_clock::time_point sptime;
+        typedef chrono::system_clock::time_point sptime;
 
-		sptime getCounter(){
-			return chrono::system_clock::now();
-		}
+        sptime getCounter(){
+            return chrono::system_clock::now();
+        }
 
-		double getTime(const sptime start, const sptime end){
-			return static_cast<double>(chrono::duration_cast<chrono::microseconds>(end - start).count() / 1000.0);
-		}
-	public:
+        double getTime(const sptime start, const sptime end){
+            return static_cast<double>(chrono::duration_cast<chrono::microseconds>(end - start).count() / 1000.0);
+        }
+    public:
 
-		Logger(){
-		}
+        Logger(){
+        }
 #endif
 
-		vector<sptime> cnts;
-		vector<string> strs;
+        vector<sptime> cnts;
+        vector<string> strs;
 
-		vector<double> times;
-		vector<string> disps;
+        vector<double> times;
+        vector<string> disps;
 
-		void reset(){
-			cnts.clear();
-			strs.clear();
+        void reset(){
+            cnts.clear();
+            strs.clear();
 
-			times.clear();
-			disps.clear();
-		}
+            times.clear();
+            disps.clear();
+        }
 
-		void start(const char* str){
-			for (int i = 0; i < strs.size(); i++){
-				if (strs[i] == str){
-					reset();
-					break;
-				}
-			}
-			
-			cnts.push_back(getCounter());
-			strs.push_back(str);
-		}
+        void start(const char* str){
+            for (int i = 0; i < strs.size(); i++){
+                if (strs[i] == str){
+                    reset();
+                    break;
+                }
+            }
+            
+            cnts.push_back(getCounter());
+            strs.push_back(str);
+        }
 
-		void stop(){
-			const int stack = static_cast<int>(cnts.size());
-			if (stack > 0){
-				times.push_back(getTime(cnts[stack - 1], getCounter()));
-				disps.push_back(strs[stack - 1]);
-				cnts.pop_back();
-				strs.pop_back();
-			}
-			print();
-		}
+        void stop(){
+            const int stack = static_cast<int>(cnts.size());
+            if (stack > 0){
+                times.push_back(getTime(cnts[stack - 1], getCounter()));
+                disps.push_back(strs[stack - 1]);
+                cnts.pop_back();
+                strs.pop_back();
+            }
+            print();
+        }
 
-		void print(){
-			const int stack = static_cast<int>(cnts.size());
-			if (stack > 0) return;
+        void print(){
+            const int stack = static_cast<int>(cnts.size());
+            if (stack > 0) return;
 
-			const int num = static_cast<int>(times.size());
-			for (int i = 0; i < num; i++){
-				SP_PRINTF("%s : %.3lf [ms]\n", disps[i].c_str(), times[i]);
-			}
-			SP_PRINTF("\n");
+            const int num = static_cast<int>(times.size());
+            for (int i = 0; i < num; i++){
+                SP_PRINTF("%s : %.3lf [ms]\n", disps[i].c_str(), times[i]);
+            }
+            SP_PRINTF("\n");
 
-			reset();
-		}
-	};
+            reset();
+        }
+    };
 
-	class LoggerUnit{
-		Logger *logger;
-	public:
-		LoggerUnit(Logger *logger, const char *str){
-			//SP_PRINTF("%s\n", str);
+    class LoggerUnit{
+        Logger *logger;
+    public:
+        LoggerUnit(Logger *logger, const char *str){
+            //SP_PRINTF("%s\n", str);
 
-			this->logger = logger;
-			logger->start(str);
-		}
+            this->logger = logger;
+            logger->start(str);
+        }
 
-		~LoggerUnit(){
-			logger->stop();	
-		}
-	};
+        ~LoggerUnit(){
+            logger->stop();    
+        }
+    };
 }
 #endif
 

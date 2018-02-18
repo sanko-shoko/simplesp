@@ -2,8 +2,8 @@
 
 int main(){
 
-	BitMarkerGUI win;
-	win.execute("bitmarker", 800, 600);
+    BitMarkerGUI win;
+    win.execute("bitmarker", 800, 600);
 
-	return 0;
+    return 0;
 }

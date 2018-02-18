@@ -14,36 +14,36 @@
 
 namespace sp {
 
-	using namespace std;
+    using namespace std;
 
-	bool cnvUTF16ToUTF8(string &dst, const void *ptr, const int size) {
+    bool cnvUTF16ToUTF8(string &dst, const void *ptr, const int size) {
 
-		wstring_convert<codecvt_utf8<uint16_t>, uint16_t> cnv;
+        wstring_convert<codecvt_utf8<uint16_t>, uint16_t> cnv;
 
-		dst = cnv.to_bytes((uint16_t*)ptr, (uint16_t*)ptr + size / 2);
-		return true;
-	}
+        dst = cnv.to_bytes((uint16_t*)ptr, (uint16_t*)ptr + size / 2);
+        return true;
+    }
 
-	bool cnvUTF8ToMB(string &dst, const string &src) {
-		wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
-		wstring wstr = converter.from_bytes(src);
+    bool cnvUTF8ToMB(string &dst, const string &src) {
+        wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+        wstring wstr = converter.from_bytes(src);
 
-		size_t converted{};
-		vector<char> dest(wstr.size() * sizeof(wchar_t) + 1, '\0');
+        size_t converted{};
+        vector<char> dest(wstr.size() * sizeof(wchar_t) + 1, '\0');
 
-		if (::_wcstombs_s_l(&converted, dest.data(), dest.size(), wstr.data(), _TRUNCATE, ::_create_locale(LC_ALL, "jpn")) != 0) {
-			throw system_error{ errno, system_category() };
-		}
-		dst = string(dest.begin(), dest.end());
-		return true;
-	}
+        if (::_wcstombs_s_l(&converted, dest.data(), dest.size(), wstr.data(), _TRUNCATE, ::_create_locale(LC_ALL, "jpn")) != 0) {
+            throw system_error{ errno, system_category() };
+        }
+        dst = string(dest.begin(), dest.end());
+        return true;
+    }
 
-	bool cnvUTF16ToMB(string &dst, const string &str) {
-		string utf8;
-		cnvUTF16ToUTF8(utf8, str.data(), static_cast<int>(str.size()));
-		cnvUTF8ToMB(dst, utf8);
-		return true;
-	}
+    bool cnvUTF16ToMB(string &dst, const string &str) {
+        string utf8;
+        cnvUTF16ToUTF8(utf8, str.data(), static_cast<int>(str.size()));
+        cnvUTF8ToMB(dst, utf8);
+        return true;
+    }
 
 
 }

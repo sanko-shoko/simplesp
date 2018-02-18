@@ -6,5 +6,5 @@ include(../../cmake_tinyfd.txt)
 include(../../cmake_base.txt)
 
 set_target_properties(${target} PROPERTIES
-	FOLDER "xx"
+    FOLDER "xx"
 )

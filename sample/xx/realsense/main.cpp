@@ -2,8 +2,8 @@
 
 int main(){
 
-	RSCaptureGUI win;
-	win.execute("rscapture", 800, 600);
+    RSCaptureGUI win;
+    win.execute("rscapture", 800, 600);
 
-	return 0;
+    return 0;
 }
