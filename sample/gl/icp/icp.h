@@ -14,8 +14,9 @@ class ICPGUI : public BaseWindow{
 	// model
 	Mem1<Mesh> m_model;
 
+	Pose m_pose;
+
 	// data A
-	Pose m_poseA;
 	Mem<VecPN3> m_dataA;
 
 	// datd B
@@ -43,7 +44,7 @@ private:
 			loadGeodesicDorm(m_model, 100.0, 1);
 		}
 
-		m_poseA = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+		m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 		m_dataA = getModelPoint(m_model);
 	}
 
@@ -53,7 +54,7 @@ private:
 			m_dataB.resize(2, m_cam.dsize);
 
 			m_dataB.zero();
-			renderVecPN(m_dataB, m_cam, m_poseA, m_model);
+			renderVecPN(m_dataB, m_cam, m_pose, m_model);
 
 			const double distance = getModelDistance(m_model, m_cam);
 			const double radius = getModelRadius(m_model);
@@ -65,7 +66,7 @@ private:
 			m_dataB.resize(1, dsize);
 
 			for (int i = 0; i < m_dataA.size(); i++) {
-				m_dataB[i] = m_poseA * m_dataA[i];
+				m_dataB[i] = m_pose * m_dataA[i];
 			}
 		}
 
@@ -73,12 +74,12 @@ private:
 
 			// point to point
 			if (m_dataB.dim == 1) {
-				calcICP(m_poseA, m_dataA, m_dataB, 1);
+				calcICP(m_pose, m_dataA, m_dataB, 1);
 			}
 
 			// point to 2d map
 			else if (m_dataB.dim == 2) {
-				calcICP(m_poseA, m_cam, m_dataA, m_dataB, 1);
+				calcICP(m_pose, m_cam, m_dataA, m_dataB, 1);
 			}
 		}
 	}
@@ -110,7 +111,7 @@ private:
 
 			glClear(GL_DEPTH_BUFFER_BIT);
 			{
-				glLoadMatrix(m_poseA);
+				glLoadMatrix(m_pose);
 
 				// render points
 				glPointSize(3.f);
@@ -127,7 +128,7 @@ private:
 	}
 
 	void renderAxis() {
-		glLoadMatrix(m_poseA);
+		glLoadMatrix(m_pose);
 
 		glLineWidth(2.f);
 		glBegin(GL_LINES);
@@ -136,11 +137,11 @@ private:
 	}
 
 	virtual void mousePos(double x, double y) {
-		controlPose(m_poseA, m_mouse, m_wcam, m_viewScale);
+		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
 	}
 
 	virtual void mouseScroll(double x, double y) {
-		controlPose(m_poseA, m_mouse, m_wcam, m_viewScale);
+		controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
 	}
 
 };

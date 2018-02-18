@@ -309,6 +309,11 @@ namespace sp{
 		return getRotAngle(getVec(delta[0], delta[1], delta[2])) * rot;
 	}
 
+	// dif
+	SP_GENFUNC double difRot(const Rot &rot0, const Rot &rot1) {
+		return normVec(getAngle(rot0 * invRot(rot1)));
+	}
+
 
 	//--------------------------------------------------------------------------------
 	// pose

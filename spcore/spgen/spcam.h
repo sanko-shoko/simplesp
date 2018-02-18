@@ -35,6 +35,11 @@ namespace sp{
 		return dst;
 	}
 
+	SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy) {
+		return getCamParam(dsize0, dsize1, fx, fy, (dsize0 - 1) * 0.5, (dsize1 - 1) * 0.5);
+
+	}
+
 	SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1) {
 		// groundless camera parameter, but in many cases empirically, no big difference
 		const double f = 0.8 * (dsize0 + dsize1);

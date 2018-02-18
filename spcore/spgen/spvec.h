@@ -507,15 +507,15 @@ namespace sp{
 	//--------------------------------------------------------------------------------
 
 	// geodesic mesh num
-	SP_GENFUNC int getGeodesicMeshNum(const int div){
+	SP_GENFUNC int getGeodesicMeshNum(const int level){
 		int ret = 20;
-		for (int i = 0; i < div; i++){
+		for (int i = 0; i < level; i++){
 			ret *= 4;
 		}
 		return ret;
 	}
 
-	SP_GENFUNC Mesh getGeodesicMesh(const int div, const int id){
+	SP_GENFUNC Mesh getGeodesicMesh(const int level, const int id){
 		Mesh model[20];
 
 		// init regular geodesic dorm (vertex num 12)
@@ -558,11 +558,11 @@ namespace sp{
 		}
 
 		// div regular geodesic dorm
-		int num = getGeodesicMeshNum(div) / 20;
+		int num = getGeodesicMeshNum(level) / 20;
 		int tmp = id;
 
 		Mesh dst = model[tmp / num];
-		for (int d = 0; d < div; d++){
+		for (int d = 0; d < level; d++){
 			const Vec3 p0 = unitVec(addVec(dst.pos[0], dst.pos[1]));
 			const Vec3 p1 = unitVec(addVec(dst.pos[1], dst.pos[2]));
 			const Vec3 p2 = unitVec(addVec(dst.pos[2], dst.pos[0]));
