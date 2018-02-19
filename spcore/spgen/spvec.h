@@ -563,9 +563,9 @@ namespace sp{
 
         Mesh dst = model[tmp / num];
         for (int d = 0; d < level; d++){
-            const Vec3 p0 = unitVec(addVec(dst.pos[0], dst.pos[1]));
-            const Vec3 p1 = unitVec(addVec(dst.pos[1], dst.pos[2]));
-            const Vec3 p2 = unitVec(addVec(dst.pos[2], dst.pos[0]));
+            const Vec3 p0 = unitVec(dst.pos[0] + dst.pos[1]);
+            const Vec3 p1 = unitVec(dst.pos[1] + dst.pos[2]);
+            const Vec3 p2 = unitVec(dst.pos[2] + dst.pos[0]);
 
             Mesh mesh[4];
             mesh[0] = getMesh(p0, p1, p2);
