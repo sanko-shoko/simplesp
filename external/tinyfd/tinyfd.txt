@@ -1,0 +1,5 @@
+tiny file dialogs (cross-platform C C++)
+http://ysengrin.com/ysengrin.html
+https://sourceforge.net/projects/tinyfiledialogs/
+
+zlib/libpng License
