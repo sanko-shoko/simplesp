@@ -12,6 +12,15 @@
 namespace sp{
     
     //--------------------------------------------------------------------------------
+    // model edge
+    //--------------------------------------------------------------------------------
+   
+    struct Edge {
+        Vec3 pos, drc, nrm[2];
+    };
+
+
+    //--------------------------------------------------------------------------------
     // model util
     //--------------------------------------------------------------------------------
 
@@ -63,23 +72,86 @@ namespace sp{
 
         tmp = shuffle(tmp);
 
-        Mem1<VecPN3> dst;
+        Mem1<VecPN3> pnts;
         const double unit = 2 * distance / (cam.fx + cam.fy);
 
         for (int i = 0; i < tmp.size(); i++){
             bool check = true;
-            for (int j = 0; j < dst.size(); j++){
-                if (dotVec(dst[j].nrm, tmp[i].nrm) > 0.5 && normVec(dst[j].pos - tmp[i].pos) < unit){
+            for (int j = 0; j < pnts.size(); j++){
+                if (dotVec(pnts[j].nrm, tmp[i].nrm) > 0.5 && normVec(pnts[j].pos - tmp[i].pos) < unit){
                     check = false;
                     break;
                 }
             }
             if (check == true){
-                dst.push(tmp[i]);
+                pnts.push(tmp[i]);
             }
         }
 
-        return dst;
+        return pnts;
+    }
+
+    SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh> &model, const int density = 60) {
+
+        KdTree<double> kdtree;
+        kdtree.init(3);
+        for (int i = 0; i < model.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                kdtree.addData(&model[i].pos[j]);
+            }
+        }
+
+        Mem1<Edge> edges;
+
+        const double radius = getModelRadius(model);
+        const double unit = 2.0 * radius / density;
+
+        for (int i = 0; i < model.size(); i++) {
+
+            for (int j = 0; j < 3; j++) {
+                const Vec3 A = model[i].pos[(j + 0) % 3];
+                const Vec3 B = model[i].pos[(j + 1) % 3];
+                const Vec3 V = unitVec(B - A);
+
+                const Mem1<int> list = kdtree.search(&A, normVec(B - A) + 0.01);
+
+                for (int k = 0; k < list.size(); k++) {
+                    const int mid = list[k] / 3;
+                    const int pid = list[k] % 3;
+                    if (mid <= i) continue;
+
+                    const Vec3 C = model[mid].pos[(pid + 0) % 3];
+                    const Vec3 D = model[mid].pos[(pid + 1) % 3];
+
+                    const Vec3 F = normVec(C - A) > normVec(D - A) ? C : D;
+
+                    if (fabs(dotVec(V, unitVec(F - A))) < 0.99) continue;
+                    if (fabs(dotVec(V, unitVec(D - C))) < 0.99) continue;
+
+                    const Vec3 O = dotVec(V, C) < dotVec(V, D) ? C : D;
+                    const Vec3 P = dotVec(V, C) < dotVec(V, D) ? D : C;
+
+                    const Vec3 X = dotVec(V, A) > dotVec(V, O) ? A : O;
+                    const Vec3 Y = dotVec(V, B) < dotVec(V, P) ? B : P;
+
+                    if (normVec(Y - X) < 0.01) continue;
+
+                    const int div = ceil(normVec(Y - X) / unit);
+                    for (int d = 0; d < div; d++) {
+                        Edge edge;
+                        edge.pos = (Y - X) / (div + 1.0) * (d + 1.0) + X;
+                        edge.drc = V;
+                        edge.nrm[0] = getMeshNrm(model[i]);
+                        edge.nrm[1] = getMeshNrm(model[mid]);
+
+                        edges.push(edge);
+                    }
+                }
+
+            }
+        }
+
+        return edges;
     }
 
 
@@ -89,12 +161,10 @@ namespace sp{
 
     class PoseModel {
     public:
-        struct Edge {
-            Vec3 pos, drc, nrm[2];
-        };
 
         Pose pose;
         Mem1<Edge> edges;
+        Mem1<VecPN3> pnts;
 
     public:
 
@@ -108,101 +178,60 @@ namespace sp{
         PoseModel& operator = (const PoseModel &pmodel) {
             pose = pmodel.pose;
             edges = pmodel.edges;
+            pnts = pmodel.pnts;
             return *this;
         }
     };
 
+
     SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh> &model, const double distance, const int level = 2, const int density = 60) {
-        Mem1<PoseModel::Edge> edges;
-        
+
         const double radius = getModelRadius(model);
         const double unit = 2.0 * radius / density;
-        {
 
-            KdTree<double> kdtree;
-            kdtree.init(3);
-
-            for (int i = 0; i < model.size(); i++) {
-                for (int j = 0; j < 3; j++) {
-                    kdtree.addData(&model[i].pos[j]);
-                }
-            }
-
-            for (int i = 0; i < model.size(); i++) {
-
-                for (int j = 0; j < 3; j++) {
-                    const Vec3 A = model[i].pos[(j + 0) % 3];
-                    const Vec3 B = model[i].pos[(j + 1) % 3];
-                    const Vec3 V = unitVec(B - A);
-
-                    const Mem1<int> list = kdtree.search(&A, normVec(B - A) + SP_SMALL);
-
-                    for (int k = 0; k < list.size(); k++) {
-                        const int mid = list[k] / 3;
-                        const int pid = list[k] % 3;
-                        if (mid <= i) continue;
-
-                        const Vec3 C = model[mid].pos[(pid + 0) % 3];
-                        const Vec3 D = model[mid].pos[(pid + 1) % 3];
-
-                        const Vec3 F = normVec(C - A) > normVec(D - A) ? C : D;
-
-                        if (fabs(dotVec(V, unitVec(F - A))) < 1.0 - SP_SMALL) continue;
-                        if (fabs(dotVec(V, unitVec(D - C))) < 1.0 - SP_SMALL) continue;
-
-                        const Vec3 O = dotVec(V, C) < dotVec(V, D) ? C : D;
-                        const Vec3 P = dotVec(V, C) < dotVec(V, D) ? D : C;
-
-                        const Vec3 X = dotVec(V, A) > dotVec(V, O) ? A : O;
-                        const Vec3 Y = dotVec(V, B) < dotVec(V, P) ? B : P;
-
-                        if (normVec(Y - X) < SP_SMALL) continue;
-
-                        const int div = ceil(normVec(Y - X) / unit);
-                        for (int d = 0; d < div; d++) {
-                            PoseModel::Edge edge;
-                            edge.pos = (Y - X) / (div + 1.0) * (d + 1.0) + X;
-                            edge.drc = V;
-                            edge.nrm[0] = getMeshNrm(model[i]);
-                            edge.nrm[1] = getMeshNrm(model[mid]);
-
-                            edges.push(edge);
-                        }
-                    }
-
-                }
-            }
-
-        }
+        const int size = 300;
+        const double f = distance * size / (1.2 * 2.0 * radius);
+        const CamParam cam = getCamParam(size, size, f, f);
 
         Mem1<PoseModel> pmodels;
+
+        // pose
         {
+            const int num = getGeodesicMeshNum(level);
+            pmodels.resize(num);
+
+            for (int i = 0; i < num; i++) {
+                const Vec3 v = getMeshPos(getGeodesicMesh(level, i)) * (-1.0);
+                const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+               
+                pmodels[i].pose = pose;
+            }
+        }
+
+        // contour edge
+        {
+            const Mem1<Edge> &edges = getModelEdge(model, density);
+  
             KdTree<double> kdtree;
             kdtree.init(3);
-
             for (int i = 0; i < edges.size(); i++) {
                 kdtree.addData(&edges[i].pos);
             }
 
-            const int size = 300;
-            const double f = distance * size / (2.0 * radius);
-            const CamParam cam = getCamParam(size, size, f, f);
-
-            const int num = getGeodesicMeshNum(level);
-            pmodels.resize(num);
-
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-            for (int i = 0; i < num; i++) {
-                const Vec3 v = getMeshPos(getGeodesicMesh(level, i)) * (-1.0);
-                const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+            for (int i = 0; i < pmodels.size(); i++) {
+                PoseModel &pmodel = pmodels[i];
+                pmodel.edges.clear();
+
+                const Pose &pose = pmodel.pose;
+
                 Mem2<VecPN3> map;
                 renderVecPN(map, cam, pose, model);
 
                 const Mat pmat = getMat(pose);
                 const Mat rmat = getMat(pose.rot);
-                PoseModel tmps;
 
                 Mem1<bool> flags(edges.size());
                 flags.zero();
@@ -214,37 +243,80 @@ namespace sp{
 
                     const int x = round(pix.x);
                     const int y = round(pix.y);
-                    bool contour = false;
+                    bool contour = false ;
                     for (int v = -1; v <= 1; v++) {
                         for (int u = -1; u <= 1; u++) {
                             const VecPN3 &vec = map(x + u, y + v);
-                            if (vec.pos.z == 0) {
+                            if (vec.pos.z == 0.0) {
                                 contour = true;
-                                goto _exit;
+                                goto _exit0;
                             }
                         }
                     }
-                _exit:
+                _exit0:
 
-                    if (contour == true) {
-                        const Vec3 nrm0 = rmat * edges[j].nrm[0];
-                        const Vec3 nrm1 = rmat * edges[j].nrm[1];
+                    const Vec3 nrm0 = rmat * edges[j].nrm[0];
+                    const Vec3 nrm1 = rmat * edges[j].nrm[1];
+                    
+                    if (contour == true && dotVec(nrm0, pos) * dotVec(nrm1, pos) <= 0.0)
+                    {
+                        pmodel.edges.push(edges[j]);
 
-                        if(dotVec(nrm0, pos) * dotVec(nrm1, pos) <= 0.0)
-                        {
-                            tmps.edges.push(edges[j]);
-
-                            const Mem1<int> list = kdtree.search(&edges[j].pos, unit);
-                            for (int k = 0; k < list.size(); k++) {
-                                flags[list[k]] = true;
-                            }
+                        const Mem1<int> list = kdtree.search(&edges[j].pos, unit);
+                        for (int k = 0; k < list.size(); k++) {
+                            flags[list[k]] = true;
                         }
                     }
                 }
-                tmps.pose = pose;
-                pmodels[i] = tmps;
             }
         }
+
+        // surface point
+        {
+            const Mem1<VecPN3> &pnts = getModelPoint(model, density);
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+            for (int i = 0; i < pmodels.size(); i++) {
+                PoseModel &pmodel = pmodels[i];
+                pmodel.pnts.clear();
+
+                const Pose &pose = pmodel.pose;
+
+                Mem2<VecPN3> map;
+                renderVecPN(map, cam, pose, model);
+                
+                const Mat pmat = getMat(pose);
+                const Mat rmat = getMat(pose.rot);
+
+                for (int j = 0; j < pnts.size(); j++) {
+                    const Vec3 pos = pmat * pnts[j].pos;
+                    const Vec3 nrm = rmat * pnts[j].nrm;
+
+                    const Vec2 pix = mulCamD(cam, prjVec(pos));
+
+                    const int x = round(pix.x);
+                    const int y = round(pix.y);
+                    bool visible = false;
+                    for (int v = -1; v <= 1; v++) {
+                        for (int u = -1; u <= 1; u++) {
+                            const VecPN3 &vec = map(x + u, y + v);
+                            if (vec.pos.z > pos.z - SP_SMALL) {
+                                visible = true;
+                                goto _exit1;
+                            }
+                        }
+                    }
+                _exit1:
+
+                    if (visible == true && dotVec(nrm, pos) <= 0.0) {
+                        pmodel.pnts.push(pnts[j]);
+                    }
+                }
+            }
+        }
+
         return pmodels;
     }
 

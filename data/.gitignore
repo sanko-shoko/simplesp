@@ -19,6 +19,7 @@
 
 # stanford
 /stanford/*
+!/stanford/bun_zipper.ply
 !/stanford/bunny.txt
 
 # middlebury
