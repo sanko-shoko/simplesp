@@ -49,14 +49,13 @@ private:
             loadGeodesicDorm(m_model, 100.0, 1);
         }
 
-        printf("please wait...\n");
-
         const double distance = getModelDistance(m_model, m_cam);
+
+        printf("please wait...\n");
         const int level = 2;
         m_pmodels = getPoseModel(m_model, distance, level);
 
         m_pose = getPose(getVec(0.0, 0.0, distance));
-
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
