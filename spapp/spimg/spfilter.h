@@ -344,7 +344,7 @@ namespace sp{
                     sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 1, c) * (-1.0);
                     sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 1, c) * (-1.0);
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / 8.0);
+                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / 16.0);
                 }
             }
         }
