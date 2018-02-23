@@ -77,7 +77,7 @@ namespace sp{
     }
 
     // extend
-    SP_GENFUNC Vec3 extend(const Vec2 &vec, const double z) {
+    SP_GENFUNC Vec3 extVec(const Vec2 &vec, const double z) {
         return getVec(vec.x, vec.y, z);
     }
 

@@ -584,10 +584,10 @@ namespace sp{
     // vector util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem<Vec3> extend(const Mem<Vec2> &vec, const double z) {
+    SP_CPUFUNC Mem<Vec3> extVec(const Mem<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = extend(vec[i], z);
+            dst[i] = extVec(vec[i], z);
         }
         return dst;
     }
@@ -607,7 +607,7 @@ namespace sp{
     SP_CPUFUNC Mem<Vec3> vertex(const Mem<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = extend(vec[i], z);
+            dst[i] = extVec(vec[i], z);
         }
         return dst;
     }

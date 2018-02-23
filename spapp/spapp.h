@@ -29,6 +29,7 @@
 
 #include "spapp/spimgex/spfeature.h"
 #include "spapp/spimgex/spguidedfilter.h"
+#include "spapp/spimgex/spcontour.h"
 #include "spapp/spimgex/spharris.h"
 #include "spapp/spimgex/splucaskanade.h"
 #include "spapp/spimgex/sppatchmatch.h"
