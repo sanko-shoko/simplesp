@@ -256,7 +256,7 @@ namespace sp{
         const int w = dst.dsize[0];
         const int h = dst.dsize[1];
 
-        const Vec3 line = F * extend(pix, 1.0);
+        const Vec3 line = F * extVec(pix, 1.0);
         if (fabs(line.y) > fabs(line.x)){
             const Vec2 pix0 = getVec(0, -(0 * line.x + line.z) / line.y);
             const Vec2 pix1 = getVec(w, -(w * line.x + line.z) / line.y);
