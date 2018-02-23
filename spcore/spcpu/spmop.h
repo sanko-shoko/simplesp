@@ -606,7 +606,7 @@ namespace sp{
 
     SP_CPUFUNC Mem<Vec2> vertex2(const Rect &rect) {
         Mem1<Vec2> vtxs;
-        if (rect.dim == 2) {
+        if (rect.dim >= 2) {
             vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
             vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
             vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
