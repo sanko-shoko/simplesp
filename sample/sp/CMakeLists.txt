@@ -16,6 +16,7 @@ add_subdirectory(graphcut)
 add_subdirectory(fourier)
 add_subdirectory(poc)
 add_subdirectory(opticalflow)
+add_subdirectory(contour)
 ##add_subdirectory(backsub)
 
 ## geom

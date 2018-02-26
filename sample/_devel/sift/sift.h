@@ -2,8 +2,6 @@
 #include "spex/spgl.h"
 #include "spex/spcv.h"
 
-#include <cstdlib>
-
 using namespace sp;
 
 class SIFTGUI : public BaseWindow {

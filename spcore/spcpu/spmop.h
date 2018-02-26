@@ -584,10 +584,10 @@ namespace sp{
     // vector util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem<Vec3> getVec(const Mem<Vec2> &vec, const double z) {
+    SP_CPUFUNC Mem<Vec3> extVec(const Mem<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = getVec(vec[i], z);
+            dst[i] = extVec(vec[i], z);
         }
         return dst;
     }
@@ -604,6 +604,16 @@ namespace sp{
         return map;
     }
 
+    SP_CPUFUNC Mem<Vec2> vertex2(const Rect &rect) {
+        Mem1<Vec2> vtxs;
+        if (rect.dim >= 2) {
+            vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
+            vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
+        }
+        return vtxs;
+    }
 }
 
 #endif

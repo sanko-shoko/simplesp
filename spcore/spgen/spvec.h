@@ -36,11 +36,6 @@ namespace sp{
         return dst;
     }
 
-    // get vector
-    SP_GENFUNC Vec3 getVec(const Vec2 &vec, const double z) {
-        return getVec(vec.x, vec.y, z);
-    }
-
     // addition
     SP_GENFUNC Vec2 addVec(const Vec2 &vec0, const Vec2 &vec1){
         return getVec(vec0.x + vec1.x, vec0.y + vec1.y);
@@ -79,6 +74,11 @@ namespace sp{
     // division
     SP_GENFUNC Vec3 divVec(const Vec3 &vec, const double val){
         return (val != 0.0) ? mulVec(vec, 1.0 / val) : vec;
+    }
+
+    // extend
+    SP_GENFUNC Vec3 extVec(const Vec2 &vec, const double z) {
+        return getVec(vec.x, vec.y, z);
     }
 
 

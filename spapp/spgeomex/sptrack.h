@@ -103,7 +103,7 @@ namespace sp{
     }
 
     SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
-        return track2D(pose, img, cam, getVec(objs, 0.0), getVec(drcs, 0.0), searchLng, maxit);
+        return track2D(pose, img, cam, extVec(objs, 0.0), extVec(drcs, 0.0), searchLng, maxit);
     }
 
     SP_CPUFUNC bool track2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int searchLng = 10, const int maxit = 10) {
