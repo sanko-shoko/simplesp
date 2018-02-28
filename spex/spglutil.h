@@ -266,6 +266,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void glMesh(const Mesh &mesh){
+        glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
         glVertex(mesh.pos[1]);
         glVertex(mesh.pos[2]);
@@ -285,14 +286,25 @@ namespace sp{
     SP_CPUFUNC void glCube(const double size){
 
         const double s = size / 2.0;
-        const Vec2 loop[4] = { getVec(-s, -s), getVec(+s, -s), getVec(+s, +s), getVec(-s, +s) };
-        for (int i = 0; i < 4; i++){
-            const Vec2 a = loop[(i + 0) % 4];
-            const Vec2 b = loop[(i + 1) % 4];
+        for(int i = 0; i < 2; i++){
+            double v = (i == 0) ? +1.0 : -1.0;
+            glNormal3d(v, 0.0, 0.0);
+            glVertex3d(+s * v, -s, -s);
+            glVertex3d(+s * v, -s, +s);
+            glVertex3d(+s * v, +s, +s);
+            glVertex3d(+s * v, +s, -s);
 
-            glVertex3d(a.x, a.y, -s); glVertex3d(b.x, b.y, -s);
-            glVertex3d(a.x, a.y, +s); glVertex3d(b.x, b.y, +s);
-            glVertex3d(a.x, a.y, -s); glVertex3d(a.x, a.y, +s);
+            glNormal3d(0.0, v, 0.0);
+            glVertex3d(-s, +s * v, -s);
+            glVertex3d(-s, +s * v, +s);
+            glVertex3d(+s, +s * v, +s);
+            glVertex3d(+s, +s * v, -s);
+
+            glNormal3d(0.0, 0.0, v);
+            glVertex3d(-s, -s, +s * v);
+            glVertex3d(-s, +s, +s * v);
+            glVertex3d(+s, +s, +s * v);
+            glVertex3d(+s, -s, +s * v);
         }
     }
 
@@ -323,10 +335,14 @@ namespace sp{
 
     SP_CPUFUNC void glModel(const Mem1<Mesh> &model) {
         for (int i = 0; i < model.size(); i++) {
-            glNormal(getMeshNrm(model[i]));
             glMesh(model[i]);
         }
     }
+
+
+    //--------------------------------------------------------------------------------
+    // render
+    //--------------------------------------------------------------------------------
 
     SP_CPUFUNC void glRenderSurface(const Mem1<Mesh> &model) {
 
@@ -396,6 +412,51 @@ namespace sp{
 
         glClear(GL_DEPTH_BUFFER_BIT);
     }
+
+    SP_CPUFUNC void glRenderVoxel(const Voxel &voxel) {
+
+        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        {
+            glPushMatrix();
+            glLoadIdentity();
+
+            glEnable(GL_LIGHTING);
+            glEnable(GL_LIGHT0);
+
+            GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 1.f };
+            glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+            glPopMatrix();
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+            const Vec3 cent = voxel.getCenter();
+
+            for (int z = 0; z < voxel.vmap.dsize[2]; z++) {
+                for (int y = 0; y < voxel.vmap.dsize[1]; y++) {
+                    for (int x = 0; x < voxel.vmap.dsize[0]; x++) {
+                        const char &val = voxel.vmap(x, y, z);
+                        if (val <= 0) continue;
+
+                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 cpos = ((mpos - cent) * voxel.unit);
+
+                        glPushMatrix();
+                        glMultMatrix(getPose(cpos));
+
+                        glBegin(GL_QUADS);
+                        glCube(voxel.unit);
+                        glEnd();
+
+                        glPopMatrix();
+                    }
+                }
+            }
+        }
+        glPopAttrib();
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
 }
 
 #if SP_USE_IMGUI

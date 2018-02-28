@@ -459,6 +459,12 @@ namespace sp{
         return pose;
     }
 
+    SP_GENFUNC Pose getGeodesicPose(const int level, const int id, const double distance = 0.0) {
+        const Vec3 v = getMeshPos(getGeodesicMesh(level, id)) * (-1.0);
+        const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+        return pose;
+    }
+
     //--------------------------------------------------------------------------------
     // rotation / pose operator
     //--------------------------------------------------------------------------------

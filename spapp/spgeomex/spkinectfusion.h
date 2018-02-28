@@ -7,7 +7,7 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spgeom/spdepth.h"
-#include "spapp/spgeomex/sptsdf.h"
+#include "spapp/spdata/spvoxel.h"
 
 namespace sp{
 
