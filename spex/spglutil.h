@@ -429,7 +429,7 @@ namespace sp{
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            const Vec3 cent = voxel.getCenter();
+            const Vec3 cent = voxel.center();
 
             for (int z = 0; z < voxel.vmap.dsize[2]; z++) {
                 for (int y = 0; y < voxel.vmap.dsize[1]; y++) {

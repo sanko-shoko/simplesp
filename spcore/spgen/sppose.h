@@ -137,6 +137,9 @@ namespace sp{
         return mulRot(rot0, rot1);
     }
 
+    SP_GENFUNC void operator *= (Rot &rot0, const Rot &rot1) {
+        rot0 = mulRot(rot0, rot1);
+    }
 
     //--------------------------------------------------------------------------------
     // rotation util
@@ -426,6 +429,9 @@ namespace sp{
         return mulPose(pose0, pose1);
     }
 
+    SP_GENFUNC void operator *= (Pose &pose0, const Pose &pose1) {
+        pose0 = mulPose(pose0, pose1);
+    }
 
     //--------------------------------------------------------------------------------
     // pose util
@@ -477,6 +483,9 @@ namespace sp{
         return mulPose(pose, getPose(rot));
     }
 
+    SP_GENFUNC void operator *= (Pose &pose, const Rot &rot) {
+        pose = mulPose(pose, getPose(rot));
+    }
 
     //--------------------------------------------------------------------------------
     // jacob
