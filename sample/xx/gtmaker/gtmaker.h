@@ -98,7 +98,7 @@ private:
 
         {
             glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-            glRenderImage(m_img);
+            glRenderImg(m_img);
         }
 
         dispRectGT();

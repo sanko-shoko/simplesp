@@ -91,7 +91,7 @@ private:
         {
 
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
-            glRenderImage(m_img);
+            glRenderImg(m_img);
         }
 
         // render model

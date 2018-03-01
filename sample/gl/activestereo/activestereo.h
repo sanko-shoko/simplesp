@@ -200,7 +200,7 @@ private:
         if (m_view3d == false) {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
-            glRenderImage(m_img);
+            glRenderImg(m_img);
 
             // view 3D
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
