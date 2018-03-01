@@ -48,19 +48,6 @@ namespace sp{
         rescale<TYPE, ELEM>(dst, src, dscale0, dscale1);
     }
 
-    SP_CPUFUNC void rescale(CamParam &dst, const CamParam &cam, const double dscale0, const double dscale1) {
-        dst = cam;
-
-        dst.dsize[0] = round(cam.dsize[0] * dscale0);
-        dst.dsize[1] = round(cam.dsize[1] * dscale1);
-
-        dst.fx *= dscale0;
-        dst.fy *= dscale1;
-
-        dst.cx *= dscale0;
-        dst.cy *= dscale1;
-    }
-
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
         SP_ASSERT(isValid(2, src));
 
@@ -125,10 +112,6 @@ namespace sp{
                 }
             }
         }
-    }
-
-    SP_CPUFUNC void pyrdown(CamParam &dst, const CamParam &cam){
-        rescale(dst, cam, 0.5, 0.5);
     }
 
 

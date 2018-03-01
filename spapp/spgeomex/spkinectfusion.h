@@ -7,7 +7,7 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spgeom/spdepth.h"
-#include "spapp/spgeomex/sptsdf.h"
+#include "spapp/spdata/spvoxel.h"
 
 namespace sp{
 
@@ -18,7 +18,7 @@ namespace sp{
         CamParam m_cam;
 
         // tsdf map
-        Mem3<TSDF> m_tsdf;
+        Voxel m_tsdf;
 
         // casted pn
         Mem2<VecPN3> m_cast;
@@ -26,9 +26,6 @@ namespace sp{
         // map pose
         Pose m_pose;
 
-        // map unit length
-        double m_unit;
-    
         // flag for tracking
         bool m_track;
 
@@ -41,14 +38,17 @@ namespace sp{
             setMap(100, 2.0, zeroPose());
         }
 
-        const void reset(){
+        void reset() {
             m_track = false;
         }
 
-        void setMap(const int size, const double unit, const Pose &base){
-            m_tsdf.resize(size, size, size);
+        bool track() {
+            return m_track;
+        }
 
-            m_unit = unit;
+        void setMap(const int size, const double unit, const Pose &base){
+            m_tsdf.init(size, unit);
+
             m_pose = base;
         }
 
@@ -66,15 +66,15 @@ namespace sp{
         }
     
         const Pose* getPose() const{
-            return &m_pose;
+            return (m_track == true) ? &m_pose : NULL;
         }
 
         const Mem2<VecPN3>& getCast() const{
             return m_cast;
         }
 
-        const double getCubeLength() const{
-            return m_tsdf.dsize[0] * m_unit;
+        const Voxel& getMap() const {
+            return m_tsdf;
         }
 
 
@@ -119,12 +119,12 @@ namespace sp{
 
                 {
                     SP_LOGGER_SET("update map");
-                    updateTSDF(m_tsdf, m_unit, m_cam, m_pose, depth);
+                    updateTSDF(m_tsdf, m_cam, m_pose, depth);
                 }
 
                 {
                     SP_LOGGER_SET("rayCasting");
-                    rayCasting(m_cast, m_cam, m_pose, m_tsdf, m_unit);
+                    rayCasting(m_cast, m_cam, m_pose, m_tsdf);
                 }
                 m_track = true;
             }

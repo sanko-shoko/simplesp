@@ -137,6 +137,9 @@ namespace sp{
         return mulRot(rot0, rot1);
     }
 
+    SP_GENFUNC void operator *= (Rot &rot0, const Rot &rot1) {
+        rot0 = mulRot(rot0, rot1);
+    }
 
     //--------------------------------------------------------------------------------
     // rotation util
@@ -426,6 +429,9 @@ namespace sp{
         return mulPose(pose0, pose1);
     }
 
+    SP_GENFUNC void operator *= (Pose &pose0, const Pose &pose1) {
+        pose0 = mulPose(pose0, pose1);
+    }
 
     //--------------------------------------------------------------------------------
     // pose util
@@ -459,6 +465,12 @@ namespace sp{
         return pose;
     }
 
+    SP_GENFUNC Pose getGeodesicPose(const int level, const int id, const double distance = 0.0) {
+        const Vec3 v = getMeshPos(getGeodesicMesh(level, id)) * (-1.0);
+        const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+        return pose;
+    }
+
     //--------------------------------------------------------------------------------
     // rotation / pose operator
     //--------------------------------------------------------------------------------
@@ -471,6 +483,9 @@ namespace sp{
         return mulPose(pose, getPose(rot));
     }
 
+    SP_GENFUNC void operator *= (Pose &pose, const Rot &rot) {
+        pose = mulPose(pose, getPose(rot));
+    }
 
     //--------------------------------------------------------------------------------
     // jacob

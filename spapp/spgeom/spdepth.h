@@ -150,5 +150,16 @@ namespace sp{
         }
     }
 
+    SP_CPUFUNC void cnvVecPNToDepth(Mem<double> &dst, const Mem<VecPN3> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        dst.zero();
+
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = src[i].pos.z;
+        }
+    }
+
 }
 #endif

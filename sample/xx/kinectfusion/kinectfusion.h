@@ -103,7 +103,7 @@ private:
             glLoadMatrix(*m_kfusion.getPose());
 
             glBegin(GL_LINES);
-            glCube(m_kfusion.getCubeLength());
+            glCube(m_kfusion.getMap().dsize[0] * m_kfusion.getMap().unit);
             glEnd();
         }
     }

@@ -12,6 +12,7 @@
 #include "spapp/spdata/spply.h"
 #include "spapp/spdata/spbmp.h"
 #include "spapp/spdata/spmodel.h"
+#include "spapp/spdata/spvoxel.h"
 #include "spapp/spdata/spdataset.h"
 
 // algorithm
