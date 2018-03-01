@@ -46,7 +46,7 @@ namespace sp{
 
     SP_CPUFUNC bool cnvVoxel(Voxel &voxel, const Mem1<Mesh> &model, const double unit = 1.0) {
 
-        const int size = ceil(getModelRadius(model) / unit) * 2 + 1;
+        const int size = ceil(getModelRadius(model) / unit) * 2;
         voxel.init(size, unit);
 
         const CamParam cam = getCamParam(size * 2, size * 2);
@@ -59,11 +59,6 @@ namespace sp{
             Mem2<VecPN3> map;
             renderVecPN(map, cam, pose, model);
 
-            if (i == 0) {
-                Mem2<Col3> img;
-                cnvNormalToImg(img, map);
-                saveBMP(img, "test.bmp");
-            }
             const Vec3 cent = voxel.getCenter();
 
 #if SP_USE_OMP
@@ -84,7 +79,6 @@ namespace sp{
                         const Vec3 &nrm = map(round(pix.x), round(pix.y)).nrm;
 
                         if (pos.z == 0.0) {
-                            val--;
                             cnvVal(val, maxVal(val - 1, -100));
                         }
                         else {
