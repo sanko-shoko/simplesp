@@ -23,9 +23,7 @@ class VoxelGUI : public BaseWindow{
 private:
 
     void help() {
-        printf("'r' key : render\n");
-        printf("'c' key : track 2d\n");
-        printf("'v' key : track 3d\n");
+        printf("'r' key : \n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
