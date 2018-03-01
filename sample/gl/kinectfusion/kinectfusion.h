@@ -85,7 +85,7 @@ private:
             cnvNormalToImg(view, m_kfusion.getCast());
 
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale);
-            glRenderImage(view);
+            glRenderImg(view);
 
             glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale);
             glLoadMatrix(*m_kfusion.getPose());
@@ -104,7 +104,7 @@ private:
             glLoadView2D(m_cam, m_viewPos - offset * m_viewScale, m_viewScale * scale);
 
             cnvDepthToImg(m_img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
-            glRenderImage(m_img);
+            glRenderImg(m_img);
         }
 
     }

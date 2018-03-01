@@ -80,7 +80,7 @@ private:
         {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
-            glRenderImage(m_img);
+            glRenderImg(m_img);
         }
 
         {

@@ -190,7 +190,7 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void glRenderImage(const Mem<TYPE> &src){
+    SP_CPUFUNC void glRenderImg(const Mem<TYPE> &src){
         if (src.size() == 0) return;
 
         const GLuint texId = getTextureId(src);
