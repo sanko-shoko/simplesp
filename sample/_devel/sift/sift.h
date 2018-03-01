@@ -77,10 +77,10 @@ private:
         
             {
                 glLoadView2D(cam, m_viewPos, m_viewScale);
-                glRenderImage(m_imgs[0]);
+                glRenderImg(m_imgs[0]);
 
                 glLoadView2D(cam, m_viewPos + offset * m_viewScale, m_viewScale);
-                glRenderImage(m_imgs[1]);
+                glRenderImg(m_imgs[1]);
             }
 
             const Mem1<Feature> &fts0 = m_sift0.getFeatrue();

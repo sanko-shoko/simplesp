@@ -62,14 +62,14 @@ private:
 
             if (color != NULL){
                 glLoadView2D(*m_rs.getColorCam(), m_viewPos, m_viewScale);
-                glRenderImage(*color);
+                glRenderImg(*color);
             }
 
             if (depth != NULL){
                 glLoadView2D(*m_rs.getDepthCam(), m_viewPos, m_viewScale);
                 static Mem2<Col3> img;
                 cnvDepthToImg(img, *depth, nearPlane, farPlane);
-                glRenderImage(img);
+                glRenderImg(img);
             }
         }
         else{

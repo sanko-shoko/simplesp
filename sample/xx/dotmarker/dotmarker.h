@@ -97,7 +97,7 @@ private:
 
         {
             glLoadView2D(getCamParam(img.dsize), m_viewPos, m_viewScale);
-            glRenderImage(img);
+            glRenderImg(img);
         }
 
         if (m_dotMarker.getPose() != NULL) {
