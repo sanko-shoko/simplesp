@@ -125,6 +125,7 @@ namespace sp{
                 {
                     SP_LOGGER_SET("rayCasting");
                     rayCasting(m_cast, m_cam, m_pose, m_tsdf);
+                    //rayCastingFast(m_cast, m_cam, m_pose, m_tsdf);
                 }
                 m_track = true;
             }

@@ -8,28 +8,29 @@ class VoxelGUI : public BaseWindow{
     // camera
     CamParam m_cam;
 
-    // image
-    Mem2<Col3> m_img;
-
     // model
     Mem1<Mesh> m_model;
 
+    // voxel
     Voxel m_voxel;
 
     // pose
     Pose m_pose;
 
+    int m_mode;
 
 private:
 
     void help() {
-        printf("'r' key : \n");
+        printf("'s' key : switch mode (voxel <-> mesh)\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
 
     virtual void init(){
         help();
+        
+        m_mode = 0;
 
         m_cam = getCamParam(640, 480);
 
@@ -42,25 +43,20 @@ private:
         const double radius = getModelRadius(m_model);
         const double distance = getModelDistance(m_model, m_cam);
 
-        cnvVoxel(m_voxel, m_model, 4.0);
+        cnvModelToVoxel(m_voxel, m_model, 4.0);
+        cnvVoxelToModel(m_model, m_voxel);
 
         m_pose = getPose(getVec(0.0, 0.0, distance));
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_R] == 1) {
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            m_mode ^= 1;
         }
     }
 
     virtual void display(){
-
-        // render image
-        {
-
-            glLoadView2D(m_cam, m_viewPos, m_viewScale);
-            glRenderImg(m_img);
-        }
 
         // render model
         {
@@ -70,30 +66,17 @@ private:
             {
                 glLoadMatrix(m_pose);
 
-                glRenderVoxel(m_voxel);
+                if (m_mode == 0) {
+                    glRenderVoxel(m_voxel);
+                }
+                else{ 
+                    glRenderSurface(m_model);
+                }
+                //glRenderOutline(m_model);
 
-                glRenderOutline(m_model);
-
-                // render points
-                glPointSize(5.f);
-                glBegin(GL_POINTS);
-                glColor3f(0.2f, 0.7f, 0.2f);
-
-                glEnd();
             }
-
-            renderAxis();
         }
 
-    }
-
-    void renderAxis() {
-        glLoadMatrix(m_pose);
-
-        glLineWidth(2.f);
-        glBegin(GL_LINES);
-        glAxis(100.0);
-        glEnd();
     }
 
     virtual void mousePos(double x, double y) {

@@ -72,7 +72,7 @@ private:
 
             if (m_kfusion.track() == false) {
                 const double radius = getModelRadius(m_model);
-                m_kfusion.setMap(100, radius / 60.0, m_pose);
+                m_kfusion.setMap(100, radius / 50.0, m_pose);
                 m_kfusion.setCam(m_cam);
             }
 
