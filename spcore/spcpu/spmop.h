@@ -583,6 +583,16 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // vector util
     //--------------------------------------------------------------------------------
+    
+    template<typename TYPE>
+    SP_CPUFUNC Vec2 getVec(const MemA<TYPE, 2> &vec) {
+        return getVec(vec[0], vec[1]);
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC Vec3 getVec(const MemA<TYPE, 3> &vec) {
+        return getVec(vec[0], vec[1], vec[2]);
+    }
 
     SP_CPUFUNC Mem<Vec3> extVec(const Mem<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
