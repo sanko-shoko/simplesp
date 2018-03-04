@@ -113,7 +113,6 @@ namespace sp{
         for (int i = 0; i < voxel.vmap.size(); i++) {
             voxel.vmap[i] = (voxel.vmap[i] > 0) ? +1 : -1;
         }
-
     }
 
     // Marching cubes
