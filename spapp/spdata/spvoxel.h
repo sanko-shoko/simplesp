@@ -57,7 +57,7 @@ namespace sp{
 
     SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh> &model, const double unit = 1.0) {
 
-        const int size = ceil(getModelRadius(model) / unit) * 2;
+        const int size = (ceil(getModelRadius(model) / unit) + 2) * 2;
         voxel.init(size, unit);
 
         const CamParam cam = getCamParam(size * 2, size * 2);

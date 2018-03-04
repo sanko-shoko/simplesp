@@ -25,6 +25,6 @@ $ ./a.exe
 
 ## sample
 check simplesp\sample
-- sp no third library
-- cv OpenCV required
-- gl OpenGL (GLFW) required
+- sp : no third library
+- cv : OpenCV required
+- gl : OpenGL (GLFW) required
