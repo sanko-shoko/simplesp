@@ -75,7 +75,6 @@ private:
                     glRenderSurface(m_model);
                 }
                 //glRenderOutline(m_model);
-
             }
         }
 
