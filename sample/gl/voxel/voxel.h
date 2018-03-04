@@ -34,7 +34,7 @@ private:
 
         m_cam = getCamParam(640, 480);
 
-        if (loadBunny(m_model, SP_DATA_DIR "/stanford/buan_zipper.ply") == false){
+        if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false){
 
             // if could not find stanford bunny, load dummy model
             loadGeodesicDorm(m_model, 100.0, 1);
@@ -75,7 +75,6 @@ private:
                     glRenderSurface(m_model);
                 }
                 //glRenderOutline(m_model);
-
             }
         }
 
