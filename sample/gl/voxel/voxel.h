@@ -44,6 +44,8 @@ private:
         const double distance = getModelDistance(m_model, m_cam);
 
         cnvModelToVoxel(m_voxel, m_model, 4.0);
+
+        // Marching cubes
         cnvVoxelToModel(m_model, m_voxel);
 
         m_pose = getPose(getVec(0.0, 0.0, distance));
