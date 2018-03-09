@@ -141,7 +141,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh, const TYPE &val, const int thick = 1){
+    SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mesh3 &mesh, const TYPE &val, const int thick = 1){
         SP_ASSERT(isValid(2, dst));
 
         renderLine(dst, cam, pose, mesh.pos[0], mesh.pos[1], val, thick);
@@ -150,7 +150,7 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &mesh, const TYPE &val, const int thick = 1){
+    SP_CPUFUNC void renderMesh(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh3> &mesh, const TYPE &val, const int thick = 1){
         SP_ASSERT(isValid(2, dst));
 
         for (int i = 0; i < mesh.size(); i++){
@@ -328,7 +328,7 @@ namespace sp{
     // render vector PN
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mesh &mesh) {
+    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mesh3 &mesh) {
 
         if (cmpSize(2, dst.dsize, cam.dsize) == false) {
             dst.resize(2, cam.dsize);
@@ -337,7 +337,7 @@ namespace sp{
 
         Rect rect;
 
-        const Mesh pm = pose * mesh;
+        const Mesh3 pm = pose * mesh;
         {
             int xs = dst.dsize[0];
             int xe = 0;
@@ -402,14 +402,14 @@ namespace sp{
 
     }
 
-    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
 
         for (int i = 0; i < meshes.size(); i++) {
             renderVecPN(dst, cam, pose, meshes[i]);
         }
     }
 
-    SP_CPUFUNC void renderDepth(Mem<double> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh> &meshes) {
+    SP_CPUFUNC void renderDepth(Mem<double> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
 
         Mem<VecPN3> pnmap;
         for (int i = 0; i < meshes.size(); i++) {
@@ -423,7 +423,7 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC void renderNormal(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes) {
+    SP_CPUFUNC void renderNormal(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh3> &meshes) {
 
         dst.resize(cam.dsize);
         dst.zero();
@@ -437,7 +437,7 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC void renderPattern(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
+    SP_CPUFUNC void renderPattern(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh3> &meshes,
         const Pose &cam2prj, const CamParam &prj, const Mem2<Byte> &ptn) {
 
         dst.resize(cam.dsize);
@@ -487,7 +487,7 @@ namespace sp{
 
     }
 
-    SP_CPUFUNC void renderCrsp(Mem2<Vec2> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh> &meshes,
+    SP_CPUFUNC void renderCrsp(Mem2<Vec2> &dst, const CamParam &cam, const Pose &pose, const Mem1<Mesh3> &meshes,
         const Pose &cam2prj, const CamParam &prj) {
 
         dst.resize(cam.dsize);

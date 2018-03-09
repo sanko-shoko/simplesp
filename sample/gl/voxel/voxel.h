@@ -9,7 +9,7 @@ class VoxelGUI : public BaseWindow{
     CamParam m_cam;
 
     // model
-    Mem1<Mesh> m_model;
+    Mem1<Mesh3> m_model;
 
     // voxel
     Voxel m_voxel;

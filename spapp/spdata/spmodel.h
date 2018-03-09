@@ -24,7 +24,7 @@ namespace sp{
     // model util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Vec3 getModelCenter(const Mem1<Mesh> &model){
+    SP_CPUFUNC Vec3 getModelCenter(const Mem1<Mesh3> &model){
         Vec3 sum = zero<Vec3>();
         for (int i = 0; i < model.size(); i++){
             sum += getMeshPos(model[i]);
@@ -33,7 +33,7 @@ namespace sp{
         return sum / model.size();
     }
 
-    SP_CPUFUNC double getModelRadius(const Mem1<Mesh> &model){
+    SP_CPUFUNC double getModelRadius(const Mem1<Mesh3> &model){
         Mem1<double> mem(model.size());
         for (int i = 0; i < mem.size(); i++){
             mem[i] = normVec(getMeshPos(model[i]));
@@ -42,7 +42,7 @@ namespace sp{
         return maxVal(mem);
     }
 
-    SP_CPUFUNC double getModelDistance(const Mem1<Mesh> &model, const CamParam &cam){
+    SP_CPUFUNC double getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
 
         const double radius = getModelRadius(model);
         const double distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
@@ -50,7 +50,7 @@ namespace sp{
         return distance;
     }
 
-    SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh> &model, const int density = 60){
+    SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 60){
         const CamParam cam = getCamParam(density, density);
         const double distance = getModelDistance(model, cam);
         
@@ -91,7 +91,7 @@ namespace sp{
         return pnts;
     }
 
-    SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh> &model, const int density = 60) {
+    SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh3> &model, const int density = 60) {
 
         KdTree<double> kdtree;
         kdtree.init(3);
@@ -184,7 +184,7 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh> &model, const double distance, const int level = 2, const int density = 60) {
+    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const double distance, const int level = 2, const int density = 60) {
 
         const double radius = getModelRadius(model);
         const double unit = 2.0 * radius / density;
@@ -341,7 +341,7 @@ namespace sp{
     // sample model
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool loadBunny(Mem1<Mesh> &model, const char *path) {
+    SP_CPUFUNC bool loadBunny(Mem1<Mesh3> &model, const char *path) {
         if (loadPLY(model, path) == false) return false;
 
         Vec3 center = getModelCenter(model);
@@ -354,7 +354,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC void loadGeodesicDorm(Mem1<Mesh> &model, const double size, const int div) {
+    SP_CPUFUNC void loadGeodesicDorm(Mem1<Mesh3> &model, const double size, const int div) {
         model.clear();
 
         const int num = getGeodesicMeshNum(div);

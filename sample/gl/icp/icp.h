@@ -12,7 +12,7 @@ class ICPGUI : public BaseWindow{
     Mem2<Col3> m_img;
 
     // model
-    Mem1<Mesh> m_model;
+    Mem1<Mesh3> m_model;
 
     Pose m_pose;
 
