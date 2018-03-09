@@ -10,38 +10,47 @@ class GTMakerGUI : public BaseWindow {
 private:
     DataBase m_database;
 
+    // selected image
     Mem2<Col3> m_img;
 
+    // selected id
     int m_selectid;
 
-    RectGT *m_focus;
-    Vec2 *m_base;
-
-    bool m_usePaint;
-
+    // focused gt
+    GT *m_focus;
+    
+    // editor mode
     enum Mode {
-        Base = -1,
-        Paint = 0
+        M_Rect = 0, // Rectangle
+        M_Cont = 1  // Contour
     };
-
     Mode m_mode;
+
+    // ui state
+    enum State {
+        S_Base = 0,
+        S_Init = 1,
+        S_Edit = 2
+    };
+    State m_state;
 
 public:
 
     GTMakerGUI() {
+        ImGui::GetIO().IniFilename = NULL;
+
         reset();
 
         m_database.gtNames.push("dog");
         m_database.gtNames.push("cat");
 
-        //m_usePaint = true;
     }
 
     void reset() {
-        m_focus = NULL;
-        m_base = NULL;
 
-        m_mode = Mode::Base;
+        m_focus = NULL;
+        m_state = S_Base;
+        m_mode = M_Rect;
     }
 
 private:
@@ -57,6 +66,11 @@ private:
         adjustImg();
     }
 
+    void setMode(Mode mode) {
+        m_mode = mode;
+        init();
+    }
+
     void adjustImg() {
         if (m_img.size() == 0) return;
 
@@ -68,11 +82,14 @@ private:
 private:
 
     virtual void init() {
-
-        ImGui::GetIO().IniFilename = NULL;
-
+        initRect();
+        initCont();
     }
 
+    //--------------------------------------------------------------------------------
+    // ui
+    //--------------------------------------------------------------------------------
+  
     virtual void display() {
 
         if (ImGui::BeginMainMenuBar()) {
@@ -85,14 +102,6 @@ private:
                 ImGui::EndMenu();
             }
 
-            //if (ImGui::BeginMenu("option")) {
-
-            //    if (ImGui::MenuItem("paint", NULL, m_usePaint)) {
-            //        m_usePaint ^= true;
-            //    }
-            //    ImGui::EndMenu();
-            //}
-
             ImGui::EndMainMenuBar();
         }
 
@@ -101,16 +110,32 @@ private:
             glRenderImg(m_img);
         }
 
-        dispRectGT();
+        if (m_database.isValid() == true) {
+            
+            dispData();
 
-        dispDataBase();
+            editMenu();
 
-
+            switch (m_mode) {
+            case M_Rect: dispRect(); break;
+            case M_Cont: dispCont(); break;
+            }
+        }
     }
 
-    void dispRectGT();
-    void dispDataBase();
+     void editMenu() {
+        switch (m_mode) {
+        case M_Rect: menuRect(); break;
+        case M_Cont: menuCont(); break;
+        }
+    }
 
+    void dispData();
+
+
+    //--------------------------------------------------------------------------------
+    // call back
+    //--------------------------------------------------------------------------------
 
     virtual void windowSize(int width, int height) {
         if (m_database.isValid() == false) return;
@@ -122,10 +147,10 @@ private:
         if (m_database.isValid() == false) return;
 
         if (m_keyAction[GLFW_KEY_A] > 0) {
-            select(m_selectid + 1);
+            select(m_selectid - 1);
         }
         if (m_keyAction[GLFW_KEY_S] > 0) {
-            select(m_selectid - 1);
+            select(m_selectid + 1);
         }
     }
 
@@ -133,29 +158,46 @@ private:
         if (m_database.isValid() == false) return;
 
         switch (m_mode) {
-        case Mode::Base: mousebuttonRect(button, action, mods); break;
-        case Mode::Paint: mousebuttonPaint(button, action, mods); break;
+        case M_Rect: mouseButtonRect(button, action, mods); break;
+        case M_Cont: mouseButtonCont(button, action, mods); break;
         }
     }
-
-    void mousebuttonRect(int button, int action, int mods);
-    void mousebuttonPaint(int button, int action, int mods);
 
     virtual void mousePos(double x, double y) {
         if (m_database.isValid() == false) return;
-    
+
         switch (m_mode) {
-        case Mode::Base: mousePosRect(x, y); break;
-        case Mode::Paint: mousePosPaint(x, y); break;
+        case M_Rect: mousePosRect(x, y); break;
+        case M_Cont: mousePosCont(x, y); break;
         }
     }
 
-    void mousePosRect(double x, double y);
-    void mousePosPaint(double x, double y);
-
     virtual void mouseScroll(double x, double y) {
     }
+    
 
-};
+    // rectangle
+    void initRect();
+    void menuRect();
+    void dispRect();
+    void mouseButtonRect(int button, int action, int mods);
+    void mousePosRect(double x, double y);
+
+    // contour
+    void initCont();
+    void menuCont();
+    void dispCont();
+    void mouseButtonCont(int button, int action, int mods);
+    void mousePosCont(double x, double y);
+
+
+    //--------------------------------------------------------------------------------
+    // others
+    //--------------------------------------------------------------------------------
+
+    int findNearPos(const Mem1<Vec2> &pnst, const Vec2 &pix);
+    int findNearLine(const Mem1<Vec2> &pnst, const Vec2 &pix);
+
+ };
 
 #endif

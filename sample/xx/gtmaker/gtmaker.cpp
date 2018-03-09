@@ -2,125 +2,17 @@
 
 using namespace sp;
 
-void GTMakerGUI::dispRectGT() {
-    if (m_database.isValid() == false) return;
+//--------------------------------------------------------------------------------
+// ui
+//--------------------------------------------------------------------------------
 
-    glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
-    auto dispRectLine = [](const Rect &rect, const Col3 &col, float size)-> void {
-        for (int i = 0; i < 2; i++) {
-            glLineWidth(i == 0 ? size : size - 2.0f);
-            glBegin(GL_LINES);
-            glColor(i == 0 ? col / 3.0 : col);
-            glRect(rect);
-            glEnd();
-        }
-    };
-    auto dispRectPoint = [](const Rect &rect, const Col3 &col, float size)-> void {
-        for (int i = 0; i < 2; i++) {
-            glPointSize(i == 0 ? size : size - 2.0f);
-            glBegin(GL_POINTS);
-            glColor(i == 0 ? col / 3.0 : col);
-            glRect(rect);
-            glEnd();
-        }
-    };
-
-    MemP<RectGT> &gts = m_database.gtsList[m_selectid];
-
-    for (int i = 0; i < gts.size(); i++) {
-        RectGT &gt = gts[i];
-        if (&gt != m_focus && m_mode >= 0) continue;
-
-        dispRectLine(gt.rect, getCol(80, 180, 180), 3.0f);
-    }
-
-    if (m_focus != NULL) {
-        if (m_mode == Mode::Base) {
-            dispRectLine(m_focus->rect, getCol(220, 240, 220), 3.0f);
-            dispRectPoint(m_focus->rect, getCol(220, 240, 220), 7.0f);
-        }
-        if (m_mode == Mode::Paint) {
-            dispRectLine(m_focus->rect, getCol(180, 240, 180), 3.0f);
-        }
-    }
-
-    Mem1<const char *> combolist;
-    for (int i = 0; i < m_database.gtNames.size(); i++) {
-        combolist.push(m_database.gtNames[i].c_str());
-    }
-
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
-    for (int i = 0; i < gts.size(); i++) {
-        RectGT &gt = gts[i];
-
-        if (&gt != m_focus && m_mode >= 0) continue;
-
-        if (ImGui::Begin(strFormat("RectGT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
-            {
-                const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
-                ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
-            }
-
-            if (&gt != m_focus && ImGui::IsMouseClicked(0) == true && ImGui::IsWindowHovered() == true) {
-                m_focus = &gt;
-            }
-
-            ImGui::AlignTextToFramePadding();
-
-            if (&gt != m_focus) {
-                ImGui::Text(">");
-
-                const int wsize = (gt.label >= 0) ? static_cast<int>(m_database.gtNames[gt.label].size()) : 0;
-
-                ImGui::SetWindowSize(ImVec2(wsize * 7.0f + 30.0f, 35.0f), ImGuiCond_Always);
-
-                if (gt.label >= 0) {
-                    ImGui::SameLine();
-                    ImGui::Text(m_database.gtNames[gt.label].c_str());
-                }
-            }
-            else {
-                ImGui::Text("-");
-
-                int size = 0;
-                if (m_usePaint == true) size += 50;
-
-                ImGui::SetWindowSize(ImVec2(168.0f + size, 35.0f), ImGuiCond_Always);
-
-                ImGui::SameLine();
-
-                ImGui::PushItemWidth(100);
-                ImGui::Combo("", &gt.label, combolist.ptr, combolist.size());
-                ImGui::PopItemWidth();
-
-                ImGui::SameLine();
-
-                if (m_usePaint == true && ImGui::Button("paint")) {
-                    m_mode = (m_mode == Mode::Base) ? Mode::Paint : Mode::Base;
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("del")) {
-                    gts.free(&gt);
-                    m_focus = NULL;
-                }
-            }
-            ImGui::End();
-        }
-    }
-}
-
-void GTMakerGUI::dispDataBase() {
-    if (m_database.isValid() == false) return;
-
+void GTMakerGUI::dispData() {
 
     if (ImGui::Begin("database", NULL, ImGuiWindowFlags_Block)) {
 
         ImGui::SetWindowRect(getRect2(15, 35, 190, m_wcam.dsize[1] - 52), ImGuiCond_Always);
 
+        // image
         {
             ImGui::Text("\n");
 
@@ -138,6 +30,7 @@ void GTMakerGUI::dispDataBase() {
 
         ImGui::Separator();
 
+        // directory
         {
             ImGui::Text("\n");
 
@@ -163,6 +56,7 @@ void GTMakerGUI::dispDataBase() {
 
         ImGui::Separator();
 
+        // label
         {
             ImGui::Text("\n");
 
@@ -223,91 +117,49 @@ void GTMakerGUI::dispDataBase() {
     }
 }
 
-void GTMakerGUI::mousebuttonRect(int button, int action, int mods) {
+//--------------------------------------------------------------------------------
+// others
+//--------------------------------------------------------------------------------
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+int GTMakerGUI::findNearPos(const Mem1<Vec2> &pnts, const Vec2 &pix) {
+    const double thresh = 8.0 / m_viewScale;
 
-    MemP<RectGT> &gts = m_database.gtsList[m_selectid];
+    int pos = -1;
 
-    static Vec2 base;
-    m_base = (m_mouse.bDownL == 1) ? &base : NULL;
-
-    static RectGT newgt;
-
-    const double thresh = 10.0 / m_viewScale;
-
-    if (m_focus != &newgt && m_focus != NULL) {
-        if (m_mouse.bDownL == 1) {
-            const Vec2 a = getVec(m_focus->rect.dbase[0], m_focus->rect.dbase[1]);
-            const Vec2 b = getVec(m_focus->rect.dsize[0] - 1, m_focus->rect.dsize[1] - 1);
-
-            Vec2 p[4];
-            p[0] = a + getVec(0.0, 0.0);
-            p[1] = a + getVec(b.x, 0.0);
-            p[2] = a + getVec(b.x, b.y);
-            p[3] = a + getVec(0.0, b.y);
-
-            double minv = thresh;
-            for (int i = 0; i < 4; i++) {
-                const double norm = normVec(p[i] - pix);
-                if (norm < minv) {
-                    minv = norm;
-                    base = p[(i + 2) % 4];
-                }
-            }
-            if (minv < thresh) {
-                return;
-            }
-
-        }
-        if (m_mouse.bDownL == 0) {
-            m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
-            return;
+    double minv = SP_INFINITY;
+    for (int i = 0; i < pnts.size(); i++) {
+        const double norm = normVec(pnts[i] - pix);
+        if (norm < minVal(minv, thresh)) {
+            minv = norm;
+            pos = i;
         }
     }
 
-    {
-        if (m_focus != &newgt && m_mouse.bDownL == 1) {
+    return pos;
+}
 
-            m_focus = &newgt;
-            m_focus->rect = getRect2(pix);
-            m_focus->label = -1;
+int GTMakerGUI::findNearLine(const Mem1<Vec2> &pnts, const Vec2 &pix) {
+    if (pnts.size() <= 1) return -1;
 
-            base = pix;
-            return;
-        }
+    const double thresh = 8.0 / m_viewScale;
 
-        if (m_focus == &newgt && m_mouse.bDownL == 0) {
+    int pos = -1;
 
-            if (minVal(m_focus->rect.dsize[0], m_focus->rect.dsize[1]) > thresh) {
-                RectGT *gt = gts.malloc();
-                *gt = *m_focus;
-                m_focus = gt;
-                m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
-            }
-            else {
-                m_focus = NULL;
-            }
-            return;
+    double minv = SP_INFINITY;
+    for (int i = 0; i < pnts.size(); i++) {
+        const Vec2 a = pnts[(i + 0) % pnts.size()];
+        const Vec2 b = pnts[(i + 1) % pnts.size()];
+        const Vec2 v = unitVec(a - b);
+
+        const Vec2 nrm = getLineNrm(v);
+        const double norm = ::fabs(dotVec(nrm, a - pix));
+        const double in = dotVec(v, a - pix) * dotVec(v, b - pix);
+
+        if (norm < minVal(minv, thresh) && in <= 0) {
+            minv = norm;
+            pos = i;
         }
     }
-}
 
-void GTMakerGUI::mousePosRect(double x, double y) {
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
-
-    if (m_focus != NULL && m_base != NULL) {
-        m_focus->rect = orRect(getRect2(pix), getRect2(*m_base));
-    }
-}
-
-
-void GTMakerGUI::mousebuttonPaint(int button, int action, int mods) {
-
-}
-
-void GTMakerGUI::mousePosPaint(double x, double y) {
-
+    return pos;
 }
