@@ -181,7 +181,11 @@ namespace sp{
         }
     }
 
+    SP_CPUFUNC void cnvLabelToPolygon(Mem1<Mesh2> &meshes, const Mem2<int> &map) {
 
+        meshes.clear();
+
+    }
 }
 
 #endif

@@ -12,7 +12,10 @@ namespace sp{
 
     SP_CPUFUNC bool snake(Mem1<Vec2> &contour, const Mem2<Byte> &img, const Mem1<Vec2> &vtxs) {
 
-        const int maxit = 200;
+        const int maxit = 100;
+
+        Mem2<Byte> smth;
+        gaussianFilter(smth, img, 3.0);
 
         const int block = 20;
         Mem2<double> map((img.dsize[0] + block - 1) / block, (img.dsize[1] + block - 1) / block);
@@ -23,7 +26,7 @@ namespace sp{
                 double sum = 0.0;
                 for (int y = 0; y < block; y++) {
                     for (int x = 0; x < block; x++) {
-                        const Byte val = img(u + x, v + y);
+                        const Byte val = smth(u + x, v + y);
                         sum += val;
                     }
                 }
@@ -32,7 +35,7 @@ namespace sp{
                 double sqsum = 0.0;
                 for (int y = 0; y < block; y++) {
                     for (int x = 0; x < block; x++) {
-                        const Byte val = img(u + x, v + y);
+                        const Byte val = smth(u + x, v + y);
                         sqsum += (val - mean) * (val - mean);
                     }
                 }
@@ -73,7 +76,7 @@ namespace sp{
 
             const double a = 1.0;
             const double b = 1.0;
-            const double c = 50.0;
+            const double c = 100.0;
             const int w = 2;
 
             for (int i = 0; i < contour.size(); i++) {
@@ -83,7 +86,7 @@ namespace sp{
                 const Vec2 &C = contour[(ti - 1) % contour.size()];
                 const Vec2 U = unitVec(B - C);
 
-                const double thresh = maxVal(20.0, acs2(map, A.x / block, A.y / block));
+                const double thresh = maxVal(1.0, acs2(map, A.x / block, A.y / block));
 
                 double minv = SP_INFINITY;
                 Vec2 vec = getVec(0.0, 0.0);
@@ -93,12 +96,11 @@ namespace sp{
                         const int ix = round(tA.x);
                         const int iy = round(tA.y);
 
-                        const double m = unit * unit;
                         const double len = a * sqVec(C - tA);
-                        const double crv = b * minVal(unit * 0.3, sqVec(B + C - tA * 2.0));
+                        const double crv = b * sqVec(B + C - tA * 2.0);
 
-                        const double dx = fabs(U.y) * fabs(img(ix + 1, iy) - img(ix - 1, iy));
-                        const double dy = fabs(U.x) * fabs(img(ix, iy + 1) - img(ix, iy - 1));
+                        const double dx = fabs(U.y) * fabs(smth(ix + 1, iy) - smth(ix - 1, iy));
+                        const double dy = fabs(U.x) * fabs(smth(ix, iy + 1) - smth(ix, iy - 1));
                         const double dif = c * (dx + dy) / thresh;
                         const double e = len + crv - dif;
                         if (e < minv) {

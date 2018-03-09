@@ -106,7 +106,7 @@ namespace sp{
     }
     using namespace _ply;
 
-    SP_CPUFUNC bool loadPLY(Mem1<Mesh> &meshes, const char *path){
+    SP_CPUFUNC bool loadPLY(Mem1<Mesh3> &meshes, const char *path){
         File file;
         if (file.open(path, "r") == false) return false;
 

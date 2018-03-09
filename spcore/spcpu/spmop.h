@@ -575,7 +575,7 @@ namespace sp{
         return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
     }
 
-    SP_CPUFUNC Mesh operator * (const Mat &mat, const Mesh mesh){
+    SP_CPUFUNC Mesh3 operator * (const Mat &mat, const Mesh3 mesh){
         return mulMat(mat.ptr, mat.rows(), mat.cols(), mesh);
     }
 

@@ -55,7 +55,7 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh> &model, const double unit = 1.0) {
+    SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh3> &model, const double unit = 1.0) {
 
         const int size = (ceil(getModelRadius(model) / unit) + 2) * 2;
         voxel.init(size, unit);
@@ -116,7 +116,7 @@ namespace sp{
     }
 
     // Marching cubes
-    SP_CPUFUNC bool cnvVoxelToModel(Mem1<Mesh> &model, const Voxel &voxel) {
+    SP_CPUFUNC bool cnvVoxelToModel(Mem1<Mesh3> &model, const Voxel &voxel) {
 
         model.clear();
 
@@ -170,7 +170,7 @@ namespace sp{
             patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1));
         }
 
-        Mem3<Mem1<Mesh> > map(voxel.dsize[0] - 1, voxel.dsize[1] - 1, voxel.dsize[2] - 1);
+        Mem3<Mem1<Mesh3> > map(voxel.dsize[0] - 1, voxel.dsize[1] - 1, voxel.dsize[2] - 1);
 
         for (int z = 0; z < voxel.dsize[2] - 1; z++) {
             for (int y = 0; y < voxel.dsize[1] - 1; y++) {
@@ -219,7 +219,7 @@ namespace sp{
                         v[i] = fabs(voxel.vmap(round(p[i].x), round(p[i].y), round(p[i].z)));
                     }
 
-                    Mem1<Mesh> tmps;
+                    Mem1<Mesh3> tmps;
 
                     switch (pid) {
                     default:
@@ -347,7 +347,7 @@ namespace sp{
                         if (n == 1 && y + 1 >= voxel.dsize[1] - 1) continue;
                         if (n == 2 && z + 1 >= voxel.dsize[2] - 1) continue;
 
-                        Mem1<Mesh> tmps;
+                        Mem1<Mesh3> tmps;
                         tmps.push(map(x, y, z));
 
                         if (n == 0) tmps.push(map(x + 1, y, z));

@@ -15,7 +15,7 @@ class ModelTrackGUI : public BaseWindow{
     Mem2<VecPN3> m_map;
 
     // model
-    Mem1<Mesh> m_model;
+    Mem1<Mesh3> m_model;
 
     // pose
     Pose m_pose;

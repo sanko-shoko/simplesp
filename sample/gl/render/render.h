@@ -12,7 +12,7 @@ class RenderGUI : public BaseWindow{
     Mem2<Col3> m_img;
 
     // object mesh model
-    Mem1<Mesh> m_model;
+    Mem1<Mesh3> m_model;
 
     // object surface points
     Mem1<VecPN3> m_pnts;

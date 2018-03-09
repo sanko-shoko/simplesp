@@ -12,7 +12,7 @@ using namespace sp;
 class DotMarkerGUI : public TwWindow{
 
     // object model
-    Mem1<Mesh> m_model;
+    Mem1<Mesh3> m_model;
 
     DotMarker m_dotMarker;
 

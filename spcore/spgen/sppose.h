@@ -397,7 +397,7 @@ namespace sp{
         return mulMat(poseMat, 3, 4, vec);
     }
 
-    SP_GENFUNC Mesh mulPose(const Pose &pose, const Mesh &mesh){
+    SP_GENFUNC Mesh3 mulPose(const Pose &pose, const Mesh3 &mesh){
         double poseMat[3 * 4];
         getMat(poseMat, 3, 4, pose);
 
@@ -421,7 +421,7 @@ namespace sp{
         return mulPose(pose, vec);
     }
 
-    SP_GENFUNC Mesh operator * (const Pose &pose, const Mesh &mesh){
+    SP_GENFUNC Mesh3 operator * (const Pose &pose, const Mesh3 &mesh){
         return mulPose(pose, mesh);
     }
 

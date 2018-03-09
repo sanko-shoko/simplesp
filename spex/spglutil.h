@@ -265,7 +265,7 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void glMesh(const Mesh &mesh){
+    SP_CPUFUNC void glMesh(const Mesh3 &mesh){
         glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
         glVertex(mesh.pos[1]);
@@ -333,7 +333,7 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void glModel(const Mem1<Mesh> &model) {
+    SP_CPUFUNC void glModel(const Mem1<Mesh3> &model) {
         for (int i = 0; i < model.size(); i++) {
             glMesh(model[i]);
         }
@@ -344,7 +344,7 @@ namespace sp{
     // render
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh> &model) {
+    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -369,7 +369,7 @@ namespace sp{
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    SP_CPUFUNC void glRenderOutline(const Mem1<Mesh> &model) {
+    SP_CPUFUNC void glRenderOutline(const Mem1<Mesh3> &model) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
