@@ -8,9 +8,10 @@ int main() {
 
         setElm(src, getCol(255, 255, 255));
 
-        renderPoint(src, getVec(320, 240), getCol(0, 255, 0), 100);
+        renderPoint(src, getVec(320, 240), getCol(0, 180, 0), 100);
+        renderPoint(src, getVec(400, 180), getCol(0, 180, 0), 60);
 
-        const Rect rect = getRect2(220, 140, 200, 200);
+        const Rect rect = getRect2(120, 90, 400, 300);
 
         Mem1<Vec2> contour;
         snake(contour, src, vertex2(rect));
@@ -30,7 +31,7 @@ int main() {
             SP_ASSERT(loadBMP(src, SP_DATA_DIR  "/image/shiba02.bmp"));
         }
 
-        const Rect rect = getRect2(250, 60, 200, 260);
+        const Rect rect = getRect2(260, 60, 180, 260);
 
         Mem1<Vec2> contour;
         snake(contour, src, vertex2(rect));
