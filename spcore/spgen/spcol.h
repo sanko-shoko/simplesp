@@ -22,6 +22,13 @@ namespace sp{
     }
 
     // get color
+    SP_GENFUNC Col4 getCol(const Byte r, const Byte g, const Byte b, const Byte a) {
+        Col4 dst;
+        dst.r = r; dst.g = g; dst.b = b; dst.a = a;
+        return dst;
+    }
+
+    // get color
     SP_GENFUNC Col3 getCol(const Vec3 &vec) {
         Col3 dst;
         cnvVal(dst.r, vec.x);
