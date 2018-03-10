@@ -25,7 +25,7 @@ int main(){
         cnvLabelToImg(col, map);
         saveBMP(col, "color.bmp");
 
-        Mem1<Mem1<Vec2> > contours = getLabelContour(map, true);
+        Mem1<Mem1<Vec2> > contours = getLabelContour(map);
         for (int i = 0; i < contours.size(); i++){
             renderPoint(img, contours[i], getCol(0, 0, 0));
         }

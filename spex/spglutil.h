@@ -87,6 +87,12 @@ namespace sp{
         return vmat;
     }
 
+    SP_CPUFUNC Mat glGetViewMat(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+
+        return glGetViewMat(dsize[0], dsize[1], viewPos, viewScale);
+    }
+
+
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Mat &vmat) {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
@@ -103,15 +109,28 @@ namespace sp{
         glLoadMatrix(vmat);
     }
 
+    SP_CPUFUNC void glLoadView2D(const int *dsize, const Mat &vmat) {
+
+        glLoadView2D(dsize[0], dsize[1], vmat);
+    }
+
+
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
         glLoadView2D(dsize0, dsize1, glGetViewMat(dsize0, dsize1, viewPos, viewScale));
     }
 
+    SP_CPUFUNC void glLoadView2D(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+
+        glLoadView2D(dsize, glGetViewMat(dsize, viewPos, viewScale));
+    }
+
+
     SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
-        glLoadView2D(cam.dsize[0], cam.dsize[1], glGetViewMat(cam.dsize[0], cam.dsize[1], viewPos, viewScale));
+        glLoadView2D(cam.dsize, glGetViewMat(cam.dsize, viewPos, viewScale));
     }
+
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
         GLint viewport[4];
@@ -155,80 +174,6 @@ namespace sp{
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // texture
-    //--------------------------------------------------------------------------------
-
-    template<typename TYPE>
-    SP_CPUFUNC unsigned int getTextureId(const Mem<TYPE> &src) {
-        int format;
-        switch (sizeof(TYPE)) {
-        case 1: format = GL_LUMINANCE; break;
-        case 3: format = GL_RGB; break;
-        default: return -1;
-        }
-
-        unsigned int texId;
-        glGenTextures(1, &texId);
-        
-        glBindTexture(GL_TEXTURE_2D, texId);
-
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src.dsize[0], src.dsize[1], 0, format, GL_UNSIGNED_BYTE, src.ptr);
-        
-        return texId;
-    }
-
-    template<typename TYPE>
-    SP_CPUFUNC void glRenderImg(const Mem<TYPE> &src){
-        if (src.size() == 0) return;
-
-        const GLuint texId = getTextureId(src);
-        if (texId < 0) return;
-
-        glPushAttrib(GL_ENABLE_BIT);
-        glEnable(GL_TEXTURE_2D);
-
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-            glBindTexture(GL_TEXTURE_2D, texId);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-            //glShadeModel(GL_FLAT);
-            glColor3d(1.0, 1.0, 1.0);
-            glColorMask(1, 1, 1, 1);
-
-            const int w = src.dsize[0];
-            const int h = src.dsize[1];
-
-            glBegin(GL_QUADS);
-            glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
-            glTexCoord2i(0, 1); glVertex2d(0 - 0.5, h - 0.5);
-            glTexCoord2i(1, 1); glVertex2d(w - 0.5, h - 0.5);
-            glTexCoord2i(1, 0);    glVertex2d(w - 0.5, 0 - 0.5);
-            glEnd();
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        glPopAttrib();
-
-        glDeleteTextures(1, &texId);
     }
 
 
@@ -333,10 +278,92 @@ namespace sp{
         }
     }
 
+    SP_CPUFUNC void glLine(const Mem1<Vec2> &vtxs, const bool loop = false) {
+        for (int i = 0; i < vtxs.size(); i++) {
+            if (i == vtxs.size() - 1 && loop == false) break;
+            glVertex(vtxs[(i + 0) % vtxs.size()]);
+            glVertex(vtxs[(i + 1) % vtxs.size()]);
+        }
+    }
+
     SP_CPUFUNC void glModel(const Mem1<Mesh3> &model) {
         for (int i = 0; i < model.size(); i++) {
             glMesh(model[i]);
         }
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // texture
+    //--------------------------------------------------------------------------------
+
+    template<typename TYPE>
+    SP_CPUFUNC unsigned int getTextureId(const Mem<TYPE> &src) {
+        int format;
+        switch (sizeof(TYPE)) {
+        case 1: format = GL_LUMINANCE; break;
+        case 3: format = GL_RGB; break;
+        default: return -1;
+        }
+
+        unsigned int texId;
+        glGenTextures(1, &texId);
+
+        glBindTexture(GL_TEXTURE_2D, texId);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src.dsize[0], src.dsize[1], 0, format, GL_UNSIGNED_BYTE, src.ptr);
+
+        return texId;
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC void glRenderImg(const Mem<TYPE> &src) {
+        if (src.size() == 0) return;
+
+        const GLuint texId = getTextureId(src);
+        if (texId < 0) return;
+
+        glPushAttrib(GL_ENABLE_BIT);
+        glEnable(GL_TEXTURE_2D);
+
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+            glBindTexture(GL_TEXTURE_2D, texId);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+            //glShadeModel(GL_FLAT);
+            glColor3d(1.0, 1.0, 1.0);
+            glColorMask(1, 1, 1, 1);
+
+            const int w = src.dsize[0];
+            const int h = src.dsize[1];
+
+            glBegin(GL_QUADS);
+            glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
+            glTexCoord2i(0, 1); glVertex2d(0 - 0.5, h - 0.5);
+            glTexCoord2i(1, 1); glVertex2d(w - 0.5, h - 0.5);
+            glTexCoord2i(1, 0);    glVertex2d(w - 0.5, 0 - 0.5);
+            glEnd();
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        glPopAttrib();
+
+        glDeleteTextures(1, &texId);
     }
 
 

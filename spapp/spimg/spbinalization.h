@@ -247,20 +247,35 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mem1< Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool useImgFrame = false){
+    SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool onPixel = true, const bool useImgFrame = true, const bool near8 = true){
 
         Mem1<Rect> rects = getLabelRect(map);
 
         // 8 nears clockwise search
-        const int order[8][2] = {
+        const int order8[8][2] = {
             { -1, -1 }, { 0, -1 }, { +1, -1 }, { +1, 0 },
             { +1, +1 }, { 0, +1 }, { -1, +1 }, { -1, 0 }
         };
-        const int start[3][3] = {
+        const int start8[3][3] = {
             { 0, 1, 2 },
             { 7, 0, 3 },
             { 6, 5, 4 }
         };
+
+        // 4 nears clockwise search
+        const int order4[8][2] = {
+            { 0, -1 }, { +1, 0 }, { 0, +1 }, { -1, 0 }
+        };
+        const int start4[3][3] = {
+            { 0, 0, 0 },
+            { 3, 0, 1 },
+            { 0, 2, 0 }
+        };
+
+        const int param0 = (onPixel == true) ? 8 : 4;
+        const int param1 = (onPixel == true) ? 2 : 1;
+        const int(*order)[2] = (onPixel == true) ? order8 : order4;
+        const int(*start)[3] = (onPixel == true) ? start8 : start4;
 
         Mem1< Mem1<Vec2> > dst(rects.size());
 
@@ -288,22 +303,73 @@ namespace sp{
             int cx = sx;
             int cy = sy;
 
+            int cnt = 0;
             while (1){
-                const int s = (start[vec[1] + 1][vec[0] + 1] + 8 - 2) % 8;
+                const int s = (start[vec[1] + 1][vec[0] + 1] + param0 - param1) % param0;
 
-                for (int j = 0; j < 8; j++){
-                    const int x = cx + order[(s + j) % 8][0];
-                    const int y = cy + order[(s + j) % 8][1];
-                    if (isInRect2(rect, x, y) == true && map(x, y) == i){
-                        vec[0] = x - cx;
-                        vec[1] = y - cy;
+                if (onPixel == true) {
+                    for (int j = 0; j < param0; j++) {
+                        const int t = (s + j) % param0;
+                        const int x = cx + order[t][0];
+                        const int y = cy + order[t][1];
+                        if (isInRect2(rect, x, y) == false) continue;
 
-                        cx = x;
-                        cy = y;
-                        break;
+                        if (map(x, y) == i) {
+                            vec[0] = x - cx;
+                            vec[1] = y - cy;
+
+                            cx = x;
+                            cy = y;
+                            break;
+                        }
                     }
+                    dst[i].push(getVec(cx, cy));
                 }
-                dst[i].push(getVec(cx, cy));
+                else {
+                    Rect trect = rect;
+                    trect.dsize[0]++;
+                    trect.dsize[1]++;
+
+                    bool list[4] = { map(cx - 1, cy - 1) == i, map(cx, cy - 1) == i, map(cx, cy) == i, map(cx - 1, cy) == i };
+                  
+                    if (cx == 0) {
+                        list[0] = false;
+                        list[3] = false;
+                    }
+                    if (cy == 0) {
+                        list[0] = false;
+                        list[1] = false;
+                    }
+                    if (cx == map.dsize[0]) {
+                        list[1] = false;
+                        list[2] = false;
+                    }
+                    if (cy == map.dsize[1]) {
+                        list[2] = false;
+                        list[3] = false;
+                    }
+
+                    bool edge[4] = { list[0] != list[1], list[1] != list[2], list[2] != list[3], list[3] != list[0] };
+
+                    for (int j = 0; j < param0; j++) {
+                        const int t = (s + j) % param0;
+                        const int x = cx + order[t][0];
+                        const int y = cy + order[t][1];
+                        if (isInRect2(trect, x, y) == false) continue;
+
+                        if (edge[t] == true) {
+                            vec[0] = x - cx;
+                            vec[1] = y - cy;
+
+                            cx = x;
+                            cy = y;
+
+                            break;
+                        }
+                    }
+
+                    dst[i].push(getVec(cx - 0.5, cy - 0.5));
+                }
 
                 if (cx == sx && cy == sy){
                     break;
