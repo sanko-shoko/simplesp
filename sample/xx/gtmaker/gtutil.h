@@ -295,21 +295,7 @@ class Render{
 #define RENDER_NEAR getCol(160, 160, 250)
 
 public:
-    static void line(const Vec2 &a, const Vec2 &b, const Col3 &col, const float size) {
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        for (int s = 0; s < 2; s++) {
-            glLineWidth(s == 0 ? size : size - 2.0f);
-
-            glBegin(GL_LINES);
-            glColor(s == 0 ? col / 3.0 : col);
-
-            glVertex(a);
-            glVertex(b);
-            glEnd();
-        }
-    }
+ 
     static void point(const Vec2 &a, const Col3 &col, const float size) {
         for (int s = 0; s < 2; s++) {
             glPointSize(s == 0 ? size : size - 2.0f);
@@ -320,22 +306,23 @@ public:
             glEnd();
         }
     }
-
-    static void line(const Mem1<Vec2> &pnts, const Col3 &col, const float size, const bool loop = false) {
-
-        for (int i = 0; i < pnts.size() - 1; i++) {
-            line(pnts[i], pnts[i + 1], col, size);
-        }
-        if (loop == true && pnts.size() > 2) {
-            line(*pnts.last(), pnts[0], col, size);
-        }
-    };
-
     static void point(const Mem1<Vec2> &pnts, const Col3 &col, const float size) {
         for (int i = 0; i < pnts.size(); i++) {
             point(pnts[i], col, size);
         }
     }
+
+    static void line(const Mem1<Vec2> &vtxs, const Col3 &col, const float size, const bool loop = false) {
+
+        for (int s = 0; s < 2; s++) {
+            glLineWidth(s == 0 ? size : size - 2.0f);
+            glBegin(GL_LINES);
+            glColor(s == 0 ? col / 3.0 : col);
+            glLine(vtxs, loop);
+            glEnd();
+        }
+    };
+
 };
 
 #endif
