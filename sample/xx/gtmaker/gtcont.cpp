@@ -99,7 +99,7 @@ void GTMakerGUI::dispCont() {
         const Vec2 b = m_focus->contour[(findLine + 1) % m_focus->contour.size()];
         const Vec2 v = unitVec(a - b);
 
-        const Vec2 nrm = getLineNrm(v);
+        const Vec2 nrm = getVec(-v.y, v.x);
         const double norm = ::fabs(dotVec(nrm, a - pix));
         const double in = dotVec(v, a - pix) * dotVec(v, b - pix);
         const double thresh = 8.0 / m_viewScale;

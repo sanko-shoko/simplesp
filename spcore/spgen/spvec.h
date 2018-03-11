@@ -392,6 +392,15 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // get mesh
+    SP_GENFUNC Mesh2 getMesh(const Vec2 &vec0, const Vec2 &vec1, const Vec2 &vec2) {
+        Mesh2 dst;
+        dst.pos[0] = vec0;
+        dst.pos[1] = vec1;
+        dst.pos[2] = vec2;
+        return dst;
+    }
+
+    // get mesh
     SP_GENFUNC Mesh3 getMesh(const Vec3 &vec0, const Vec3 &vec1, const Vec3 &vec2){
         Mesh3 dst;
         dst.pos[0] = vec0;
@@ -401,11 +410,29 @@ namespace sp{
     }
 
     // addition
-    SP_GENFUNC Mesh3 addMesh(const Mesh3 &mesh, const Vec3 vec){
+    SP_GENFUNC Mesh2 addMesh(const Mesh2 &mesh, const Vec2 vec) {
+        Mesh2 dst;
+        dst.pos[0] = mesh.pos[0] + vec;
+        dst.pos[1] = mesh.pos[1] + vec;
+        dst.pos[2] = mesh.pos[2] + vec;
+        return dst;
+    }
+ 
+    // addition
+    SP_GENFUNC Mesh3 addMesh(const Mesh3 &mesh, const Vec3 vec) {
         Mesh3 dst;
         dst.pos[0] = mesh.pos[0] + vec;
         dst.pos[1] = mesh.pos[1] + vec;
         dst.pos[2] = mesh.pos[2] + vec;
+        return dst;
+    }
+
+    // subtraction
+    SP_GENFUNC Mesh2 subMesh(const Mesh2 &mesh, const Vec2 vec) {
+        Mesh2 dst;
+        dst.pos[0] = mesh.pos[0] - vec;
+        dst.pos[1] = mesh.pos[1] - vec;
+        dst.pos[2] = mesh.pos[2] - vec;
         return dst;
     }
 
@@ -419,11 +446,29 @@ namespace sp{
     }
 
     // multiple
+    SP_GENFUNC Mesh2 mulMesh(const Mesh2 &mesh, const double val) {
+        Mesh2 dst;
+        dst.pos[0] = mesh.pos[0] * val;
+        dst.pos[1] = mesh.pos[1] * val;
+        dst.pos[2] = mesh.pos[2] * val;
+        return dst;
+    }
+
+    // multiple
     SP_GENFUNC Mesh3 mulMesh(const Mesh3 &mesh, const double val){
         Mesh3 dst;
         dst.pos[0] = mesh.pos[0] * val;
         dst.pos[1] = mesh.pos[1] * val;
         dst.pos[2] = mesh.pos[2] * val;
+        return dst;
+    }
+
+    // division
+    SP_GENFUNC Mesh2 divMesh(const Mesh2 &mesh, const double val) {
+        Mesh2 dst;
+        dst.pos[0] = mesh.pos[0] / val;
+        dst.pos[1] = mesh.pos[1] / val;
+        dst.pos[2] = mesh.pos[2] / val;
         return dst;
     }
 
@@ -441,35 +486,67 @@ namespace sp{
     // mesh operator
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC Mesh3 operator + (const Mesh3 &mesh, const Vec3 vec){
+    SP_GENFUNC Mesh2 operator + (const Mesh2 &mesh, const Vec2 vec){
         return addMesh(mesh, vec);
     }
 
-    SP_GENFUNC Mesh3 operator - (const Mesh3 &mesh, const Vec3 vec){
+    SP_GENFUNC Mesh3 operator + (const Mesh3 &mesh, const Vec3 vec) {
+        return addMesh(mesh, vec);
+    }
+
+    SP_GENFUNC Mesh2 operator - (const Mesh2 &mesh, const Vec2 vec){
         return subMesh(mesh, vec);
     }
 
-    SP_GENFUNC Mesh3 operator * (const Mesh3 &mesh, const double val){
+    SP_GENFUNC Mesh3 operator - (const Mesh3 &mesh, const Vec3 vec) {
+        return subMesh(mesh, vec);
+    }
+
+    SP_GENFUNC Mesh2 operator * (const Mesh2 &mesh, const double val){
         return mulMesh(mesh, val);
     }
 
-    SP_GENFUNC Mesh3 operator / (const Mesh3 &mesh, const double val){
+    SP_GENFUNC Mesh3 operator * (const Mesh3 &mesh, const double val) {
+        return mulMesh(mesh, val);
+    }
+
+    SP_GENFUNC Mesh2 operator / (const Mesh2 &mesh, const double val){
         return divMesh(mesh, val);
     }
 
-    SP_GENFUNC void operator += (Mesh3 &mesh, const Vec3 vec){
+    SP_GENFUNC Mesh3 operator / (const Mesh3 &mesh, const double val) {
+        return divMesh(mesh, val);
+    }
+
+    SP_GENFUNC void operator += (Mesh2 &mesh, const Vec2 vec) {
         mesh = addMesh(mesh, vec);
     }
 
-    SP_GENFUNC void operator -= (Mesh3 &mesh, const Vec3 vec){
+    SP_GENFUNC void operator += (Mesh3 &mesh, const Vec3 vec) {
+        mesh = addMesh(mesh, vec);
+    }
+
+    SP_GENFUNC void operator -= (Mesh2 &mesh, const Vec2 vec) {
         mesh = subMesh(mesh, vec);
     }
 
-    SP_GENFUNC void operator *= (Mesh3 &mesh, const double val){
+    SP_GENFUNC void operator -= (Mesh3 &mesh, const Vec3 vec) {
+        mesh = subMesh(mesh, vec);
+    }
+
+    SP_GENFUNC void operator *= (Mesh2 &mesh, const double val) {
         mesh = mulMesh(mesh, val);
     }
 
-    SP_GENFUNC void operator /= (Mesh3 &mesh, const double val){
+    SP_GENFUNC void operator *= (Mesh3 &mesh, const double val) {
+        mesh = mulMesh(mesh, val);
+    }
+
+    SP_GENFUNC void operator /= (Mesh2 &mesh, const double val) {
+        mesh = divMesh(mesh, val);
+    }
+
+    SP_GENFUNC void operator /= (Mesh3 &mesh, const double val) {
         mesh = divMesh(mesh, val);
     }
 
@@ -477,6 +554,14 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // matrix * mesh
     //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Mesh2 mulMat(const double *mat, const int rows, const int cols, const Mesh2 &mesh) {
+        Mesh2 dst;
+        dst.pos[0] = mulMat(mat, rows, cols, mesh.pos[0]);
+        dst.pos[1] = mulMat(mat, rows, cols, mesh.pos[1]);
+        dst.pos[2] = mulMat(mat, rows, cols, mesh.pos[2]);
+        return dst;
+    }
 
     SP_GENFUNC Mesh3 mulMat(const double *mat, const int rows, const int cols, const Mesh3 &mesh){
         Mesh3 dst;
@@ -492,23 +577,23 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // get normal vector
+    SP_GENFUNC Vec3 getMeshNrm(const Mesh2 &mesh) {
+        return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
+    }
+    
+    // get normal vector
     SP_GENFUNC Vec3 getMeshNrm(const Mesh3 &mesh){
         return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
     }
 
     // get center vector
-    SP_GENFUNC Vec3 getMeshPos(const Mesh3 &mesh){
+    SP_GENFUNC Vec2 getMeshPos(const Mesh2 &mesh) {
         return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
     }
 
-
-    //--------------------------------------------------------------------------------
-    // line
-    //--------------------------------------------------------------------------------
-
-    // get line normal vector
-    SP_GENFUNC Vec2 getLineNrm(const Vec2 &vec) {
-        return unitVec(getVec(-vec.y, vec.x));
+    // get center vector
+    SP_GENFUNC Vec3 getMeshPos(const Mesh3 &mesh){
+        return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
     }
 
 

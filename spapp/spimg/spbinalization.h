@@ -247,9 +247,9 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool onPixel = true, const bool useImgFrame = true, const bool near8 = true){
+    SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool onPixel = true, const bool useImgFrame = true){
 
-        Mem1<Rect> rects = getLabelRect(map);
+        const Mem1<Rect> rects = getLabelRect(map);
 
         // 8 nears clockwise search
         const int order8[8][2] = {
@@ -272,8 +272,6 @@ namespace sp{
             { 0, 2, 0 }
         };
 
-        const int param0 = (onPixel == true) ? 8 : 4;
-        const int param1 = (onPixel == true) ? 2 : 1;
         const int(*order)[2] = (onPixel == true) ? order8 : order4;
         const int(*start)[3] = (onPixel == true) ? start8 : start4;
 
@@ -305,11 +303,12 @@ namespace sp{
 
             int cnt = 0;
             while (1){
-                const int s = (start[vec[1] + 1][vec[0] + 1] + param0 - param1) % param0;
 
                 if (onPixel == true) {
-                    for (int j = 0; j < param0; j++) {
-                        const int t = (s + j) % param0;
+                    const int s = (start[vec[1] + 1][vec[0] + 1] + 8 - 2) % 8;
+                    
+                    for (int j = 0; j < 8; j++) {
+                        const int t = (s + j) % 8;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
                         if (isInRect2(rect, x, y) == false) continue;
@@ -326,10 +325,13 @@ namespace sp{
                     dst[i].push(getVec(cx, cy));
                 }
                 else {
+                    const int s = (start[vec[1] + 1][vec[0] + 1] + 4 - 1) % 4;
+                   
                     Rect trect = rect;
                     trect.dsize[0]++;
                     trect.dsize[1]++;
 
+                    // clockwise
                     bool list[4] = { map(cx - 1, cy - 1) == i, map(cx, cy - 1) == i, map(cx, cy) == i, map(cx - 1, cy) == i };
                   
                     if (cx == 0) {
@@ -351,8 +353,8 @@ namespace sp{
 
                     bool edge[4] = { list[0] != list[1], list[1] != list[2], list[2] != list[3], list[3] != list[0] };
 
-                    for (int j = 0; j < param0; j++) {
-                        const int t = (s + j) % param0;
+                    for (int j = 0; j < 4; j++) {
+                        const int t = (s + j) % 4;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
                         if (isInRect2(trect, x, y) == false) continue;
@@ -381,6 +383,146 @@ namespace sp{
     }
 
 
+    SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelMesh(const Mem2<int> &map, const bool useImgFrame = true) {
+
+        const Mem1<Rect> rects = getLabelRect(map);
+
+        const Mem1<Mem1<Vec2 > > contours = getLabelContour(map, false, useImgFrame);
+
+        Mem1<Mem1<Vec2> > dst(rects.size());
+
+        for (int i = 0; i < dst.size(); i++) {
+            const Rect rect = rects[i];
+
+            if (useImgFrame == false) {
+                if (isInRect(getRect2(map.dsize) - 1, rect) == false) continue;
+            }
+
+            const Mem1<Vec2> &contour = contours[i];
+
+            Mem1<Vec2> tmps;
+            for (int j = 0; j < contour.size(); j++) {
+                tmps.push(contour[j]);
+                tmps.push((contour[j] + contour[(j + 1) % contour.size()]) * 0.5);
+            }
+
+            Mem1<int> vtxs;
+
+            for (int j = 0; j < tmps.size(); j += 2) {
+
+                const int x = floor(tmps[j].x + 1.0);
+                const int y = floor(tmps[j].y + 1.0);
+
+                int list[4] = { map(x - 1, y - 1), map(x, y - 1), map(x, y), map(x - 1, y) };
+
+                if (x == 0) {
+                    list[0] = -2;
+                    list[3] = -2;
+                }
+                if (y == 0) {
+                    list[0] = -2;
+                    list[1] = -2;
+                }
+                if (x == map.dsize[0]) {
+                    list[1] = -2;
+                    list[2] = -2;
+                }
+                if (y == map.dsize[1]) {
+                    list[2] = -2;
+                    list[3] = -2;
+                }
+
+                if (x == 0 && y == 0) {
+                    list[0] = -3;
+                }
+                if (x == map.dsize[0] && y == 0) {
+                    list[1] = -3;
+                }
+                if (x == map.dsize[0] && y == map.dsize[1]) {
+                    list[2] = -3;
+                }
+                if (x == 0 && y == map.dsize[1]) {
+                    list[3] = -3;
+                }
+
+                if (list[0] < 0 && list[1] < 0 && list[2] < 0 && list[3] < 0) continue;
+
+                const bool h0 = (list[0] != list[1]);
+                const bool h1 = (list[2] != list[3]);
+                const bool v0 = (list[0] != list[3]);
+                const bool v1 = (list[1] != list[2]);
+
+                if ((h0 && h1 && (v0 || v1)) || (v0 && v1 && (h0 || h1))) {
+                    vtxs.push(j);
+                }
+            }
+
+            bool loop = true;
+            while (loop) {
+                loop = false;
+
+                for (int j = 0; j < vtxs.size(); j++) {
+                    const int a = vtxs[(j + 0) % vtxs.size()];
+                    const int b = vtxs[(j + 1) % vtxs.size()];
+
+                    const Vec2 A = tmps[a];
+                    const Vec2 B = tmps[b];
+                    const Vec2 v = unitVec(A - B);
+                    const Vec2 n = getVec(-v.y, v.x);
+
+                    const Vec2 t = getVec(1.0, 1.0);
+
+                    double maxv = 0.0;
+                    int id = -1;
+
+                    const double dA = dotVec(A, t);
+                    const double dB = dotVec(B, t);
+
+                    if (dA < dB || (cmpVal(dA, dB) && (A.y < B.y)) ) {
+                        for (int k = a + 1; ; k++) {
+                            const int c = k % tmps.size();
+                            if (c == b) break;
+
+                            const Vec2 C = tmps[c];
+
+                            const double len = fabs(dotVec(n, A - C));
+
+                            if (len > maxv) {
+                                maxv = len;
+                                id = c;
+                            }
+                        }
+                    }
+                    else {
+                        for (int k = b - 1; ; k--) {
+                            const int c = (k + tmps.size()) % tmps.size();
+                            if (c == a) break;
+
+                            const Vec2 C = tmps[c];
+
+                            const double len = fabs(dotVec(n, B - C));
+
+                            if (len > maxv) {
+                                maxv = len;
+                                id = c;
+                            }
+                        }
+                    }
+
+                    if (maxv >= 2.0) {
+                        vtxs.add(j + 1, id);
+                        loop = true;
+                        break;
+                    }
+                }
+            }
+
+            for (int j = 0; j < vtxs.size(); j++) {
+                dst[i].push(tmps[vtxs[j]]);
+            }
+        }
+        return dst;
+    }
 }
 
 #endif

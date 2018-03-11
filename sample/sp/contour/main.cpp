@@ -19,7 +19,7 @@ int main() {
         for (int i = 0; i < contour.size(); i++) {
             const Vec2 &A = contour[(i + 0) % contour.size()];
             const Vec2 &B = contour[(i + 1) % contour.size()];
-            renderPoint(src, A, getCol(0, 0, 0), 2);
+            renderPoint(src, A, getCol(0, 0, 0), 3);
         }
 
         saveBMP(src, "test0.bmp");
@@ -40,7 +40,7 @@ int main() {
             const Vec2 &A = contour[(i + 0) % contour.size()];
             const Vec2 &B = contour[(i + 1) % contour.size()];
             //renderLine(src, A, B, (Byte)255, 2);
-            renderPoint(src, A, getCol(0, 0, 0), 2);
+            renderPoint(src, A, getCol(0, 0, 0), 3);
         }
 
         saveBMP(src, "test1.bmp");
