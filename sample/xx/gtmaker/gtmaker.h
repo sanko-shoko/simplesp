@@ -106,7 +106,7 @@ private:
         }
 
         {
-            glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+            glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);
             glRenderImg(m_img);
         }
 
