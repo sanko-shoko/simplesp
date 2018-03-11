@@ -70,7 +70,7 @@ namespace sp{
             }
 
             // normalize value
-            const double Nc = 20;
+            const double Nc = 30;
             const double Ns = step;
 
             // assign label
@@ -181,11 +181,6 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void cnvLabelToPolygon(Mem1<Mesh2> &meshes, const Mem2<int> &map) {
-
-        meshes.clear();
-
-    }
 }
 
 #endif

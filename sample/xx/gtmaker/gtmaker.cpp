@@ -151,7 +151,7 @@ int GTMakerGUI::findNearLine(const Mem1<Vec2> &pnts, const Vec2 &pix) {
         const Vec2 b = pnts[(i + 1) % pnts.size()];
         const Vec2 v = unitVec(a - b);
 
-        const Vec2 nrm = getLineNrm(v);
+        const Vec2 nrm = getVec(-v.y, v.x);
         const double norm = ::fabs(dotVec(nrm, a - pix));
         const double in = dotVec(v, a - pix) * dotVec(v, b - pix);
 

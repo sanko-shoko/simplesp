@@ -50,6 +50,7 @@ namespace sp{
 
         contour = vtxs;
 
+        // snake main loop
         for (int it = 0; it < maxit; it++) {
             Mem1<Vec2> tmps = contour;
             for (int i = 0; i < tmps.size(); i++) {
