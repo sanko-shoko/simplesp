@@ -10,7 +10,7 @@
 
 namespace sp{
 
-    SP_CPUFUNC bool snake(Mem1<Vec2> &contour, const Mem2<Byte> &img, const Mem1<Vec2> &vtxs) {
+    SP_CPUFUNC bool snake(Mem1<Vec2> &contour, const Mem2<Byte> &img, const Mem1<Vec2> &vtxs, const int unit = 20) {
 
         const int maxit = 100;
 
@@ -45,8 +45,6 @@ namespace sp{
             }
         }
         gaussianFilter3x3(map, map);
-
-        const int unit = 20;
 
         contour = vtxs;
 
@@ -102,8 +100,8 @@ namespace sp{
 
                         const double dx = fabs(U.y) * fabs(smth(ix + 1, iy) - smth(ix - 1, iy));
                         const double dy = fabs(U.x) * fabs(smth(ix, iy + 1) - smth(ix, iy - 1));
-                        const double dif = c * (dx + dy) / thresh;
-                        const double e = len + crv - dif;
+                        const double img = -c * (dx + dy) / thresh;
+                        const double e = len + crv + img;
                         if (e < minv) {
                             minv = e;
                             vec = getVec(u, v);
@@ -118,10 +116,10 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool snake(Mem1<Vec2> &contour, const Mem2<Col3> &img, const Mem1<Vec2> &vtxs) {
+    SP_CPUFUNC bool snake(Mem1<Vec2> &contour, const Mem2<Col3> &img, const Mem1<Vec2> &vtxs, const int unit = 20) {
         Mem2<Byte> gry;
         cnvImg(gry, img);
-        return snake(contour, gry, vtxs);
+        return snake(contour, gry, vtxs, unit);
     }
 }
 
