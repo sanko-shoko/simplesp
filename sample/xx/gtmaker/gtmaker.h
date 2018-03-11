@@ -114,19 +114,15 @@ private:
             
             dispData();
 
-            editMenu();
+            switch (m_mode) {
+            case M_Rect: menuRect(); break;
+            case M_Cont: menuCont(); break;
+            }
 
             switch (m_mode) {
             case M_Rect: dispRect(); break;
             case M_Cont: dispCont(); break;
             }
-        }
-    }
-
-     void editMenu() {
-        switch (m_mode) {
-        case M_Rect: menuRect(); break;
-        case M_Cont: menuCont(); break;
         }
     }
 
