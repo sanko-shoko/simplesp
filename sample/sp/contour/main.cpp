@@ -5,11 +5,12 @@ using namespace sp;
 int main() {
     {
         Mem2<Col3> src(640, 480);
+        {
+            setElm(src, getCol(255, 255, 255));
 
-        setElm(src, getCol(255, 255, 255));
-
-        renderPoint(src, getVec(320, 240), getCol(0, 180, 0), 100);
-        renderPoint(src, getVec(400, 180), getCol(0, 180, 0), 60);
+            renderPoint(src, getVec(320, 240), getCol(0, 180, 0), 100);
+            renderPoint(src, getVec(400, 180), getCol(0, 180, 0), 60);
+        }
 
         const Rect rect = getRect2(120, 90, 400, 300);
 

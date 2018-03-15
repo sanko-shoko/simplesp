@@ -38,7 +38,7 @@ namespace sp{
 
         const Vec3 p = pose * pnt;
         if (p.z > 0){
-            renderPoint(dst, cam * prjVec(p), val, radius);
+            renderPoint(dst, mulCam(cam, prjVec(p)), val, radius);
         }
     }
 
