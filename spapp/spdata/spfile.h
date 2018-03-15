@@ -29,7 +29,7 @@ namespace sp {
 
     using namespace std;
 
-    SP_CPUFUNC string getTimeStamp(char *format = "%Y%m%d_%H%M%S") {
+    SP_CPUFUNC string getTimeStamp(const char *format = "%Y%m%d_%H%M%S") {
         char str[SP_STRMAX];
         time_t t = time(NULL);
         strftime(str, sizeof(str), format, localtime(&t));
