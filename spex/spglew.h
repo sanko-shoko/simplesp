@@ -8,7 +8,7 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
-#include "simplesp.h"
+#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
 
 namespace sp{
@@ -19,18 +19,15 @@ namespace sp{
         int m_dsize[2];
 
         GLuint m_fbId;
-        GLuint m_rdId;
-        GLuint m_texId;
-        GLuint m_depthId;
+        GLuint m_pixId[2];
         
-        GLint m_viewport[4];
+        GLint backup[4];
 
     public:
         FrameBuffer() {
             m_fbId = 0;
-            m_rdId = 0;
-            m_texId = 0;
-            m_depthId = 0;
+            m_pixId[0] = 0;
+            m_pixId[1] = 0;
         }
 
         ~FrameBuffer() {
@@ -42,13 +39,11 @@ namespace sp{
                 glDeleteFramebuffersEXT(1, &m_fbId);
                 m_fbId = 0;
             }
-            if (m_texId) {
-                glDeleteTextures(1, &m_texId);
-                m_texId = 0;
-            }
-            if (m_depthId) {
-                glDeleteTextures(1, &m_depthId);
-                m_depthId = 0;
+            for (int i = 0; i < 2; i++) {
+                if (m_pixId[0]) {
+                    glDeleteTextures(1, &m_pixId[i]);
+                    m_pixId[i] = 0;
+                }
             }
         }
 
@@ -57,12 +52,13 @@ namespace sp{
 
             m_dsize[0] = dsize0;
             m_dsize[1] = dsize1;
+
             glGenFramebuffersEXT(1, &m_fbId);
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbId);
 
             {
-                glGenTextures(1, &m_texId);
-                glBindTexture(GL_TEXTURE_2D, m_texId);
+                glGenTextures(1, &m_pixId[0]);
+                glBindTexture(GL_TEXTURE_2D, m_pixId[0]);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize0, dsize1, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
@@ -72,13 +68,13 @@ namespace sp{
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_texId, 0);
+                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_pixId[0], 0);
 
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
             {
-                glGenTextures(1, &m_depthId);
-                glBindTexture(GL_TEXTURE_2D, m_depthId);
+                glGenTextures(1, &m_pixId[1]);
+                glBindTexture(GL_TEXTURE_2D, m_pixId[1]);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize0, dsize1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
@@ -93,7 +89,7 @@ namespace sp{
 
                 glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_depthId, 0);
+                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_pixId[1], 0);
 
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
@@ -105,8 +101,9 @@ namespace sp{
             resize(dsize[0], dsize[1]);
         }
 
+
         void bind() {
-            glGetIntegerv(GL_VIEWPORT, m_viewport);
+            glGetIntegerv(GL_VIEWPORT, backup);
 
             glViewport(0, 0, m_dsize[0], m_dsize[1]);
 
@@ -121,11 +118,7 @@ namespace sp{
 
         void unbind() {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-            glViewport(m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
-        }
-
-        void bindColorTexture() {
-            glBindTexture(GL_TEXTURE_2D, m_texId);
+            glViewport(backup[0], backup[1], backup[2], backup[3]);
         }
 
         void readImg(Mem2<Col3> &img) {
