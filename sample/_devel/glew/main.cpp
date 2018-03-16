@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_GLEW 1
+
+#include "simplesp.h"
 #include "spex/spgl.h"
 
 using namespace sp;
@@ -22,6 +24,8 @@ class RenderGUI : public BaseWindow {
 
     int m_mode;
 
+    FrameBuffer m_fb;
+
 private:
 
     void help() {
@@ -42,6 +46,8 @@ private:
 
         m_img.resize(m_cam.dsize);
         m_img.zero();
+
+        m_fb.resize(m_cam.dsize);
 
         if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
 
@@ -72,6 +78,17 @@ private:
 
         if (m_keyAction[GLFW_KEY_M] == 1) {
             if (++m_mode >= 3) m_mode = 0;
+        }
+        if (m_keyAction[GLFW_KEY_T] == 1) {
+            const double distance = getModelDistance(m_model, m_cam);
+            const double radius = getModelRadius(m_model);
+            m_fb.bind();
+            display();
+            m_fb.unbind();
+
+            Mem2<double> map;
+            m_fb.readDepth(map);
+            cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
         }
     }
 
@@ -152,7 +169,7 @@ private:
         glBegin(GL_LINES);
         glAxis(100.0);
         glEnd();
-
+        
         glEnable(GL_DEPTH_TEST);
     }
 
@@ -167,7 +184,7 @@ private:
 };
 
 
-int main(){
+int main() {
 
     RenderGUI win;
     win.execute("render", 800, 600);

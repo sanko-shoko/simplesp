@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SPGL_WIN_H__
-#define __SPGL_WIN_H__
+#ifndef __SP_GLWIN_H__
+#define __SP_GLWIN_H__
 
 #if defined(_WIN32) && SP_USE_GLEW
 #include "GL/glew.h"
@@ -13,7 +13,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #endif
-
+#include <iostream>
 #include "simplesp.h"
 #include "GLFW/glfw3.h"
 
@@ -188,11 +188,6 @@ namespace sp {
             // glfw init
             SP_ASSERT(glfwInit());
 
-#if defined(_WIN32) && SP_USE_GLEW
-            // glew init
-            SP_ASSERT(glewInit() != GLEW_OK);
-#endif
-
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             // glfw create window
@@ -206,6 +201,11 @@ namespace sp {
             // glfw make context
             glfwMakeContextCurrent(window);
 
+#if defined(_WIN32) && SP_USE_GLEW
+            // glew init
+            SP_ASSERT(glewInit() == GLEW_OK);
+#endif
+
 #if SP_USE_IMGUI
             // imgui init
             ImGui_ImplGlfwGL2_Init(window, true);
@@ -213,7 +213,6 @@ namespace sp {
 
             // glfw set event callbacks
             setCallback(window);
-
 
             init();
 

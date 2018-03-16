@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SPRS_UTIL_H__
-#define __SPRS_UTIL_H__
+#ifndef __SP_RSUTIL_H__
+#define __SP_RSUTIL_H__
 
 #include "simplesp.h"
 #include "librealsense/rs.hpp"

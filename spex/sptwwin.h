@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SPTW_WIN_H__
-#define __SPTW_WIN_H__
+#ifndef __SP_TWWIN_H__
+#define __SP_TWWIN_H__
 
 #include "spex/spgl.h"
 #include "AntTweakBar.h"
@@ -105,9 +105,6 @@ namespace sp{
             // glfw init
             SP_ASSERT(glfwInit());
 
-#if defined(_WIN32) && SP_USE_GLEW
-            SP_ASSERT(glewInit() != GLEW_OK);
-#endif
 
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
@@ -121,6 +118,10 @@ namespace sp{
 
             // glfw make context
             glfwMakeContextCurrent(window);
+
+#if defined(_WIN32) && SP_USE_GLEW
+            SP_ASSERT(glewInit() == GLEW_OK);
+#endif
 
             // set TW
             TwInit(TW_OPENGL, NULL);
