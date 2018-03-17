@@ -7,7 +7,11 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 ## external
 include_directories(${CMAKE_SOURCE_DIR}/external)
+include_directories(${CMAKE_SOURCE_DIR}/external/imgui)
+include_directories(${CMAKE_SOURCE_DIR}/external/tinyfd)
+
 link_directories(${CMAKE_SOURCE_DIR}/external)
+
 file(GLOB EX_LIBS ${CMAKE_SOURCE_DIR}/external/*.lib)
 
 

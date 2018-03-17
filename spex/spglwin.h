@@ -2,10 +2,11 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SPGL_WIN_H__
-#define __SPGL_WIN_H__
+#ifndef __SP_GLWIN_H__
+#define __SP_GLWIN_H__
 
 #if defined(_WIN32) && SP_USE_GLEW
+#define GLEW_STATIC
 #include "GL/glew.h"
 #endif
 
@@ -14,7 +15,7 @@
 #include "imgui_impl_glfw.h"
 #endif
 
-#include "simplesp.h"
+#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
 
 namespace sp {
@@ -188,11 +189,6 @@ namespace sp {
             // glfw init
             SP_ASSERT(glfwInit());
 
-#if defined(_WIN32) && SP_USE_GLEW
-            // glew init
-            SP_ASSERT(glewInit() != GLEW_OK);
-#endif
-
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             // glfw create window
@@ -206,6 +202,11 @@ namespace sp {
             // glfw make context
             glfwMakeContextCurrent(window);
 
+#if defined(_WIN32) && SP_USE_GLEW
+            // glew init
+            SP_ASSERT(glewInit() == GLEW_OK);
+#endif
+
 #if SP_USE_IMGUI
             // imgui init
             ImGui_ImplGlfwGL2_Init(window, true);
@@ -213,7 +214,6 @@ namespace sp {
 
             // glfw set event callbacks
             setCallback(window);
-
 
             init();
 
@@ -378,26 +378,21 @@ namespace sp {
         static void windowSizeCB(GLFWwindow *window, int width, int height){
             getThisPtr(window)->_windowSize(width, height);
         }
-
         static void mouseButtonCB(GLFWwindow *window, int button, int action, int mods){
             getThisPtr(window)->_mouseButton(button, action, mods);
         }
-
         static void mousePosCB(GLFWwindow *window, double x, double y){
             getThisPtr(window)->_mousePos(x, y);
-
         }
         static void mouseScrollCB(GLFWwindow *window, double x, double y){
             getThisPtr(window)->_mouseScroll(x, y);
         }
-
         static void keyFunCB(GLFWwindow* window, int key, int scancode, int action, int mods){
             getThisPtr(window)->_keyFun(key, scancode, action, mods);
         }
         static void charFunCB(GLFWwindow* window, unsigned int charInfo){
             getThisPtr(window)->_charFun(charInfo);
         }
-
         static void dropCB(GLFWwindow *window, int num, const char **paths) {
             getThisPtr(window)->_dropCB(num, paths);
         }

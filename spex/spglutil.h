@@ -2,19 +2,10 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SPGL_UTIL_H__
-#define __SPGL_UTIL_H__
+#ifndef __SP_GLUTIL_H__
+#define __SP_GLUTIL_H__
 
-#if defined(_WIN32) && SP_USE_GLEW
-#include "GL/glew.h"
-#endif
-
-#if SP_USE_IMGUI
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#endif
-
-#include "simplesp.h"
+#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
 
 namespace sp{
@@ -91,7 +82,6 @@ namespace sp{
 
         return glGetViewMat(dsize[0], dsize[1], viewPos, viewScale);
     }
-
 
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Mat &vmat) {
         glDisable(GL_DEPTH_TEST);
@@ -392,8 +382,6 @@ namespace sp{
             glEnd();
         }
         glPopAttrib();
-
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     SP_CPUFUNC void glRenderOutline(const Mem1<Mesh3> &model) {
@@ -436,8 +424,6 @@ namespace sp{
             }
         }
         glPopAttrib();
-
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     SP_CPUFUNC void glRenderVoxel(const Voxel &voxel) {
@@ -480,45 +466,8 @@ namespace sp{
             }
         }
         glPopAttrib();
-
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
 }
-
-#if SP_USE_IMGUI
-
-#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
-
-namespace ImGui {
-    SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
-        SP_ASSERT(rect.dim == 2);
-
-        ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
-        ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
-    }
-
-    SP_CPUFUNC bool ButtonPopup(const char *name, const char *popup) {
-        if (ImGui::Button(name)) {
-            ImGui::OpenPopup(popup);
-        }
-
-        bool ret = false;
-        if (ImGui::BeginPopupModal(popup, NULL, ImGuiWindowFlags_AlwaysAutoResize)){
-            if (ImGui::Button("ok", ImVec2(80, 0))) {
-                ImGui::CloseCurrentPopup();
-                ret = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("cancel", ImVec2(80, 0))) {
-                ImGui::CloseCurrentPopup();
-                ret = false;
-            }
-            ImGui::EndPopup();
-        }
-        return ret;
-    }
-}
-#endif
 
 #endif

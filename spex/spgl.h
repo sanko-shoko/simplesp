@@ -13,7 +13,15 @@
 #define SP_USE_IMGUI 0
 #endif
 
+#if SP_USE_GLEW
+#include "spex/spglew.h"
+#endif
+
 #include "spex/spglutil.h"
 #include "spex/spglwin.h"
+
+#if SP_USE_IMGUI
+#include "spex/spimgui.h"
+#endif
 
 #endif

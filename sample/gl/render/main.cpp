@@ -144,12 +144,16 @@ private:
     }
 
     void renderAxis() {
+        glDisable(GL_DEPTH_TEST);
+
         glLoadMatrix(m_pose);
 
         glLineWidth(2.f);
         glBegin(GL_LINES);
         glAxis(100.0);
         glEnd();
+
+        glEnable(GL_DEPTH_TEST);
     }
 
     virtual void mousePos(double x, double y) {
