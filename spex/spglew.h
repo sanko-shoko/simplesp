@@ -24,16 +24,16 @@ namespace sp{
     private:
         int m_dsize[2];
 
-        GLuint m_fbId;
-        GLuint m_pixId[2];
+        GLuint m_fb;
+        GLuint m_tex[2];
         
         GLint backup[4];
 
     public:
         FrameBuffer() {
-            m_fbId = 0;
-            m_pixId[0] = 0;
-            m_pixId[1] = 0;
+            m_fb = 0;
+            m_tex[0] = 0;
+            m_tex[1] = 0;
         }
 
         ~FrameBuffer() {
@@ -41,14 +41,14 @@ namespace sp{
         }
 
         void free() {
-            if (m_fbId) {
-                glDeleteFramebuffersEXT(1, &m_fbId);
-                m_fbId = 0;
+            if (m_fb) {
+                glDeleteFramebuffersEXT(1, &m_fb);
+                m_fb = 0;
             }
             for (int i = 0; i < 2; i++) {
-                if (m_pixId[i]) {
-                    glDeleteTextures(1, &m_pixId[i]);
-                    m_pixId[i] = 0;
+                if (m_tex[i]) {
+                    glDeleteTextures(1, &m_tex[i]);
+                    m_tex[i] = 0;
                 }
             }
         }
@@ -59,12 +59,12 @@ namespace sp{
             m_dsize[0] = dsize0;
             m_dsize[1] = dsize1;
 
-            glGenFramebuffersEXT(1, &m_fbId);
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbId);
+            glGenFramebuffersEXT(1, &m_fb);
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
 
             {
-                glGenTextures(1, &m_pixId[0]);
-                glBindTexture(GL_TEXTURE_2D, m_pixId[0]);
+                glGenTextures(1, &m_tex[0]);
+                glBindTexture(GL_TEXTURE_2D, m_tex[0]);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize0, dsize1, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
@@ -74,13 +74,11 @@ namespace sp{
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_pixId[0], 0);
-
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_tex[0], 0);
             }
             {
-                glGenTextures(1, &m_pixId[1]);
-                glBindTexture(GL_TEXTURE_2D, m_pixId[1]);
+                glGenTextures(1, &m_tex[1]);
+                glBindTexture(GL_TEXTURE_2D, m_tex[1]);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize0, dsize1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
@@ -95,11 +93,10 @@ namespace sp{
 
                 glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_pixId[1], 0);
-
-                glBindTexture(GL_TEXTURE_2D, 0);
+                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_tex[1], 0);
             }
 
+            glBindTexture(GL_TEXTURE_2D, 0);
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
@@ -112,7 +109,7 @@ namespace sp{
 
             glViewport(0, 0, m_dsize[0], m_dsize[1]);
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbId);
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
 
             const GLenum buffer = GL_COLOR_ATTACHMENT0_EXT;
             glDrawBuffers(1, &buffer);
@@ -129,7 +126,7 @@ namespace sp{
         void readImg(Mem2<Col3> &img) {
             img.resize(m_dsize);
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbId);
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
 
             Mem2<Col3> tmp(m_dsize);
@@ -145,7 +142,7 @@ namespace sp{
         void readDepth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             depth.resize(m_dsize);
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbId);
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
 
             Mem2<float> tmp(m_dsize);
@@ -165,17 +162,21 @@ namespace sp{
     class Shader {
     private:
         GLuint m_program;
-        GLuint m_vertexArray;
+        GLuint m_vertex;
         Mem1<GLuint> m_buffer;
 
     public:
         Shader() {
             m_program = 0;
-            m_vertexArray = 0;
+            m_vertex = 0;
         }
 
         ~Shader() {
             free();
+        }
+
+        bool isValid() {
+            return m_program != 0 ? true : false;
         }
 
         void load(const char *vert, const char *frag) {
@@ -189,8 +190,8 @@ namespace sp{
             glDeleteShader(vertShader);
             glDeleteShader(fragShader);
 
-            glGenVertexArrays(1, &m_vertexArray);
-            glBindVertexArray(m_vertexArray);
+            glGenVertexArrays(1, &m_vertex);
+            glBindVertexArray(m_vertex);
         }
 
         void enable() {
@@ -211,7 +212,7 @@ namespace sp{
             Mem2<float> tmatf(4, 4);
             cnvMem(tmatf, tmat);
 
-            const GLint location = glGetUniformLocation(m_program, "MVP");
+            const GLint location = glGetUniformLocation(m_program, "mat");
             glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 
@@ -246,9 +247,9 @@ namespace sp{
                 glDeleteProgram(m_program);
                 m_program = 0;
             }
-            if (m_vertexArray) {
-                glDeleteVertexArrays(1, &m_vertexArray);
-                m_vertexArray = 0;
+            if (m_vertex) {
+                glDeleteVertexArrays(1, &m_vertex);
+                m_vertex = 0;
             }
         }
 
@@ -263,10 +264,9 @@ namespace sp{
             glGetProgramiv(program, GL_LINK_STATUS, &result);
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
             if (length > 0) {
-                char *info = new char[length];
-                glGetProgramInfoLog(program, length, NULL, info);
-                printf("%s\n", info);
-                delete[]info;
+                Mem1<char> info(length + 1);
+                glGetProgramInfoLog(program, length, NULL, info.ptr);
+                SP_PRINTF("%s\n", info.ptr);
             }
 
             return program;
@@ -282,10 +282,9 @@ namespace sp{
             glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
             if (length > 0) {
-                char *info = new char[length];
-                glGetShaderInfoLog(shader, length, NULL, info);
-                printf("%s\n", info);
-                delete[]info;
+                Mem1<char> info(length + 1);
+                glGetShaderInfoLog(shader, length, NULL, info.ptr);
+                SP_PRINTF("%s\n", info.ptr);
             }
 
             return shader;
