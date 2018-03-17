@@ -13,8 +13,8 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #endif
-#include <iostream>
-#include "simplesp.h"
+
+#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
 
 namespace sp {

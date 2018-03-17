@@ -83,7 +83,6 @@ namespace sp{
         return glGetViewMat(dsize[0], dsize[1], viewPos, viewScale);
     }
 
-
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Mat &vmat) {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);

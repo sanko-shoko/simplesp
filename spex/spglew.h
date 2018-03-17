@@ -5,8 +5,14 @@
 #ifndef __SP_GLEW_H__
 #define __SP_GLEW_H__
 
+#ifndef SP_USE_GLEW
+#define SP_USE_GLEW 1
+#endif
+
+#if defined(_WIN32) && SP_USE_GLEW
 #define GLEW_STATIC
 #include "GL/glew.h"
+#endif
 
 #include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
@@ -40,7 +46,7 @@ namespace sp{
                 m_fbId = 0;
             }
             for (int i = 0; i < 2; i++) {
-                if (m_pixId[0]) {
+                if (m_pixId[i]) {
                     glDeleteTextures(1, &m_pixId[i]);
                     m_pixId[i] = 0;
                 }
@@ -101,7 +107,6 @@ namespace sp{
             resize(dsize[0], dsize[1]);
         }
 
-
         void bind() {
             glGetIntegerv(GL_VIEWPORT, backup);
 
@@ -155,6 +160,137 @@ namespace sp{
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
+    };
+
+    class Shader {
+    private:
+        GLuint m_program;
+        GLuint m_vertexArray;
+        Mem1<GLuint> m_buffer;
+
+    public:
+        Shader() {
+            m_program = 0;
+            m_vertexArray = 0;
+        }
+
+        ~Shader() {
+            free();
+        }
+
+        void load(const char *vert, const char *frag) {
+            free();
+
+            GLuint vertShader = getShader(vert, GL_VERTEX_SHADER);
+            GLuint fragShader = getShader(frag, GL_FRAGMENT_SHADER);
+
+            m_program = getProgram(vertShader, fragShader);
+
+            glDeleteShader(vertShader);
+            glDeleteShader(fragShader);
+
+            glGenVertexArrays(1, &m_vertexArray);
+            glBindVertexArray(m_vertexArray);
+        }
+
+        void enable() {
+
+            glUseProgram(m_program);
+
+            Mat proj(4, 4);
+            Mat view(4, 4);
+            
+            glGetDoublev(GL_PROJECTION_MATRIX, proj.ptr);
+            glGetDoublev(GL_MODELVIEW_MATRIX, view.ptr);
+
+            proj = trnMat(proj);
+            view = trnMat(view);
+
+            const Mat tmat = trnMat(proj * view);
+
+            Mem2<float> tmatf(4, 4);
+            cnvMem(tmatf, tmat);
+
+            const GLint location = glGetUniformLocation(m_program, "MVP");
+            glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+        }
+
+        void setVertex(const Vec3 *pVec, const int size) {
+            GLuint buffer;
+            glGenBuffers(1, &buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * size, pVec, GL_STATIC_DRAW);
+
+            const GLuint id = static_cast<int>(m_buffer.size());
+            glEnableVertexAttribArray(id);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glVertexAttribPointer(id, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+
+            m_buffer.push(buffer);
+        }
+
+        void disable() {
+            glUseProgram(0);
+
+            for (int i = 0; i < static_cast<int>(m_buffer.size()); i++) {
+                glDisableVertexAttribArray(i);
+                glDeleteBuffers(1, &m_buffer[i]);
+            }
+            m_buffer.clear();
+        }
+
+    private:
+
+        void free() {
+            if (m_program) {
+                glDeleteProgram(m_program);
+                m_program = 0;
+            }
+            if (m_vertexArray) {
+                glDeleteVertexArrays(1, &m_vertexArray);
+                m_vertexArray = 0;
+            }
+        }
+
+        GLuint getProgram(GLuint vertShader, GLuint fragShader) {
+            GLuint program = glCreateProgram();
+
+            glAttachShader(program, vertShader);
+            glAttachShader(program, fragShader);
+            glLinkProgram(program);
+
+            GLint result, length;
+            glGetProgramiv(program, GL_LINK_STATUS, &result);
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+            if (length > 0) {
+                char *info = new char[length];
+                glGetProgramInfoLog(program, length, NULL, info);
+                printf("%s\n", info);
+                delete[]info;
+            }
+
+            return program;
+        }
+
+        GLuint getShader(const char *code, const int type) {
+            const GLuint shader = glCreateShader(type);
+
+            glShaderSource(shader, 1, &code, NULL);
+            glCompileShader(shader);
+
+            GLint result, length;
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+            if (length > 0) {
+                char *info = new char[length];
+                glGetShaderInfoLog(shader, length, NULL, info);
+                printf("%s\n", info);
+                delete[]info;
+            }
+
+            return shader;
+        }
+
     };
 }
 #endif

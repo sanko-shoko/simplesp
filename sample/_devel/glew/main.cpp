@@ -21,6 +21,8 @@ class RenderGUI : public BaseWindow {
 
     FrameBuffer m_fb;
 
+    Shader m_shader;
+
 private:
 
     void help() {
@@ -48,6 +50,7 @@ private:
         }
 
         m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -70,8 +73,98 @@ private:
         }
     }
 
-    virtual void display() {
+    void shader00() {
+        static bool onece = true;
+        if (onece) {
+            onece = false;
+            const char *basic_vert =
+                "#version 400 core\n"
+                "layout(location = 0) in vec3 vertexPosition_modelspace;"
+                "out vec3 fragmentColor;"
+                "uniform mat4 MVP;"
 
+                "void main(){"
+                "gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0);"
+                "fragmentColor = vec3(0.5, 1.0, 1.0);"
+                "}"
+                ;
+
+            const char *basic_flag =
+                "#version 400 core\n"
+                "in vec3 fragmentColor;"
+                "out vec3 color;"
+                "void main()"
+                "{"
+                "color = fragmentColor;"
+                "}"
+                ;
+            m_shader.load(basic_vert, basic_flag);
+        }
+
+        glLoadView3D(m_cam, m_viewPos, m_viewScale);
+        glLoadMatrix(m_pose);
+
+        m_shader.enable();
+        m_shader.setVertex((Vec3*)m_model.ptr, m_model.size() * 3);
+
+        glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
+
+        m_shader.disable();
+    }
+
+    void shader01() {
+
+        static bool onece = true;
+        if (onece) {
+            onece = false;
+            const char *basic_vert =
+                "#version 400 core\n"
+                "layout(location = 0) in vec3 vertexPosition_modelspace;"
+
+                "void main(){"
+                "gl_Position.xyz = vertexPosition_modelspace;"
+                "gl_Position.w = 1.0;"
+                "}"
+                ;
+
+            const char *basic_flag =
+                "#version 400 core\n"
+                "out vec3 color;"
+                "void main()"
+                "{"
+                "color = vec3(1,0,0);"
+                "}"
+                ;
+            m_shader.load(basic_vert, basic_flag);
+
+        }
+
+        static const double g_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            0.0f,  1.0f, 0.0f,
+        };
+        m_shader.enable();
+        m_shader.setVertex((Vec3*)g_vertex_buffer_data, 3);
+
+
+        // Draw the triangle !
+        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+
+
+        m_shader.disable();
+    }
+
+    virtual void display() {
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(-1.0, 1.0, -1.0, 0.0, 1.0, -1.0);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        shader01();
+        return;
         {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
@@ -86,7 +179,6 @@ private:
             renderAxis();
         }
     }
-
     void renderSurface() {
         glLoadMatrix(m_pose);
 
@@ -123,7 +215,7 @@ private:
 int main() {
 
     RenderGUI win;
-    win.execute("render", 800, 600);
+    win.execute("glew", 800, 600);
 
     return 0;
 }
