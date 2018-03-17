@@ -378,26 +378,21 @@ namespace sp {
         static void windowSizeCB(GLFWwindow *window, int width, int height){
             getThisPtr(window)->_windowSize(width, height);
         }
-
         static void mouseButtonCB(GLFWwindow *window, int button, int action, int mods){
             getThisPtr(window)->_mouseButton(button, action, mods);
         }
-
         static void mousePosCB(GLFWwindow *window, double x, double y){
             getThisPtr(window)->_mousePos(x, y);
-
         }
         static void mouseScrollCB(GLFWwindow *window, double x, double y){
             getThisPtr(window)->_mouseScroll(x, y);
         }
-
         static void keyFunCB(GLFWwindow* window, int key, int scancode, int action, int mods){
             getThisPtr(window)->_keyFun(key, scancode, action, mods);
         }
         static void charFunCB(GLFWwindow* window, unsigned int charInfo){
             getThisPtr(window)->_charFun(charInfo);
         }
-
         static void dropCB(GLFWwindow *window, int num, const char **paths) {
             getThisPtr(window)->_dropCB(num, paths);
         }
