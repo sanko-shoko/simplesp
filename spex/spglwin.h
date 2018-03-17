@@ -6,6 +6,7 @@
 #define __SP_GLWIN_H__
 
 #if defined(_WIN32) && SP_USE_GLEW
+#define GLEW_STATIC
 #include "GL/glew.h"
 #endif
 
