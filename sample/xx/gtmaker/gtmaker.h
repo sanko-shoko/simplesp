@@ -22,7 +22,8 @@ private:
     // editor mode
     enum Mode {
         M_Rect = 0, // Rectangle
-        M_Cont = 1  // Contour
+        M_Ordr = 1, // Order
+        M_Cont = 2  // Contour
     };
     Mode m_mode;
 
@@ -114,10 +115,14 @@ private:
             
             dispData();
 
+            //const ImVec4 col(0.8f, 0.8f, 0.8f, 0.8f);
+            //ImGui::PushStyleColor(ImGuiCol_WindowBg, col);
+
             switch (m_mode) {
             case M_Rect: menuRect(); break;
             case M_Cont: menuCont(); break;
             }
+            //ImGui::PopStyleColor();
 
             switch (m_mode) {
             case M_Rect: dispRect(); break;
@@ -178,6 +183,13 @@ private:
     void dispRect();
     void mouseButtonRect(int button, int action, int mods);
     void mousePosRect(double x, double y);
+
+    // order
+    void initOrdr();
+    void menuOrdr();
+    void dispOrdr();
+    void mouseButtonOrdr(int button, int action, int mods);
+    void mousePosOrdr(double x, double y);
 
     // contour
     void initCont();
