@@ -7,6 +7,7 @@ using namespace sp;
 //--------------------------------------------------------------------------------
 
 void GTMakerGUI::dispData() {
+    MemP<GT> &gts = m_database.gtsList[m_selectid];
 
     if (ImGui::Begin("database", NULL, ImGuiWindowFlags_Block)) {
 
@@ -62,18 +63,17 @@ void GTMakerGUI::dispData() {
 
             ImGui::AlignTextToFramePadding();
             ImGui::BeginChild("label", ImVec2(0, 24));
+            {
+                ImGui::BulletText("labels");
 
-            ImGui::AlignTextToFramePadding();
-            ImGui::BulletText("labels");
+                ImGui::SameLine(0, 31);
 
-            ImGui::SameLine(0, 31);
-
-            if (ImGui::Button("add")) {
-                m_database.gtNames.add(0, "");
-                m_database.updateLabel(0, +1);
+                if (ImGui::Button("add")) {
+                    m_database.gtNames.add(0, "");
+                    m_database.updateLabel(0, +1);
+                }
+                ImGui::EndChild();
             }
-            ImGui::EndChild();
-
 
             ImGui::BeginChild("names", ImVec2(180, 140));
 
@@ -112,6 +112,7 @@ void GTMakerGUI::dispData() {
         }
 
         ImGui::Separator();
+
 
         ImGui::End();
     }

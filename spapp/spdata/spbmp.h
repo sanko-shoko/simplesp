@@ -32,11 +32,22 @@ namespace sp{
         const int dsize[2] = { sizeW, sizeH };
         dst.resize(2, dsize);
 
-        Mem1<unsigned char> line(sizeW * 3 + sizeW % 4);
-        for (int v = 0; v < sizeH; v++){
-            file.read(&line[0], line.size());
-            for (int u = 0; u < sizeW; u++){
-                acs2(dst, u, sizeH - 1 - v) = getCol(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
+        int ch = 0;
+        if (bit == 8) ch = 1;
+        if (bit == 24) ch = 3;
+        
+        if (ch == 0) return false;
+
+        Mem1<Byte> line(sizeW * ch + (sizeW * ch) % 4);
+        for (int v = 0; v < sizeH; v++) {
+            file.read(line.ptr, line.size());
+            for (int u = 0; u < sizeW; u++) {
+                if (ch == 1) {
+                    acs2(dst, u, sizeH - 1 - v) = getCol(line[u], line[u], line[u]);
+                }
+                if (ch == 3) {
+                    acs2(dst, u, sizeH - 1 - v) = getCol(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
+                }
             }
         }
 
@@ -81,7 +92,7 @@ namespace sp{
 
         file.write(buf, 54);
 
-        Mem1<unsigned char> line(sizeW * 3 + sizeW % 4);
+        Mem1<Byte> line(sizeW * 3 + (sizeW * 3) % 4);
         for (int v = 0; v < sizeH; v++){
             for (int u = 0; u < sizeW; u++){
                 line[u * 3 + 0] = acs2(src, u, sizeH - 1 - v).b;

@@ -16,13 +16,13 @@ Vec2 *g_select;
 //--------------------------------------------------------------------------------
 
 void autoContour(Mem1<Vec2> &contour, const Mem2<Col3> &img, const Rect &rect) {
-    const int unit = minVal(rect.dsize[0], rect.dsize[1]) / 5;
+    //const int unit = minVal(rect.dsize[0], rect.dsize[1]) / 5;
 
-    Mem1<Vec2> tmp;
-    snake(tmp, img, vertex2(rect), unit);
-    if (tmp.size() > 10) {
-        contour = tmp;
-    }
+    //Mem1<Vec2> tmp;
+    //snake(tmp, img, vertex2(rect), unit);
+    //if (tmp.size() > 10) {
+    //    contour = tmp;
+    //}
 }
 
 
@@ -59,7 +59,7 @@ void GTMakerGUI::menuCont() {
 
             ImGui::Text("contour");
 
-            ImGui::SameLine();
+            ImGui::SameLine(0, 14.0f);
 
             if (ImGui::ButtonPopup("reset", "reset?")) {
                 g_crnt->clear();

@@ -6,18 +6,16 @@ using namespace sp;
 // global
 //--------------------------------------------------------------------------------
 
-// rectangle base pos
-Vec2 g_basePos;
-
 
 //--------------------------------------------------------------------------------
 // member
 //--------------------------------------------------------------------------------
 
-void GTMakerGUI::initRect() {
+void GTMakerGUI::initOrdr() {
+
 }
 
-void GTMakerGUI::menuRect() {
+void GTMakerGUI::menuOrdr() {
     const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
@@ -57,7 +55,7 @@ void GTMakerGUI::menuRect() {
                 }
             }
             else {
-                ImGui::SetWindowSize(ImVec2(168.0f, 35.0f), ImGuiCond_Always);
+                ImGui::SetWindowSize(ImVec2(210.0f, 35.0f), ImGuiCond_Always);
                 
                 ImGui::Text("-");
                
@@ -74,32 +72,18 @@ void GTMakerGUI::menuRect() {
                     m_focus = NULL;
                 }
 
+                ImGui::SameLine();
+
+                if (ImGui::Button("edit")) {
+                    setMode(M_Cont);
+                }
             }
             ImGui::End();
         }
     }
-
-    if (m_mouse.bDownR == 1) {
-        ImGui::OpenPopup("select");
-    }
-    if (ImGui::BeginPopup("select"))
-    {
-        ImGui::Text("editor menu");
-        ImGui::Separator();
-        if (ImGui::Selectable("contour")) {
-            setMode(M_Cont);
-        }
-        if (ImGui::Selectable("order")) {
-
-        }
-        //for (int i = 0; i < IM_ARRAYSIZE(names); i++)
-        //    if (ImGui::Selectable(names[i]))
-        //        selected_fish = i;
-        ImGui::EndPopup();
-    }
 }
 
-void GTMakerGUI::dispRect() {
+void GTMakerGUI::dispOrdr() {
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
 
@@ -129,65 +113,9 @@ void GTMakerGUI::dispRect() {
 
 }
 
-void GTMakerGUI::mouseButtonRect(int button, int action, int mods) {
-
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
-
-    switch (m_mouse.bDownL) {
-    case 1:
-    {
-        int find = -1;
-        g_basePos = pix;
-
-        if (m_focus != NULL) {
-            const Mem1<Vec2> pixs = vertex2(m_focus->rect);
-            find = findNearPos(pixs, pix);
-            if(find >= 0){
-                g_basePos = pixs[(find + 2) % 4];
-            }
-        }
-
-        if (find < 0) {
-            m_state = S_Init;
-            m_focus = m_database.gtsList[m_selectid].malloc();
-            m_focus->init(getRect2(pix));
-        }
-        else {
-            m_state = S_Edit;
-        }
-        break;
-    }
-    case 2:
-    {
-        break;
-    }
-    case 0:
-    {
-        if (m_focus == NULL) break;
-
-        if (m_state == S_Init && minVal(m_focus->rect.dsize[0], m_focus->rect.dsize[1]) < 10) {
-            m_database.gtsList[m_selectid].free(m_focus);
-            m_focus = NULL;
-        }
-
-        if (m_focus != NULL) {
-            m_focus->rect = andRect(m_focus->rect, getRect2(m_img.dsize));
-        }
-
-        m_state = S_Base;
-
-        break;
-    }
-    }
+void GTMakerGUI::mouseButtonOrdr(int button, int action, int mods) {
 }
 
-void GTMakerGUI::mousePosRect(double x, double y) {
-    if (m_focus == NULL || m_state == S_Base) return;
-
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
-
-    m_focus->rect = orRect(getRect2(pix), getRect2(g_basePos));
+void GTMakerGUI::mousePosOrdr(double x, double y) {
 }
 
