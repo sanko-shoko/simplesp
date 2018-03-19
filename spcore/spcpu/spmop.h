@@ -335,6 +335,20 @@ namespace sp{
         return getEuler(mat.ptr, mat.rows(), mat.cols());
     }
 
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec) {
+        Mat dst(3, 3);
+
+        getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec);
+        return dst;
+    }
+
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const double angle) {
+        Mat dst(3, 3);
+
+        getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec, angle);
+        return dst;
+    }
+
     //--------------------------------------------------------------------------------
     // matrix util
     //--------------------------------------------------------------------------------
