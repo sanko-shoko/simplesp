@@ -16,7 +16,6 @@ void GTMakerGUI::initOrdr() {
 }
 
 void GTMakerGUI::menuOrdr() {
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
 
@@ -28,7 +27,7 @@ void GTMakerGUI::menuOrdr() {
 
         if (ImGui::Begin(strFormat("GT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
             {
-                const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+                const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
                 ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
             }
 
@@ -80,14 +79,16 @@ void GTMakerGUI::dispOrdr() {
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
 
-    glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
     for (int i = 0; i < gts.size(); i++) {
         GT &gt = gts[i];
-
         if (gt.contour.size() == 0) continue;
 
         Render::line(getVtx2(gt.rect), RENDER_GRAY, 3.0f, true);
+    }
+
+    for (int i = 0; i < gts.size(); i++) {
+        GT &gt = gts[i];
+        if (gt.contour.size() == 0) continue;
 
         const Mem1<Mesh2> meshes = divMesh(gt.contour);
         Render::fill(meshes, getCol(gt.label), 3.0f);

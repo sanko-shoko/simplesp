@@ -63,6 +63,9 @@ public:
     // image names
     Mem1<string> imNames;
 
+    // edit flags
+    Mem1<bool> flags;
+
     // gt names;
     Mem1<string> gtNames;
 
@@ -89,6 +92,9 @@ public:
         imNames = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
         
         gtsList.resize(imNames.size());
+
+        flags.resize(imNames.size());
+        flags.zero();
 
         if (imNames.size() > 0) {
             for (int i = 0; i < imNames.size(); i++) {

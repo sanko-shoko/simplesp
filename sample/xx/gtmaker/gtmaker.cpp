@@ -112,6 +112,7 @@ void GTMakerGUI::dispData() {
         }
 
         ImGui::Separator();
+
         {
             ImGui::Text("\n");
 
@@ -177,8 +178,8 @@ int GTMakerGUI::findNearLine(const Mem1<Vec2> &pnts, const Vec2 &pix) {
 
     double minv = SP_INFINITY;
     for (int i = 0; i < pnts.size(); i++) {
-        const Vec2 a = pnts[(i + 0) % pnts.size()];
-        const Vec2 b = pnts[(i + 1) % pnts.size()];
+        const Vec2 a = pnts(i + 0, true);
+        const Vec2 b = pnts(i + 1, true);
         const Vec2 v = unitVec(a - b);
 
         const Vec2 nrm = getVec(-v.y, v.x);

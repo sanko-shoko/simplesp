@@ -37,13 +37,11 @@ void GTMakerGUI::initCont(){
 void GTMakerGUI::menuCont() {
     if (m_focus == NULL) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
     const GT &gt = *m_focus;
 
     if (ImGui::Begin("editor", NULL, ImGuiWindowFlags_Block)) {
         {
-            const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+            const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
             ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
         }
 
@@ -85,10 +83,7 @@ void GTMakerGUI::menuCont() {
 void GTMakerGUI::dispCont() {
     if (m_focus == NULL) return;
 
-    glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     const int findPos = findNearPos(m_focus->contour, pix);
     const int findLine = findNearLine(*g_crnt, pix);
@@ -136,8 +131,7 @@ void GTMakerGUI::dispCont() {
 void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
     if (m_focus == NULL) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     const int findPos = findNearPos(*g_crnt, pix);
     const int findLine = findNearLine(*g_crnt, pix);
@@ -245,8 +239,7 @@ void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
 void GTMakerGUI::mousePosCont(double x, double y) {
     if (m_focus == NULL || m_state == S_Base) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
    
     const int findPos = findNearPos(m_focus->contour, pix);
     

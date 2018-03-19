@@ -35,7 +35,7 @@ private:
     };
     State m_state;
 
-    bool m_cmenu = false;
+    Mat m_vmat;
 
 public:
 
@@ -105,7 +105,6 @@ private:
 private:
 
     virtual void init() {
-        m_cmenu = false;
 
         initRect();
         initCont();
@@ -131,8 +130,10 @@ private:
             ImGui::EndMainMenuBar();
         }
 
+        m_vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
+       
         {
-            glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);
+            glLoadView2D(m_img.dsize, m_vmat);
             glRenderImg(m_img);
         }
 
@@ -140,26 +141,19 @@ private:
             
             dispData();
 
+            switch (m_mode) {
+            case M_Rect: menuRect(); dispRect(); break;
+            case M_Cont: menuCont(); dispCont(); break;
+            case M_Ordr: menuOrdr(); dispOrdr(); break;
+            }
+
             //const ImVec4 col(0.8f, 0.8f, 0.8f, 0.8f);
             //ImGui::PushStyleColor(ImGuiCol_WindowBg, col);
-
-            switch (m_mode) {
-            case M_Rect: menuRect(); break;
-            case M_Cont: menuCont(); break;
-            case M_Ordr: menuOrdr(); break;
-            }
             //ImGui::PopStyleColor();
-
-            switch (m_mode) {
-            case M_Rect: dispRect(); break;
-            case M_Cont: dispCont(); break;
-            case M_Ordr: dispOrdr(); break;
-            }
         }
     }
 
     void dispData();
-
 
     //--------------------------------------------------------------------------------
     // call back
