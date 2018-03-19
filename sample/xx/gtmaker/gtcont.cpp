@@ -10,7 +10,6 @@ Mem1<Vec2> *g_crnt;
 
 Vec2 *g_select;
 
-
 //--------------------------------------------------------------------------------
 // function
 //--------------------------------------------------------------------------------
@@ -19,7 +18,7 @@ void autoContour(Mem1<Vec2> &contour, const Mem2<Col3> &img, const Rect &rect) {
     //const int unit = minVal(rect.dsize[0], rect.dsize[1]) / 5;
 
     //Mem1<Vec2> tmp;
-    //snake(tmp, img, vertex2(rect), unit);
+    //snake(tmp, img, getVtx2(rect), unit);
     //if (tmp.size() > 10) {
     //    contour = tmp;
     //}
@@ -80,6 +79,7 @@ void GTMakerGUI::menuCont() {
 
         ImGui::End();
     }
+
 }
 
 void GTMakerGUI::dispCont() {
@@ -97,7 +97,7 @@ void GTMakerGUI::dispCont() {
 
     {
         {
-            Render::line(vertex2(m_focus->rect), RENDER_BASE, 3.0f, true);
+            Render::line(getVtx2(m_focus->rect), RENDER_BASE, 3.0f, true);
         }
 
         Mem1<Vec2> contour = *g_crnt;
@@ -116,8 +116,8 @@ void GTMakerGUI::dispCont() {
         Render::point(m_focus->contour[findPos], RENDER_NEAR, 7.0f);
     }
     else if (m_focus->contour.size() > 0 && findLine >= 0) {
-        const Vec2 a = m_focus->contour[(findLine + 0) % m_focus->contour.size()];
-        const Vec2 b = m_focus->contour[(findLine + 1) % m_focus->contour.size()];
+        const Vec2 a = m_focus->contour(findLine + 0, true);
+        const Vec2 b = m_focus->contour(findLine + 1, true);
         const Vec2 v = unitVec(a - b);
 
         const Vec2 nrm = getVec(-v.y, v.x);
@@ -215,6 +215,7 @@ void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
             else {
                 m_focus->contour.clear();
             }
+            m_mouse.reset();
         }
 
         break;

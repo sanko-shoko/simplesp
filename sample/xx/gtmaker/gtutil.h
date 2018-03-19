@@ -81,10 +81,9 @@ public:
 
     bool open_imDir() {
 
-        const char *path = tinyfd_selectFolderDialog("open image dir", getCrntDir().c_str());
+        //const char *path = tinyfd_selectFolderDialog("open image dir", getCrntDir().c_str());
+        const char *path = SP_DATA_DIR "/image";
         if (path == NULL) return false;
-
-        //const char *path = SP_DATA_DIR "/image";
 
         imDir = path;
         imNames = getFileList(path, "bmp, BMP, png, PNG, jpeg, JPEG, jpg, JPG");
@@ -323,6 +322,43 @@ public:
         }
     };
 
+    static void fill(const Rect &rect, const Col3 &col, const float size) {
+        const Mem1<Vec2> vtxs = getVtx2(rect);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glBegin(GL_TRIANGLE_FAN);
+
+        glColor(extCol(col, 220));
+        glVertex(vtxs[0]);
+        glVertex(vtxs[1]);
+        glVertex(vtxs[2]);
+        glVertex(vtxs[3]);
+        glEnd();
+
+        glDisable(GL_BLEND);
+    }
+
+    static void fill(const Mem1<Mesh2> &meshes, const Col3 &col, const float size) {
+        glEnable(GL_BLEND);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBegin(GL_TRIANGLES);
+
+        glColor(extCol(col, 220));
+        for (int i = 0; i < meshes.size(); i++) {
+            glMesh(meshes[i]);
+        }
+        glEnd();
+
+        glDisable(GL_BLEND);
+    }
 };
 
 #endif

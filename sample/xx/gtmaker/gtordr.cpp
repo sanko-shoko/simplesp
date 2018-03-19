@@ -20,14 +20,10 @@ void GTMakerGUI::menuOrdr() {
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
 
-    Mem1<const char *> combolist;
-    for (int i = 0; i < m_database.gtNames.size(); i++) {
-        combolist.push(m_database.gtNames[i].c_str());
-    }
-
     for (int i = 0; i < gts.size(); i++) {
         GT &gt = gts[i];
 
+        if (gt.contour.size() == 0) continue;
         if (&gt == m_focus && m_state == S_Init) continue;
 
         if (ImGui::Begin(strFormat("GT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
@@ -43,44 +39,41 @@ void GTMakerGUI::menuOrdr() {
             ImGui::AlignTextToFramePadding();
 
             if (&gt != m_focus) {
-                ImGui::Text(">");
+                ImGui::SetWindowSize(ImVec2(50.0f, 35.0f), ImGuiCond_Always);
 
-                const int wsize = (gt.label >= 0) ? static_cast<int>(m_database.gtNames[gt.label].size()) : 0;
-
-                ImGui::SetWindowSize(ImVec2(wsize * 7.0f + 30.0f, 35.0f), ImGuiCond_Always);
-
-                if (gt.label >= 0) {
-                    ImGui::SameLine();
-                    ImGui::Text(m_database.gtNames[gt.label].c_str());
-                }
+                ImGui::Text("> %02d", i);
             }
             else {
-                ImGui::SetWindowSize(ImVec2(210.0f, 35.0f), ImGuiCond_Always);
+                ImGui::SetWindowSize(ImVec2(168.0f, 35.0f), ImGuiCond_Always);
                 
-                ImGui::Text("-");
+                ImGui::Text("- %02d", i);
                
                 ImGui::SameLine();
 
-                ImGui::PushItemWidth(100);
-                ImGui::Combo("", &gt.label, combolist.ptr, combolist.size());
-                ImGui::PopItemWidth();
+                ImGui::Text("order");
 
-                ImGui::SameLine();
+                ImGui::SameLine(0, 15.0f);
 
-                if (ImGui::ButtonPopup("del", "delete?")) {
-                    gts.free(&gt);
-                    m_focus = NULL;
+                if (ImGui::Button("++")) {
+                    if (i < gts.size() - 1) {
+                        sp::swap(gts[i], gts[i + 1]);
+                        m_focus = &gts[i + 1];
+                    }
                 }
+                
+                ImGui::SameLine(0, 15.0f);
 
-                ImGui::SameLine();
-
-                if (ImGui::Button("edit")) {
-                    setMode(M_Cont);
+                if (ImGui::Button("--")) {
+                    if (i > 0) {
+                        sp::swap(gts[i], gts[i - 1]);
+                        m_focus = &gts[i - 1];
+                    }
                 }
             }
             ImGui::End();
         }
     }
+
 }
 
 void GTMakerGUI::dispOrdr() {
@@ -92,23 +85,17 @@ void GTMakerGUI::dispOrdr() {
     for (int i = 0; i < gts.size(); i++) {
         GT &gt = gts[i];
 
-        {
-            Render::line(gt.contour, RENDER_GRAY, 3.0f, true);
-        }
-        
-        if (&gt != m_focus) {
-            Render::line(vertex2(gt.rect), RENDER_BASE, 3.0f, true);
-        }
+        if (gt.contour.size() == 0) continue;
+
+        Render::line(getVtx2(gt.rect), RENDER_GRAY, 3.0f, true);
+
+        const Mem1<Mesh2> meshes = divMesh(gt.contour);
+        Render::fill(meshes, getCol(gt.label), 3.0f);
     }
 
     if (m_focus != NULL) {
-        if (m_state == S_Edit) {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
-        }
-        else {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
-            Render::point(vertex2(m_focus->rect), RENDER_HIGH, 7.0f);
-        }
+        Render::line(m_focus->contour, RENDER_HIGH, 3.0f, true);
+        Render::point(m_focus->contour, RENDER_HIGH, 7.0f);
     }
 
 }

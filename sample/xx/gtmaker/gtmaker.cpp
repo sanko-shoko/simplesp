@@ -112,7 +112,36 @@ void GTMakerGUI::dispData() {
         }
 
         ImGui::Separator();
+        {
+            ImGui::Text("\n");
 
+            ImGui::AlignTextToFramePadding();
+            ImGui::BulletText("edit menu");
+
+            if(canUseMode(M_Rect) == true){
+                if (ImGui::Selectable(m_mode != M_Rect ? "-rectangle" : "*rectangle")) {
+                    setMode(M_Rect);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = q");
+            }
+
+            if (canUseMode(M_Cont) == true){
+                if (ImGui::Selectable(m_mode != M_Cont ? "-contour" : "*contour")) {
+                    setMode(M_Cont);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = w");
+            }
+
+            if (canUseMode(M_Ordr) == true) {
+                if (ImGui::Selectable(m_mode != M_Ordr ? "-order" : "*order")) {
+                    setMode(M_Ordr);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = e");
+            }
+        }
 
         ImGui::End();
     }

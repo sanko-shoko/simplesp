@@ -45,11 +45,11 @@ void GTMakerGUI::menuRect() {
             ImGui::AlignTextToFramePadding();
 
             if (&gt != m_focus) {
-                ImGui::Text(">");
-
                 const int wsize = (gt.label >= 0) ? static_cast<int>(m_database.gtNames[gt.label].size()) : 0;
 
                 ImGui::SetWindowSize(ImVec2(wsize * 7.0f + 30.0f, 35.0f), ImGuiCond_Always);
+
+                ImGui::Text(">");
 
                 if (gt.label >= 0) {
                     ImGui::SameLine();
@@ -79,24 +79,6 @@ void GTMakerGUI::menuRect() {
         }
     }
 
-    if (m_mouse.bDownR == 1) {
-        ImGui::OpenPopup("select");
-    }
-    if (ImGui::BeginPopup("select"))
-    {
-        ImGui::Text("editor menu");
-        ImGui::Separator();
-        if (ImGui::Selectable("contour")) {
-            setMode(M_Cont);
-        }
-        if (ImGui::Selectable("order")) {
-
-        }
-        //for (int i = 0; i < IM_ARRAYSIZE(names); i++)
-        //    if (ImGui::Selectable(names[i]))
-        //        selected_fish = i;
-        ImGui::EndPopup();
-    }
 }
 
 void GTMakerGUI::dispRect() {
@@ -108,22 +90,16 @@ void GTMakerGUI::dispRect() {
     for (int i = 0; i < gts.size(); i++) {
         GT &gt = gts[i];
 
-        {
-            Render::line(gt.contour, RENDER_GRAY, 3.0f, true);
-        }
-        
-        if (&gt != m_focus) {
-            Render::line(vertex2(gt.rect), RENDER_BASE, 3.0f, true);
-        }
+        Render::line(getVtx2(gt.rect), RENDER_BASE, 3.0f, true);
     }
 
     if (m_focus != NULL) {
         if (m_state == S_Edit) {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
+            Render::line(getVtx2(m_focus->rect), RENDER_HIGH, 3.0f, true);
         }
         else {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
-            Render::point(vertex2(m_focus->rect), RENDER_HIGH, 7.0f);
+            Render::line(getVtx2(m_focus->rect), RENDER_HIGH, 3.0f, true);
+            Render::point(getVtx2(m_focus->rect), RENDER_HIGH, 7.0f);
         }
     }
 
@@ -141,7 +117,7 @@ void GTMakerGUI::mouseButtonRect(int button, int action, int mods) {
         g_basePos = pix;
 
         if (m_focus != NULL) {
-            const Mem1<Vec2> pixs = vertex2(m_focus->rect);
+            const Mem1<Vec2> pixs = getVtx2(m_focus->rect);
             find = findNearPos(pixs, pix);
             if(find >= 0){
                 g_basePos = pixs[(find + 2) % 4];

@@ -39,6 +39,10 @@ namespace sp {
         int bDownL, bDownR, bDownM;
 
         Mouse() {
+            reset();
+        }
+
+        void reset() {
             memset(this, 0, sizeof(Mouse));
         }
 
