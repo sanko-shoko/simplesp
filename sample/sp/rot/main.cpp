@@ -81,7 +81,7 @@ int main(){
         printf("\n");
     }
 
-    // matrix -> euler
+    // matrix -> vec
     {
         printf("------------------------------\n");
         printf("matrix -> vec\n");
