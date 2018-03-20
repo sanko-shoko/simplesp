@@ -90,6 +90,9 @@ void GTMakerGUI::dispRect() {
         GT &gt = gts[i];
 
         Render::line(getVtx2(gt.rect), RENDER_BASE, 3.0f, true);
+ 
+        //if (gt.contour.size() == 0) continue;
+        //Render::line(gt.contour, RENDER_GRAY, 3.0f, true);
     }
 
     if (m_focus != NULL) {

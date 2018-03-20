@@ -69,14 +69,14 @@ private:
     }
 
     void setMode(const Mode mode) {
-        if (canUseMode(mode) == true && mode != m_mode) {
+        if (checkMode(mode) == true && mode != m_mode) {
             m_mode = mode;
             m_state = S_Base;
             init();
         }
     }
 
-    bool canUseMode(const Mode mode) {
+    bool checkMode(const Mode mode) {
         if (m_database.isValid() == false) false;
 
         if (mode == M_Cont) {
@@ -124,6 +124,7 @@ private:
                 if (ImGui::MenuItem("open image dir") && m_database.open_imDir()) {
                     select(0);
                 }
+
                 ImGui::EndMenu();
             }
 

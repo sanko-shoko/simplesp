@@ -84,8 +84,8 @@ public:
 
     bool open_imDir() {
 
-        //const char *path = tinyfd_selectFolderDialog("open image dir", getCrntDir().c_str());
-        const char *path = SP_DATA_DIR "/image";
+        const char *path = tinyfd_selectFolderDialog("open image dir", getCrntDir().c_str());
+        //const char *path = SP_DATA_DIR "/image";
         if (path == NULL) return false;
 
         imDir = path;

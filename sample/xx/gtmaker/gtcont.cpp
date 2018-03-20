@@ -56,7 +56,7 @@ void GTMakerGUI::menuCont() {
 
             ImGui::Text("contour");
 
-            ImGui::SameLine(0, 14.0f);
+            ImGui::SameLine(0, 30.0f);
 
             if (ImGui::ButtonPopup("reset", "reset?")) {
                 g_crnt->clear();
@@ -68,11 +68,11 @@ void GTMakerGUI::menuCont() {
             //    autoContour(m_focus->contour, m_img, m_focus->rect);
             //}
 
-            ImGui::SameLine();
+            //ImGui::SameLine();
 
-            if (ImGui::Button("ok")) {
-                setMode(M_Rect);
-            }
+            //if (ImGui::Button("ok")) {
+            //    setMode(M_Rect);
+            //}
         }
 
         ImGui::End();

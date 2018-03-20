@@ -27,6 +27,7 @@ void GTMakerGUI::dispData() {
             }
 
             ImGui::EndChild();
+
         }
 
         ImGui::Separator();
@@ -53,6 +54,7 @@ void GTMakerGUI::dispData() {
             if (ImGui::Button("save")) {
                 m_database.save();
             }
+
         }
 
         ImGui::Separator();
@@ -119,7 +121,7 @@ void GTMakerGUI::dispData() {
             ImGui::AlignTextToFramePadding();
             ImGui::BulletText("edit menu");
 
-            if(canUseMode(M_Rect) == true){
+            if(checkMode(M_Rect) == true){
                 if (ImGui::Selectable(m_mode != M_Rect ? "-rectangle" : "*rectangle")) {
                     setMode(M_Rect);
                 }
@@ -127,7 +129,7 @@ void GTMakerGUI::dispData() {
                 ImGui::Text("key = q");
             }
 
-            if (canUseMode(M_Cont) == true){
+            if (checkMode(M_Cont) == true){
                 if (ImGui::Selectable(m_mode != M_Cont ? "-contour" : "*contour")) {
                     setMode(M_Cont);
                 }
@@ -135,7 +137,7 @@ void GTMakerGUI::dispData() {
                 ImGui::Text("key = w");
             }
 
-            if (canUseMode(M_Ordr) == true) {
+            if (checkMode(M_Ordr) == true) {
                 if (ImGui::Selectable(m_mode != M_Ordr ? "-order" : "*order")) {
                     setMode(M_Ordr);
                 }
