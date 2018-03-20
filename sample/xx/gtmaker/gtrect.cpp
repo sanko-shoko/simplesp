@@ -15,11 +15,9 @@ Vec2 g_basePos;
 //--------------------------------------------------------------------------------
 
 void GTMakerGUI::initRect() {
-
 }
 
 void GTMakerGUI::menuRect() {
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
 
     MemP<GT> &gts = m_database.gtsList[m_selectid];
 
@@ -35,7 +33,7 @@ void GTMakerGUI::menuRect() {
 
         if (ImGui::Begin(strFormat("GT %p", &gt).c_str(), NULL, ImGuiWindowFlags_Block)) {
             {
-                const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+                const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
                 ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
             }
 
@@ -46,11 +44,11 @@ void GTMakerGUI::menuRect() {
             ImGui::AlignTextToFramePadding();
 
             if (&gt != m_focus) {
-                ImGui::Text(">");
-
                 const int wsize = (gt.label >= 0) ? static_cast<int>(m_database.gtNames[gt.label].size()) : 0;
 
                 ImGui::SetWindowSize(ImVec2(wsize * 7.0f + 30.0f, 35.0f), ImGuiCond_Always);
+
+                ImGui::Text(">");
 
                 if (gt.label >= 0) {
                     ImGui::SameLine();
@@ -58,7 +56,7 @@ void GTMakerGUI::menuRect() {
                 }
             }
             else {
-                ImGui::SetWindowSize(ImVec2(210.0f, 35.0f), ImGuiCond_Always);
+                ImGui::SetWindowSize(ImVec2(168.0f, 35.0f), ImGuiCond_Always);
                 
                 ImGui::Text("-");
                
@@ -75,15 +73,11 @@ void GTMakerGUI::menuRect() {
                     m_focus = NULL;
                 }
 
-                ImGui::SameLine();
-
-                if (ImGui::Button("edit")) {
-                    setMode(M_Cont);
-                }
             }
             ImGui::End();
         }
     }
+
 }
 
 void GTMakerGUI::dispRect() {
@@ -95,22 +89,19 @@ void GTMakerGUI::dispRect() {
     for (int i = 0; i < gts.size(); i++) {
         GT &gt = gts[i];
 
-        {
-            Render::line(gt.contour, RENDER_GRAY, 3.0f, true);
-        }
-        
-        if (&gt != m_focus) {
-            Render::line(vertex2(gt.rect), RENDER_BASE, 3.0f, true);
-        }
+        Render::line(getVtx2(gt.rect), RENDER_BASE, 3.0f, true);
+ 
+        //if (gt.contour.size() == 0) continue;
+        //Render::line(gt.contour, RENDER_GRAY, 3.0f, true);
     }
 
     if (m_focus != NULL) {
         if (m_state == S_Edit) {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
+            Render::line(getVtx2(m_focus->rect), RENDER_HIGH, 3.0f, true);
         }
         else {
-            Render::line(vertex2(m_focus->rect), RENDER_HIGH, 3.0f, true);
-            Render::point(vertex2(m_focus->rect), RENDER_HIGH, 7.0f);
+            Render::line(getVtx2(m_focus->rect), RENDER_HIGH, 3.0f, true);
+            Render::point(getVtx2(m_focus->rect), RENDER_HIGH, 7.0f);
         }
     }
 
@@ -118,8 +109,7 @@ void GTMakerGUI::dispRect() {
 
 void GTMakerGUI::mouseButtonRect(int button, int action, int mods) {
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     switch (m_mouse.bDownL) {
     case 1:
@@ -128,7 +118,7 @@ void GTMakerGUI::mouseButtonRect(int button, int action, int mods) {
         g_basePos = pix;
 
         if (m_focus != NULL) {
-            const Mem1<Vec2> pixs = vertex2(m_focus->rect);
+            const Mem1<Vec2> pixs = getVtx2(m_focus->rect);
             find = findNearPos(pixs, pix);
             if(find >= 0){
                 g_basePos = pixs[(find + 2) % 4];
@@ -167,14 +157,12 @@ void GTMakerGUI::mouseButtonRect(int button, int action, int mods) {
         break;
     }
     }
-
 }
 
 void GTMakerGUI::mousePosRect(double x, double y) {
     if (m_focus == NULL || m_state == S_Base) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     m_focus->rect = orRect(getRect2(pix), getRect2(g_basePos));
 }

@@ -217,6 +217,23 @@ namespace sp{
     }
 
 
+    SP_GENFUNC const int lacsid1(const int *dsize, const int d0) {
+        int id0 = d0;
+        while (id0 < 0) id0 += dsize[0];
+        return id0 % dsize[0];
+    }
+
+    template<typename TYPE, typename ELEM = TYPE>
+    SP_GENFUNC ELEM& lacs1(ExPtr<TYPE> &src, const int d0, const int c = 0) {
+        const int id = lacsid1(src.dsize, d0);
+        return reinterpret_cast<ELEM*>(&src.ptr[id])[c];
+    }
+
+    template<typename TYPE, typename ELEM = TYPE>
+    SP_GENFUNC const ELEM& lacs1(const ExPtr<TYPE> &src, const int d0, const int c = 0) {
+        return lacs1<TYPE, ELEM>(*const_cast<ExPtr<TYPE>*>(&src), d0, c);
+    }
+    
     //--------------------------------------------------------------------------------
     // access ptr 2d (multi channel)
     //--------------------------------------------------------------------------------

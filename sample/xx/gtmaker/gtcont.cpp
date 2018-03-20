@@ -10,19 +10,18 @@ Mem1<Vec2> *g_crnt;
 
 Vec2 *g_select;
 
-
 //--------------------------------------------------------------------------------
 // function
 //--------------------------------------------------------------------------------
 
 void autoContour(Mem1<Vec2> &contour, const Mem2<Col3> &img, const Rect &rect) {
-    const int unit = minVal(rect.dsize[0], rect.dsize[1]) / 5;
+    //const int unit = minVal(rect.dsize[0], rect.dsize[1]) / 5;
 
-    Mem1<Vec2> tmp;
-    snake(tmp, img, vertex2(rect), unit);
-    if (tmp.size() > 10) {
-        contour = tmp;
-    }
+    //Mem1<Vec2> tmp;
+    //snake(tmp, img, getVtx2(rect), unit);
+    //if (tmp.size() > 10) {
+    //    contour = tmp;
+    //}
 }
 
 
@@ -38,13 +37,11 @@ void GTMakerGUI::initCont(){
 void GTMakerGUI::menuCont() {
     if (m_focus == NULL) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
     const GT &gt = *m_focus;
 
     if (ImGui::Begin("editor", NULL, ImGuiWindowFlags_Block)) {
         {
-            const Vec2 pos = vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
+            const Vec2 pos = m_vmat * getVec(gt.rect.dbase[0], gt.rect.dbase[1]) + getVec(0.0, -40.0);
             ImGui::SetWindowPos(ImVec2(static_cast<float>(pos.x), static_cast<float>(pos.y)), ImGuiCond_Always);
         }
 
@@ -59,7 +56,7 @@ void GTMakerGUI::menuCont() {
 
             ImGui::Text("contour");
 
-            ImGui::SameLine();
+            ImGui::SameLine(0, 30.0f);
 
             if (ImGui::ButtonPopup("reset", "reset?")) {
                 g_crnt->clear();
@@ -71,24 +68,22 @@ void GTMakerGUI::menuCont() {
             //    autoContour(m_focus->contour, m_img, m_focus->rect);
             //}
 
-            ImGui::SameLine();
+            //ImGui::SameLine();
 
-            if (ImGui::Button("ok")) {
-                setMode(M_Rect);
-            }
+            //if (ImGui::Button("ok")) {
+            //    setMode(M_Rect);
+            //}
         }
 
         ImGui::End();
     }
+
 }
 
 void GTMakerGUI::dispCont() {
     if (m_focus == NULL) return;
 
-    glLoadView2D(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     const int findPos = findNearPos(m_focus->contour, pix);
     const int findLine = findNearLine(*g_crnt, pix);
@@ -97,7 +92,7 @@ void GTMakerGUI::dispCont() {
 
     {
         {
-            Render::line(vertex2(m_focus->rect), RENDER_BASE, 3.0f, true);
+            Render::line(getVtx2(m_focus->rect), RENDER_BASE, 3.0f, true);
         }
 
         Mem1<Vec2> contour = *g_crnt;
@@ -116,8 +111,8 @@ void GTMakerGUI::dispCont() {
         Render::point(m_focus->contour[findPos], RENDER_NEAR, 7.0f);
     }
     else if (m_focus->contour.size() > 0 && findLine >= 0) {
-        const Vec2 a = m_focus->contour[(findLine + 0) % m_focus->contour.size()];
-        const Vec2 b = m_focus->contour[(findLine + 1) % m_focus->contour.size()];
+        const Vec2 a = m_focus->contour(findLine + 0, true);
+        const Vec2 b = m_focus->contour(findLine + 1, true);
         const Vec2 v = unitVec(a - b);
 
         const Vec2 nrm = getVec(-v.y, v.x);
@@ -136,8 +131,7 @@ void GTMakerGUI::dispCont() {
 void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
     if (m_focus == NULL) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
 
     const int findPos = findNearPos(*g_crnt, pix);
     const int findLine = findNearLine(*g_crnt, pix);
@@ -215,6 +209,7 @@ void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
             else {
                 m_focus->contour.clear();
             }
+            m_mouse.reset();
         }
 
         break;
@@ -244,8 +239,7 @@ void GTMakerGUI::mouseButtonCont(int button, int action, int mods) {
 void GTMakerGUI::mousePosCont(double x, double y) {
     if (m_focus == NULL || m_state == S_Base) return;
 
-    const Mat vmat = glGetViewMat(m_img.dsize[0], m_img.dsize[1], m_viewPos, m_viewScale);
-    const Vec2 pix = invMat(vmat) * m_mouse.pos;
+    const Vec2 pix = invMat(m_vmat) * m_mouse.pos;
    
     const int findPos = findNearPos(m_focus->contour, pix);
     

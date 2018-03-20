@@ -37,6 +37,13 @@ namespace sp{
         return dst;
     }
 
+    // extend color
+    SP_GENFUNC Col4 extCol(const Col3 &col, const Byte a) {
+        Col4 dst;
+        dst.r = col.r; dst.g = col.g; dst.b = col.b; dst.a = a;
+        return dst;
+    }
+
     // addition
     SP_GENFUNC Col3 addCol(const Col3 &col0, const Col3 &col1) {
         const Byte r = static_cast<Byte>(maxVal(0, minVal(255, col0.r + col1.r)));
@@ -343,6 +350,18 @@ namespace sp{
     SP_GENFUNC void cnvDispToCol(Col3 &dst, const Disp &disp, const int maxDisp, const int minDisp) {
         const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
         cnvPhaseToCol(dst, rate);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Col3 getCol(const int label) {
+        srand(maxVal(label + 1, 0));
+        Col3 col;
+        cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+        return col;
     }
 
 }

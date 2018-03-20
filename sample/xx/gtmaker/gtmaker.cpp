@@ -7,6 +7,7 @@ using namespace sp;
 //--------------------------------------------------------------------------------
 
 void GTMakerGUI::dispData() {
+    MemP<GT> &gts = m_database.gtsList[m_selectid];
 
     if (ImGui::Begin("database", NULL, ImGuiWindowFlags_Block)) {
 
@@ -26,6 +27,7 @@ void GTMakerGUI::dispData() {
             }
 
             ImGui::EndChild();
+
         }
 
         ImGui::Separator();
@@ -52,6 +54,7 @@ void GTMakerGUI::dispData() {
             if (ImGui::Button("save")) {
                 m_database.save();
             }
+
         }
 
         ImGui::Separator();
@@ -62,18 +65,17 @@ void GTMakerGUI::dispData() {
 
             ImGui::AlignTextToFramePadding();
             ImGui::BeginChild("label", ImVec2(0, 24));
+            {
+                ImGui::BulletText("labels");
 
-            ImGui::AlignTextToFramePadding();
-            ImGui::BulletText("labels");
+                ImGui::SameLine(0, 31);
 
-            ImGui::SameLine(0, 31);
-
-            if (ImGui::Button("add")) {
-                m_database.gtNames.add(0, "");
-                m_database.updateLabel(0, +1);
+                if (ImGui::Button("add")) {
+                    m_database.gtNames.add(0, "");
+                    m_database.updateLabel(0, +1);
+                }
+                ImGui::EndChild();
             }
-            ImGui::EndChild();
-
 
             ImGui::BeginChild("names", ImVec2(180, 140));
 
@@ -113,6 +115,37 @@ void GTMakerGUI::dispData() {
 
         ImGui::Separator();
 
+        {
+            ImGui::Text("\n");
+
+            ImGui::AlignTextToFramePadding();
+            ImGui::BulletText("edit menu");
+
+            if(checkMode(M_Rect) == true){
+                if (ImGui::Selectable(m_mode != M_Rect ? "-rectangle" : "*rectangle")) {
+                    setMode(M_Rect);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = q");
+            }
+
+            if (checkMode(M_Cont) == true){
+                if (ImGui::Selectable(m_mode != M_Cont ? "-contour" : "*contour")) {
+                    setMode(M_Cont);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = w");
+            }
+
+            if (checkMode(M_Ordr) == true) {
+                if (ImGui::Selectable(m_mode != M_Ordr ? "-order" : "*order")) {
+                    setMode(M_Ordr);
+                }
+                ImGui::SameLine(120.0f);
+                ImGui::Text("key = e");
+            }
+        }
+
         ImGui::End();
     }
 }
@@ -147,8 +180,8 @@ int GTMakerGUI::findNearLine(const Mem1<Vec2> &pnts, const Vec2 &pix) {
 
     double minv = SP_INFINITY;
     for (int i = 0; i < pnts.size(); i++) {
-        const Vec2 a = pnts[(i + 0) % pnts.size()];
-        const Vec2 b = pnts[(i + 1) % pnts.size()];
+        const Vec2 a = pnts(i + 0, true);
+        const Vec2 b = pnts(i + 1, true);
         const Vec2 v = unitVec(a - b);
 
         const Vec2 nrm = getVec(-v.y, v.x);

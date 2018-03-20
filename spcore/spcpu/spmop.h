@@ -335,6 +335,20 @@ namespace sp{
         return getEuler(mat.ptr, mat.rows(), mat.cols());
     }
 
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec) {
+        Mat dst(3, 3);
+
+        getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec);
+        return dst;
+    }
+
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const double angle) {
+        Mat dst(3, 3);
+
+        getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec, angle);
+        return dst;
+    }
+
     //--------------------------------------------------------------------------------
     // matrix util
     //--------------------------------------------------------------------------------
@@ -614,16 +628,6 @@ namespace sp{
         return map;
     }
 
-    SP_CPUFUNC Mem<Vec2> vertex2(const Rect &rect) {
-        Mem1<Vec2> vtxs;
-        if (rect.dim >= 2) {
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
-        }
-        return vtxs;
-    }
 }
 
 #endif

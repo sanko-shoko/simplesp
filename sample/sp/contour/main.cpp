@@ -15,7 +15,7 @@ int main() {
         const Rect rect = getRect2(120, 90, 400, 300);
 
         Mem1<Vec2> contour;
-        snake(contour, src, vertex2(rect));
+        snake(contour, src, getVtx2(rect));
 
         for (int i = 0; i < contour.size(); i++) {
             const Vec2 &A = contour[(i + 0) % contour.size()];
@@ -35,7 +35,7 @@ int main() {
         const Rect rect = getRect2(260, 60, 180, 260);
 
         Mem1<Vec2> contour;
-        snake(contour, src, vertex2(rect));
+        snake(contour, src, getVtx2(rect));
 
         for (int i = 0; i < contour.size(); i++) {
             const Vec2 &A = contour[(i + 0) % contour.size()];

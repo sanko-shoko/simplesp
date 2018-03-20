@@ -323,6 +323,74 @@ namespace sp{
         }
     }
 
+    //--------------------------------------------------------------------------------
+    // render Mesh2
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC void renderMask(Mem<Byte> &dst, const int *dsize, const Mesh2 &mesh) {
+
+        if (cmpSize(2, dst.dsize, dsize) == false) {
+            dst.resize(2, dsize);
+            dst.zero();
+        }
+
+        Rect rect;
+
+        {
+            int xs = dst.dsize[0];
+            int xe = 0;
+
+            int ys = dst.dsize[1];
+            int ye = 0;
+
+            for (int i = 0; i < 3; i++) {
+
+                const Vec2 pix = mesh.pos[i];
+
+                xs = minVal(xs, floor(pix.x + 1));
+                xe = maxVal(xe, floor(pix.x + 1));
+
+                ys = minVal(ys, floor(pix.y + 1));
+                ye = maxVal(ye, floor(pix.y + 1));
+            }
+
+            rect = andRect(getRect2(dst.dsize), getRect2(xs, ys, xe - xs, ye - ys));
+        }
+
+
+        const Vec2 base = mesh.pos[0];
+        const Vec2 A = mesh.pos[1] - base;
+        const Vec2 B = mesh.pos[2] - base;
+
+        double mat[2 * 2] = { A.x, B.x, A.y, B.y };
+        double val[2] = { 0 };
+
+        for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
+            for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
+
+                val[0] = u;
+                val[1] = v;
+
+                double inv[2 * 2];
+                if (invMat22(inv, mat) == false) continue;
+
+                double result[2];
+                mulMat(result, 2, 1, inv, 2, 2, val, 2, 1);
+
+                if (result[0] < 0.0 || result[1] < 0.0 || result[0] + result[1] > 1.0) continue;
+
+                acs2(dst, u, v) = SP_BYTEMAX;
+            }
+        }
+
+    }
+
+    SP_CPUFUNC void renderMask(Mem<Byte> &dst, const int *dsize, const Mem<Mesh2> &meshes) {
+
+        for (int i = 0; i < meshes.size(); i++) {
+            renderMask(dst, dsize, meshes[i]);
+        }
+    }
 
     //--------------------------------------------------------------------------------
     // render vector PN

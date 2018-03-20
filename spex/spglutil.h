@@ -45,8 +45,12 @@ namespace sp{
         glNormal3d(nrm.x, nrm.y, nrm.z);
     }
 
-    SP_CPUFUNC void glColor(const Col3 &col){
+    SP_CPUFUNC void glColor(const Col3 &col) {
         glColor3ub(col.r, col.g, col.b);
+    }
+
+    SP_CPUFUNC void glColor(const Col4 &col) {
+        glColor4ub(col.r, col.g, col.b, col.a);
     }
 
     SP_CPUFUNC void glColor(const int label){
@@ -200,6 +204,12 @@ namespace sp{
         }
     }
 
+    SP_CPUFUNC void glMesh(const Mesh2 &mesh) {
+        glVertex(mesh.pos[0]);
+        glVertex(mesh.pos[1]);
+        glVertex(mesh.pos[2]);
+    }
+
     SP_CPUFUNC void glMesh(const Mesh3 &mesh){
         glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
@@ -271,8 +281,8 @@ namespace sp{
     SP_CPUFUNC void glLine(const Mem1<Vec2> &vtxs, const bool loop = false) {
         for (int i = 0; i < vtxs.size(); i++) {
             if (i == vtxs.size() - 1 && loop == false) break;
-            glVertex(vtxs[(i + 0) % vtxs.size()]);
-            glVertex(vtxs[(i + 1) % vtxs.size()]);
+            glVertex(vtxs(i + 0, true));
+            glVertex(vtxs(i + 1, true));
         }
     }
 

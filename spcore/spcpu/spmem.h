@@ -266,12 +266,12 @@ namespace sp{
             return *this;
         }
 
-        TYPE& operator () (const int d0){
-            return acs1(*this, d0);
+        TYPE& operator () (const int d0, const bool loop = false){
+            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
         }
 
-        const TYPE& operator () (const int d0) const{
-            return acs1(*this, d0);
+        const TYPE& operator () (const int d0, const bool loop = false) const{
+            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
         }
 
 
@@ -334,6 +334,7 @@ namespace sp{
         const TYPE* last() const {
             return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
         }
+
     };
 
 

@@ -29,12 +29,12 @@ namespace sp{
     }
 
     // get sign (+1 or -1)
-    template<typename TYPE>    SP_GENFUNC int sign(const TYPE val){
+    template<typename TYPE> SP_GENFUNC int sign(const TYPE val){
         return (val >= 0) ? +1 : -1;
     }
 
     // swap
-    template<typename TYPE>    SP_GENFUNC void swap(TYPE &a, TYPE &b){
+    template<typename TYPE> SP_GENFUNC void swap(TYPE &a, TYPE &b){
         const TYPE tmp = a;
         a = b;
         b = tmp;
@@ -47,7 +47,7 @@ namespace sp{
     }
 
     // get zero
-    template<typename TYPE>    SP_GENFUNC TYPE zero(){
+    template<typename TYPE> SP_GENFUNC TYPE zero(){
         TYPE dst;
         for (int i = 0; i < sizeof(TYPE); i++){
             ((Byte*)&dst)[i] = 0;

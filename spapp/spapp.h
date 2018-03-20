@@ -45,6 +45,7 @@
 #include "spapp/spgeom/spdepth.h"
 #include "spapp/spgeom/spcalibration.h"
 #include "spapp/spgeom/spicp.h"
+#include "spapp/spgeom/spvertex.h"
 
 #include "spapp/spgeomex/spsfm.h"
 #include "spapp/spgeomex/sptrack.h"

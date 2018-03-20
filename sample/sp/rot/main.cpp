@@ -6,6 +6,7 @@ int main(){
 
     // rotation test
     const Vec3 euler = getVec(10.0, 20.0, 30.0) / 180.0 * SP_PI;
+    const Vec3 vec = getAngle(getRotEuler(euler));
 
     // angle -> matrix
     {
@@ -65,6 +66,31 @@ int main(){
 
         print(mat);
         print(rot);
+        printf("\n");
+    }
+
+    // vec -> matrix (rodrigues)
+    {
+        printf("------------------------------\n");
+        printf("vec -> matrix (rodrigues)\n");
+
+        const Mat mat = getMatRodrigues(vec);
+
+        print(vec);
+        print(mat);
+        printf("\n");
+    }
+
+    // matrix -> euler
+    {
+        printf("------------------------------\n");
+        printf("matrix -> vec\n");
+
+        const Mat mat = getMatRodrigues(vec);
+        const Vec3 vec = getAngle(getRot(mat));
+
+        print(mat);
+        print(vec);
         printf("\n");
     }
 
