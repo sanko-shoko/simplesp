@@ -308,11 +308,11 @@ namespace sp{
 
             // filtering
             for (int i = 0; i < ORI_BINS; i++){
-                const double hi = hist[i];
-                const double hp1 = hist[(i + ORI_BINS - 1) % ORI_BINS];
-                const double hp2 = hist[(i + ORI_BINS - 2) % ORI_BINS];
-                const double hn1 = hist[(i + ORI_BINS + 1) % ORI_BINS];
-                const double hn2 = hist[(i + ORI_BINS + 2) % ORI_BINS];
+                const double hi = hist(i);
+                const double hp1 = hist(i + ORI_BINS - 1, true);
+                const double hp2 = hist(i + ORI_BINS - 2, true);
+                const double hn1 = hist(i + ORI_BINS + 1, true);
+                const double hn2 = hist(i + ORI_BINS + 2, true);
 
                 fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
             }
@@ -322,9 +322,9 @@ namespace sp{
             const double thresh = maxVal(fhist) * ORI_PEAK_THRESH;
     
             for (int i = 0; i < ORI_BINS; i++){
-                const double hi = fhist[i];
-                const double hp1 = fhist[(i + ORI_BINS - 1) % ORI_BINS];
-                const double hn1 = fhist[(i + ORI_BINS + 1) % ORI_BINS];
+                const double hi = fhist(i);
+                const double hp1 = fhist(i + ORI_BINS - 1, true);
+                const double hn1 = fhist(i + ORI_BINS + 1, true);
 
                 if (hi > thresh && hi > maxVal(hp1, hn1)){
                     const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
