@@ -98,12 +98,16 @@ private:
         {
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
+            glLoadMatrix(m_pose);
+
             glClear(GL_DEPTH_BUFFER_BIT);
             {
-                glLoadMatrix(m_pose);
 
                 glRenderOutline(m_model);
+            }
 
+            glClear(GL_DEPTH_BUFFER_BIT);
+            {
                 // render points
                 glPointSize(5.f);
                 glBegin(GL_POINTS);
@@ -124,6 +128,7 @@ private:
                 glEnd();
             }
 
+            glClear(GL_DEPTH_BUFFER_BIT);
             renderAxis();
         }
 
