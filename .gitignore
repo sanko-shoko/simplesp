@@ -2,6 +2,9 @@
 /build/*
 !/build/.gitkeep
 
+/buildpy/*
+
+
 # external files
 /external/*
 !/external/.gitkeep
