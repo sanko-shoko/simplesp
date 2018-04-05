@@ -204,7 +204,9 @@ private:
 
             // view 3D
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
-            renderOutline();
+            
+            glLoadMatrix(m_pose);
+            glRenderOutline(m_model);
         }
         else {
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
@@ -220,56 +222,6 @@ private:
             }
             glEnd();
         }
-    }
-
-    void renderOutline() {
-
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        {
-            glLoadMatrix(m_pose);
-
-            glEnable(GL_STENCIL_TEST);
-
-            glClearStencil(0);
-            glClear(GL_STENCIL_BUFFER_BIT);
-
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-            // fill stencil
-            {
-                glStencilFunc(GL_ALWAYS, 1, 0xFFFF);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glColor4d(0.0, 0.0, 0.0, 0.0);
-
-                glBegin(GL_TRIANGLES);
-                for (int i = 0; i < m_model.size(); i++) {
-                    glMesh(m_model[i]);
-                }
-                glEnd();
-            }
-
-            // draw outline
-            {
-                glStencilFunc(GL_NOTEQUAL, 1, 0xFFFF);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glLineWidth(2.0f);
-                glColor3d(1.0, 1.0, 1.0);
-
-                glBegin(GL_TRIANGLES);
-                for (int i = 0; i < m_model.size(); i++) {
-                    glMesh(m_model[i]);
-                }
-                glEnd();
-            }
-        }
-        glPopAttrib();
-
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     virtual void mousePos(double x, double y) {
