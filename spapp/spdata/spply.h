@@ -136,10 +136,16 @@ namespace sp{
 
         const int num = static_cast<int>(iList.size());
 
-        meshes.resize(num);
+        meshes.clear();
         for (int i = 0; i < num; i++){
             const Mem1<int> &index = iList[i];
-            meshes[i] = getMesh(vList[index[0]], vList[index[1]], vList[index[2]]);
+            if (index.size() == 3) {
+                meshes.push(getMesh(vList[index[0]], vList[index[1]], vList[index[2]]));
+            }
+            if (index.size() == 4) {
+                meshes.push(getMesh(vList[index[0]], vList[index[1]], vList[index[2]]));
+                meshes.push(getMesh(vList[index[0]], vList[index[2]], vList[index[3]]));
+            }
         }
 
         return true;

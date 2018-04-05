@@ -354,6 +354,19 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC void loadPlane(Mem1<Mesh3> &model, const double size) {
+        model.clear();
+
+        const double hs = size * 0.5;
+        const Vec3 a = getVec(-hs, -hs, 0.0);
+        const Vec3 b = getVec(+hs, -hs, 0.0);
+        const Vec3 c = getVec(+hs, +hs, 0.0);
+        const Vec3 d = getVec(-hs, +hs, 0.0);
+
+        model.push(getMesh(a, b, c));
+        model.push(getMesh(a, c, d));
+    }
+
     SP_CPUFUNC void loadGeodesicDorm(Mem1<Mesh3> &model, const double size, const int div) {
         model.clear();
 
