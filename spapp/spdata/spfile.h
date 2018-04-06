@@ -110,9 +110,6 @@ namespace sp {
         // file mode
         const char *m_mode;
 
-        // file status
-        bool m_status;
-
         // file byte order
         ByteOrder m_endian;
 
@@ -150,29 +147,31 @@ namespace sp {
                 SP_PRINTF("file open %s [%s]\n", mode, path);
 
                 m_mode = mode;
-                m_status = true;
                 m_endian = endian;
 
-                ::fseek(m_fp, 0, SEEK_END);
+                seek(SEEK_END);
                 m_size = static_cast<int>(::ftell(m_fp));
-                ::fseek(m_fp, 0, SEEK_SET);
+                seek(SEEK_SET);
+                return true;
             }
             else {
                 SP_PRINTF("file error %s [%s]\n", mode, path);
+                return false;
             }
 
-            return m_status;
         }
         
         void close() {
-            if (m_fp != NULL) {
-                ::fclose(m_fp);
-            }
+            if (m_fp == NULL) return;
+            
+            ::fclose(m_fp);
             reset();
         }
 
-        bool status() const {
-            return m_status;
+        void seek(const int origin) {
+            if (m_fp == NULL) return;
+
+            ::fseek(m_fp, 0, origin);
         }
 
         int residual() const {
@@ -187,55 +186,55 @@ namespace sp {
 
         template <typename TYPE>
         bool write(const TYPE *src, const int count) {
-            if (m_status == false) return false;
+            if (m_fp == NULL) return false;
 
-            m_status = (::fwrite(src, sizeof(TYPE), count, m_fp) == count) ? true : false;
+            const bool ret = (::fwrite(src, sizeof(TYPE), count, m_fp) == count) ? true : false;
         
-            if (m_status == true && m_endian != getByteOrder()) {
+            if (ret == true && m_endian != getByteOrder()) {
                 revByteOrder(src, count);
             }
-            return m_status;
+            return ret;
         }
 
         template <typename TYPE>
         bool read(TYPE *dst, const int count) {
-            if (m_status == false) return false;
+            if (m_fp == NULL) return false;
 
-            m_status = (::fread(dst, sizeof(TYPE), count, m_fp) == count) ? true : false;
+            const bool ret = (::fread(dst, sizeof(TYPE), count, m_fp) == count) ? true : false;
 
-            if (m_status == true && m_endian != getByteOrder()) {
+            if (ret == true && m_endian != getByteOrder()) {
                 revByteOrder(dst, count);
             }
-            return m_status;
+            return ret;
         }
 
         bool gets(char *str) {
-            if (m_status == false) return false;
+            if (m_fp == NULL) return false;
 
-            m_status = (::fgets(str, SP_STRMAX - 1, m_fp) != NULL) ? true : false;
-            return m_status;
+            const bool ret = (::fgets(str, SP_STRMAX - 1, m_fp) != NULL) ? true : false;
+            return ret;
         }
 
         bool printf(const char* format, ...) {
-            if (m_status == false) return false;
+            if (m_fp == NULL) return false;
 
             va_list arg;
             va_start(arg, format);
-            m_status = (::vfprintf(m_fp, format, arg) >= 0) ? true : false;
+            const bool ret = (::vfprintf(m_fp, format, arg) >= 0) ? true : false;
             va_end(arg);
 
-            return m_status;
+            return ret;
         }
 
         bool scanf(const char* format, ...) {
-            if (m_status == false) return false;
+            if (m_fp == NULL) return false;
 
             va_list arg;
             va_start(arg, format);
-            m_status = (::vfscanf(m_fp, format, arg) >= 0) ? true : false;
+            const bool ret = (::vfscanf(m_fp, format, arg) >= 0) ? true : false;
             va_end(arg);
 
-            return m_status;
+            return ret;
         }
 
     public:
@@ -246,12 +245,12 @@ namespace sp {
 
         template <typename TYPE>
         bool bin(const TYPE *val, const int num = 1) {
-            m_status = fbin(m_fp, m_mode, val, num);
+            const bool ret = fbin(m_fp, m_mode, val, num);
 
-            if (m_status == true && m_endian != getByteOrder()) {
+            if (ret == true && m_endian != getByteOrder()) {
                 revByteOrder(val, num);
             }
-            return m_status;
+            return ret;
         }
 
 

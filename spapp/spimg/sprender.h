@@ -545,7 +545,7 @@ namespace sp{
                 if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
                 const double val = acs2(ptn, ppix.x, ppix.y);
 
-                const Vec3 nrm = cmap(u, v).nrm;
+                const Vec3 nrm = cam2prj.rot * cmap(u, v).nrm;
                 if (nrm.z < 0.0) {
                     cnvVal(dst(u, v), -nrm.z * val * 0.9);
                 }
