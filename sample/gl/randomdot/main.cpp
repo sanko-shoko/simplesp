@@ -74,7 +74,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
         if (m_keyAction[GLFW_KEY_A] == 1) {
-            capture();
+            cnvImg(m_img, capture());
         }
         if (m_keyAction[GLFW_KEY_S] == 1) {
             stereoMatching();
@@ -84,19 +84,20 @@ private:
         }
     }
 
-    void capture() {
+    Mem2<Byte> capture() {
         Mem2<Byte> cap;
         renderPattern(cap, m_cam, m_pose, m_model, m_cam2prj, m_prj, m_ptn);
-        cnvImg(m_img, cap);
+        return cap;
     }
 
     void stereoMatching() {
+
         CamParam cams[2];
         Mem2<Byte> imgs[2];
         {
             // imgL
             {
-                cnvImg(imgs[0], m_img);
+                imgs[0] = capture();
                 cams[0] = m_cam;
             }
 
@@ -133,7 +134,7 @@ private:
 
         {
             const int maxDisp = 120;
-            const int minDisp = 60;
+            const int minDisp = 30;
 
             StereoBase estimator;
             estimator.setRange(maxDisp, minDisp);
@@ -162,7 +163,7 @@ private:
                 Mem1<int> cnt = getLabelCount(map);
 
                 for (int i = 0; i < mask.size(); i++) {
-                    if (cnt[map[i]] < 200) {
+                    if (cnt[map[i]] < 100) {
                         mask[i] = SP_BYTEMAX;
                     }
                 }
@@ -170,15 +171,14 @@ private:
 
             // output
             {
-                Mem2<Col3> img;
-                cnvDispToImg(img, estimator.getDispMap(StereoBase::StereoL), maxDisp, minDisp);
+                cnvDispToImg(m_img, estimator.getDispMap(StereoBase::StereoL), maxDisp, minDisp);
 
                 for (int i = 0; i < mask.size(); i++) {
                     if (mask[i] != 0) {
-                        img[i] = getCol(0, 0, 0);
+                        m_img[i] = getCol(0, 0, 0);
                     }
                 }
-                saveBMP(img, "disp.bmp");
+                saveBMP(m_img, "disp.bmp");
                 
                 const Mem2<Vec3> depthMap = estimator.getDepthMap(StereoBase::StereoL);
 
@@ -206,6 +206,9 @@ private:
             glRenderOutline(m_model);
         }
         else {
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
             // render points
