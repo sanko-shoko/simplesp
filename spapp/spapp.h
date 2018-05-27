@@ -24,7 +24,8 @@
 
 // image
 #include "spapp/spimg/spimage.h"
-#include "spapp/spimg/spbinalization.h"
+#include "spapp/spimg/spbinalize.h"
+#include "spapp/spimg/splabeling.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spimg/sprender.h"
 

@@ -116,8 +116,32 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    //  vector pn
+    //  vector
     //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC void cnvDepthToVec(Mem<Vec3> &dst, const CamParam &cam, const Mem<double> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        dst.zero();
+
+        for (int v = 0; v < dst.dsize[1] - 1; v++) {
+            for (int u = 0; u < dst.dsize[0] - 1; u++) {
+
+                const double val0 = acs2(src, u, v);
+                if (val0 == 0.0) continue;
+
+                const double val1 = acs2(src, u + 1, v);
+                const double val2 = acs2(src, u, v + 1);
+                if (val1 == 0.0 || val2 == 0.0) continue;
+
+                const Vec2 npx0 = invCam(cam, getVec(u, v));
+                const Vec3 vec0 = getVec(npx0.x, npx0.y, 1.0) * val0;
+
+                acs2(dst, u, v) = vec0;
+            }
+        }
+    }
 
     SP_CPUFUNC void cnvDepthToVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Mem<double> &src){
         SP_ASSERT(isValid(2, src));
@@ -150,6 +174,17 @@ namespace sp{
         }
     }
 
+    SP_CPUFUNC void cnvVecToDepth(Mem<double> &dst, const Mem<Vec3> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        dst.zero();
+
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = src[i].z;
+        }
+    }
+
     SP_CPUFUNC void cnvVecPNToDepth(Mem<double> &dst, const Mem<VecPN3> &src) {
         SP_ASSERT(isValid(2, src));
 
@@ -160,6 +195,8 @@ namespace sp{
             dst[i] = src[i].pos.z;
         }
     }
+
+
 
 }
 #endif

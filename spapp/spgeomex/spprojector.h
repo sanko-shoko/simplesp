@@ -9,6 +9,28 @@
 #include "spapp/spimg/spimage.h"
 
 namespace sp{
+
+    Mem2<Byte> genRandomPattern(const int dsize[], const double rate, const int seed = 0){
+        Mem2<Byte> ptn(dsize);
+        ptn.zero();
+
+        srand(seed);
+        for (int v = 0; v < ptn.dsize[1]; v++) {
+            for (int u = 0; u < ptn.dsize[0]; u++) {
+                if ((rand() % 101) < rate * 100) {
+                    ptn(u, v) = SP_BYTEMAX;
+                }
+            }
+        }
+
+        return ptn;
+    }
+
+    Mem2<Byte> genRandomPattern(const int dsize0, const int dsize1, const double rate, const int seed = 0) {
+        int dsize[2] = {dsize0, dsize1};
+        return genRandomPattern(dsize, rate, seed);
+    }
+
     class StructuredLight {
 
     protected:
