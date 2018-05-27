@@ -127,7 +127,7 @@ private:
             remap(rimgs[0], imgs[0], tables[0]);
             remap(rimgs[1], imgs[1], tables[1]);
 
-            saveBMP(rimgs[0], "fimg0.bmp");
+            saveBMP(rimgs[0], "rimg0.bmp");
             saveBMP(rimgs[1], "rimg1.bmp");
         }
 
