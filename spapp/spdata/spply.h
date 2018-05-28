@@ -17,25 +17,45 @@ namespace sp{
     using namespace std;
 
     namespace _ply{
-        struct Element{
+        struct Element {
             int num;
             string name;
             Mem1<string> prop;
 
-            Element(){}
-            Element(const Element &elem){
+            Element() {
+                num = 0;
+            }
+            Element(const Element &elem) {
                 *this = elem;
             }
 
-            void operator = (const Element &elem){
+            void operator = (const Element &elem) {
                 num = elem.num;
                 name = elem.name;
                 prop = elem.prop;
             }
         };
 
-        SP_CPUFUNC bool loadHeader(File &file, Mem1<Element> &elemList){
-            elemList.clear();
+        struct Vertex {
+            Vec3 pos;
+            Col3 col;
+
+            Vertex() {
+                pos = getVec(0.0, 0.0, 0.0);
+                col = getCol(0, 0, 0);
+            }
+            Vertex(const Vertex &vtx) {
+                *this = vtx;
+            }
+
+            void operator = (const Vertex &vtx) {
+                pos = vtx.pos;
+                col = vtx.col;
+            }
+        };
+
+        SP_CPUFUNC bool loadHeader(File &file, Mem1<Element> &elems){
+            elems.clear();
 
             Element *pElem = NULL;
 
@@ -51,8 +71,8 @@ namespace sp{
                     elem.name = words[1];
                     elem.num = atoi(words[2].c_str());
 
-                    elemList.push(elem);
-                    pElem = &elemList[elemList.size() - 1];
+                    elems.push(elem);
+                    pElem = &elems[elems.size() - 1];
                 }
 
                 if (words[0] == "property" && pElem){
@@ -60,8 +80,8 @@ namespace sp{
                 }
             }
 
-            for (int i = 0; i < elemList.size(); i++){
-                const Element &elem = elemList[i];
+            for (int i = 0; i < elems.size(); i++){
+                const Element &elem = elems[i];
                 if (elem.num == 0 || elem.prop.size() == 0) return false;
 
                 string prop;
@@ -76,32 +96,87 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC Vec3 getVertex(const char *line, const Element &elem){
-            Vec3 vec;
+        SP_CPUFUNC Vertex getVtx(const char *line, const Element &elem){
+            Vertex vtx;
 
             const Mem1<string> words = strSplit(line);
 
             for (int p = 0; p < elem.prop.size(); p++){
                 const double val = atof(words[p].c_str());
 
-                if (elem.prop[p] == "x") vec.x = val;
-                if (elem.prop[p] == "y") vec.y = val;
-                if (elem.prop[p] == "z") vec.z = val;
+                if (elem.prop[p] == "x") vtx.pos.x = val;
+                if (elem.prop[p] == "y") vtx.pos.y = val;
+                if (elem.prop[p] == "z") vtx.pos.z = val;
+
+                if (elem.prop[p] == "red") cnvVal(vtx.col.r, val);
+                if (elem.prop[p] == "green") cnvVal(vtx.col.g, val);
+                if (elem.prop[p] == "blue") cnvVal(vtx.col.b, val);
             }
 
-            return vec;
+            return vtx;
         }
 
-        SP_CPUFUNC Mem1<int> getIndex(const char *line, const Element &elem){
-            Mem1<int> index;
+        SP_CPUFUNC Mem1<int> getIdx(const char *line, const Element &elem){
+            Mem1<int> idx;
 
             const Mem1<string> words = strSplit(line);
 
             for (int i = 0; i < atoi(words[0].c_str()); i++){
-                index.push(atoi(words[i + 1].c_str()));
+                idx.push(atoi(words[i + 1].c_str()));
             }
 
-            return index;
+            return idx;
+        }
+
+        SP_CPUFUNC bool loadVtxs(File &file, Mem1<Vertex> &vtxs) {
+            file.seek(SEEK_SET);
+
+            Mem1<Element> elems;
+            if (loadHeader(file, elems) == false) return false;
+
+            for (int i = 0; i < elems.size(); i++) {
+                const Element &elem = elems[i];
+
+                char line[SP_STRMAX];
+                if (elem.name == "vertex") {
+                    for (int j = 0; j < elem.num; j++) {
+                        file.gets(line);
+                        vtxs.push(getVtx(line, elem));
+                    }
+                    continue;
+                }
+                else {
+                    for (int j = 0; j < elem.num; j++) {
+                        file.gets(line);
+                    }
+                }
+            }
+            return true;
+        }
+
+        SP_CPUFUNC bool loadIdxs(File &file, Mem1<Mem1<int>> &idxs) {
+            file.seek(SEEK_SET);
+
+            Mem1<Element> elems;
+            if (loadHeader(file, elems) == false) return false;
+
+            for (int i = 0; i < elems.size(); i++) {
+                const Element &elem = elems[i];
+
+                char line[SP_STRMAX];
+                if (elem.name == "face") {
+                    for (int j = 0; j < elem.num; j++) {
+                        file.gets(line);
+                        idxs.push(getIdx(line, elem));
+                    }
+                }
+                else{
+                    for (int j = 0; j < elem.num; j++) {
+                        file.gets(line);
+                    }
+                }
+            }
+            return true;
         }
     }
     using namespace _ply;
@@ -110,44 +185,81 @@ namespace sp{
         File file;
         if (file.open(path, "r") == false) return false;
 
-        Mem1<Element> elemList;
-        if (loadHeader(file, elemList) == false) return false;
+        Mem1<Vertex> vtxs;
+        Mem1<Mem1<int>> idxs;
 
-        Mem1<Vec3> vList;
-        Mem1<Mem1<int>> iList;
-
-        for (int i = 0; i < elemList.size(); i++){
-            const Element &elem = elemList[i];
-
-            char line[SP_STRMAX];
-            if (elem.name == "vertex"){
-                for (int j = 0; j < elem.num; j++){
-                    file.gets(line);
-                    vList.push(getVertex(line, elem));
-                }
-            }
-            if (elem.name == "face"){
-                for (int j = 0; j < elem.num; j++){
-                    file.gets(line);
-                    iList.push(getIndex(line, elem));
-                }
-            }
-        }
-
-        const int num = static_cast<int>(iList.size());
+        if (loadVtxs(file, vtxs) == false) return false;
+        if (loadIdxs(file, idxs) == false) return false;
 
         meshes.clear();
-        for (int i = 0; i < num; i++){
-            const Mem1<int> &index = iList[i];
-            if (index.size() == 3) {
-                meshes.push(getMesh(vList[index[0]], vList[index[1]], vList[index[2]]));
+        for (int i = 0; i < idxs.size(); i++){
+            const Mem1<int> &idx = idxs[i];
+            if (idx.size() == 3) {
+                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
             }
-            if (index.size() == 4) {
-                meshes.push(getMesh(vList[index[0]], vList[index[1]], vList[index[2]]));
-                meshes.push(getMesh(vList[index[0]], vList[index[2]], vList[index[3]]));
+            if (idx.size() == 4) {
+                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[2]].pos, vtxs[idx[3]].pos));
             }
         }
+        return true;
+    }
 
+    SP_CPUFUNC bool loadPLY(Mem1<Vec3> &pnts, const char *path) {
+        File file;
+        if (file.open(path, "r") == false) return false;
+
+        Mem1<Vertex> vtxs;
+        if (loadVtxs(file, vtxs) == false) return false;
+
+
+        pnts.clear();
+        for (int i = 0; i < vtxs.size(); i++) {
+            pnts.push(vtxs[i].pos);
+        }
+        return true;
+    }
+
+    SP_CPUFUNC bool loadPLY(Mem1<Vec3> &pnts, Mem1<Col3> &cols, const char *path) {
+        File file;
+        if (file.open(path, "r") == false) return false;
+
+        Mem1<Vertex> vtxs;
+        if (loadVtxs(file, vtxs) == false) return false;
+
+        pnts.clear();
+        cols.clear();
+        for (int i = 0; i < vtxs.size(); i++) {
+            pnts.push(vtxs[i].pos);
+            cols.push(vtxs[i].col);
+        }
+        return true;
+    }
+
+    SP_CPUFUNC bool savePLY(const Mem1<Mesh3> &meshes, const char *path) {
+        File file;
+        if (file.open(path, "w") == false) return false;
+
+        file.printf("ply\n");
+        file.printf("format ascii 1.0\n");
+        file.printf("element vertex %d\n", meshes.size() * 3);
+        file.printf("property float x\n");
+        file.printf("property float y\n");
+        file.printf("property float z\n");
+        file.printf("element face %d\n", meshes.size());
+        file.printf("property list uchar int vertex_indices\n");
+        file.printf("end_header\n");
+
+        for (int i = 0; i < meshes.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                file.printf("%lf %lf %lf ", meshes[i].pos[j].x, meshes[i].pos[j].y, meshes[i].pos[j].z);
+                file.printf("\n");
+            }
+        }
+        for (int i = 0; i < meshes.size(); i++) {
+            file.printf("3 %d %d %d ", 3 * i + 0, 3 * i + 1, 3 * i + 2);
+            file.printf("\n");
+        }
         return true;
     }
 

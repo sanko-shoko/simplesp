@@ -285,7 +285,7 @@ namespace sp{
 
     SP_CPUFUNC void renderMarker(Mem2<Byte> &dst, const CamParam &cam, const Pose &pose, const Mem2<Vec2> &mrkMap) {
         dst.resize(cam.dsize);
-        setElm(dst, 255);
+        dst.zero();
 
         const double radius = normVec(mrkMap[0] - mrkMap[1]) * 0.1;
 
@@ -296,10 +296,14 @@ namespace sp{
         double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
         double val[3] = { base.x, base.y, base.z };
 
+        const Vec2 cent = getVec(cam.cx, cam.cy);
+
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
-                const Vec2 prj = npxUndist(cam, invCam(cam, getVec(u, v)));
-                const Vec3 vec = getVec(prj.x, prj.y, 1.0);
+                const Vec2 npx = npxUndist(cam, invCam(cam, getVec(u, v)));
+                const Vec3 vec = extVec(npx, 1.0);
+
+                dst(u, v) = 255;
 
                 mat[0 * 3 + 2] = vec.x;
                 mat[1 * 3 + 2] = vec.y;
@@ -545,7 +549,7 @@ namespace sp{
                 if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
                 const double val = acs2(ptn, ppix.x, ppix.y);
 
-                const Vec3 nrm = cmap(u, v).nrm;
+                const Vec3 nrm = cam2prj.rot * cmap(u, v).nrm;
                 if (nrm.z < 0.0) {
                     cnvVal(dst(u, v), -nrm.z * val * 0.9);
                 }

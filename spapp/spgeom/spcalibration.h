@@ -600,7 +600,7 @@ namespace sp{
         Rot rot;
     };
     
-    SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const CamParam &cam1, const Pose &stereo){
+    SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const CamParam &cam1, const Pose &stereo, const double fixFocal = 0.0){
         SP_ASSERT(cmpSize(2, cam0.dsize, cam1.dsize));
 
         // pre parameter
@@ -630,7 +630,7 @@ namespace sp{
         {
             const int dsize[2] = { cam0.dsize[0], cam0.dsize[1] };
             
-            const double f = (cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0;
+            const double f = (fixFocal > 0) ? fixFocal : (cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0;
             const Vec2 cent = getVec(dsize[0] - 1, dsize[1] - 1) * 0.5;
 
             RectParam *pRect[2] = { &rect0, &rect1 };
@@ -653,7 +653,6 @@ namespace sp{
             rect1.cam.cy = cy;
         }
     }
-
 
     //--------------------------------------------------------------------------------
     // remap

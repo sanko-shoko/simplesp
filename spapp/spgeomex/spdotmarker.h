@@ -7,7 +7,8 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spimg/spimage.h"
-#include "spapp/spimg/spbinalization.h"
+#include "spapp/spimg/spbinalize.h"
+#include "spapp/spimg/splabeling.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spgeom/spgeometry.h"
 #include "spapp/spalgo/spkdtree.h"
