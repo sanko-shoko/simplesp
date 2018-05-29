@@ -8,14 +8,6 @@ int main(){
     Mat M;
     {
         printf("\n\n");
-        printf("set identity matrix\n");
-
-        M = eyeMat(3, 3);
-        print(M);
-    }
-
-    {
-        printf("\n\n");
         printf("set random value\n");
 
         M.resize(5, 3);
@@ -51,6 +43,27 @@ int main(){
         print(V);
 
         print(U * S * trnMat(V));
+    } 
+    
+    {
+        printf("\n\n");
+        printf("calc svd\n");
+
+        M.resize(1, 3);
+
+        M(0, 0) = 0.0;
+        M(0, 1) = 0.0;
+        M(0, 2) = 1.0;
+        
+        Mat U, V, S;
+        svdMat(U, S, V, M);
+
+        print(U);
+        print(S);
+        print(V);
+
+        print(U * S * trnMat(V));
     }
+
     return 0;
 }

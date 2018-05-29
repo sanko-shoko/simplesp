@@ -23,12 +23,19 @@ namespace sp{
         double scale;
 
         // feature descripter
-        Mem1<float> dsc;
+        Mem1<Byte> dsc;
+
+        // descripter type
+        enum Type{
+            DSC_32F = 0
+        };
+        Type type;
 
         Feature() {
             pix = getVec(0.0, 0.0);
             drc = getVec(0.0, 0.0);
             scale = 0.0;
+            type = DSC_32F;
         }
 
         Feature(const Feature &ft) {
@@ -62,25 +69,29 @@ namespace sp{
     };
 
     SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {
-        const double NCC_MIN = 0.9;
 
         int id = -1;
-        double maxv = NCC_MIN;
-        for (int i = 0; i < fts.size(); i++) {
-            if (mask.size() != 0 && mask[i] == false) continue;
-            
-            const int dim = ft.dsc.size();
-            const float *data0 = ft.dsc.ptr;
-            const float *data1 = fts[i].dsc.ptr;
 
-            double sum = 0.0;
-            for (int d = 0; d < dim; d++) {
-                sum += (*data0++) * (*data1++);
-            }
+        if (ft.type == Feature::Type::DSC_32F) {
+            const double NCC_MIN = 0.9;
+            double maxv = NCC_MIN;
 
-            if (sum > maxv) {
-                maxv = sum;
-                id = i;
+            for (int i = 0; i < fts.size(); i++) {
+                if (mask.size() != 0 && mask[i] == false) continue;
+
+                const int dim = ft.dsc.size() / sizeof(float);
+                const float *data0 = reinterpret_cast<float*>(ft.dsc.ptr);
+                const float *data1 = reinterpret_cast<float*>(fts[i].dsc.ptr);
+
+                double sum = 0.0;
+                for (int d = 0; d < dim; d++) {
+                    sum += (*data0++) * (*data1++);
+                }
+
+                if (sum > maxv) {
+                    maxv = sum;
+                    id = i;
+                }
             }
         }
         return id;

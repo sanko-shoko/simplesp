@@ -21,6 +21,7 @@
 #include "spapp/spalgo/spcluster.h"
 #include "spapp/spalgo/sprandomforest.h"
 #include "spapp/spalgo/spkalmanfilter.h"
+#include "spapp/spalgo/spbeliefpropagation.h"
 
 // image
 #include "spapp/spimg/spimage.h"
