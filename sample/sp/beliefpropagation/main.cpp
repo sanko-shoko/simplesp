@@ -10,14 +10,11 @@ int main(){
 
     Mem2<Byte> img;
     SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+    saveBMP(img, "input.bmp");
 
     const int labelMax = 5;
     const int step = SP_BYTEMAX / labelMax;
 
-    for (int i = 0; i < img.size(); i++){
-        img[i] = maxVal(0, minVal(SP_BYTEMAX, img[i] + ::rand() % 101 - 50));
-    }
-    saveBMP(img, "input.bmp");
 
     {
         Mem2<Byte> bin = img;
