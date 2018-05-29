@@ -20,9 +20,9 @@ namespace sp{
 
     public:
 
-        void init(const Mat &X, const Mat &P, const Mat &Q, const Mat &R) {
+        void init(const Mat &X, const Mat &Q, const Mat &R) {
             m_X = X;
-            m_P = P;
+            m_P = Q;
             m_Q = Q;
             m_R = R;
         }

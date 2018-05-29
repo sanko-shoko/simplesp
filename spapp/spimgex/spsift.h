@@ -445,9 +445,12 @@ namespace sp{
                     fts[i].pix = key.pix;
                     fts[i].drc = key.drc;
                     fts[i].scale = key.scale;
-                    fts[i].dsc.resize(dsc.size());
+
+                    fts[i].dsc.resize(dsc.size() * sizeof(float));
+
+                    float *ptr = reinterpret_cast<float*>(fts[i].dsc.ptr);
                     for (int k = 0; k < dsc.size(); k++){
-                        fts[i].dsc[k] = static_cast<float>(dsc[k] * nrm);
+                        ptr[k] = static_cast<float>(dsc[k] * nrm);
                     }
                 }
             }

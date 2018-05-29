@@ -111,7 +111,7 @@ namespace sp{
             m_links.reserve(2 * linkMax);
         }
 
-        void setNode(int i, int source, int sink){
+        void setNode(const int i, const int source, const int sink){
             Node *node = &m_nodes[i];
 
             node->cap = source - sink;
@@ -125,7 +125,7 @@ namespace sp{
             }
         }
 
-        void setLink(int i, int j, int cap){
+        void setLink(const int i, const int j, const int cap){
 
             Link *linkAB = m_links.extend();
             Link *linkBA = m_links.extend();
@@ -148,7 +148,7 @@ namespace sp{
             B->link = linkBA;
         }
 
-        int getLabel(int i){
+        int getLabel(const int i) const {
             return m_nodes[i].label;
         }
 
