@@ -562,12 +562,34 @@ namespace sp{
         // base method
         //--------------------------------------------------------------------------------
 
-        const int rows() const{
+        int rows() const{
             return this->dsize[1];
         }
 
-        const int cols() const{
+        int cols() const{
             return this->dsize[0];
+        }
+
+        //--------------------------------------------------------------------------------
+        // util
+        //--------------------------------------------------------------------------------
+
+        void setPart(const int rbase, const int cbase, const int rsize, const int csize, Mat &mat) {
+            for (int r = 0; r < rsize; r++) {
+                for (int c = 0; c < csize; c++) {
+                    (*this)(rbase + r, cbase + c) = mat(r, c);
+                }
+            }
+        }
+
+        Mat getPart(const int rbase, const int cbase, const int rsize, const int csize) {
+            Mat mat(rsize, csize);
+            for (int r = 0; r < rsize; r++) {
+                for (int c = 0; c < csize; c++) {
+                    mat(r, c) = (*this)(rbase + r, cbase + c);
+                }
+            }
+            return mat;
         }
 
     };
