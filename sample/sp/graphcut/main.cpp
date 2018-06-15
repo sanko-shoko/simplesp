@@ -45,7 +45,7 @@ int main(){
     for (int i = 0; i < img.size(); i++){
         img[i] = (gc.getLabel(i) > 0) ? 0 : 255;
     }
-    saveBMP(img, "graphcut.bmp");
+    saveBMP(img, "gc.bmp");
 
     return 0;
 }

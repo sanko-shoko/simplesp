@@ -17,11 +17,11 @@ int main(){
 
 
     {
-        Mem2<Byte> bin = img;
-        for (int i = 0; i < bin.size(); i++) {
-            bin[i] = ((bin[i] + step / 2) / step) * step;
+        Mem2<Byte> dst(img.dsize);
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = ((img[i] + step / 2) / step) * step;
         }
-        saveBMP(bin, "bin.bmp");
+        saveBMP(dst, "test.bmp");
     }
 
     {
@@ -52,10 +52,11 @@ int main(){
 
         bp.execute(50);
 
+        Mem2<Byte> dst(img.dsize);
         for (int i = 0; i < img.size(); i++) {
-            img[i] = bp.getLabel(i) * step;
+            dst[i] = bp.getLabel(i) * step;
         }
-        saveBMP(img, "bp.bmp");
+        saveBMP(dst, "bp.bmp");
     }
 
     return 0;
