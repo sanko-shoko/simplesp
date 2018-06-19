@@ -315,7 +315,7 @@ namespace sp {
         typedef LARGE_INTEGER sptime;
         sptime freq;
 
-        LARGE_INTEGER getCounter(){
+        LARGE_INTEGER getNow(){
             LARGE_INTEGER v;
             QueryPerformanceCounter(&v);
             return v;
@@ -333,7 +333,7 @@ namespace sp {
 #else
         typedef chrono::system_clock::time_point sptime;
 
-        sptime getCounter(){
+        sptime getNow(){
             return chrono::system_clock::now();
         }
 
@@ -368,14 +368,14 @@ namespace sp {
                 }
             }
             
-            cnts.push_back(getCounter());
+            cnts.push_back(getNow());
             strs.push_back(str);
         }
 
         void stop(){
             const int stack = static_cast<int>(cnts.size());
             if (stack > 0){
-                times.push_back(getTime(cnts[stack - 1], getCounter()));
+                times.push_back(getTime(cnts[stack - 1], getNow()));
                 disps.push_back(strs[stack - 1]);
                 cnts.pop_back();
                 strs.pop_back();
