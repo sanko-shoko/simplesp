@@ -10,7 +10,7 @@
 
 namespace sp{
 
-    Mem2<Byte> genRandomPattern(const int dsize[], const double rate, const int seed = 0){
+    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize[], const double rate, const int seed = 0){
         Mem2<Byte> ptn(dsize);
         ptn.zero();
 
@@ -26,7 +26,7 @@ namespace sp{
         return ptn;
     }
 
-    Mem2<Byte> genRandomPattern(const int dsize0, const int dsize1, const double rate, const int seed = 0) {
+    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize0, const int dsize1, const double rate, const int seed = 0) {
         int dsize[2] = {dsize0, dsize1};
         return genRandomPattern(dsize, rate, seed);
     }
