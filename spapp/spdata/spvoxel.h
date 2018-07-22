@@ -85,13 +85,13 @@ namespace sp{
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
                         if (isInRect2(map.dsize, pix.x, pix.y) == false) continue;
 
-                        char &val = voxel.vmap(x, y, z);
+                        char &dst = voxel.vmap(x, y, z);
 
                         const Vec3 &pos = map(round(pix.x), round(pix.y)).pos;
                         const Vec3 &nrm = map(round(pix.x), round(pix.y)).nrm;
 
                         if (pos.z == 0.0) {
-                            cnvVal(val, minVal(val + 1, +100));
+                            cnvVal(dst, minVal(dst + 1, +100));
                         }
                         else {
                             if (dotVec(cpos, nrm) >= 0) continue;
@@ -99,10 +99,10 @@ namespace sp{
                             const double dist = minVal(pos.z - cpos.z, unit) / unit;
 
                             if (dist > -1.0 && dist < 0.0) {
-                                cnvVal(val, maxVal(val - 1, -100));
+                                cnvVal(dst, maxVal(dst - 1, -100));
                             }
                             else if (dist > 0.0){
-                                cnvVal(val, minVal(val + 1, +100));
+                                cnvVal(dst, minVal(dst + 1, +100));
                             }
                         }
                     }
@@ -113,6 +113,7 @@ namespace sp{
         for (int i = 0; i < voxel.vmap.size(); i++) {
             voxel.vmap[i] = (voxel.vmap[i] > 0) ? +1 : -1;
         }
+        return true;
     }
 
     // Marching cubes
@@ -401,6 +402,62 @@ namespace sp{
         return true;
     }
 
+
+    //--------------------------------------------------------------------------------
+    // visual hull
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC bool visualHull(Voxel &voxel, const Mem1<Mem2<Byte> > &imgs, const Mem1<CamParam> &cams, const Mem1<Pose> &poses, const double unit = 1.0) {
+
+        double meanDist = 0.0;
+        {
+            for (int i = 0; i < poses.size(); i++) {
+                meanDist += poses[i].trn.z;
+            }
+            meanDist /= poses.size();
+        }
+
+        const int size = static_cast<int>(meanDist / 2.0 / unit);
+        voxel.init(size, unit);
+
+        const Vec3 cent = voxel.center();
+
+        for (int i = 0; i < imgs.size(); i++) {
+            const Mem2<Byte> &img = imgs[i];
+            const CamParam &cam = cams[i];
+            const Pose &pose = poses[i];
+
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+            for (int z = 0; z < voxel.dsize[2]; z++) {
+                for (int y = 0; y < voxel.dsize[1]; y++) {
+                    for (int x = 0; x < voxel.dsize[0]; x++) {
+                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 cpos = pose * ((mpos - cent) * unit);
+
+                        const Vec2 pix = mulCam(cam, prjVec(cpos));
+                        if (isInRect2(img.dsize, pix.x, pix.y) == false) continue;
+
+                        char &dst = voxel.vmap(x, y, z);
+
+                        const Byte &val = img(round(pix.x), round(pix.y));
+
+                        if (val == 0) {
+                            cnvVal(dst, minVal(dst + 1, +100));
+                        }
+                        else {
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < voxel.vmap.size(); i++) {
+            voxel.vmap[i] = (voxel.vmap[i] > 0) ? +1 : -1;
+        }
+    }
     //--------------------------------------------------------------------------------
     // truncated signed distance function
     //--------------------------------------------------------------------------------
