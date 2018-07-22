@@ -91,7 +91,6 @@ private:
                 saveBMP(imgs[i], str);
             }
 
-            printf("calc visual hull\n");
             visualHull(m_voxel, imgs, m_cams, m_poses);
 
             cnvVoxelToModel(m_modelR, m_voxel);
