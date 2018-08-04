@@ -171,6 +171,7 @@ namespace sp{
 
         double h, s, v;
         {
+            h = 0.0;
             v = maxv / 255.0;
             s = subv / maxVal(maxv, 1.0);
         }
