@@ -25,13 +25,14 @@ namespace sp {
 
     using namespace std;
 
-    SP_CPUFUNC bool makeDir(const char *dir) {
+    SP_CPUFUNC int makeDir(const char *dir) {
+        int ret = 0;
 #if WIN32
-        _mkdir(dir);
+        ret = _mkdir(dir);
 #else
-        mkdir(dir, 0755);
+        ret = mkdir(dir, 0755);
 #endif
-        return true;
+        return ret;
     }
 
     SP_CPUFUNC string getTimeStamp(const char *format = "%Y%m%d_%H%M%S") {
