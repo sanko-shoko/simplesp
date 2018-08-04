@@ -41,13 +41,13 @@ namespace sp {
 #if    SP_USE_CONSOLE
 #define SP_PRINTF(...) ::printf(__VA_ARGS__);
 #else
-#define SP_PRINTF(...)
+#define SP_PRINTF(...) if(0){ ::printf(__VA_ARGS__); }
 #endif
 
 #if SP_USE_DEBUG
 #define SP_PRINTD(...) SP_PRINTF(__VA_ARGS__);
 #else
-#define SP_PRINTD(...)
+#define SP_PRINTD(...) if(0){ SP_PRINTF(__VA_ARGS__); }
 #endif
 
 #if SP_USE_ASSERT
@@ -152,8 +152,7 @@ namespace sp {
                 }
             }
             
-            double val;
-            cnvVal(val, mem.ptr[i]);
+            const double val = mem.ptr[i];
             SP_PRINTF("%g ", val);
 
             for (int j = mem.dim - 1; j >= 0; j--){

@@ -343,7 +343,6 @@ namespace sp{
                 Mem2<double> evalMap;
                 getEvalMap(evalMap, h, ext, pixs, kdtree);
 
-                Vec2 v;
                 const double eval = sumVal(evalMap);
                 if (eval > maxv) {
                     H = h;

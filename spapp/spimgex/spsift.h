@@ -231,7 +231,6 @@ namespace sp{
                 const double dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
 
                 double dst[3 * 3];
-                double buf[3 * 3];
                 if (invMat33(dst, dv2) == false) return;
 
                 const double dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;

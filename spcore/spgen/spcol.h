@@ -131,7 +131,7 @@ namespace sp{
     // convert phase to col3(rainbow), phase = [0, 1]
     SP_GENFUNC void cnvPhaseToCol(Col3 &col, const double phase){
         const double p = maxVal(0.0, minVal(phase, 1.0));
-        const double s = SP_PI + SP_PI / 4;
+        //const double s = SP_PI + SP_PI / 4;
 
         cnvVal(col.r, 255 * (sin(1.5 * SP_PI * p + SP_PI * (9.0 / 4.0)) + 1.0) / 2.0);
         cnvVal(col.g, 255 * (sin(1.5 * SP_PI * p + SP_PI * (7.0 / 4.0)) + 1.0) / 2.0);
