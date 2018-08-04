@@ -13,7 +13,7 @@
 #include <Windows.h>
 #include <direct.h>
 #else
-#include <direct.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
