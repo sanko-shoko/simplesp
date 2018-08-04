@@ -35,6 +35,18 @@ namespace sp {
         return ret;
     }
 
+    SP_CPUFUNC string trimDir(const char *dir) {
+        char buf[SP_STRMAX];
+        strcpy(buf, dir);
+
+        const int n = strlen(dir);
+        if (buf[n - 1] == '\\' || buf[n - 1] == '/') {
+            buf[n - 1] = '\0';
+        }
+        return string(buf);
+    }
+
+
     SP_CPUFUNC string getTimeStamp(const char *format = "%Y%m%d_%H%M%S") {
         char str[SP_STRMAX];
         time_t t = time(NULL);
@@ -70,13 +82,11 @@ namespace sp {
     }
 
     SP_CPUFUNC Mem1<string> getFileList(const char *dir, const char *ext = NULL) {
-
         Mem1<string> list;
-
-#if WIN32
 
         Mem1<string> all;
 
+#if WIN32
         WIN32_FIND_DATA fd;
 
         const HANDLE handle = FindFirstFile((string(dir) + "\\*.*").c_str(), &fd);
@@ -94,12 +104,45 @@ namespace sp {
 
         FindClose(handle);
 
+#else
+        string search_path;
+
+        struct stat stat_buf;
+
+        struct dirent **namelist = NULL;
+        const int dirElements = scandir(dir, &namelist, NULL, NULL);
+
+        for (int i = 0; i < dirElements; i += 1) {
+            const char *name = namelist[i]->d_name;
+            // skip . and ..
+            if ((strcmp(name, ".\0") != 0) && (strcmp(name, "..\0") != 0)) {
+
+                string path = dir + string(name);
+
+                if (stat(path.c_str(), &stat_buf) == 0) {
+
+                    if ((stat_buf.st_mode & S_IFMT) == S_IFDIR) {
+                        // directory
+                    }
+                    else {
+                        // file
+                        all.push(name);
+                    }
+                }
+                else {
+                    // error
+                }
+            }
+        }
+        if (namelist != NULL) {
+            free(namelist);
+        }
+#endif
         for (int i = 0; i < all.size(); i++) {
             if (cmpFileExt(all[i].c_str(), ext) == true) {
                 list.push(all[i]);
             }
         }
-#endif
 
         return list;
     }
