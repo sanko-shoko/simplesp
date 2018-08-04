@@ -152,8 +152,7 @@ namespace sp {
                 }
             }
             
-            double val;
-            cnvVal(val, mem.ptr[i]);
+            const double val = mem.ptr[i];
             SP_PRINTF("%g ", val);
 
             for (int j = mem.dim - 1; j >= 0; j--){
