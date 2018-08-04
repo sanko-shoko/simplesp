@@ -55,6 +55,8 @@ namespace sp{
             m_train = false;
             m_nodeNum = 0;
         }
+        ~BaseLayer() {
+        }
 
         // get layer name
         virtual const char* getName() = 0;
