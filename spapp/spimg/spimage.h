@@ -59,7 +59,7 @@ namespace sp{
         const int dsize[2] = { dsize0, dsize1 };
         dst.resize(2, dsize);
 
-        const Byte *pSrc = tmp.ptr;
+        //const Byte *pSrc = tmp.ptr;
         Byte *pDst = dst.ptr;
 
         for (int v = 0; v < dst.dsize[1]; v++) {
