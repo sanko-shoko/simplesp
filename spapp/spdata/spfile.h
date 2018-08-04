@@ -17,10 +17,6 @@
 #include <unistd.h>
 #endif
 
-#if WIN32
-#define mkdir _mkdir
-#endif
-
 namespace sp {
 
     //--------------------------------------------------------------------------------
@@ -28,6 +24,15 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     using namespace std;
+
+    SP_CPUFUNC bool makeDir(const char *dir) {
+#if WIN32
+        _mkdir(dir);
+#else
+        mkdir(dir, 0755);
+#endif
+        return true;
+    }
 
     SP_CPUFUNC string getTimeStamp(const char *format = "%Y%m%d_%H%M%S") {
         char str[SP_STRMAX];
