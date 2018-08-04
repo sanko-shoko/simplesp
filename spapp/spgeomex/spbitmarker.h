@@ -336,10 +336,10 @@ namespace sp{
         // modules
         //--------------------------------------------------------------------------------
 
-        Mem1<Mem1<Vec2>> getContour(const Mem2<Byte> &img, Mem2<int> &labelMap) {
-            Mem1<Mem1<Vec2>> dst;
+        Mem1<Mem1<Vec2> > getContour(const Mem2<Byte> &img, Mem2<int> &labelMap) {
+            Mem1<Mem1<Vec2> > dst;
 
-            const Mem1<Mem1<Vec2>> contours = getLabelContour(labelMap, true, false);
+            const Mem1<Mem1<Vec2> > contours = getLabelContour(labelMap, true, false);
 
             for (int i = 0; i < contours.size(); i++) {
                 const Mem1<Vec2> &contour = contours[i];
@@ -373,8 +373,8 @@ namespace sp{
             return dst;
         }
 
-        Mem1<Mem1<Vec2>> getCorner(const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > &contours) {
-            Mem1<Mem1<Vec2>> dst;
+        Mem1<Mem1<Vec2> > getCorner(const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > &contours) {
+            Mem1<Mem1<Vec2> > dst;
 
             const int CORNER_SIDE = 5;
 
