@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
@@ -165,6 +165,9 @@ namespace sp {
 
         // view scale
         double m_viewScale;
+        
+        // pixel scale
+        double m_pixScale;
 
         // mouse event class
         Mouse m_mouse;
@@ -177,7 +180,8 @@ namespace sp {
         BaseWindow(){
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
-
+            m_pixScale = 1.0;
+            
             memset(m_keyState, 0, SP_KEYMAX);
             memset(m_keyAction, -1, SP_KEYMAX);
         }
@@ -227,10 +231,13 @@ namespace sp {
 #if SP_USE_IMGUI
                 ImGui_ImplGlfwGL2_NewFrame();
 #endif
-
+                
+                m_pixScale = glGetPixelScale(window);
+                
                 glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                
+               
+
                 display();
 
                 memset(m_keyAction, -1, SP_KEYMAX);
