@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
@@ -64,11 +64,19 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // load view
     //--------------------------------------------------------------------------------
-
+    SP_CPUFUNC double glGetPixelScale(GLFWwindow *window){
+        int bw, bh;
+        glfwGetFramebufferSize(window, &bw, &bh);
+        
+        int ww, wh;
+        glfwGetWindowSize(window, &ww, &wh);
+        return (static_cast<double>(bw) / ww + static_cast<double>(bh) / wh) * 0.5;
+    }
+    
     SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
-
+        
         const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
         const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
