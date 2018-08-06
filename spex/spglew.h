@@ -159,6 +159,19 @@ namespace sp{
         }
     };
 
+    string getText(File &file) {
+        string ret = "";
+        char str[SP_STRMAX];
+
+        file.seek(0);
+        while (file.gets(str)) {
+            ret += str;
+        }
+        file.seek(0);
+        return ret;
+    }
+
+
     class Shader {
     private:
         GLuint m_program;
@@ -179,16 +192,40 @@ namespace sp{
             return m_program != 0 ? true : false;
         }
 
-        void load(const char *vert, const char *frag) {
+        void load(const char *vert = NULL, const char *frag = NULL, const char *geom = NULL) {
             free();
 
-            GLuint vertShader = getShader(vert, GL_VERTEX_SHADER);
-            GLuint fragShader = getShader(frag, GL_FRAGMENT_SHADER);
+            GLuint vertShader = 0;
+            GLuint fragShader = 0;
+            GLuint geomShader = 0;
+            GLuint *pVertShader = NULL;
+            GLuint *pFragShader = NULL;
+            GLuint *pGeomShader = NULL;
 
-            m_program = getProgram(vertShader, fragShader);
+            if (vert != NULL) {
+                vertShader = getShader(vert, GL_VERTEX_SHADER);
+                pVertShader = &vertShader;
+            }
+            if (frag != NULL) {
+                fragShader = getShader(frag, GL_FRAGMENT_SHADER);
+                pFragShader = &fragShader;
+            }
+            if (geom != NULL) {
+                geomShader = getShader(geom, GL_GEOMETRY_SHADER_EXT);
+                pGeomShader = &geomShader;
+            }
 
-            glDeleteShader(vertShader);
-            glDeleteShader(fragShader);
+            m_program = getProgram(pVertShader, pFragShader, pGeomShader);
+  
+            if (pVertShader != NULL) {
+                glDeleteShader(*pVertShader);
+            }
+            if (pFragShader != NULL) {
+                glDeleteShader(*pFragShader);
+            }
+            if (pGeomShader != NULL) {
+                glDeleteShader(*pGeomShader);
+            }
 
             glGenVertexArrays(1, &m_vertex);
             glBindVertexArray(m_vertex);
@@ -253,11 +290,17 @@ namespace sp{
             }
         }
 
-        GLuint getProgram(GLuint vertShader, GLuint fragShader) {
+        GLuint getProgram(GLuint *pVertShader, GLuint *pFragShader, GLuint *pGeomShader) {
             GLuint program = glCreateProgram();
 
-            glAttachShader(program, vertShader);
-            glAttachShader(program, fragShader);
+            if (pVertShader != NULL) glAttachShader(program, *pVertShader);
+            if (pFragShader != NULL) glAttachShader(program, *pFragShader);
+            if (pGeomShader != NULL) glAttachShader(program, *pGeomShader);
+ 
+            // 三角形を入力して三角形を出力する
+            glProgramParameteriEXT(program, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+            glProgramParameteriEXT(program, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLES);
+
             glLinkProgram(program);
 
             GLint result, length;
