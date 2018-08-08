@@ -19,8 +19,7 @@ class RenderGUI : public BaseWindow {
     // object to cam pose
     Pose m_pose;
 
-    FrameBuffer m_fb;
-
+    FrameBufferObject m_fbo;
 
 private:
 
@@ -40,7 +39,7 @@ private:
         m_img.resize(m_cam.dsize);
         m_img.zero();
 
-        m_fb.resize(m_cam.dsize);
+        m_fbo.resize(m_wcam.dsize);
 
         if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
 
@@ -51,53 +50,69 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
     }
-
+    
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         const double distance = getModelDistance(m_model, m_cam);
         const double radius = getModelRadius(m_model);
 
-        m_fb.bind();
+        m_fbo.bind();
         display();
-        m_fb.unbind();
+        m_fbo.unbind();
 
         if (m_keyAction[GLFW_KEY_A] == 1) {
-            m_fb.readImg(m_img);
+            m_fbo.readImg(m_img);
         }
         if (m_keyAction[GLFW_KEY_S] == 1) {
 
             Mem2<double> depth;
-            m_fb.readDepth(depth);
+            m_fbo.readDepth(depth);
             cnvDepthToImg(m_img, depth, distance - 2 * radius, distance + 2 * radius);
         }
     }
     void test() {
-        //static File vert("shader.vert", "rb");
-        //static File frag("shader.frag", "rb");
-        //static File geom("shader.geom", "rb");
-
-        //static Shader shader;
-        //if (shader.isValid() == false) {
-        //    shader.load(vert.getText().c_str(), frag.getText().c_str(), geom.getText().c_str());
-        //}
-        
-        static File vert("showdepth.vert", "rb");
-        static File frag("differential.frag", "rb");
         static Shader shader;
-        if (shader.isValid() == false) {
-            shader.load(getText(vert).c_str(), getText(frag).c_str());
+        if (shader.valid() == false) {
+            File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
+            File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
+
+            shader.load(vert, frag);
+        }
+        {
+            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
+            glLoadMatrix(m_pose);
+
+            renderSurface();
+        }
+        {
+            m_fbo.bind();
+            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
+            glLoadMatrix(m_pose);
+
+            renderSurface();
+            m_fbo.unbind();
+        }
+        Mem1<Vec2> vtxs;
+        vtxs.push(getVec(0.5, 0.5));
+        vtxs.push(getVec(1.0, 0.0));
+        vtxs.push(getVec(1.0, 1.0));
+        vtxs.push(getVec(0.5, 1.0));
+        {
+            glLoadView2D(m_wcam, m_viewPos, m_viewScale);
+
+            glDisable(GL_DEPTH_TEST);
+            glBindTexture(GL_TEXTURE_2D, m_fbo.m_tex[1]);
+
+            shader.enable();
+            shader.setVertex(0, &vtxs[0], vtxs.size());
+            glDrawArrays(GL_QUADS, 0, vtxs.size());
+
+
+            shader.disable();
+            
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        glLoadView3D(m_cam, m_viewPos, m_viewScale);
-        glLoadMatrix(m_pose);
-
-
-        shader.enable();
-        shader.setVertex((Vec3*)m_model.ptr, m_model.size() * 3);
-
-        glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
-
-        shader.disable();
 
     }
 
@@ -125,7 +140,7 @@ private:
             ;
 
         static Shader shader;
-        if (shader.isValid() == false) {
+        if (shader.valid() == false) {
             shader.load(vert, flag);
         }
 
@@ -133,7 +148,7 @@ private:
         glLoadMatrix(m_pose);
 
         shader.enable();
-        shader.setVertex((Vec3*)m_model.ptr, m_model.size() * 3);
+        shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
 
         glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
 
@@ -161,7 +176,7 @@ private:
             ;
 
         static Shader shader;
-        if (shader.isValid() == false) {
+        if (shader.valid() == false) {
            shader.load(vert, flag);
         }
 
@@ -171,7 +186,7 @@ private:
             0.0f,  1.0f, 0.0f,
         };
         shader.enable();
-        shader.setVertex((Vec3*)g_vertex_buffer_data, 3);
+        shader.setVertex(0, (Vec3*)g_vertex_buffer_data, 3);
 
         glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
 
@@ -203,7 +218,7 @@ private:
             ;
 
         static Shader shader;
-        if (shader.isValid() == false) {
+        if (shader.valid() == false) {
             shader.load(vert, flag);
         }
 
@@ -219,8 +234,8 @@ private:
             ccc.push(getVec(getCol(i + 2)) * (1.0 / 255));
         }
 
-        shader.setVertex((Vec3*)m_model.ptr, m_model.size() * 3);
-        shader.setVertex((Vec3*)ccc.ptr, ccc.size());
+        shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
+        shader.setVertex(0, (Vec3*)ccc.ptr, ccc.size());
 
         glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
 
@@ -233,13 +248,13 @@ private:
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+        test();
 
-        {
-            // view 2D
-            glLoadView2D(m_cam, m_viewPos + getVec(199, 199), m_viewScale);
-            glRenderImg(m_img);
-        }
-        shader02();
+        //{
+        //    // view 2D
+        //    glLoadView2D(m_cam, m_viewPos + getVec(199, 199), m_viewScale);
+        //    glRenderImg(m_img);
+        //}
         return;
 
         {

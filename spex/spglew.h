@@ -19,24 +19,25 @@
 
 namespace sp{
 
-    class FrameBuffer {
+    class FrameBufferObject {
 
-    private:
+    public:
         int m_dsize[2];
 
         GLuint m_fb;
         GLuint m_tex[2];
         
+        // view port backup
         GLint backup[4];
 
     public:
-        FrameBuffer() {
+        FrameBufferObject() {
             m_fb = 0;
             m_tex[0] = 0;
             m_tex[1] = 0;
         }
 
-        ~FrameBuffer() {
+        ~FrameBufferObject() {
             free();
         }
 
@@ -175,24 +176,42 @@ namespace sp{
     class Shader {
     private:
         GLuint m_program;
-        GLuint m_vertex;
         Mem1<GLuint> m_buffer;
 
     public:
         Shader() {
             m_program = 0;
-            m_vertex = 0;
         }
 
         ~Shader() {
             free();
         }
 
-        bool isValid() {
+        bool valid() {
             return m_program != 0 ? true : false;
         }
+        bool load(File &vert, File &frag, File &geom = File()) {
+            File *flies[3] = { &vert, &frag, &geom };
+            string texts[3];
 
-        void load(const char *vert = NULL, const char *frag = NULL, const char *geom = NULL) {
+            for (int i = 0; i < 3; i++) {
+                File &file = *flies[i];
+                string &text = texts[i];
+                text = "";
+                if (file.valid() == false) continue;
+
+                char str[SP_STRMAX];
+
+                const int pos = file.tell();
+                file.seek(0);
+                while (file.gets(str)) {
+                    text += str;
+                }
+                file.seek(pos);
+            }
+            return load(texts[0].c_str(), texts[1].c_str(), texts[2].c_str());
+        }
+        bool load(const char *vert, const char *frag, const char *geom = NULL) {
             free();
 
             GLuint vertShader = 0;
@@ -202,15 +221,15 @@ namespace sp{
             GLuint *pFragShader = NULL;
             GLuint *pGeomShader = NULL;
 
-            if (vert != NULL) {
+            if (vert != NULL && vert[0] != '\0') {
                 vertShader = getShader(vert, GL_VERTEX_SHADER);
                 pVertShader = &vertShader;
             }
-            if (frag != NULL) {
+            if (frag != NULL && frag[0] != '\0') {
                 fragShader = getShader(frag, GL_FRAGMENT_SHADER);
                 pFragShader = &fragShader;
             }
-            if (geom != NULL) {
+            if (geom != NULL && geom[0] != '\0') {
                 geomShader = getShader(geom, GL_GEOMETRY_SHADER_EXT);
                 pGeomShader = &geomShader;
             }
@@ -227,42 +246,74 @@ namespace sp{
                 glDeleteShader(*pGeomShader);
             }
 
-            glGenVertexArrays(1, &m_vertex);
-            glBindVertexArray(m_vertex);
+            return true;
         }
 
         void enable() {
 
             glUseProgram(m_program);
 
-            Mat proj(4, 4);
-            Mat view(4, 4);
-            
-            glGetDoublev(GL_PROJECTION_MATRIX, proj.ptr);
-            glGetDoublev(GL_MODELVIEW_MATRIX, view.ptr);
+        }
+        void setUniform(const char *name, const Mat &mat) {
+            SP_ASSERT(mat.rows() != mat.cols());
 
-            proj = trnMat(proj);
-            view = trnMat(view);
+            const Mat tmat = trnMat(mat);
 
-            const Mat tmat = trnMat(proj * view);
-
-            Mem2<float> tmatf(4, 4);
+            Mem2<float> tmatf(tmat.dsize);
             cnvMem(tmatf, tmat);
 
-            const GLint location = glGetUniformLocation(m_program, "mat");
-            glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+            const GLint location = glGetUniformLocation(m_program, name);
+
+            if (mat.rows() == 3) {
+                glUniformMatrix3fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
+            if (mat.rows() == 4) {
+                glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
         }
 
-        void setVertex(const Vec3 *pVec, const int size) {
+        void setUniform(const char *name, const int &val) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1i(location, val);
+        }
+        
+        void setUniform(const char *name, const double &val) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1f(location, static_cast<float>(val));
+        }
+        
+        void setUniform(const char *name, const Vec2 &vec) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform2f(location, static_cast<float>(vec.x), static_cast<float>(vec.y));
+        }
+
+        void setUniform(const char *name, const Vec3 &vec) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform3f(location, static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z));
+        }
+
+        void setVertex(const int id, const Vec3 *vtxs, const int size) {
             GLuint buffer;
             glGenBuffers(1, &buffer);
             glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * size, pVec, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * size, vtxs, GL_STATIC_DRAW);
 
-            const GLuint id = static_cast<int>(m_buffer.size());
             glEnableVertexAttribArray(id);
             glBindBuffer(GL_ARRAY_BUFFER, buffer);
             glVertexAttribPointer(id, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+
+            m_buffer.push(buffer);
+        }
+
+        void setVertex(const int id, const Vec2 *vtxs, const int size) {
+            GLuint buffer;
+            glGenBuffers(1, &buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2) * size, vtxs, GL_STATIC_DRAW);
+
+            glEnableVertexAttribArray(id);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glVertexAttribPointer(id, 2, GL_DOUBLE, GL_FALSE, 0, NULL);
 
             m_buffer.push(buffer);
         }
@@ -284,10 +335,6 @@ namespace sp{
                 glDeleteProgram(m_program);
                 m_program = 0;
             }
-            if (m_vertex) {
-                glDeleteVertexArrays(1, &m_vertex);
-                m_vertex = 0;
-            }
         }
 
         GLuint getProgram(GLuint *pVertShader, GLuint *pFragShader, GLuint *pGeomShader) {
@@ -297,10 +344,6 @@ namespace sp{
             if (pFragShader != NULL) glAttachShader(program, *pFragShader);
             if (pGeomShader != NULL) glAttachShader(program, *pGeomShader);
  
-            // 三角形を入力して三角形を出力する
-            glProgramParameteriEXT(program, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-            glProgramParameteriEXT(program, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLES);
-
             glLinkProgram(program);
 
             GLint result, length;

@@ -218,14 +218,20 @@ namespace sp {
             reset();
         }
 
+        bool valid() const {
+            return (m_fp != NULL) ? true : false;
+        }
+
         void seek(const int origin) {
             if (m_fp == NULL) return;
 
             ::fseek(m_fp, 0, origin);
         }
-
+        int tell() const {
+            return static_cast<int>(::ftell(m_fp));
+        }
         int residual() const {
-            return m_size - static_cast<int>(::ftell(m_fp));
+            return m_size - tell();
         }
 
     public:

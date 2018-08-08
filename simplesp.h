@@ -13,6 +13,10 @@
 #endif
 
 
+#ifndef SP_ROOT_DIR
+#define SP_ROOT_DIR "../../../.."
+#endif
+
 #ifndef SP_DATA_DIR
 #define SP_DATA_DIR "../../../../data"
 #endif
