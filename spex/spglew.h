@@ -19,24 +19,38 @@
 
 namespace sp{
 
-    class FrameBuffer {
+    class FrameBufferObject {
 
-    private:
+    public:
         int m_dsize[2];
 
         GLuint m_fb;
         GLuint m_tex[2];
         
+        // view port backup
         GLint backup[4];
 
-    public:
-        FrameBuffer() {
-            m_fb = 0;
-            m_tex[0] = 0;
-            m_tex[1] = 0;
+    private:
+        void reset() {
+            memset(this, 0, sizeof(FrameBufferObject));
         }
 
-        ~FrameBuffer() {
+    public:
+        FrameBufferObject() {
+            reset();
+        }
+
+        FrameBufferObject(const int *dsize) {
+            reset();
+            resize(dsize);
+        }
+
+        FrameBufferObject(const int dsize0, const int dsize1) {
+            reset();
+            resize(dsize0, dsize1);
+        }
+
+        ~FrameBufferObject() {
             free();
         }
 
@@ -53,11 +67,13 @@ namespace sp{
             }
         }
 
-        void resize(const int dsize0, const int dsize1) {
+        void resize(const int dsize[2]) {
+            if (cmpSize(2, dsize, m_dsize) == true) return;
+
             free();
 
-            m_dsize[0] = dsize0;
-            m_dsize[1] = dsize1;
+            m_dsize[0] = dsize[0];
+            m_dsize[1] = dsize[1];
 
             glGenFramebuffersEXT(1, &m_fb);
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
@@ -66,7 +82,7 @@ namespace sp{
                 glGenTextures(1, &m_tex[0]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[0]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize0, dsize1, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -80,7 +96,7 @@ namespace sp{
                 glGenTextures(1, &m_tex[1]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[1]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize0, dsize1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -88,10 +104,9 @@ namespace sp{
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                //glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
                 glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_tex[1], 0);
             }
@@ -100,8 +115,9 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        void resize(const int dsize[2]) {
-            resize(dsize[0], dsize[1]);
+        void resize(const int dsize0, const int dsize1) {
+            int dsize[2] = { dsize0, dsize1 };
+            resize(dsize);
         }
 
         void bind() {
@@ -151,7 +167,7 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float d = tmp(u, tmp.dsize[1] - 1 - v);
-                    depth(u, v) = -farPlane * nearPlane / (d * (farPlane - nearPlane) - farPlane);
+                    depth(u, v) = farPlane * nearPlane / (farPlane - d * (farPlane - nearPlane));
                 }
             }
 
@@ -162,70 +178,145 @@ namespace sp{
     class Shader {
     private:
         GLuint m_program;
-        GLuint m_vertex;
         Mem1<GLuint> m_buffer;
 
     public:
         Shader() {
             m_program = 0;
-            m_vertex = 0;
         }
 
         ~Shader() {
             free();
         }
 
-        bool isValid() {
+        bool valid() {
             return m_program != 0 ? true : false;
         }
 
-        void load(const char *vert, const char *frag) {
+        bool load(File &vert, File &frag, File &geom = File()) {
+            File *flies[3] = { &vert, &frag, &geom };
+            string texts[3];
+
+            for (int i = 0; i < 3; i++) {
+                File &file = *flies[i];
+                string &text = texts[i];
+                text = "";
+                if (file.valid() == false) continue;
+
+                char str[SP_STRMAX];
+
+                const int pos = file.tell();
+                file.seek(0);
+                while (file.gets(str)) {
+                    text += str;
+                }
+                file.seek(pos);
+            }
+            return load(texts[0].c_str(), texts[1].c_str(), texts[2].c_str());
+        }
+        bool load(const char *vert, const char *frag, const char *geom = NULL) {
             free();
 
-            GLuint vertShader = getShader(vert, GL_VERTEX_SHADER);
-            GLuint fragShader = getShader(frag, GL_FRAGMENT_SHADER);
+            GLuint vertShader = 0;
+            GLuint fragShader = 0;
+            GLuint geomShader = 0;
+            GLuint *pVertShader = NULL;
+            GLuint *pFragShader = NULL;
+            GLuint *pGeomShader = NULL;
 
-            m_program = getProgram(vertShader, fragShader);
+            if (vert != NULL && vert[0] != '\0') {
+                vertShader = getShader(vert, GL_VERTEX_SHADER);
+                pVertShader = &vertShader;
+                printf(vert);
+            }
+            if (frag != NULL && frag[0] != '\0') {
+                fragShader = getShader(frag, GL_FRAGMENT_SHADER);
+                pFragShader = &fragShader;
+            }
+            if (geom != NULL && geom[0] != '\0') {
+                geomShader = getShader(geom, GL_GEOMETRY_SHADER_EXT);
+                pGeomShader = &geomShader;
+            }
 
-            glDeleteShader(vertShader);
-            glDeleteShader(fragShader);
+            m_program = getProgram(pVertShader, pFragShader, pGeomShader);
+  
+            if (pVertShader != NULL) {
+                glDeleteShader(*pVertShader);
+            }
+            if (pFragShader != NULL) {
+                glDeleteShader(*pFragShader);
+            }
+            if (pGeomShader != NULL) {
+                glDeleteShader(*pGeomShader);
+            }
 
-            glGenVertexArrays(1, &m_vertex);
-            glBindVertexArray(m_vertex);
+            return true;
         }
 
         void enable() {
-
             glUseProgram(m_program);
-
-            Mat proj(4, 4);
-            Mat view(4, 4);
-            
-            glGetDoublev(GL_PROJECTION_MATRIX, proj.ptr);
-            glGetDoublev(GL_MODELVIEW_MATRIX, view.ptr);
-
-            proj = trnMat(proj);
-            view = trnMat(view);
-
-            const Mat tmat = trnMat(proj * view);
-
-            Mem2<float> tmatf(4, 4);
-            cnvMem(tmatf, tmat);
-
-            const GLint location = glGetUniformLocation(m_program, "mat");
-            glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 
-        void setVertex(const Vec3 *pVec, const int size) {
+        void setUniform(const char *name, const Mat &mat) {
+            SP_ASSERT(mat.rows() != mat.cols());
+
+            const Mat tmat = trnMat(mat);
+
+            Mem2<float> tmatf(tmat.dsize);
+            cnvMem(tmatf, tmat);
+
+            const GLint location = glGetUniformLocation(m_program, name);
+
+            if (mat.rows() == 3) {
+                glUniformMatrix3fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
+            if (mat.rows() == 4) {
+                glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
+        }
+
+        void setUniform(const char *name, const int &val) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1i(location, val);
+        }
+        
+        void setUniform(const char *name, const double &val) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1f(location, static_cast<float>(val));
+        }
+        
+        void setUniform(const char *name, const Vec2 &vec) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform2f(location, static_cast<float>(vec.x), static_cast<float>(vec.y));
+        }
+
+        void setUniform(const char *name, const Vec3 &vec) {
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform3f(location, static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z));
+        }
+
+        void setVertex(const int id, const Vec3 *vtxs, const int size) {
             GLuint buffer;
             glGenBuffers(1, &buffer);
             glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * size, pVec, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * size, vtxs, GL_STATIC_DRAW);
 
-            const GLuint id = static_cast<int>(m_buffer.size());
             glEnableVertexAttribArray(id);
             glBindBuffer(GL_ARRAY_BUFFER, buffer);
             glVertexAttribPointer(id, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+
+            m_buffer.push(buffer);
+        }
+
+        void setVertex(const int id, const Vec2 *vtxs, const int size) {
+            GLuint buffer;
+            glGenBuffers(1, &buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2) * size, vtxs, GL_STATIC_DRAW);
+
+            glEnableVertexAttribArray(id);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glVertexAttribPointer(id, 2, GL_DOUBLE, GL_FALSE, 0, NULL);
 
             m_buffer.push(buffer);
         }
@@ -247,17 +338,15 @@ namespace sp{
                 glDeleteProgram(m_program);
                 m_program = 0;
             }
-            if (m_vertex) {
-                glDeleteVertexArrays(1, &m_vertex);
-                m_vertex = 0;
-            }
         }
 
-        GLuint getProgram(GLuint vertShader, GLuint fragShader) {
+        GLuint getProgram(GLuint *pVertShader, GLuint *pFragShader, GLuint *pGeomShader) {
             GLuint program = glCreateProgram();
 
-            glAttachShader(program, vertShader);
-            glAttachShader(program, fragShader);
+            if (pVertShader != NULL) glAttachShader(program, *pVertShader);
+            if (pFragShader != NULL) glAttachShader(program, *pFragShader);
+            if (pGeomShader != NULL) glAttachShader(program, *pGeomShader);
+ 
             glLinkProgram(program);
 
             GLint result, length;

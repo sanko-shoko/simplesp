@@ -60,18 +60,21 @@ namespace sp{
         glColor(col);
     }
 
+    //--------------------------------------------------------------------------------
+    // get
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Mat glGetMat(const int type) {
+        Mat mat(4, 4);
+
+        // GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
+        glGetDoublev(type, mat.ptr);
+        return trnMat(mat);
+    }
 
     //--------------------------------------------------------------------------------
     // load view
     //--------------------------------------------------------------------------------
-    SP_CPUFUNC double glGetPixelScale(GLFWwindow *window){
-        int bw, bh;
-        glfwGetFramebufferSize(window, &bw, &bh);
-        
-        int ww, wh;
-        glfwGetWindowSize(window, &ww, &wh);
-        return (static_cast<double>(bw) / ww + static_cast<double>(bh) / wh) * 0.5;
-    }
     
     SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
         GLint viewport[4];
@@ -116,7 +119,6 @@ namespace sp{
         glLoadView2D(dsize[0], dsize[1], vmat);
     }
 
-
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
         glLoadView2D(dsize0, dsize1, glGetViewMat(dsize0, dsize1, viewPos, viewScale));
@@ -127,12 +129,10 @@ namespace sp{
         glLoadView2D(dsize, glGetViewMat(dsize, viewPos, viewScale));
     }
 
-
     SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
 
         glLoadView2D(cam.dsize, glGetViewMat(cam.dsize, viewPos, viewScale));
     }
-
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
         GLint viewport[4];
