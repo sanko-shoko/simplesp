@@ -19,13 +19,10 @@ class RenderGUI : public BaseWindow {
     // object to cam pose
     Pose m_pose;
 
-    FrameBufferObject m_fbo;
 
 private:
 
     void help() {
-        printf("'a' key : render image\n");
-        printf("'s' key : render depth\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -39,8 +36,6 @@ private:
         m_img.resize(m_cam.dsize);
         m_img.zero();
 
-        m_fbo.resize(m_wcam.dsize);
-
         if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
 
             // if could not find stanford bunny, load dummy model
@@ -53,38 +48,26 @@ private:
     
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        const double distance = getModelDistance(m_model, m_cam);
-        const double radius = getModelRadius(m_model);
-
-        m_fbo.bind();
-        display();
-        m_fbo.unbind();
-
-        if (m_keyAction[GLFW_KEY_A] == 1) {
-            m_fbo.readImg(m_img);
-        }
-        if (m_keyAction[GLFW_KEY_S] == 1) {
-
-            Mem2<double> depth;
-            m_fbo.readDepth(depth);
-            cnvDepthToImg(m_img, depth, distance - 2 * radius, distance + 2 * radius);
-        }
     }
-    void test() {
+
+    void edge() {
         static Shader shader;
+        static FrameBufferObject m_fbo;
+
         if (shader.valid() == false) {
             File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
             File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
 
             shader.load(vert, frag);
         }
-        {
-            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-            glLoadMatrix(m_pose);
+        //{
+        //    glLoadView3D(m_wcam, m_viewPos, m_viewScale);
+        //    glLoadMatrix(m_pose);
 
-            renderSurface();
-        }
+        //    renderSurface();
+        //}
         {
+            m_fbo.resize(m_wcam.dsize);
             m_fbo.bind();
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
             glLoadMatrix(m_pose);
@@ -92,31 +75,36 @@ private:
             renderSurface();
             m_fbo.unbind();
         }
-        Mem1<Vec2> vtxs;
-        vtxs.push(getVec(0.5, 0.5));
-        vtxs.push(getVec(1.0, 0.0));
-        vtxs.push(getVec(1.0, 1.0));
-        vtxs.push(getVec(0.5, 1.0));
+
         {
             glLoadView2D(m_wcam, m_viewPos, m_viewScale);
+            shader.enable();
+            shader.setUniform("nearPlane", 1.0);
+            shader.setUniform("farPlane", 10000.0);
+            shader.setUniform("dx", 1.0 / m_wcam.dsize[0]);
+            shader.setUniform("dy", 1.0 / m_wcam.dsize[1]);
 
             glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             glBindTexture(GL_TEXTURE_2D, m_fbo.m_tex[1]);
 
-            shader.enable();
-            shader.setVertex(0, &vtxs[0], vtxs.size());
-            glDrawArrays(GL_QUADS, 0, vtxs.size());
-
-
-            shader.disable();
+            glBegin(GL_QUADS);
+            glVertex2d(-1.0, -1.0);
+            glVertex2d(+1.0, -1.0);
+            glVertex2d(+1.0, +1.0);
+            glVertex2d(-1.0, +1.0);
+            glEnd();
             
             glBindTexture(GL_TEXTURE_2D, 0);
+
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_BLEND);
+            shader.disable();
         }
-
-
     }
 
-    void shader00() {
+    void simple() {
         const char *vert =
             "#version 400 core\n"
             "layout(location = 0) in vec3 vtx;"
@@ -155,115 +143,10 @@ private:
         shader.disable();
     }
 
-    void shader01() {
-        const char *vert =
-            "#version 400 core\n"
-            "layout(location = 0) in vec3 vertexPosition_modelspace;"
-
-            "void main(){"
-            "gl_Position.xyz = vertexPosition_modelspace;"
-            "gl_Position.w = 1.0;"
-            "}"
-            ;
-
-        const char *flag =
-            "#version 400 core\n"
-            "out vec3 color;"
-            "void main()"
-            "{"
-            "color = vec3(1,0,0);"
-            "}"
-            ;
-
-        static Shader shader;
-        if (shader.valid() == false) {
-           shader.load(vert, flag);
-        }
-
-        static const double g_vertex_buffer_data[] = {
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            0.0f,  1.0f, 0.0f,
-        };
-        shader.enable();
-        shader.setVertex(0, (Vec3*)g_vertex_buffer_data, 3);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
-
-
-        shader.disable();
-    }
-    void shader02() {
-        const char *vert =
-            "#version 400 core\n"
-            "layout(location = 0) in vec3 vtx;"
-            "layout(location = 1) in vec3 ccc;"
-            "out vec3 fcol;"
-            "uniform mat4 mat;"
-
-            "void main(){"
-            "gl_Position = mat * vec4(vtx, 1.0);"
-            "fcol = ccc;"
-            "}"
-            ;
-
-        const char *flag =
-            "#version 400 core\n"
-            "in vec3 fcol;"
-            "out vec3 color;"
-            "void main()"
-            "{"
-            "color = fcol;"
-            "}"
-            ;
-
-        static Shader shader;
-        if (shader.valid() == false) {
-            shader.load(vert, flag);
-        }
-
-        glLoadView3D(m_cam, m_viewPos, m_viewScale);
-        glLoadMatrix(m_pose);
-
-        shader.enable();
-
-        Mem1<Vec3> ccc;
-        for (int i = 0; i < m_model.size(); i++) {
-            ccc.push(getVec(getCol(i + 0)) * (1.0 / 255));
-            ccc.push(getVec(getCol(i + 1)) * (1.0 / 255));
-            ccc.push(getVec(getCol(i + 2)) * (1.0 / 255));
-        }
-
-        shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
-        shader.setVertex(0, (Vec3*)ccc.ptr, ccc.size());
-
-        glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
-
-        shader.disable();
-    }
     virtual void display() {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(-1.0, 1.0, -1.0, 0.0, 1.0, -1.0);
 
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        test();
+        edge();
 
-        //{
-        //    // view 2D
-        //    glLoadView2D(m_cam, m_viewPos + getVec(199, 199), m_viewScale);
-        //    glRenderImg(m_img);
-        //}
-        return;
-
-        {
-            // view 3D
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
-
-            renderSurface();
-            renderAxis();
-        }
     }
     void renderSurface() {
         glLoadMatrix(m_pose);

@@ -30,11 +30,24 @@ namespace sp{
         // view port backup
         GLint backup[4];
 
+    private:
+        void reset() {
+            memset(this, 0, sizeof(FrameBufferObject));
+        }
+
     public:
         FrameBufferObject() {
-            m_fb = 0;
-            m_tex[0] = 0;
-            m_tex[1] = 0;
+            reset();
+        }
+
+        FrameBufferObject(const int *dsize) {
+            reset();
+            resize(dsize);
+        }
+
+        FrameBufferObject(const int dsize0, const int dsize1) {
+            reset();
+            resize(dsize0, dsize1);
         }
 
         ~FrameBufferObject() {
@@ -54,11 +67,13 @@ namespace sp{
             }
         }
 
-        void resize(const int dsize0, const int dsize1) {
+        void resize(const int dsize[2]) {
+            if (cmpSize(2, dsize, m_dsize) == true) return;
+
             free();
 
-            m_dsize[0] = dsize0;
-            m_dsize[1] = dsize1;
+            m_dsize[0] = dsize[0];
+            m_dsize[1] = dsize[1];
 
             glGenFramebuffersEXT(1, &m_fb);
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
@@ -67,7 +82,7 @@ namespace sp{
                 glGenTextures(1, &m_tex[0]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[0]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize0, dsize1, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -81,7 +96,7 @@ namespace sp{
                 glGenTextures(1, &m_tex[1]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[1]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize0, dsize1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -89,10 +104,9 @@ namespace sp{
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                //glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
                 glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_tex[1], 0);
             }
@@ -101,8 +115,9 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        void resize(const int dsize[2]) {
-            resize(dsize[0], dsize[1]);
+        void resize(const int dsize0, const int dsize1) {
+            int dsize[2] = { dsize0, dsize1 };
+            resize(dsize);
         }
 
         void bind() {
@@ -152,26 +167,13 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float d = tmp(u, tmp.dsize[1] - 1 - v);
-                    depth(u, v) = -farPlane * nearPlane / (d * (farPlane - nearPlane) - farPlane);
+                    depth(u, v) = farPlane * nearPlane / (farPlane - d * (farPlane - nearPlane));
                 }
             }
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
     };
-
-    string getText(File &file) {
-        string ret = "";
-        char str[SP_STRMAX];
-
-        file.seek(0);
-        while (file.gets(str)) {
-            ret += str;
-        }
-        file.seek(0);
-        return ret;
-    }
-
 
     class Shader {
     private:
@@ -190,6 +192,7 @@ namespace sp{
         bool valid() {
             return m_program != 0 ? true : false;
         }
+
         bool load(File &vert, File &frag, File &geom = File()) {
             File *flies[3] = { &vert, &frag, &geom };
             string texts[3];
@@ -224,6 +227,7 @@ namespace sp{
             if (vert != NULL && vert[0] != '\0') {
                 vertShader = getShader(vert, GL_VERTEX_SHADER);
                 pVertShader = &vertShader;
+                printf(vert);
             }
             if (frag != NULL && frag[0] != '\0') {
                 fragShader = getShader(frag, GL_FRAGMENT_SHADER);
@@ -250,10 +254,9 @@ namespace sp{
         }
 
         void enable() {
-
             glUseProgram(m_program);
-
         }
+
         void setUniform(const char *name, const Mat &mat) {
             SP_ASSERT(mat.rows() != mat.cols());
 

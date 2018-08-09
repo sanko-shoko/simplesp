@@ -64,18 +64,12 @@ namespace sp{
     // get
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mat glGetProjectionMat() {
-        Mat proj(4, 4);
+    SP_CPUFUNC Mat glGetMat(const int type) {
+        Mat mat(4, 4);
 
-        glGetDoublev(GL_PROJECTION_MATRIX, proj.ptr);
-        return trnMat(proj);
-    }
-
-    SP_CPUFUNC Mat glGetModelViewMat() {
-        Mat view(4, 4);
-
-        glGetDoublev(GL_MODELVIEW_MATRIX, view.ptr);
-        return trnMat(view);
+        // GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
+        glGetDoublev(type, mat.ptr);
+        return trnMat(mat);
     }
 
     //--------------------------------------------------------------------------------
