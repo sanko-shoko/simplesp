@@ -64,10 +64,6 @@ private:
                 #include "spex/spshader/edge.frag"
                 ;
 
-
-            //File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
-            //File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
-
             shader.load(vert, frag);
         }
         //{

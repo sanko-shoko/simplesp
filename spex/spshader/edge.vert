@@ -1,4 +1,4 @@
-SP_WRAP_SHADER(
+SP_SHADER(
 #version 420 core \n
 
 layout(location = 0) in vec2 vtx;
