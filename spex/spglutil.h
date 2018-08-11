@@ -109,7 +109,7 @@ namespace sp{
             _vmat = pmat * vmat;
         }
 
-        return vmat;
+        return _vmat;
     }
 
     SP_CPUFUNC Mat glGetViewMat(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
@@ -135,7 +135,7 @@ namespace sp{
             pmat(0, 0) = 1.0 / pixScale;
             pmat(1, 1) = 1.0 / pixScale;
 
-            _vmat = vmat * pmat;
+            _vmat = pmat * vmat;
         }
         return _vmat;
     }
