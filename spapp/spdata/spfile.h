@@ -379,7 +379,7 @@ namespace sp {
         File file;
         if (file.open(path, "wb") == false) return false;
 
-        file.textf("Mem,\n");
+        file.textf("Mem\n");
         file.text(&mem.dim, 1, "dim");
         file.text(mem.dsize, mem.dim, "dsize");
 
@@ -392,7 +392,7 @@ namespace sp {
         File file;
         if (file.open(path, "rb") == false) return false;
 
-        file.textf("Mem,\n");
+        file.textf("Mem\n");
         file.text(&mem.dim, 1, "dim");
         file.text(mem.dsize, mem.dim, "dsize");
 
