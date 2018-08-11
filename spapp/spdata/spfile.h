@@ -86,7 +86,7 @@ namespace sp {
         Mem1<string> list;
 
         Mem1<string> all;
-
+#ifndef __CYGWIN__
 #if WIN32
         WIN32_FIND_DATA fd;
 
@@ -138,6 +138,7 @@ namespace sp {
         if (namelist != NULL) {
             free(namelist);
         }
+#endif
 #endif
         for (int i = 0; i < all.size(); i++) {
             if (cmpFileExt(all[i].c_str(), ext) == true) {
