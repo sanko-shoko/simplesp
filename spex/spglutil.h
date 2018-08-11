@@ -75,7 +75,6 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // load view
     //--------------------------------------------------------------------------------
-    
     SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
@@ -90,6 +89,26 @@ namespace sp{
         vmat(0, 3) = shift.x;
         vmat(1, 3) = shift.y;
 
+        Mat _vmat = vmat;
+        {// for retina display
+            GLFWwindow *win = glfwGetCurrentContext();
+
+            int fw, fh;
+            glfwGetFramebufferSize(win, &fw, &fh);
+
+            int ww, wh;
+            glfwGetWindowSize(win, &ww, &wh);
+            const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+
+            Mat pmat = eyeMat(4, 4);
+            pmat(0, 0) = pixScale;
+            pmat(1, 1) = pixScale;
+            pmat(0, 3) = (1.0 - pixScale) * viewCenter.x;
+            pmat(1, 3) = (1.0 - pixScale) * viewCenter.y;
+
+            _vmat = pmat * vmat;
+        }
+
         return vmat;
     }
 
@@ -97,6 +116,35 @@ namespace sp{
 
         return glGetViewMat(dsize[0], dsize[1], viewPos, viewScale);
     }
+
+    SP_CPUFUNC Mat glGetWindowMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+        Mat vmat = glGetViewMat(dsize0, dsize1, viewPos, viewScale);
+
+        Mat _vmat = vmat;
+        {// for retina display
+            GLFWwindow *win = glfwGetCurrentContext();
+
+            int fw, fh;
+            glfwGetFramebufferSize(win, &fw, &fh);
+
+            int ww, wh;
+            glfwGetWindowSize(win, &ww, &wh);
+            const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+
+            Mat pmat = eyeMat(4, 4);
+            pmat(0, 0) = 1.0 / pixScale;
+            pmat(1, 1) = 1.0 / pixScale;
+
+            _vmat = vmat * pmat;
+        }
+        return _vmat;
+    }
+
+    SP_CPUFUNC Mat glGetWindowMat(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+
+        return glGetWindowMat(dsize[0], dsize[1], viewPos, viewScale);
+    }
+
 
     SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Mat &vmat) {
         glDisable(GL_DEPTH_TEST);
@@ -110,21 +158,8 @@ namespace sp{
         glLoadIdentity();
         glOrtho(-0.5, viewport[2] - 0.5, viewport[3] - 0.5, -0.5, -1.0, 1.0);
 
-        GLFWwindow *win = glfwGetCurrentContext();
-
-        int fw, fh;
-        glfwGetFramebufferSize(win, &fw, &fh);
-
-        int ww, wh;
-        glfwGetWindowSize(win, &ww, &wh);
-        const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
-
-        Mat pmat = eyeMat(4, 4);
-        pmat(0, 0) = pixScale;
-        pmat(1, 1) = pixScale;
-
         glMatrixMode(GL_MODELVIEW);
-        glLoadMatrix(pmat * vmat);
+        glLoadMatrix(vmat);
     }
 
     SP_CPUFUNC void glLoadView2D(const int *dsize, const Mat &vmat) {
