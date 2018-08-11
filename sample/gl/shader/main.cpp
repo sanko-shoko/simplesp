@@ -57,16 +57,12 @@ private:
         if (shader.valid() == false) {
 
             const char* vert =
-                #include "edge.vert"
+                #include "spex/spshader/edge.vert"
                 ;
 
             const char* frag =
-                #include "edge.frag"
+                #include "spex/spshader/edge.frag"
                 ;
-
-
-            //File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
-            //File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
 
             shader.load(vert, frag);
         }

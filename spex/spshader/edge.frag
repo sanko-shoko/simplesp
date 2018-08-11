@@ -1,4 +1,4 @@
-SP_WRAP_SHADER(
+SP_SHADER(
 #version 420 core \n
 
 in vec2 uv;
