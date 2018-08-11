@@ -152,9 +152,6 @@ namespace sp {
 
     public:
 
-        // glfw window
-        GLFWwindow *m_win;
-
 #define SP_KEYMAX 400
 
         // keybord state
@@ -169,9 +166,6 @@ namespace sp {
         // view scale
         double m_viewScale;
         
-        // pixel scale
-        double m_pixScale;
-
         // mouse event class
         Mouse m_mouse;
 
@@ -181,11 +175,8 @@ namespace sp {
     public:
         
         BaseWindow(){
-            m_win = NULL;
-
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
-            m_pixScale = 1.0;
             
             memset(m_keyState, 0, SP_KEYMAX);
             memset(m_keyAction, -1, SP_KEYMAX);
@@ -205,15 +196,15 @@ namespace sp {
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             // glfw create window
-            m_win = glfwCreateWindow(width, height, name, NULL, NULL);
-            if (!m_win){
+            GLFWwindow *win = glfwCreateWindow(width, height, name, NULL, NULL);
+            if (!win){
                 SP_PRINTF(" Can't create GLFW window.\n");
                 glfwTerminate();
                 return;
             }
 
             // glfw make context
-            glfwMakeContextCurrent(m_win);
+            glfwMakeContextCurrent(win);
 
 #if defined(_WIN32) && SP_USE_GLEW
             // glew init
@@ -222,27 +213,20 @@ namespace sp {
 
 #if SP_USE_IMGUI
             // imgui init
-            ImGui_ImplGlfwGL2_Init(m_win, true);
+            ImGui_ImplGlfwGL2_Init(win, true);
 #endif
 
             // glfw set event callbacks
-            setCallback(m_win);
+            setCallback(win);
 
             init();
 
-            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)){
+            while (!glfwWindowShouldClose(win) && !glfwGetKey(win, GLFW_KEY_ESCAPE)){
                 glfwPollEvents();
 
 #if SP_USE_IMGUI
                 ImGui_ImplGlfwGL2_NewFrame();
 #endif
-
-                int fw, fh;
-                glfwGetFramebufferSize(m_win, &fw, &fh);
-
-                int ww, wh;
-                glfwGetWindowSize(m_win, &ww, &wh);
-                m_pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
                 
                 glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -255,7 +239,7 @@ namespace sp {
                 ImGui::Render();
 #endif
 
-                glfwSwapBuffers(m_win);
+                glfwSwapBuffers(win);
             }
 
             // glfw terminate

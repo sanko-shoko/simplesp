@@ -110,8 +110,21 @@ namespace sp{
         glLoadIdentity();
         glOrtho(-0.5, viewport[2] - 0.5, viewport[3] - 0.5, -0.5, -1.0, 1.0);
 
+        GLFWwindow *win = glfwGetCurrentContext();
+
+        int fw, fh;
+        glfwGetFramebufferSize(win, &fw, &fh);
+
+        int ww, wh;
+        glfwGetWindowSize(win, &ww, &wh);
+        const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+
+        Mat pmat = eyeMat(4, 4);
+        pmat(0, 0) = pixScale;
+        pmat(1, 1) = pixScale;
+
         glMatrixMode(GL_MODELVIEW);
-        glLoadMatrix(vmat);
+        glLoadMatrix(pmat * vmat);
     }
 
     SP_CPUFUNC void glLoadView2D(const int *dsize, const Mat &vmat) {
