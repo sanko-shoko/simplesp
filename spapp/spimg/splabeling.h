@@ -211,7 +211,7 @@ namespace sp{
 
     SP_CPUFUNC Mem1<int> getLabelCount(const Mem2<int> &map) {
         const int labelNum = round(maxVal(map) + 1);
-        const int step = map.dsize[0];
+        //const int step = map.dsize[0];
 
         Mem1<int> dst(labelNum);
         dst.zero();

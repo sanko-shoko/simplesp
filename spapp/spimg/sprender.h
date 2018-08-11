@@ -296,7 +296,7 @@ namespace sp{
         double mat[3 * 3] = { -A.x, -B.x, 0.0, -A.y, -B.y, 0.0, -A.z, -B.z, 0.0 };
         double val[3] = { base.x, base.y, base.z };
 
-        const Vec2 cent = getVec(cam.cx, cam.cy);
+        //const Vec2 cent = getVec(cam.cx, cam.cy);
 
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
