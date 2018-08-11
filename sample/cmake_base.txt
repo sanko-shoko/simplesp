@@ -1,6 +1,6 @@
 project(${target})
 
-file(GLOB MAIN *.h *.hpp *.cpp)
+file(GLOB MAIN *.h *.hpp *.cpp *.vert *.frag)
 source_group("main" FILES ${MAIN})
 
 add_executable(${target} ${MAIN} ${SUB})

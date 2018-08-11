@@ -227,7 +227,6 @@ namespace sp{
             if (vert != NULL && vert[0] != '\0') {
                 vertShader = getShader(vert, GL_VERTEX_SHADER);
                 pVertShader = &vertShader;
-                printf(vert);
             }
             if (frag != NULL && frag[0] != '\0') {
                 fragShader = getShader(frag, GL_FRAGMENT_SHADER);

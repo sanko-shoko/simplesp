@@ -55,8 +55,18 @@ private:
         static FrameBufferObject m_fbo;
 
         if (shader.valid() == false) {
-            File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
-            File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
+
+            const char* vert =
+                #include "edge.vert"
+                ;
+
+            const char* frag =
+                #include "edge.frag"
+                ;
+
+
+            //File vert(SP_ROOT_DIR "/sample/gl/shader/edge.vert", "rb");
+            //File frag(SP_ROOT_DIR "/sample/gl/shader/edge.frag", "rb");
 
             shader.load(vert, frag);
         }
