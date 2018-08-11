@@ -72,6 +72,19 @@ namespace sp{
         return trnMat(mat);
     }
 
+	SP_CPUFUNC double glGetPixelScale() {
+		GLFWwindow *win = glfwGetCurrentContext();
+
+		int fw, fh;
+		glfwGetFramebufferSize(win, &fw, &fh);
+
+		int ww, wh;
+		glfwGetWindowSize(win, &ww, &wh);
+		const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+
+		return pixScale;
+	}
+
     //--------------------------------------------------------------------------------
     // load view
     //--------------------------------------------------------------------------------
@@ -90,15 +103,9 @@ namespace sp{
         vmat(1, 3) = shift.y;
 
         Mat _vmat = vmat;
+
         {// for retina display
-            GLFWwindow *win = glfwGetCurrentContext();
-
-            int fw, fh;
-            glfwGetFramebufferSize(win, &fw, &fh);
-
-            int ww, wh;
-            glfwGetWindowSize(win, &ww, &wh);
-            const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+            const double pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
             pmat(0, 0) = pixScale;
@@ -121,15 +128,9 @@ namespace sp{
         Mat vmat = glGetViewMat(dsize0, dsize1, viewPos, viewScale);
 
         Mat _vmat = vmat;
+
         {// for retina display
-            GLFWwindow *win = glfwGetCurrentContext();
-
-            int fw, fh;
-            glfwGetFramebufferSize(win, &fw, &fh);
-
-            int ww, wh;
-            glfwGetWindowSize(win, &ww, &wh);
-            const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+			const double pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
             pmat(0, 0) = 1.0 / pixScale;
@@ -137,6 +138,7 @@ namespace sp{
 
             _vmat = pmat * vmat;
         }
+
         return _vmat;
     }
 
