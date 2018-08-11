@@ -57,11 +57,11 @@ private:
         if (shader.valid() == false) {
 
             const char* vert =
-                #include "edge.vert"
+                #include "spex/spshader/edge.vert"
                 ;
 
             const char* frag =
-                #include "edge.frag"
+                #include "spex/spshader/edge.frag"
                 ;
 
 
