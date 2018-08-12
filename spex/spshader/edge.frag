@@ -37,7 +37,7 @@ void main(){
     float thresh = getDepth(uv) * 0.01;
 
     if (val > thresh) {
-	    float a = (val - thresh) / thresh;
+	    float a = (val - thresh) / (10.0 * thresh);
         a = min(a, 1.0);
 	    color = vec4(a, a, a, a);
     }

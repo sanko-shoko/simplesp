@@ -66,19 +66,15 @@ private:
 
             shader.load(vert, frag);
         }
-        //{
-        //    glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-        //    glLoadMatrix(m_pose);
 
-        //    renderSurface();
-        //}
         {
             m_fbo.resize(m_wcam.dsize);
             m_fbo.bind();
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-            glLoadMatrix(m_pose);
 
-            renderSurface();
+            glLoadMatrix(m_pose);
+            glRenderSurface(m_model);
+
             m_fbo.unbind();
         }
 
@@ -153,27 +149,6 @@ private:
 
         edge();
 
-    }
-    void renderSurface() {
-        glLoadMatrix(m_pose);
-
-        const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-
-        glRenderSurface(m_model);
-    }
-
-    void renderAxis() {
-        glDisable(GL_DEPTH_TEST);
-
-        glLoadMatrix(m_pose);
-
-        glLineWidth(2.f);
-        glBegin(GL_LINES);
-        glAxis(100.0);
-        glEnd();
-        
-        glEnable(GL_DEPTH_TEST);
     }
 
     virtual void mousePos(double x, double y) {

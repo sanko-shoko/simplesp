@@ -256,22 +256,14 @@ namespace sp{
             glUseProgram(m_program);
         }
 
-        void setUniform(const char *name, const Mat &mat) {
-            SP_ASSERT(mat.rows() != mat.cols());
+        void disable() {
+            glUseProgram(0);
 
-            const Mat tmat = trnMat(mat);
-
-            Mem2<float> tmatf(tmat.dsize);
-            cnvMem(tmatf, tmat);
-
-            const GLint location = glGetUniformLocation(m_program, name);
-
-            if (mat.rows() == 3) {
-                glUniformMatrix3fv(location, 1, GL_FALSE, tmatf.ptr);
+            for (int i = 0; i < static_cast<int>(m_buffer.size()); i++) {
+                glDisableVertexAttribArray(i);
+                glDeleteBuffers(1, &m_buffer[i]);
             }
-            if (mat.rows() == 4) {
-                glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
-            }
+            m_buffer.clear();
         }
 
         void setUniform(const char *name, const int &val) {
@@ -292,6 +284,24 @@ namespace sp{
         void setUniform(const char *name, const Vec3 &vec) {
             const GLint location = glGetUniformLocation(m_program, name);
             glUniform3f(location, static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z));
+        }
+
+        void setUniform(const char *name, const Mat &mat) {
+            SP_ASSERT(mat.rows() != mat.cols());
+
+            const Mat tmat = trnMat(mat);
+
+            Mem2<float> tmatf(tmat.dsize);
+            cnvMem(tmatf, tmat);
+
+            const GLint location = glGetUniformLocation(m_program, name);
+
+            if (mat.rows() == 3) {
+                glUniformMatrix3fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
+            if (mat.rows() == 4) {
+                glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+            }
         }
 
         void setVertex(const int id, const Vec3 *vtxs, const int size) {
@@ -320,15 +330,6 @@ namespace sp{
             m_buffer.push(buffer);
         }
 
-        void disable() {
-            glUseProgram(0);
-
-            for (int i = 0; i < static_cast<int>(m_buffer.size()); i++) {
-                glDisableVertexAttribArray(i);
-                glDeleteBuffers(1, &m_buffer[i]);
-            }
-            m_buffer.clear();
-        }
 
     private:
 
