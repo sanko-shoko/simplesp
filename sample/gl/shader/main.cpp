@@ -52,7 +52,7 @@ private:
 
     void edge() {
         static Shader shader;
-        static FrameBufferObject m_fbo;
+        static FrameBufferObject fbo;
 
         if (shader.valid() == false) {
 
@@ -68,14 +68,14 @@ private:
         }
 
         {
-            m_fbo.resize(m_wcam.dsize);
-            m_fbo.bind();
+            fbo.resize(m_wcam.dsize);
+            fbo.bind();
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
             glLoadMatrix(m_pose);
             glRenderSurface(m_model);
 
-            m_fbo.unbind();
+            fbo.unbind();
         }
 
         {
@@ -89,7 +89,7 @@ private:
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, m_fbo.m_tex[1]);
+            glBindTexture(GL_TEXTURE_2D, fbo.m_tex[1]);
 
             glBegin(GL_QUADS);
             glVertex2d(-1.0, -1.0);

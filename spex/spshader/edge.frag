@@ -34,7 +34,7 @@ void main(){
 
     float val = abs(laplacian(uv));
 
-    float thresh = getDepth(uv) * 0.01;
+    float thresh = getDepth(uv) * 0.001;
 
     if (val > thresh) {
 	    float a = (val - thresh) / (10.0 * thresh);
