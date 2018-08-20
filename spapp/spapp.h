@@ -51,6 +51,7 @@
 
 #include "spapp/spgeomex/spsfm.h"
 #include "spapp/spgeomex/sptrack.h"
+#include "spapp/spgeomex/sptrack3d.h"
 #include "spapp/spgeomex/spdotmarker.h"
 #include "spapp/spgeomex/spbitmarker.h"
 #include "spapp/spgeomex/spdotpattern.h"
