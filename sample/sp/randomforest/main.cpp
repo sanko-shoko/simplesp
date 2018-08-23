@@ -57,7 +57,7 @@ void regression(){
         X[1] = randValUnif() * 10;
 
         const double Y = a * X[0] + b * X[1] + c;
-        const double R = meanVal(rf.estimate(X));
+        const double R = meanVal(rf.execute(X));
 
         printf("ground truth %.4lf\n", Y);
         printf("regression   %.4lf\n", R);
@@ -93,7 +93,7 @@ void classification(const char *path) {
         Mem<double> &X = testImages[i];
 
         Mem1<int> hist;
-        histogram(hist, rf.estimate(X), 10);
+        histogram(hist, rf.execute(X), 10);
         const int C = maxArg(hist);
 
         results.push(C);

@@ -10,25 +10,29 @@ class TrackGUI : public BaseWindow {
 
     // object mesh model
     Mem1<Mesh3> m_model;
-
-    // object surface points
-    Mem1<VecPN3> m_pnts;
+    double m_radius;
+    double m_distance;
 
     // object to cam pose
     Pose m_pose;
 
-    Mem2<VecPN3> m_map;
+    Pose m_est;
 
-    double m_near, m_far;
+    Mem2<double> m_depth;
 
-    Track3DRF track3d;
+    Mem2<double> m_others;
+
+    TrackRF m_tracker;
+
+    bool m_start;
 
 
 private:
 
     void help() {
-        printf("'d' key : render depth\n");
-        printf("'n' key : render normal\n");
+        printf("'t' key : training\n");
+        printf("'s' key : start & stop moving\n");
+        printf("'a' key : estimate one step\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -41,74 +45,101 @@ private:
 
         SP_ASSERT(loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply"));
 
-        m_pnts = getModelPoint(m_model);
         m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
+        m_radius = getModelRadius(m_model);
+        m_distance = getModelDistance(m_model, m_cam);
 
-        const double distance = getModelDistance(m_model, m_cam);
-        const double radius = getModelRadius(m_model);
+        m_depth.resize(m_cam.dsize);
+        m_depth.zero();
 
-        m_map.resize(m_cam.dsize);
-        m_map.zero();
-
-        m_near = distance - 2 * radius;
-        m_far = distance + 2 * radius;
+        m_start = true;
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_L] == 1) {
-            track3d.train(m_model);
-            m_pose.rot = getGeomPose(1, 0, 100).rot;
+        if (m_keyAction[GLFW_KEY_T] == 1) {
+            if (m_tracker.valid() == false) {
+                m_tracker.train(m_model);
+            }
+            m_est = m_pose;
         }
-        if (m_keyAction[GLFW_KEY_R] == 1) {
-            m_map.zero();
-            renderVecPN(m_map, m_cam, m_pose, m_model);
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            m_start = (m_start == false) ? true : false;
         }
-
-        if (m_keyAction[GLFW_KEY_A] == 1) {
-            Mem2<double> depth(m_map.dsize);
-            cnvVecPNToDepth(depth, m_map);
-
-            track3d.updatePose(m_pose, m_cam, depth);
+        if (m_keyAction[GLFW_KEY_A] >= 1) {
+            if (m_tracker.valid() == true) {
+                m_tracker.execute(m_est, m_cam, m_depth);
+            }
         }
     }
 
     virtual void display() {
+        // render depth map
+        {
+            static double s = 0.0;
+            
+            if (m_start == true) {
+                m_pose *= getRotAngle(getVec(+::sin(s), +::cos(s), +0.0), -0.02);
+                m_pose.trn.x = ::cos(s * 2.0) * m_radius * 0.4;
+                m_pose.trn.y = ::sin(s * 2.0) * m_radius * 0.4;
+
+                s += 0.01;
+            }
+
+            m_depth.zero();
+            renderDepth(m_depth, m_cam, m_pose, m_model);
+
+            Mem2<double> tmp(m_cam.dsize);
+            tmp.zero();
+
+            for (int u = 0; u < m_cam.dsize[0]; u++) {
+                for (int v = 0; v < m_cam.dsize[1] * 2 / 10; v++) {
+                    tmp(u, v) = m_distance - 1.5 * m_radius;
+                }
+                for (int v = m_cam.dsize[1] * 4 / 10; v < m_cam.dsize[1] * 6 / 10; v++) {
+                    tmp(u, v) = m_distance + 1.8 * m_radius;
+                }
+                for (int v = m_cam.dsize[1] * 8 / 10; v < m_cam.dsize[1] * 10 / 10; v++) {
+                    tmp(u, v) = m_distance - 1.8 * m_radius;
+                }
+            }
+            for (int i = 0; i < m_depth.size(); i++) {
+                if (tmp[i] > 0.0 && (m_depth[i] == 0.0 || m_depth[i] > tmp[i])) {
+                    m_depth[i] = tmp[i];
+                }
+            }
+        }
 
         {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
 
-            Mem2<Byte> img;
-            cnvDepthToImg(img, m_map, m_near, m_far);
-            glRenderImg(img);
+            glRenderDepth(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
         }
+
+        if (m_tracker.valid() == true && m_start == true) {
+            m_tracker.execute(m_est, m_cam, m_depth, 2);
+        }
+
         {
             // view 3D
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
-            {
-                glLoadMatrix(m_pose);
+            glLoadMatrix(m_est);
 
-                glPointSize(3.f);
-                glBegin(GL_POINTS);
-                glColor3f(0.2f, 0.7f, 0.2f);
-                for (int i = 0; i < m_pnts.size(); i++) {
-                    glVertex(m_pnts[i].pos);
-                }
-                glEnd();
-            }
+            glRenderOutline(m_model);
+            glEnd();
         }
 
 
     }
 
     virtual void mousePos(double x, double y) {
-        controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+        controlPose(m_est, m_mouse, m_wcam, m_viewScale);
     }
 
     virtual void mouseScroll(double x, double y) {
-        controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+        controlPose(m_est, m_mouse, m_wcam, m_viewScale);
     }
 
 };
@@ -118,7 +149,7 @@ private:
 int main(){
 
 	TrackGUI win;
-	win.execute("track3d", 800, 600);
+	win.execute("tracker", 800, 600);
 
 	return 0;
 }
