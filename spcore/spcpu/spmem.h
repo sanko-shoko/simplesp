@@ -157,7 +157,7 @@ namespace sp{
         // util
         //--------------------------------------------------------------------------------
 
-        Mem<TYPE> slice(const int axis, const int start, const int end) const{
+        Mem slice(const int axis, const int start, const int end) const{
             const int s = start;
             const int e = minVal(end, this->dsize[axis]);
             const int num = e - s;
@@ -183,6 +183,14 @@ namespace sp{
             return ret;
         }
 
+        //Mem& index() {
+        //    Mem<TYPE> ret(dim, dsize);
+
+        //    for (int i = 0; i < ret.size(); i++) {
+        //        cnvVal(ret[i], i);
+        //    }
+        //    return ret;
+        //}
     };
 
 

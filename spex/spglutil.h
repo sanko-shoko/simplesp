@@ -424,6 +424,14 @@ namespace sp{
         glDeleteTextures(1, &texId);
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC void glRenderDepth(const Mem<TYPE> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
+        if (src.size() == 0) return;
+
+        Mem2<Byte> img;
+        cnvDepthToImg(img, src, nearPlane, farPlane);
+        glRenderImg(img);
+    }
 
     //--------------------------------------------------------------------------------
     // render

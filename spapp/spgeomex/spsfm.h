@@ -204,7 +204,7 @@ namespace sp {
                 Mem1<double> evals(osize);
                 evals.zero();
 
-                const Mem1<int> list = shuffle(range(0, osize));
+                const Mem1<int> list = shuffle(osize);
 
                 for (int i = 0; i < minVal(20, osize); i++) {
                     int b = 0;

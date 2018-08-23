@@ -366,23 +366,41 @@ namespace sp{
 
     SP_GENFUNC Pose getPose(const double *mat, const int rows, const int cols){
         Pose dst;
-        double rmat[3 * 3];
-        for (int r = 0; r < 3; r++){
-            for (int c = 0; c < 3; c++){
-                rmat[r * 3 + c] = mat[r * cols + c];
+        if (rows == 3 && cols == 4) {
+            double rmat[3 * 3];
+            for (int r = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    rmat[r * 3 + c] = mat[r * cols + c];
+                }
             }
+            dst.rot = getRot(rmat, 3, 3);
+            dst.trn = getVec(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
         }
-        dst.rot = getRot(rmat, 3, 3);
-        dst.trn = getVec(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
+        if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
+            Vec3 euler = getVec(mat[0], mat[1], mat[2]);
+            dst.rot = getRotEuler(euler);
+            dst.trn = getVec(mat[3], mat[4], mat[5]);
+        }
         return dst;
     }
 
     SP_GENFUNC void getMat(double *dst, const int rows, const int cols, const Pose &pose) {
-        getMat(dst, rows, cols, pose.rot);
+        if (rows == 3 && cols == 4) {
+            getMat(dst, rows, cols, pose.rot);
 
-        dst[0 * cols + 3] = pose.trn.x;
-        dst[1 * cols + 3] = pose.trn.y;
-        dst[2 * cols + 3] = pose.trn.z;
+            dst[0 * cols + 3] = pose.trn.x;
+            dst[1 * cols + 3] = pose.trn.y;
+            dst[2 * cols + 3] = pose.trn.z;
+        }
+        if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
+            const Vec3 euler = getEuler(pose.rot);
+            dst[0] = euler.x;
+            dst[1] = euler.y;
+            dst[2] = euler.z;
+            dst[3] = pose.trn.x;
+            dst[4] = pose.trn.y;
+            dst[5] = pose.trn.z;
+        }
     }
 
     SP_GENFUNC Pose zeroPose(){
