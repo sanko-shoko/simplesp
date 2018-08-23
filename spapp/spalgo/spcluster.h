@@ -23,7 +23,7 @@ namespace sp{
 
         Mat cent(K, dim);
         {
-            Mem1<int> tmp = shuffle(range(0, size));
+            Mem1<int> tmp = shuffle(size);
             for (int k = 0; k < K; k++){
                 setMem(&cent(k, 0), dim, &data(tmp[k], 0));
             }

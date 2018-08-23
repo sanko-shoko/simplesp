@@ -52,7 +52,7 @@ private:
 
     void edge() {
         static Shader shader;
-        static FrameBufferObject m_fbo;
+        static FrameBufferObject fbo;
 
         if (shader.valid() == false) {
 
@@ -66,20 +66,16 @@ private:
 
             shader.load(vert, frag);
         }
-        //{
-        //    glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-        //    glLoadMatrix(m_pose);
 
-        //    renderSurface();
-        //}
         {
-            m_fbo.resize(m_wcam.dsize);
-            m_fbo.bind();
+            fbo.resize(m_wcam.dsize);
+            fbo.bind();
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-            glLoadMatrix(m_pose);
 
-            renderSurface();
-            m_fbo.unbind();
+            glLoadMatrix(m_pose);
+            glRenderSurface(m_model);
+
+            fbo.unbind();
         }
 
         {
@@ -93,7 +89,7 @@ private:
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, m_fbo.m_tex[1]);
+            glBindTexture(GL_TEXTURE_2D, fbo.m_tex[1]);
 
             glBegin(GL_QUADS);
             glVertex2d(-1.0, -1.0);
@@ -153,27 +149,6 @@ private:
 
         edge();
 
-    }
-    void renderSurface() {
-        glLoadMatrix(m_pose);
-
-        const GLfloat diffuse[] = { 0.4f, 0.5f, 0.5f, 1.0f };
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-
-        glRenderSurface(m_model);
-    }
-
-    void renderAxis() {
-        glDisable(GL_DEPTH_TEST);
-
-        glLoadMatrix(m_pose);
-
-        glLineWidth(2.f);
-        glBegin(GL_LINES);
-        glAxis(100.0);
-        glEnd();
-        
-        glEnable(GL_DEPTH_TEST);
     }
 
     virtual void mousePos(double x, double y) {

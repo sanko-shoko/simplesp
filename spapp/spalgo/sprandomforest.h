@@ -17,8 +17,16 @@ namespace sp{
     template<typename TYPE>
     class RandomForest {
 
-    protected:
-        struct Node {
+    public:
+         struct Node{
+
+            // node value
+            TYPE val;
+
+            // node deviation
+            double dev;
+
+
             // div parameter
             int param;
 
@@ -28,18 +36,14 @@ namespace sp{
             // next node ptr (X[i] < thresh) ? next[0] : next[1]
             Node *next[2];
 
-            // node value
-            TYPE val;
-
             Node() {
                 memset(this, 0, sizeof(Node));
             }
         };
 
-        MemP<MemP<Node> > m_trees;
+    protected:
 
-        int m_maxDepth;
-        int m_sampleNum;
+        MemP<MemP<Node> > m_trees;
 
     public:
 
@@ -51,26 +55,33 @@ namespace sp{
         }
 
         void train(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const int sampleNum = 100) {
+            SP_ASSERT(sampleNum > 10);
 
-            const int num = sampleNum > 0 ? minVal(sampleNum, Xs.size()) : Xs.size();
-            Mem1<int> index(num);
+            const int seed = m_trees.size();
+            const Mem1<int> index = shuffle(Xs.size(), seed).slice(0, 0, sampleNum);
 
-            for (int n = 0; n < num; n++) {
-                index[n] = sampleNum > 0 ? rand() % Xs.size() : n;
-            }
-
-            m_maxDepth = floor(log(Xs.size()) / log(2.0));
-
-            divTree(m_trees.malloc(), Xs, Ys, index, 0);
+            divTree(*m_trees.malloc(), Xs, Ys, index, 0);
         }
 
-        Mem1<TYPE> estimate(const Mem<double> &X){
-
-            SP_ASSERT(m_trees.size());
+        Mem1<TYPE> execute(const Mem<double> &X){
+            SP_ASSERT(m_trees.size() > 0);
 
             Mem1<TYPE> results;
             for (int i = 0; i < m_trees.size(); i++){
-                results.push(traceNode(&m_trees[i], X));
+                const Node *node = traceNode(m_trees[i], X);
+                results.push(node->val);
+            }
+
+            return results;
+        }
+
+        Mem1<const Node*> execute2(const Mem<double> &X) {
+            SP_ASSERT(m_trees.size() > 0);
+
+            Mem1<const Node*> results;
+            for (int i = 0; i < m_trees.size(); i++) {
+                const Node *node = traceNode(m_trees[i], X);
+                results.push(node);
             }
 
             return results;
@@ -78,70 +89,93 @@ namespace sp{
 
     private:
 
-        Node* divTree(MemP<Node> *tree, const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
-            Node *node = tree->malloc();
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) = 0;
 
-            if (index.size() < 2 || depth >= m_maxDepth) {
-                setNode(node, Ys, index);
-                return node;
+        virtual double calcGain(const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
+
+        Node* divTree(MemP<Node> &tree, const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
+
+            Node *node = getNode(tree, Xs, Ys, index);
+
+            // check status
+            {
+                if (index.size() < 2) {
+                    return node;
+                }
+
+                const int maxd = maxVal(floor(log(Xs.size()) / log(2.0) - 2), 2);
+                if (depth >= maxd) {
+                    return node;
+                }
+
+                const double minv = 0.01;
+                if (tree.size() > 1 && (tree[0].dev == 0.0 || node->dev / tree[0].dev < minv)) {
+                    return node;
+                }
             }
-
+            
             double maxg = -SP_INFINITY;
 
-            for (int i = 0; i < Xs[0].size() * 10; i++) {
+            // calc gain & thresh
+            {
+                const int dim = Xs[0].size();
 
-                const int param = rand() % Xs[0].size();
+                Mem1<double> maxvs(dim);
+                Mem1<double> minvs(dim);
+                for (int s = 0; s < dim; s++) {
+                    double maxv = -SP_INFINITY;
+                    double minv = +SP_INFINITY;
+                    for (int n = 0; n < index.size(); n++) {
+                        const double v = Xs[index[n]][s];
+                        maxv = maxVal(maxv, v);
+                        minv = minVal(minv, v);
+                    }
+                    maxvs[s] = maxv;
+                    minvs[s] = minv;
+                }
 
-                double maxv = -SP_INFINITY;
-                double minv = +SP_INFINITY;
+                for (int i = 0; i < dim * 10; i++) {
+
+                    const int param = rand() % Xs[0].size();
+
+                    const double thresh = randValUnif() * (maxvs[param] - minvs[param]) + minvs[param];
+
+                    const double gain = calcGain(Xs, Ys, index, param, thresh);
+
+                    if (gain > maxg) {
+                        maxg = gain;
+                        node->param = param;
+                        node->thresh = thresh;
+                    }
+                }
+            }
+
+            // node division
+            if (maxg > -SP_INFINITY) {
+
+                Mem1<int> div[2];
                 for (int n = 0; n < index.size(); n++) {
-                    const double v = Xs[index[n]][param];
-                    maxv = maxVal(maxv, v);
-                    minv = minVal(minv, v);
+                    const int s = Xs[index[n]][node->param] < node->thresh ? 0 : 1;
+                    div[s].push(index[n]);
                 }
 
-                const double thresh = randValUnif() * (maxv - minv) + minv;
-
-                const double gain = calcGain(Xs, Ys, index, param, thresh);
-
-                if (gain > maxg) {
-                    maxg = gain;
-                    node->param = param;
-                    node->thresh = thresh;
-                }
+                node->next[0] = divTree(tree, Xs, Ys, div[0], depth + 1);
+                node->next[1] = divTree(tree, Xs, Ys, div[1], depth + 1);
             }
-
-            if (maxg == -SP_INFINITY) {
-                setNode(node, Ys, index);
-                return node;
-            }
-
-            Mem1<int> div[2];
-            for (int n = 0; n < index.size(); n++) {
-                const int s = Xs[index[n]][node->param] < node->thresh ? 0 : 1;
-                div[s].push(index[n]);
-            }
-
-            node->next[0] = divTree(tree, Xs, Ys, div[0], depth + 1);
-            node->next[1] = divTree(tree, Xs, Ys, div[1], depth + 1);
 
             return node;
         }
 
-        TYPE traceNode(const MemP<Node> *tree, const Mem<double> &X) {
+        const Node* traceNode(const MemP<Node> &tree, const Mem<double> &X) {
 
-            const Node *node = &(*tree)[0];
+            const Node *node = &tree[0];
             while (node != NULL && node->next[0] != NULL && node->next[1] != NULL) {
 
                 node = node->next[X[node->param] < node->thresh ? 0 : 1];
             }
 
-            return node->val;
+            return node;
         }
-
-        virtual void setNode(Node *node, const Mem1<TYPE>& Y, const Mem1<int> &index) = 0;
-
-        virtual double calcGain(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
 
     };
 
@@ -155,15 +189,36 @@ namespace sp{
     private:
         typedef double TYPE;
 
+
     public:
 
         RandomForestReg() : RandomForest<double>() {
         }
 
-
     private:
 
-        virtual double calcGain(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
+            SP_ASSERT(index.size() > 0);
+
+            Node *node = tree.malloc();
+
+            Mem1<TYPE> tmp(index.size());
+            for (int i = 0; i < index.size(); i++) {
+                tmp[i] = Ys[index[i]];
+            }
+
+            const double mean = meanVal(tmp);
+            const double sigma = sqrt(meanSq(tmp - mean));
+
+            node->val = mean;
+            node->dev = sigma;
+
+            return node;
+        }
+
+
+        virtual double calcGain(const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
+
             double sum[2] = { 0 };
             int cnt[2] = { 0 };
 
@@ -179,22 +234,12 @@ namespace sp{
             mean[0] = sum[0] / cnt[0];
             mean[1] = sum[1] / cnt[1];
 
-            double gain = 0;
+            double gain = 0.0;
             for (int n = 0; n < index.size(); n++) {
                 const int s = Xs[index[n]][param] < thresh ? 0 : 1;
                 gain -= square(Ys[index[n]] - mean[s]);
             }
             return gain;
-        }
-
-        virtual void setNode(Node *node, const Mem1<TYPE>& Y, const Mem1<int> &index) {
-
-            double sum = 0.0;
-            for (int p = 0; p < index.size(); p++) {
-                sum += Y[index[p]];
-            }
-
-            node->val = sum / index.size();
         }
 
     };
@@ -217,7 +262,23 @@ namespace sp{
 
     private:
 
-        virtual double calcGain(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
+            Node *node = tree.malloc();
+
+            Mem1<int> hist(m_classNum);
+            hist.zero();
+
+            for (int n = 0; n < index.size(); n++) {
+                hist[Ys[index[n]]]++;
+            }
+
+            node->val = maxArg(hist);
+            node->dev = 1.0 - static_cast<double>(maxVal(hist)) / index.size();
+
+            return node;
+        }
+
+        virtual double calcGain(const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
             
             int cnt[2] = { 0 };
             Mem2<int> hist(2, m_classNum);
@@ -243,17 +304,6 @@ namespace sp{
             return gain;
         }
 
-        virtual void setNode(Node *node, const Mem1<TYPE>& Y, const Mem1<int> &index) {
-
-            Mem1<int> hist(m_classNum);
-            hist.zero();
-
-            for (int n = 0; n < index.size(); n++) {
-                hist[Y[index[n]]]++;
-            }
-            
-            node->val = maxArg(hist);
-        }
 
     };
 

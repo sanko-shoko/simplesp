@@ -127,27 +127,26 @@ namespace sp{
     // mem util
     //--------------------------------------------------------------------------------
 
-    // range [start, start + step, ...]
-    template<typename TYPE = int>
-    SP_CPUFUNC Mem1<TYPE> range(const int start, const int stop, const int step = 1) {
-        Mem1<TYPE> index(stop - start);
+    SP_CPUFUNC Mem<int> shuffle(const int size, const int seed = 0) {
 
+        Mem1<int> index(size);
         for (int i = 0; i < index.size(); i++) {
-            cnvVal(index[i], start + i * step);
+            index[i] = i;
         }
-        return index;
-    }
-
-    template<typename TYPE>
-    SP_CPUFUNC Mem<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
-
-        Mem<int> index = range(0, src.size());
 
         srand(seed);
         for (int i = 0; i < index.size(); i++) {
             const int p = rand() % index.size();
             swap(index[i], index[p]);
         }
+
+        return index;
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC Mem<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
+
+        const Mem1<int> index = shuffle(src.size(), seed);
 
         Mem<TYPE> ret(src.dim, src.dsize);
         for (int i = 0; i < ret.size(); i++) {
@@ -288,12 +287,8 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Rot getRot(const Mat &mat) {
-        return getRot(mat.ptr, mat.rows(), mat.cols());
-    }
-
-    SP_CPUFUNC Mat getMat(const Pose &pose) {
-        Mat dst(3, 4);
+    SP_CPUFUNC Mat getMat(const Pose &pose, const int rows = 3, const int cols = 4) {
+        Mat dst(rows, cols);
 
         getMat(dst.ptr, dst.rows(), dst.cols(), pose);
         return dst;
@@ -628,6 +623,18 @@ namespace sp{
         return map;
     }
 
+
+    //--------------------------------------------------------------------------------
+    // pose
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Rot getRot(const Mat &mat) {
+        return getRot(mat.ptr, mat.rows(), mat.cols());
+    }
+
+    SP_GENFUNC Pose getPose(const Mat &mat) {
+        return getPose(mat.ptr, mat.rows(), mat.cols());
+    }
 }
 
 #endif

@@ -100,7 +100,8 @@ namespace sp{
     }
 
     SP_GENFUNC double asin(const double x){
-        return static_cast<double>(::asin(x));
+        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+        return static_cast<double>(::asin(t));
     }
 
     SP_GENFUNC double cos(const double x){
@@ -108,7 +109,8 @@ namespace sp{
     }
 
     SP_GENFUNC double acos(const double x){
-        return static_cast<double>(::acos(x));
+        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+        return static_cast<double>(::acos(t));
     }
 
     SP_GENFUNC double tan(const double x){
