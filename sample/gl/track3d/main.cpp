@@ -10,22 +10,21 @@ class TrackGUI : public BaseWindow {
 
     // object mesh model
     Mem1<Mesh3> m_model;
+
     double m_radius;
     double m_distance;
 
     // object to cam pose
     Pose m_pose;
 
+    // estimated pose
     Pose m_est;
 
     Mem2<double> m_depth;
 
-    Mem2<double> m_others;
-
     TrackRF m_tracker;
 
     bool m_start;
-
 
 private:
 
@@ -110,15 +109,16 @@ private:
             }
         }
 
+        // tracking
+        if (m_tracker.valid() == true && m_start == true) {
+            m_tracker.execute(m_est, m_cam, m_depth, 2);
+        }
+
         {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
 
             glRenderDepth(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
-        }
-
-        if (m_tracker.valid() == true && m_start == true) {
-            m_tracker.execute(m_est, m_cam, m_depth, 2);
         }
 
         {
@@ -131,7 +131,6 @@ private:
             glEnd();
         }
 
-
     }
 
     virtual void mousePos(double x, double y) {
@@ -143,7 +142,6 @@ private:
     }
 
 };
-
 
 
 int main(){
