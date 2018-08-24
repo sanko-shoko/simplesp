@@ -70,7 +70,7 @@ namespace sp{
                 fflush(stdout);
 #endif
 
-                const Pose pose = getGeomPose(div, i, distance);
+                const Pose pose = getGeodesicPose(div, i, distance);
 
                 Mem2<double> depth;
                 renderDepth(depth, cam, pose, model);
