@@ -93,7 +93,7 @@ namespace sp{
 
         virtual double calcGain(const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
 
-        Node* divTree(MemP<Node> &tree, const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
+        Node* divTree(MemP<Node> &tree, const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
 
             Node *node = getNode(tree, Xs, Ys, index);
 
@@ -133,7 +133,7 @@ namespace sp{
                     maxvs[s] = maxv;
                     minvs[s] = minv;
                 }
-
+                
                 for (int i = 0; i < dim * 10; i++) {
 
                     const int param = rand() % Xs[0].size();

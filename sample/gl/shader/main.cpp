@@ -138,6 +138,7 @@ private:
         glLoadMatrix(m_pose);
 
         shader.enable();
+        shader.setUniform("mat", glGetMat(GL_PROJECTION_MATRIX) * glGetMat(GL_MODELVIEW_MATRIX));
         shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
 
         glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);

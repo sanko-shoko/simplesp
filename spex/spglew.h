@@ -254,6 +254,24 @@ namespace sp{
 
         void enable() {
             glUseProgram(m_program);
+
+
+            //Mat proj(4, 4);
+            //Mat view(4, 4);
+
+            //glGetDoublev(GL_PROJECTION_MATRIX, proj.ptr);
+            //glGetDoublev(GL_MODELVIEW_MATRIX, view.ptr);
+
+            //proj = trnMat(proj);
+            //view = trnMat(view);
+
+            //const Mat tmat = trnMat(proj * view);
+
+            //Mem2<float> tmatf(4, 4);
+            //cnvMem(tmatf, tmat);
+
+            //const GLint location = glGetUniformLocation(m_program, "mat");
+            //glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 
         void disable() {
@@ -287,7 +305,7 @@ namespace sp{
         }
 
         void setUniform(const char *name, const Mat &mat) {
-            SP_ASSERT(mat.rows() != mat.cols());
+            SP_ASSERT(mat.rows() == mat.cols());
 
             const Mat tmat = trnMat(mat);
 
