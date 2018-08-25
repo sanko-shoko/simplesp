@@ -366,14 +366,8 @@ namespace sp{
 
     SP_GENFUNC Pose getPose(const double *mat, const int rows, const int cols){
         Pose dst;
-        if (rows == 3 && cols == 4) {
-            double rmat[3 * 3];
-            for (int r = 0; r < 3; r++) {
-                for (int c = 0; c < 3; c++) {
-                    rmat[r * 3 + c] = mat[r * cols + c];
-                }
-            }
-            dst.rot = getRot(rmat, 3, 3);
+        if ((rows == 3 || rows == 4) && cols == 4) {
+            dst.rot = getRot(mat, rows, cols);
             dst.trn = getVec(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
         }
         if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
@@ -385,7 +379,8 @@ namespace sp{
     }
 
     SP_GENFUNC void getMat(double *dst, const int rows, const int cols, const Pose &pose) {
-        if (rows == 3 && cols == 4) {
+        if ((rows == 3 || rows == 4) && cols == 4) {
+            eyeMat(dst, rows, cols);
             getMat(dst, rows, cols, pose.rot);
 
             dst[0 * cols + 3] = pose.trn.x;
