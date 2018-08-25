@@ -424,12 +424,21 @@ namespace sp{
         glDeleteTextures(1, &texId);
     }
 
-    template<typename TYPE>
-    SP_CPUFUNC void glRenderDepth(const Mem<TYPE> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
+    template<typename TYPE0 = Col3, typename TYPE1>
+    SP_CPUFUNC void glRenderDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
         if (src.size() == 0) return;
 
-        Mem2<Byte> img;
+        Mem2<TYPE0> img;
         cnvDepthToImg(img, src, nearPlane, farPlane);
+        glRenderImg(img);
+    }
+
+    template<typename TYPE0 = Col3, typename TYPE1>
+    SP_CPUFUNC void glRenderNormal(const Mem<TYPE1> &src) {
+        if (src.size() == 0) return;
+
+        Mem2<TYPE0> img;
+        cnvNormalToImg(img, src);
         glRenderImg(img);
     }
 

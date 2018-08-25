@@ -38,17 +38,17 @@ private:
 
     virtual void init() {
 
-        m_cam = getCamParam(640, 480);
-
         help();
 
+        m_cam = getCamParam(640, 480);
+
         SP_ASSERT(loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply"));
-
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
-
+        
         m_radius = getModelRadius(m_model);
         m_distance = getModelDistance(m_model, m_cam);
 
+        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+ 
         m_depth.resize(m_cam.dsize);
         m_depth.zero();
 
@@ -93,7 +93,7 @@ private:
 
             for (int u = 0; u < m_cam.dsize[0]; u++) {
                 for (int v = 0; v < m_cam.dsize[1] * 2 / 10; v++) {
-                    tmp(u, v) = m_distance - 1.5 * m_radius;
+                    tmp(u, v) = m_distance - 1.8 * m_radius;
                 }
                 for (int v = m_cam.dsize[1] * 4 / 10; v < m_cam.dsize[1] * 6 / 10; v++) {
                     tmp(u, v) = m_distance + 1.8 * m_radius;
@@ -118,7 +118,7 @@ private:
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
 
-            glRenderDepth(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
+            glRenderDepth<Byte>(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
         }
 
         {

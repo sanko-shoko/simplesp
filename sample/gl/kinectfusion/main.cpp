@@ -42,6 +42,7 @@ private:
         help();
 
         m_cam = getCamParam(320, 240);
+        m_viewScale *= 1.5;
         //m_cam = getCamParam(640, 480);
 
         m_img.resize(m_cam.dsize);
@@ -81,11 +82,9 @@ private:
 
         // render
         {
-            Mem2<Col3> view;
-            cnvNormalToImg(view, m_kfusion.getCast());
-
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale);
-            glRenderImg(view);
+            glRenderNormal<Byte>(m_kfusion.getCast());
+
 
             glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale);
             glLoadMatrix(*m_kfusion.getPose());
