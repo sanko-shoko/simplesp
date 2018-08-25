@@ -42,6 +42,7 @@ private:
         help();
 
         m_cam = getCamParam(320, 240);
+        m_viewScale *= 1.5;
         //m_cam = getCamParam(640, 480);
 
         m_img.resize(m_cam.dsize);
@@ -57,22 +58,23 @@ private:
     }
 
     virtual void display() {
+        Mem2<double> depth;
+
+        // render depth
         {
             static double s = 0.0;
             m_pose *= getRotAngle(getVec(+0.0, +::sin(s), +::cos(s)), 0.02);
             s += 0.01;
+
+            renderDepth(depth, m_cam, m_pose, m_model);
         }
-
-
-        Mem2<double> depth;
-        renderDepth(depth, m_cam, m_pose, m_model);
 
         // kinect fusion
         {
 
             if (m_kfusion.track() == false) {
                 const double radius = getModelRadius(m_model);
-                m_kfusion.setMap(100, radius / 50.0, m_pose);
+                m_kfusion.setMap(200, radius / 100.0, m_pose);
                 m_kfusion.setCam(m_cam);
             }
 
@@ -81,11 +83,9 @@ private:
 
         // render
         {
-            Mem2<Col3> view;
-            cnvNormalToImg(view, m_kfusion.getCast());
-
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale);
-            glRenderImg(view);
+            glRenderNormal<Byte>(m_kfusion.getCast());
+
 
             glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale);
             glLoadMatrix(*m_kfusion.getPose());
@@ -103,8 +103,7 @@ private:
             const Vec2 offset = getVec(m_cam.dsize[0], m_cam.dsize[1]) * (0.5 - scale * 0.5);
             glLoadView2D(m_cam, m_viewPos - offset * m_viewScale, m_viewScale * scale);
 
-            cnvDepthToImg(m_img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
-            glRenderImg(m_img);
+            glRenderDepth(depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
         }
 
     }
