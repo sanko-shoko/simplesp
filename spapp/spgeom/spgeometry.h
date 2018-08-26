@@ -341,12 +341,12 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC double errFMat(const Mat &F, const Vec2 &upix0, const Vec2 &upix1) {
-        const Vec3 line = F * extVec(upix0, 1.0);
+        const Vec3 line = F * getVec(upix0, 1.0);
 
         const double div = pythag(line.x, line.y);
         if (div < SP_SMALL) return SP_INFINITY;
 
-        const double err = fabs(dotVec(extVec(upix1, 1.0), line)) / div;
+        const double err = fabs(dotVec(getVec(upix1, 1.0), line)) / div;
         return err;
     }
 
@@ -518,7 +518,7 @@ namespace sp{
     }
 
     SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
-        return errPose(pose, cam, pix, extVec(obj, 0.0));
+        return errPose(pose, cam, pix, getVec(obj, 0.0));
     }
 
     SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
@@ -532,7 +532,7 @@ namespace sp{
     }
 
     SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs) {
-        return errPose(pose, cam, pixs, extVec(objs, 0.0));
+        return errPose(pose, cam, pixs, getVec(objs, 0.0));
     }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
@@ -564,8 +564,32 @@ namespace sp{
     }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
-        return refinePose(pose, cam, pixs, extVec(objs, 0.0), maxit);
+        return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
+
+    //// P3P
+    //SP_CPUFUNC bool calcP3P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+    //    SP_ASSERT(pixs.size() == objs.size());
+
+    //    const int unit = 3;
+    //    if (pixs.size() < unit) return false;
+
+    //    Mem1<Vec2> npxs;
+    //    for (int i = 0; i < pixs.size(); i++) {
+    //        const Vec2 npx = invCamD(cam, pixs[i]);
+    //        npxs.push(npx);
+    //    }
+
+    //    const double Rab = normVec(objs[1] - objs[0]);
+    //    const double Rbc = normVec(objs[2] - objs[1]);
+    //    const double Rca = normVec(objs[0] - objs[2]);
+
+    //    const double cos_ab = dotVec(objs[1], objs[0]) / (normVec(objs[1]) * normVec(objs[0]));
+    //    const double cos_bc = dotVec(objs[2], objs[1]) / (normVec(objs[2]) * normVec(objs[1]));
+    //    const double cos_ca = dotVec(objs[0], objs[2]) / (normVec(objs[0]) * normVec(objs[2]));
+
+    //    
+    //}
 
     // 
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
@@ -697,7 +721,7 @@ namespace sp{
         if (calcHMat(hom, pixs, objs) == false) return false;
 
         if (calcPose(pose, cam, hom) == false) return false;
-        return refinePose(pose, cam, pixs, extVec(objs, 0.0), maxit);
+        return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
 
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {

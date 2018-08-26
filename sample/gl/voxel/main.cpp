@@ -40,15 +40,13 @@ private:
             loadGeodesicDorm(m_model, 100.0, 1);
         }
 
-        const double radius = getModelRadius(m_model);
-        const double distance = getModelDistance(m_model, m_cam);
-
         cnvModelToVoxel(m_voxel, m_model, 4.0);
 
         // Marching cubes
         cnvVoxelToModel(m_model, m_voxel);
         savePLY(m_model, "model.ply");
 
+        const double distance = getModelDistance(m_model, m_cam);
         m_pose = getPose(getVec(0.0, 0.0, distance));
     }
 

@@ -434,7 +434,7 @@ namespace sp{
                         }
                         {
                             Mat J1_6D3D(3, 6);
-                            jacobPoseToPos(J1_6D3D.ptr, iZ, extVec(objs[j], 0.0));
+                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(objs[j], 0.0));
 
                             Mat J1_3D2D(2, 3);
                             jacobPosToPix(J1_3D2D.ptr, cam, iZ * objs[j]);
