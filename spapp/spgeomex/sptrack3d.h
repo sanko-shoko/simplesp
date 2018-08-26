@@ -21,9 +21,6 @@ namespace sp{
         const int POINT_NUM = 20;
         const int SAMPLE_NUM = 1500;
 
-        const double RAND_TRN = 10.0;
-        const double RAND_ROT = 10.0 * SP_PI / 180.0;
-
         struct GeoNode{
             // geodesic pose
             Pose pose;
@@ -36,6 +33,10 @@ namespace sp{
         };
 
         Mem1<GeoNode> m_nodes;
+
+        // random range
+        double m_randTrn;
+        double m_randRot;
 
     public:
 
@@ -51,7 +52,12 @@ namespace sp{
             srand(0);
 
             const CamParam cam = getCamParam(300, 300);
+
+            const double radius = getModelRadius(model);
             const double distance = getModelDistance(model, cam);
+
+            m_randTrn = radius * 0.1;
+            m_randRot = 10.0 * SP_PI / 180.0;
 
             const int gnum = getGeodesicMeshNum(div);
             m_nodes.resize(gnum);
@@ -118,7 +124,7 @@ namespace sp{
                         const Vec2 pix = mulCam(cam, npx);
 
                         double d = depth(round(pix.x), round(pix.y));
-                        d = (d > 0.0) ? d : pose.trn.z;
+                        d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
 
                         const Vec3 v = getVec(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);
@@ -228,7 +234,7 @@ namespace sp{
             const Vec3 Nv = getDirect(pose);
 
             for (int i = 0; i < SAMPLE_NUM; i++) {
-                const Pose delta = randPoseUnif(RAND_ROT, RAND_TRN);
+                const Pose delta = randPoseUnif(m_randRot, m_randTrn);
                 const Pose tpose = pose * delta;
                 Mem<double> data = Mem1<double>(POINT_NUM);
 
@@ -237,19 +243,14 @@ namespace sp{
                     const Vec2 npx = prjVec(pos);
                     const Vec2 pix = mulCam(cam, npx);
 
-                    const double d = depth(round(pix.x), round(pix.y));
+                    double d = depth(round(pix.x), round(pix.y));
+                    d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
 
-                    if (d > 0.0) {
-                        const Vec3 vec = getVec(npx.x, npx.y, 1.0) * d;
-                        const Vec3 vec1 = invPose(tpose) * vec;
-                        const Vec3 vec2 = pnts[p];
-                        const Vec3 dif = vec1 - vec2;
-                        data[p] = dotVec(Nv, invPose(tpose) * vec - pnts[p]);
-                    }
-                    else {
-                        data[p] = tpose.trn.z;
-                    }
-
+                    const Vec3 vec = getVec(npx.x, npx.y, 1.0) * d;
+                    const Vec3 vec1 = invPose(tpose) * vec;
+                    const Vec3 vec2 = pnts[p];
+                    const Vec3 dif = vec1 - vec2;
+                    data[p] = dotVec(Nv, invPose(tpose) * vec - pnts[p]);
                 }
 
                 Xs.push(data);
