@@ -47,7 +47,7 @@ private:
         m_radius = getModelRadius(m_model);
         m_distance = getModelDistance(m_model, m_cam);
 
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_pose = getPose(getVec(0.0, 0.0, m_distance));
  
         m_depth.resize(m_cam.dsize);
         m_depth.zero();
