@@ -30,8 +30,8 @@ int main() {
 
         // generate test points
         for (int n = 0; n < mrkMap.size(); n++) {
-            const Vec2 pix0 = mulCamD(cam, prjVec(pose0 * extVec(mrkMap[n], 0.0)));
-            const Vec2 pix1 = mulCamD(cam, prjVec(pose1 * extVec(mrkMap[n], 0.0)));
+            const Vec2 pix0 = mulCamD(cam, prjVec(pose0 * getVec(mrkMap[n], 0.0)));
+            const Vec2 pix1 = mulCamD(cam, prjVec(pose1 * getVec(mrkMap[n], 0.0)));
 
             pixs0.push(pix0);
             pixs1.push(pix1);

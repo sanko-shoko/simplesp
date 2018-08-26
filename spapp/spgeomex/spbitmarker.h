@@ -684,7 +684,7 @@ namespace sp{
                 Pose &pose = vposes[i];
                 if (refinePose(pose, m_cam, pixs, objs) == false) continue;
 
-                const double eval = evalErr(errPose(pose, m_cam, pixs, extVec(objs, 0.0)));
+                const double eval = evalErr(errPose(pose, m_cam, pixs, getVec(objs, 0.0)));
                 if (eval > maxEval){
                     maxEval = eval;
                     base = pose;
