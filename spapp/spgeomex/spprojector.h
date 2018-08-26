@@ -45,7 +45,7 @@ namespace sp{
             m_axis = axis;
         }
 
-        virtual bool isValid() const {
+        virtual bool valid() const {
             return (m_dsize[0] > 0 && m_dsize[1] > 0) ? true : false;
         }
 
@@ -54,7 +54,7 @@ namespace sp{
         }
         
         Mem2<Byte> getPlain(const Byte val) const {
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             Mem2<Byte> img(m_dsize);
             setElm(img, val);
@@ -84,7 +84,7 @@ namespace sp{
         }
 
         Mem1<Mem2<Byte> > encode() const{
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             Mem1<Mem2<Byte> > imgs;
 
@@ -116,7 +116,7 @@ namespace sp{
         }
 
         Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             Mem2<double> map(imgs[0].dsize);
             setElm(map, -1.0);
@@ -196,7 +196,7 @@ namespace sp{
         }
 
         Mem1<Mem2<Byte> > encode() const {
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             Mem1<Mem2<Byte> > imgs;
 
@@ -228,7 +228,7 @@ namespace sp{
         }
 
         Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             Mem2<double> map(imgs[0].dsize);
             setElm(map, -1.0);
@@ -257,7 +257,7 @@ namespace sp{
         }
 
         Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const Mem2<double> &gcmap, const int thresh = 10) const {
-            SP_ASSERT(isValid() == true);
+            SP_ASSERT(valid() == true);
 
             const Mem2<double> &psmap = decode(imgs, wimg, bimg, thresh);
 
