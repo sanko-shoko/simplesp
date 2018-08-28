@@ -1,4 +1,4 @@
-﻿set(target "sp_rect")
+﻿set(target "sp_binarization")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)

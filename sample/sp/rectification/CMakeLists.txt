@@ -1,4 +1,4 @@
-﻿set(target "sp_bin")
+﻿set(target "sp_rectification")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)

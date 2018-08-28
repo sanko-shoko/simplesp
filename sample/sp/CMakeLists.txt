@@ -9,7 +9,7 @@ add_subdirectory(graphcut)
 add_subdirectory(beliefpropagation)
 
 ## image
-add_subdirectory(bin)
+add_subdirectory(binarization)
 add_subdirectory(filter)
 add_subdirectory(integral)
 add_subdirectory(slic)
@@ -23,7 +23,7 @@ add_subdirectory(contour)
 ## geom
 add_subdirectory(hmat)
 add_subdirectory(fmat)
-add_subdirectory(rect)
+add_subdirectory(rectification)
 add_subdirectory(stereo)
 add_subdirectory(robotcam)
 
