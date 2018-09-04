@@ -126,6 +126,9 @@ namespace sp{
         // marker to camera poses
         Mem1<Pose> m_poses;
 
+        // marker corners
+        Mem1<Mem1<Vec2> > m_corners;
+
         // base to camera pose
         Pose m_base;
 
@@ -165,18 +168,25 @@ namespace sp{
             return m_cam;
         }
 
+
         //--------------------------------------------------------------------------------
         // output parameter
         //--------------------------------------------------------------------------------
 
-        const Pose* getPose(const int i) const{
+        const Pose* getPose(const int i) const {
             if (i < 0 || i >= m_poses.size()) return NULL;
             return (cmpPose(m_poses[i], zeroPose()) == false) ? &m_poses[i] : NULL;
+        }
+
+        const Mem1<Vec2>* getCorners(const int i) const {
+            if (i < 0 || i >= m_corners.size()) return NULL;
+            return (m_corners[i].size() > 0) ? &m_corners[i] : NULL;
         }
 
         const Pose* getBase() const{
             return (cmpPose(m_base, zeroPose()) == false) ? &m_base : NULL;
         }
+
 
         //--------------------------------------------------------------------------------
         // execute pose estimation
@@ -297,10 +307,11 @@ namespace sp{
         void estimate(const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
 
             Mem1<Pose> poses;
+            Mem1<Mem1<Vec2> > corners2;
             {
-                SP_LOGGER_SET("calcMrkPose");
+                SP_LOGGER_SET("calcMrk");
 
-                if (calcMrkPose(poses, img, corners) == false) throw "calcMrkPose";
+                if (calcMrk(poses, corners2, img, corners) == false) throw "calcMrk";
             }
 
             Mem1<int> crsps;
@@ -311,11 +322,14 @@ namespace sp{
                 if (maxVal(crsps) < 0) throw "crspMrk";
 
                 m_poses.resize(crsps.size());
+                m_corners.resize(crsps.size());
+
                 for (int i = 0; i < m_poses.size(); i++){
                     m_poses[i] = zeroPose();
                     if (crsps[i] < 0) continue;
                     m_poses[i] = poses[crsps[i]];
                     m_poses[i].trn *= m_mrks[i].length;
+                    m_corners[i] = corners2[crsps[i]];
                 }
             }
             {
@@ -405,7 +419,6 @@ namespace sp{
                 }
                 dst.push(corner);
             }
-            SP_HOLDER_SET("test", dst);
 
             Mem2<Byte> part, bin;
             const int WIN_SIZE = round(10.0 / getMinScale());
@@ -462,30 +475,30 @@ namespace sp{
             return dst;
         }
 
-        bool calcMrkPose(Mem1<Pose> &poses, const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
+        bool calcMrk(Mem1<Pose> &poses, Mem1<Mem1<Vec2> > &corners2, const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
 
             // calc pose
             {
                 const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
                 const Mem1<Vec2> unit(4, _unit);
 
-                Mem1<Vec2> objs, drcs;
-                const double step = 0.1;
-                for (int c = 0; c < 4; c++){
-                    const Vec2 pos = unit[c];
-                    const Vec2 drc = unit[(c + 1) % 4] - unit[c];
-                    for (int i = 1; i < 10 - 1; i++){
-                        objs.push(pos + drc * (i * step));
-                        drcs.push(drc);
-                    }
-                }
+                //Mem1<Vec2> objs, drcs;
+                //const double step = 0.1;
+                //for (int c = 0; c < 4; c++){
+                //    const Vec2 pos = unit[c];
+                //    const Vec2 drc = unit[(c + 1) % 4] - unit[c];
+                //    for (int i = 1; i < 10 - 1; i++){
+                //        objs.push(pos + drc * (i * step));
+                //        drcs.push(drc);
+                //    }
+                //}
 
                 poses.clear();
                 for (int i = 0; i < corners.size(); i++) {
                     Pose pose;
                     if (calcPose(pose, m_cam, corners[i], unit) == false) continue;
 
-                    if (track2D(pose, img, m_cam, objs, drcs) == false) continue;
+                    //if (track2D(pose, img, m_cam, objs, drcs) == false) continue;
 
                     bool check = true;
                     for (int c = 0; c < unit.size(); c++){
@@ -496,6 +509,7 @@ namespace sp{
                     }
                     if (check == true){
                         poses.push(pose);
+                        corners2.push(corners[i]);
                     }
                 }
                 if (poses.size() > 0) false;
