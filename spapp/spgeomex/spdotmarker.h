@@ -110,12 +110,12 @@ namespace sp{
             return (m_track == true) ? &m_pose : NULL;
         }
 
-        const Mem1<Vec2>& getCrspPix() const{
-            return m_cpixs;
+        const Mem1<Vec2>* getCrspPixs() const{
+            return (m_track == true) ? &m_cpixs : NULL;
         }
 
-        const Mem1<Vec2>& getCrspObj() const{
-            return m_cobjs;
+        const Mem1<Vec2>* getCrspObjs() const{
+            return (m_track == true) ? &m_cobjs : NULL;
         }
 
         //--------------------------------------------------------------------------------

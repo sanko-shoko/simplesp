@@ -138,8 +138,8 @@ int main(){
             // detect points
             for (int i = 0; i < imgList.size(); i++){
                 if (dotMarker.execute(imgList[i])){
-                    pixsList.push(dotMarker.getCrspPix());
-                    objsList.push(dotMarker.getCrspObj());
+                    pixsList.push(*dotMarker.getCrspPixs());
+                    objsList.push(*dotMarker.getCrspObjs());
                 }
             }
 

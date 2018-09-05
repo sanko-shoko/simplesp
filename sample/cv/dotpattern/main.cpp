@@ -65,7 +65,7 @@ void sample(cv::Mat &cvimg, const int key){
         if (dotMarker.getPose() != NULL) {
             const Vec2 size = getVec(dotMarker.getMrk().map.dsize[0] + 1, dotMarker.getMrk().map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
             renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), size * -1.0, size * +1.0, getCol(0, 100, 200), 2);
-            renderPoint(img, dotMarker.getCrspPix(), getCol(0, 100, 200), 3);
+            renderPoint(img, *dotMarker.getCrspPixs(), getCol(0, 100, 200), 3);
         }
 
         if (dotPattern.getCrspPix().size() != 0) {
@@ -81,8 +81,8 @@ void sample(cv::Mat &cvimg, const int key){
         static Mem1<Mem1<Vec2> > ptnPixsList, ptnPrjsList;
         if (key == 'a') {
             printf("add detected points (i = %d)\n", cnt++);
-            mrkPixsList.push(dotMarker.getCrspPix());
-            mrkObjsList.push(dotMarker.getCrspObj());
+            mrkPixsList.push(*dotMarker.getCrspPixs());
+            mrkObjsList.push(*dotMarker.getCrspObjs());
 
             ptnPixsList.push(dotPattern.getCrspPix());
             ptnPrjsList.push(dotPattern.getCrspPrj());
