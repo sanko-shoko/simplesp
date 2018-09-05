@@ -86,7 +86,7 @@ namespace sp{
                 const int margin = blockSize / 2;
                 for (int y = v - margin; y < sizeY + margin; y++){
                     for (int x = u - margin; x < sizeX + margin; x++){
-                        const Byte val = pSrc[y * step + x];
+                        const Byte val = tmp(x, y);
                         maxv = maxVal(maxv, val);
                         minv = minVal(minv, val);
                     }

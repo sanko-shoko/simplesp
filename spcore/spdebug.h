@@ -241,6 +241,9 @@ namespace sp {
 
         void reset(){
             strs.clear();
+            for (int i = 0; i < ptrs.size(); i++) {
+                delete ptrs[i];
+            }
             ptrs.clear();
         }
 
@@ -258,17 +261,11 @@ namespace sp {
                 }
             }
 
-            static int cnt = 0;
-            static TYPE buff[256];
-            if (cnt + 1 == 256) {
-                SP_PRINTF("buffer limit!\n");
-                return;
-            }
             {
-                buff[cnt] = data;
+                TYPE *ptr = new TYPE();
+                *ptr = data;
                 strs.push_back(str);
-                ptrs.push_back(&buff[cnt]);
-                cnt++;
+                ptrs.push_back(ptr);
             }
         }
 
