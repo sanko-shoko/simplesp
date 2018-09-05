@@ -667,7 +667,7 @@ namespace sp{
     // Bit Marker Array
     //--------------------------------------------------------------------------------
   
-    Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance) {
+    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance) {
         Mem1<BitMarkerParam> mrks;
 
         for (int y = 0; y < dsize1; y++) {
@@ -684,7 +684,7 @@ namespace sp{
         return mrks;
     }
 
-    bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Byte> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
+    SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Byte> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
         dst = zeroPose();
 
         BitMarker bitMarker;
@@ -730,7 +730,7 @@ namespace sp{
         return true;
     }
 
-    bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Col3> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
+    SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Col3> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
         Mem2<Byte> gry;
         cnvImg(gry, img);
         return calcBitMarkerArrayPose(dst, gry, cam, mrks);
