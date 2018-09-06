@@ -24,17 +24,20 @@ namespace sp{
         static const int size = 50;
 
     public:
-        Mem2<Byte> img;
         double length;
+        Mem2<Byte> img;
         Pose offset;
 
-        BitMarkerParam(const int id = 0, const double length = 50.0){
+        BitMarkerParam() {
+        }
+
+        BitMarkerParam(const double length, const int id, const int block = 3){
             setImg(id);
             setLength(length);
             this->offset = zeroPose();
         }
 
-        BitMarkerParam(const Mem2<Col3> &img, const double length = 50.0){
+        BitMarkerParam(const double length, const Mem2<Col3> &img){
             setImg(img);
             setLength(length);
             this->offset = zeroPose();
@@ -82,13 +85,6 @@ namespace sp{
             this->offset = offset;
         }
 
-        void setOffset(const int id, const int dsize0, const int dsize1, const double distance){
-            const int x = id % dsize0;
-            const int y = id / dsize0;
-
-            this->offset.rot = zeroRot();
-            this->offset.trn = getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance;
-        }
     private:
 
         Mem2<Col3> makeImg(const int id, const int block){
@@ -122,15 +118,17 @@ namespace sp{
     // Bit Marker Array
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance) {
+    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance, const int startid = 0) {
         Mem1<BitMarkerParam> mrks;
 
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
-                const int id = mrks.size();
+                const int id = mrks.size() + startid;
 
-                BitMarkerParam mrk(id, length);
-                mrk.setOffset(id, dsize0, dsize1, distance);
+                BitMarkerParam mrk(length, id);
+
+                mrk.offset.rot = zeroRot();
+                mrk.offset.trn = getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance;
 
                 mrks.push(mrk);
             }
