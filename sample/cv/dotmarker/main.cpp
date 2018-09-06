@@ -91,7 +91,7 @@ void sample(cv::Mat &cvimg, const int key){
             const double rms = calibCam(cam, img.dsize[0], img.dsize[1], pixsList, objsList);
             if (rms >= 0.0){
                 printf("rms %lf\n", rms);
-                saveText(cam, "cam.txt");
+                saveText("cam.txt", cam);
                 dotMarker.setCam(cam);
             }
         }

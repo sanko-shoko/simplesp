@@ -128,8 +128,8 @@ private:
             remap(rimgs[0], imgs[0], tables[0]);
             remap(rimgs[1], imgs[1], tables[1]);
 
-            saveBMP(rimgs[0], "rimg0.bmp");
-            saveBMP(rimgs[1], "rimg1.bmp");
+            saveBMP("rimg0.bmp", rimgs[0]);
+            saveBMP("rimg1.bmp", rimgs[1]);
         }
 
         {
@@ -178,7 +178,7 @@ private:
                         m_img[i] = getCol(0, 0, 0);
                     }
                 }
-                saveBMP(m_img, "disp.bmp");
+                saveBMP("disp.bmp", m_img);
                 
                 const Mem2<Vec3> depthMap = estimator.getDepthMap(StereoBase::StereoL);
 

@@ -353,7 +353,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     template <typename TYPE>
-    SP_CPUFUNC bool saveText(const TYPE &data, const char *path) {
+    SP_CPUFUNC bool saveText(const char *path, const TYPE &data) {
         File file;
         if (file.open(path, "w") == false) return false;
 
@@ -362,7 +362,7 @@ namespace sp {
     }
 
     template <typename TYPE>
-    SP_CPUFUNC bool loadText(TYPE &data, const char *path) {
+    SP_CPUFUNC bool loadText(const char *path, TYPE &data) {
         File file;
         if (file.open(path, "r") == false) return false;
 
@@ -376,7 +376,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     template <typename TYPE>
-    SP_CPUFUNC bool saveMem(const Mem<TYPE> &mem, const char *path) {
+    SP_CPUFUNC bool saveMem(const char *path, const Mem<TYPE> &mem) {
         File file;
         if (file.open(path, "wb") == false) return false;
 
@@ -389,7 +389,7 @@ namespace sp {
     }
 
     template <typename TYPE>
-    SP_CPUFUNC bool loadMem(Mem<TYPE> &mem, const char *path) {
+    SP_CPUFUNC bool loadMem(const char *path, Mem<TYPE> &mem) {
         File file;
         if (file.open(path, "rb") == false) return false;
 

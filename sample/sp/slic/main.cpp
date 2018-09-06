@@ -10,7 +10,7 @@ int main(){
     //--------------------------------------------------------------------------------
 
     Mem2<Col3> img;
-    SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
 
     Mem2<int> map;
 
@@ -23,13 +23,13 @@ int main(){
     {
         Mem2<Col3> col;
         cnvLabelToImg(col, map);
-        saveBMP(col, "color.bmp");
+        saveBMP("color.bmp", col);
 
         Mem1<Mem1<Vec2> > contours = getLabelContour(map);
         for (int i = 0; i < contours.size(); i++){
             renderPoint(img, contours[i], getCol(0, 0, 0));
         }
-        saveBMP(img, "contour.bmp");
+        saveBMP("contour.bmp", img);
     }
 
     return 0;

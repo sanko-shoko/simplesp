@@ -102,7 +102,7 @@ int main() {
         
                 char path[256];
                 sprintf(path, "sample%02d.bmp", i);
-                saveBMP(dst, path);
+                saveBMP(path, dst);
             }
         }
 
@@ -114,7 +114,7 @@ int main() {
                     dst[i] = static_cast<Byte>(mean[i] * 255 + 0.5);
                 }
             }
-            saveBMP(dst, "mean.bmp");
+            saveBMP("mean.bmp", dst);
         }
 
         // principal component
@@ -134,7 +134,7 @@ int main() {
 
                 char path[256];
                 sprintf(path, "principal%02d.bmp", i);
-                saveBMP(dst, path);
+                saveBMP(path, dst);
             }
         }
 

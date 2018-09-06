@@ -12,7 +12,7 @@ int main(){
     Mem2<Col3> imgs[2];
     Mem2<Col3> imgM;
     {
-        SP_ASSERT(loadBMP(imgs[0], SP_DATA_DIR  "/image/Lenna.bmp"));
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", imgs[0]));
 
         imgs[1].resize(imgs[0].dsize);
         setElm(imgs[1], getCol(127, 127, 127));
@@ -27,7 +27,7 @@ int main(){
         warp<Col3, Byte>(imgs[1], imgs[0], hom);
         
         merge(imgM, imgs[0], imgs[1]);
-        saveBMP(imgM, "input.bmp");
+        saveBMP("input.bmp", imgM);
     }
 
     SIFT sift[2];
@@ -49,7 +49,7 @@ int main(){
         }
 
         merge(imgM, imgs[0], imgs[1]);
-        saveBMP(imgM, "sift.bmp");
+        saveBMP("sift.bmp", imgM);
     }
 
     // matching
@@ -84,7 +84,7 @@ int main(){
             print(hom);
         }
 
-        saveBMP(imgM, "match.bmp");
+        saveBMP("match.bmp", imgM);
     }
     return 0;
 }

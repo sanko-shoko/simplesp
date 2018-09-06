@@ -9,7 +9,7 @@ int main(){
     //--------------------------------------------------------------------------------
 
     Mem2<Byte> img;
-    SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
 
     Mem2<Byte> img0, img1;
     {
@@ -24,8 +24,8 @@ int main(){
         crop(img0, img, rect0);
         crop(img1, img, rect1);
         
-        saveBMP(img0, "input0.bmp");
-        saveBMP(img1, "input1.bmp");
+        saveBMP("input0.bmp", img0);
+        saveBMP("input1.bmp", img1);
     }
 
     Mem2<double> re0, im0;
@@ -39,13 +39,13 @@ int main(){
     Mem2<double> r;
     {
         poc(r, re0, im0, re1, im1);
-        saveText(r, "r.csv");
+        saveText("r.csv", r);
 
         Mem2<Byte> vis;
         const double maxv = maxVal(r);
         const double minv = minVal(r);
         cnvMem(vis, r, 255.0 / (maxv - minv), minv);
-        saveBMP(vis, "vis.bmp");
+        saveBMP("vis.bmp", vis);
 
         const int id = maxArg(r);
         

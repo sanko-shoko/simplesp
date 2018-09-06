@@ -5,8 +5,8 @@ using namespace sp;
 int main(){
 
     Mem2<Col3> img0, img1;
-    SP_ASSERT(loadBMP(img0, SP_DATA_DIR  "/image/shiba02.bmp"));
-    SP_ASSERT(loadBMP(img1, SP_DATA_DIR  "/image/shiba04.bmp"));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", img1));
 
     // sift execute
     SIFT sift0, sift1;
@@ -54,8 +54,8 @@ int main(){
         renderEpipolar(img1, F, dpixs0, getCol(0, 200, 100), 2);
         renderPoint(img1, dpixs1, getCol(255, 255, 255), 4);
 
-        saveBMP(img0, "imgL.bmp");
-        saveBMP(img1, "imgR.bmp");
+        saveBMP("imgL.bmp", img0);
+        saveBMP("imgR.bmp", img1);
     }
 
     // get camera parameter (not fine)
@@ -88,7 +88,7 @@ int main(){
             cols.push(acsc(img0, pixs0[i].x, pixs0[i].y));
         }
 
-        savePLY(pnts, cols, "pnts.ply");
+        savePLY("pnts.ply", pnts, cols);
     }
 
     //{

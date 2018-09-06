@@ -84,11 +84,11 @@ private:
     }
 
     void saveImg(){
-        saveBMP(m_crntImg, "test.bmp");
+        saveBMP("test.bmp", m_crntImg);
     }
 
     void loadImg(){
-        loadBMP(m_crntImg, "test.bmp");
+        loadBMP("test.bmp", m_crntImg);
     }
 
     // capture next image

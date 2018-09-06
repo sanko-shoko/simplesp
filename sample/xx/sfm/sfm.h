@@ -61,7 +61,7 @@ private:
         // set cam parameter
         for (int i = 0; i < num; i++) {
             if (cmpFileExt(paths[i], "txt") == true) {
-                SP_ASSERT(loadText(cam, paths[i]));
+                SP_ASSERT(loadText(paths[i], cam));
                 break;
             }
         }

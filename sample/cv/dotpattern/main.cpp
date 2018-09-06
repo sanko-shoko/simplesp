@@ -10,7 +10,7 @@ void sample(cv::Mat &cvimg, const int key);
 
 int main(){
 
-    saveBMP(ptn.img, "pattern.bmp");
+    saveBMP("pattern.bmp", ptn.img);
 
     cv::VideoCapture cap(0);
     if (cap.isOpened() == false){
@@ -126,9 +126,9 @@ void sample(cv::Mat &cvimg, const int key){
             print(prj);
             print(stereo);
 
-            saveText(cam, "cam.txt");
-            saveText(prj, "prj.txt");
-            saveText(stereo, "stereo.txt");
+            saveText("cam.txt", cam);
+            saveText("prj.txt", prj);
+            saveText("stereo.txt", stereo);
         }
     }
 
