@@ -136,7 +136,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         int size() const{
-            int tsize = 1;
+            int tsize = (this->dim > 0) ? 1 : 0;
             for (int i = 0; i < this->dim; i++){
                 tsize *= this->dsize[i];
             }
