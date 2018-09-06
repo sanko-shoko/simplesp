@@ -42,8 +42,8 @@ int main() {
         renderMarker(img0, cam, pose0, mrkMap);
         renderMarker(img1, cam, pose1, mrkMap);
 
-        saveBMP(img0, "img0.bmp");
-        saveBMP(img1, "img1.bmp");
+        saveBMP("img0.bmp", img0);
+        saveBMP("img1.bmp", img1);
     }
     return 0;
 

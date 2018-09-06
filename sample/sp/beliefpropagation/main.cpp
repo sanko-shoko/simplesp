@@ -9,8 +9,8 @@ int main(){
     //--------------------------------------------------------------------------------
 
     Mem2<Byte> img;
-    SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
-    saveBMP(img, "input.bmp");
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
+    saveBMP("input.bmp", img);
 
     const int labelMax = 5;
     const int step = SP_BYTEMAX / labelMax;
@@ -21,7 +21,7 @@ int main(){
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = ((img[i] + step / 2) / step) * step;
         }
-        saveBMP(dst, "test.bmp");
+        saveBMP("test.bmp", dst);
     }
 
     {
@@ -56,7 +56,7 @@ int main(){
         for (int i = 0; i < img.size(); i++) {
             dst[i] = bp.getLabel(i) * step;
         }
-        saveBMP(dst, "bp.bmp");
+        saveBMP("bp.bmp", dst);
     }
 
     return 0;

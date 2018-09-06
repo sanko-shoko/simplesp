@@ -13,12 +13,12 @@ int main() {
     // load image
     {
         if (1) {
-            SP_ASSERT(loadBMP(img0, SP_DATA_DIR  "/image/shiba03.bmp"));
-            SP_ASSERT(loadBMP(img1, SP_DATA_DIR  "/image/shiba02.bmp"));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img0));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img1));
         }
         else {
             Mem2<Col3> img;
-            SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
             const Rect rect = adjustRect(getRect2(img.dsize), -64);
 
             Rect rect0 = rect;
@@ -30,8 +30,8 @@ int main() {
             crop<Col3, Byte>(img0, img, rect0);
             crop<Col3, Byte>(img1, img, rect1);
         }
-        saveBMP(img0, "input0.bmp");
-        saveBMP(img1, "input1.bmp");
+        saveBMP("input0.bmp", img0);
+        saveBMP("input1.bmp", img1);
     }
 
 
@@ -44,7 +44,7 @@ int main() {
         Mem2<Col3> img = img0;
         renderCircle(img, pixs, 4, getCol(0, 255, 0), 1);
 
-        saveBMP(img, "corner.bmp");
+        saveBMP("corner.bmp", img);
     }
 
     // optical flow (Lucas Kanade method)
@@ -69,7 +69,7 @@ int main() {
 
             renderLine(img, pix, pix + flow, col, 2);
         }
-        saveBMP(img, "opticalflowLK.bmp");
+        saveBMP("opticalflowLK.bmp", img);
     }
 
     // optical flow (Patch Match)
@@ -95,7 +95,7 @@ int main() {
                 img(u, v) = col;
             }
         }
-        saveBMP(img, "opticalflowPM.bmp");
+        saveBMP("opticalflowPM.bmp", img);
     }
     return 0;
 }

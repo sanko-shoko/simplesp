@@ -88,7 +88,7 @@ private:
             for (int i = 0; i < imgs.size(); i++) {
                 char str[256];
                 sprintf(str, "img%03d.bmp", i);
-                saveBMP(imgs[i], str);
+                saveBMP(str, imgs[i]);
             }
 
             visualHull(m_voxel, imgs, m_cams, m_poses);

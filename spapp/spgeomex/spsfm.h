@@ -159,7 +159,7 @@ namespace sp {
                 cols.push(m_gpnts[i].col);
             }
 
-            return savePLY(pnts, cols, path);
+            return savePLY(path, pnts, cols);
         }
 
     private:

@@ -65,7 +65,7 @@ private:
                 const double rms = calibCam(cam, m_dotMarker.getCam().dsize[0], m_dotMarker.getCam().dsize[1], pixsList, objsList);
                 if (rms >= 0.0) {
                     printf("rms %lf\n", rms);
-                    saveText(cam, "cam.txt");
+                    saveText("cam.txt", cam);
                     m_dotMarker.setCam(cam);
                 }
                 print(m_dotMarker.getCam());
@@ -83,7 +83,7 @@ private:
 
                 // if no camera
                 if (img.size() == 0) {
-                    loadBMP(img, SP_DATA_DIR "/marker/dotmarker.bmp");
+                    loadBMP(SP_DATA_DIR "/marker/dotmarker.bmp", img);
                 }
             }
         }

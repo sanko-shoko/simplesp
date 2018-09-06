@@ -72,7 +72,7 @@ int main(){
 
                 Mem2<Byte> gry;
                 renderMarker(gry, cam, mrk2camPoses[i], mrkMap);
-                saveBMP(gry, strFormat("test%02d.bmp", i).c_str());
+                saveBMP(strFormat("test%02d.bmp", i).c_str(), gry);
 
                 DotMarker detector;
                 detector.setCam(cam);

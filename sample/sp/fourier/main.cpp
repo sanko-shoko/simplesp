@@ -5,9 +5,9 @@ using namespace sp;
 int main(){
 
     Mem2<Byte> img;
-    SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
 
-    saveBMP(img, "input.bmp");
+    saveBMP("input.bmp", img);
     
     Mem2<double> re, im;
     {
@@ -34,7 +34,7 @@ int main(){
         idft(img, re, im);
     }
 
-    saveBMP(img, "output.bmp");
+    saveBMP("output.bmp", img);
 
     // visualize
     {
@@ -48,7 +48,7 @@ int main(){
 
         Mem2<Byte> vis;
         cnvMem(vis, tmp, 255.0 / (maxv - minv), minv);
-        saveBMP(vis, "vis.bmp");
+        saveBMP("vis.bmp", vis);
     }
 
     return 0;

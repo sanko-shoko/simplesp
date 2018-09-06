@@ -61,7 +61,7 @@ void sample(cv::Mat &cvimg, const int key){
             char str[256];
             sprintf(str, "image%03d.bmp", id++);
 
-            saveBMP(img, str);
+            saveBMP(str, img);
             cnt++;
         }
         if (cnt > limit){

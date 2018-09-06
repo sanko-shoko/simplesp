@@ -60,7 +60,7 @@ int main(){
 
         char str[SP_STRMAX];
         sprintf(str, "img%d.bmp", i);
-        saveBMP(imgs[i], str);
+        saveBMP(str, imgs[i]);
     }
 
     // rectification
@@ -79,7 +79,7 @@ int main(){
 
         char str[SP_STRMAX];
         sprintf(str, "rect%d.bmp", i);
-        saveBMP(rimgs[i], str);
+        saveBMP(str, rimgs[i]);
     }
 
     return 0;

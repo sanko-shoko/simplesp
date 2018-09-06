@@ -162,10 +162,10 @@ namespace sp{
             char name[256];
 
             sprintf(name, "%s/color%03d.bmp", dir, id);
-            const bool cret = loadBMP(m_color, name);
+            const bool cret = loadBMP(name, m_color);
             
             sprintf(name, "%s/depth%03d.bin", dir, id);
-            const bool dret = loadMem(m_depth, name);
+            const bool dret = loadMem(name, m_depth);
 
             return (cret || dret) ? true : false;
         }

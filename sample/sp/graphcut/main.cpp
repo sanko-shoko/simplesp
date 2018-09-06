@@ -9,7 +9,7 @@ int main(){
     //--------------------------------------------------------------------------------
 
     Mem2<Byte> img;
-    SP_ASSERT(loadBMP(img, SP_DATA_DIR  "/image/Lenna.bmp"));
+    SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
 
     binalizeAdapt(img, img);
     for (int i = 0; i < img.size(); i++){
@@ -17,7 +17,7 @@ int main(){
             img[i] = 255 - img[i];
         }
     }
-    saveBMP(img, "input.bmp");
+    saveBMP("input.bmp", img);
 
 
     const int kappa = 80;
@@ -45,7 +45,7 @@ int main(){
     for (int i = 0; i < img.size(); i++){
         img[i] = (gc.getLabel(i) > 0) ? 0 : 255;
     }
-    saveBMP(img, "gc.bmp");
+    saveBMP("gc.bmp", img);
 
     return 0;
 }

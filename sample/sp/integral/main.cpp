@@ -8,7 +8,7 @@ int main(){
 
     Mem2<Byte> src;
     {
-        SP_ASSERT(loadBMP(src, SP_DATA_DIR  "/image/Lenna.bmp"));
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", src));
     }
 
     Mem2<Byte> dst0;
@@ -30,8 +30,8 @@ int main(){
         boxFilterIntegral(dst1, sum, 21);
     }
 
-    saveBMP(dst0, "test0.bmp");
-    saveBMP(dst1, "test1.bmp");
+    saveBMP("test0.bmp", dst0);
+    saveBMP("test1.bmp", dst1);
 
 
     return 0;

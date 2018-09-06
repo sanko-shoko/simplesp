@@ -8,18 +8,18 @@ int main() {
 
     Mem2<Col3> imgs[2];
     {
-        SP_ASSERT(loadBMP(imgs[0], SP_DATA_DIR  "/image/shiba02.bmp"));
-        SP_ASSERT(loadBMP(imgs[1], SP_DATA_DIR  "/image/shiba04.bmp"));
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", imgs[0]));
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", imgs[1]));
 
-        saveBMP(imgs[0], "src0.bmp");
-        saveBMP(imgs[1], "src1.bmp");
+        saveBMP("src0.bmp", imgs[0]);
+        saveBMP("src1.bmp", imgs[1]);
     }
 
     // get camera parameter
     CamParam cam0, cam1;
     {
-        SP_ASSERT(loadText(cam0, SP_DATA_DIR  "/image/shiba.txt"));
-        SP_ASSERT(loadText(cam1, SP_DATA_DIR  "/image/shiba.txt"));
+        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam0));
+        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam1));
     }
 
     // estimate camera pose
@@ -62,7 +62,7 @@ int main() {
         for (int i = 0; i < 2; i++) {
             remap<Col3, Byte>(rimgs[i], imgs[i], tables[i]);
 
-            saveBMP(rimgs[i], strFormat("rect%d.bmp", i).c_str());
+            saveBMP(strFormat("rect%d.bmp", i).c_str(), rimgs[i]);
         }
     }
 
@@ -84,8 +84,8 @@ int main() {
         cnvDispToImg(imgs[0], estimator.getDispMap(StereoBase::StereoL), maxDisp, minDisp);
         cnvDispToImg(imgs[1], estimator.getDispMap(StereoBase::StereoR), maxDisp, minDisp);
         
-        saveBMP(imgs[0], "dispL.bmp");
-        saveBMP(imgs[1], "dispR.bmp");
+        saveBMP("dispL.bmp", imgs[0]);
+        saveBMP("dispR.bmp", imgs[1]);
 
         const Mem2<Vec3> &depthMap = estimator.getDepthMap(StereoBase::StereoL);
 
@@ -95,7 +95,7 @@ int main() {
                 pnts.push(depthMap[i]);
             }
         }
-        savePLY(pnts, "test.ply");
+        savePLY("test.ply", pnts);
     }
 
     return 0;

@@ -23,13 +23,13 @@ int main() {
             renderPoint(src, A, getCol(0, 0, 0), 3);
         }
 
-        saveBMP(src, "test0.bmp");
+        saveBMP("test0.bmp", src);
     }
 
     {
         Mem2<Col3> src;
         {
-            SP_ASSERT(loadBMP(src, SP_DATA_DIR  "/image/shiba02.bmp"));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", src));
         }
 
         const Rect rect = getRect2(260, 60, 180, 260);
@@ -44,7 +44,7 @@ int main() {
             renderPoint(src, A, getCol(0, 0, 0), 3);
         }
 
-        saveBMP(src, "test1.bmp");
+        saveBMP("test1.bmp", src);
     }
 
     return 0;

@@ -31,7 +31,7 @@ private:
 
         help();
 
-        loadBMP(m_img, SP_DATA_DIR "/image/Lenna.bmp");
+        loadBMP(SP_DATA_DIR "/image/Lenna.bmp", m_img);
         m_view = &m_img;
 
         slic(m_map, m_img);

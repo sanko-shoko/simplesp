@@ -71,7 +71,7 @@ int main(){
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
-            saveText(dst, "cam0.txt");
+            saveText("cam0.txt", dst);
         }
 
         // opencv calibration 
@@ -122,7 +122,7 @@ int main(){
             renderMarker(imgList[i], cam, poses[i], mrkMap);
             char str[256];
             sprintf(str, "test%02d.bmp", i);
-            saveBMP(imgList[i], str);
+            saveBMP(str, imgList[i]);
         }
 
         // simplesp calibration 
@@ -149,7 +149,7 @@ int main(){
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
-            saveText(dst, "cam1.txt");
+            saveText("cam1.txt", dst);
         }
 
         // opencv calibration 
@@ -231,7 +231,7 @@ int main(){
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
-            saveText(dst, "pose.txt");
+            saveText("pose.txt", dst);
         }
 
         // opencv calibration 

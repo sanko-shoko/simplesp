@@ -181,7 +181,7 @@ namespace sp{
     }
     using namespace _ply;
 
-    SP_CPUFUNC bool loadPLY(Mem1<Mesh3> &meshes, const char *path){
+    SP_CPUFUNC bool loadPLY(const char *path, Mem1<Mesh3> &meshes){
         File file;
         if (file.open(path, "r") == false) return false;
 
@@ -205,7 +205,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool loadPLY(Mem1<Vec3> &pnts, const char *path) {
+    SP_CPUFUNC bool loadPLY(const char *path, Mem1<Vec3> &pnts) {
         File file;
         if (file.open(path, "r") == false) return false;
 
@@ -220,7 +220,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool loadPLY(Mem1<Vec3> &pnts, Mem1<Col3> &cols, const char *path) {
+    SP_CPUFUNC bool loadPLY(const char *path, Mem1<Vec3> &pnts, Mem1<Col3> &cols) {
         File file;
         if (file.open(path, "r") == false) return false;
 
@@ -236,7 +236,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool savePLY(const Mem1<Mesh3> &meshes, const char *path) {
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Mesh3> &meshes) {
         File file;
         if (file.open(path, "w") == false) return false;
 
@@ -263,7 +263,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool savePLY(const Mem1<Vec3> &pnts, const char *path){
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &pnts){
         File file;
         if (file.open(path, "w") == false) return false;
 
@@ -283,7 +283,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool savePLY(const Mem1<Vec3> &pnts, const Mem1<Col3> &cols, const char *path){
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &pnts, const Mem1<Col3> &cols){
         File file;
         if (file.open(path, "w") == false) return false;
         if (cmpSize(pnts, cols) == false) return false;

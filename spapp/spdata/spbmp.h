@@ -10,7 +10,7 @@
 
 namespace sp{
 
-    SP_CPUFUNC bool loadBMP(Mem<Col3> &dst, const char *path){
+    SP_CPUFUNC bool loadBMP(const char *path, Mem<Col3> &dst){
         if (cmpFileExt(path, "bmp, BMP") == false) return false;
 
         File file;
@@ -54,16 +54,16 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool loadBMP(Mem<Byte> &dst, const char *path){
+    SP_CPUFUNC bool loadBMP(const char *path, Mem<Byte> &dst){
         Mem2<Col3> col;
-        if(loadBMP(col, path) == false) return false;
+        if(loadBMP(path, col) == false) return false;
 
         cnvImg(dst, col);
 
         return true;
     }
 
-    SP_CPUFUNC bool saveBMP(const Mem<Col3> &src, const char *path){
+    SP_CPUFUNC bool saveBMP(const char *path, const Mem<Col3> &src){
         File file;
         if (file.open(path, "wb") == false) return false;
 
@@ -105,11 +105,11 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool saveBMP(const Mem<Byte> &src, const char *path){
+    SP_CPUFUNC bool saveBMP(const char *path, const Mem<Byte> &src){
         Mem<Col3> col;
         cnvImg(col, src);
     
-        return saveBMP(col, path);
+        return saveBMP(path, col);
     }
 
 
