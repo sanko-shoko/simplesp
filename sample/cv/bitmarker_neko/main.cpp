@@ -51,7 +51,7 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
     // set marker info
     {
         const double length = 50.0;
-        const BitMarkerParam mrks(neko, length);
+        const BitMarkerParam mrks(length, neko);
 
         bitMarker.addMrks(mrks);
     }   
@@ -63,9 +63,9 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
     if (bitMarker.getPose(0) != NULL){
         renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), bitMarker.getMrks(0)[0].length / 2.0, 2);
 
-        const Vec3 offset = getVec(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
-        const Pose pose = *bitMarker.getPose(0) * getPose(offset);
-        renderCube(img, bitMarker.getCam(), pose, bitMarker.getMrks(0)[0].length, getCol(50, 50, 200), 2);
+        //const Vec3 offset = getVec(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
+        //const Pose pose = *bitMarker.getPose(0) * getPose(offset);
+        //renderCube(img, bitMarker.getCam(), pose, bitMarker.getMrks(0)[0].length, getCol(50, 50, 200), 2);
     }
 
     cvCnvImg(cvimg, img);
