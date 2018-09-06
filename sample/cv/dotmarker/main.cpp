@@ -66,8 +66,8 @@ void sample(cv::Mat &cvimg, const int key){
         static bool flag = false;
         if (key == 'p') flag ^= true;
         
-        if (flag == true){
-            renderPoint(img, dotMarker.getCrspPix(), getCol(0, 255, 0), 4);
+        if (flag == true && dotMarker.getCrspPixs()){
+            renderPoint(img, *dotMarker.getCrspPixs(), getCol(0, 255, 0), 4);
         }
     }
 
@@ -78,8 +78,8 @@ void sample(cv::Mat &cvimg, const int key){
 
         if (dotMarker.getPose() != NULL && key == 'a'){
             printf("add detected points (i = %d)\n", cnt++);
-            pixsList.push(dotMarker.getCrspPix());
-            objsList.push(dotMarker.getCrspObj());
+            pixsList.push(*dotMarker.getCrspPixs());
+            objsList.push(*dotMarker.getCrspObjs());
 
             //char str[256];
             //sprintf(str, "calib%03d.bmp", pixsList.size());

@@ -25,8 +25,8 @@ void DotMarkerGUI::calcOne(){
 // add detected marker for calibration
 void DotMarkerGUI::addCrsp(){
     if (m_dotMarker.getPose() != NULL){
-        m_pixPntsList.push(m_dotMarker.getCrspPix());
-        m_objPntsList.push(m_dotMarker.getCrspObj());
+        m_pixPntsList.push(*m_dotMarker.getCrspPixs());
+        m_objPntsList.push(*m_dotMarker.getCrspObjs());
     }
 }
 

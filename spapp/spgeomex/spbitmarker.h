@@ -56,8 +56,13 @@ namespace sp{
         }
 
         void setImg(const Mem2<Col3> &img){
+            const double sigma = static_cast<double>(img.dsize[0]) / size;
+
+            Mem2<Col3> smooth;
+            gaussianFilter<Col3, Byte>(smooth, img, sigma / 2.0);
+
             Mem2<Col3> tmp(size, size);
-            rescale<Col3, Byte>(tmp, img);
+            rescale<Col3, Byte>(tmp, smooth);
 
             Mem2<Byte> gry;
             cnvImg(gry, tmp);
@@ -112,56 +117,82 @@ namespace sp{
 
     };
 
+
+    //--------------------------------------------------------------------------------
+    // Bit Marker Array
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance) {
+        Mem1<BitMarkerParam> mrks;
+
+        for (int y = 0; y < dsize1; y++) {
+            for (int x = 0; x < dsize0; x++) {
+                const int id = mrks.size();
+
+                BitMarkerParam mrk(id, length);
+                mrk.setOffset(id, dsize0, dsize1, distance);
+
+                mrks.push(mrk);
+            }
+        }
+
+        return mrks;
+    }
+
+
     //--------------------------------------------------------------------------------
     // bit marker pose estimater
     //--------------------------------------------------------------------------------
 
     class BitMarker {
     private:
-        // input parameter
+        // input camera parameter
         CamParam m_cam;
 
-        Mem1<BitMarkerParam> m_mrks;
+        // input marker parameter
+        Mem1<Mem1<BitMarkerParam> > m_mrks;
 
         // marker to camera poses
         Mem1<Pose> m_poses;
 
-        // marker corners
-        Mem1<Mem1<Vec2> > m_corners;
+        // crsp pnts
+        Mem1<Mem1<Vec2> > m_cpixs;
+        Mem1<Mem1<Vec3> > m_cobjs;
 
     public:
         SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         BitMarker(){
-            m_cam = sp::getCamParam(0, 0);
-            m_mrks.push(BitMarkerParam());
+            m_cam = getCamParam(0, 0);
         }
 
         //--------------------------------------------------------------------------------
         // input parameter
         //--------------------------------------------------------------------------------
-
-        void setMrks(const Mem1<BitMarkerParam> &mrks){
-            m_mrks = mrks;
-        }
-
-        void setMrks(const BitMarkerParam &mrk){
-            m_mrks.clear();
-            m_mrks.push(mrk);
-        }
-
+    
         void setCam(const CamParam &cam) {
             m_cam = cam;
         }
 
-
-        const Mem1<BitMarkerParam>& getMrks() const{
-            return m_mrks;
+        void addMrks(const BitMarkerParam &mrk) {
+            m_mrks.push(Mem1<BitMarkerParam>(1, &mrk));
         }
 
-        const CamParam& getCam() const{
+        void addMrks(const Mem1<BitMarkerParam> &mrks){
+            m_mrks.push(mrks);
+        }
+
+        const CamParam& getCam() const {
             return m_cam;
+        }
+        
+        const int size() const {
+            return m_mrks.size();
+        }
+  
+        const Mem1<BitMarkerParam>& getMrks(const int i) const{
+            return m_mrks[i];
         }
 
 
@@ -174,9 +205,14 @@ namespace sp{
             return (cmpPose(m_poses[i], zeroPose()) == false) ? &m_poses[i] : NULL;
         }
 
-        const Mem1<Vec2>* getCorners(const int i) const {
-            if (i < 0 || i >= m_corners.size()) return NULL;
-            return (m_corners[i].size() > 0) ? &m_corners[i] : NULL;
+        const Mem1<Vec2>* getCrspPixs(const int i) const {
+            if (i < 0 || i >= m_cpixs.size()) return NULL;
+            return (m_cpixs[i].size() > 0) ? &m_cpixs[i] : NULL;
+        }
+
+        const Mem1<Vec3>* getCrspObjs(const int i) const {
+            if (i < 0 || i >= m_cobjs.size()) return NULL;
+            return (m_cobjs[i].size() > 0) ? &m_cobjs[i] : NULL;
         }
 
 
@@ -206,7 +242,7 @@ namespace sp{
 
             // set default camera parameter
             if (cmpSize(2, m_cam.dsize, src.dsize) == false) {
-                m_cam = sp::getCamParam(src.dsize);
+                m_cam = getCamParam(src.dsize);
             }
 
             // clear output
@@ -241,6 +277,8 @@ namespace sp{
 
         double MRK_MINSIZE = 0.01;
         double MRK_CONTRAST = 0.05;
+
+        double MRK_MATCHRATE = 0.75;
 
     private:
         double getMinScale(){
@@ -298,32 +336,25 @@ namespace sp{
         void estimate(const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
 
             Mem1<Pose> poses;
-            Mem1<Mem1<Vec2> > corners2;
+            Mem1<Mem1<Vec2> > dpixs;
             {
                 SP_LOGGER_SET("calcMrk");
 
-                if (calcMrk(poses, corners2, img, corners) == false) throw "calcMrk";
+                if (calcMrk(poses, dpixs, img, corners) == false) throw "calcMrk";
             }
 
-            Mem1<int> crsps;
+            Mem1<Mem1<int> > crsps;
             {
                 SP_LOGGER_SET("crspMrk");
 
-                crsps = crspMrk(poses, img);
-                if (maxVal(crsps) < 0) throw "crspMrk";
-
-                m_poses.resize(crsps.size());
-                m_corners.resize(crsps.size());
-
-                for (int i = 0; i < m_poses.size(); i++){
-                    m_poses[i] = zeroPose();
-                    if (crsps[i] < 0) continue;
-                    m_poses[i] = poses[crsps[i]];
-                    m_poses[i].trn *= m_mrks[i].length;
-                    m_corners[i] = corners2[crsps[i]];
-                }
+                if (crspMrk(crsps, poses, img, m_mrks) == false) throw "crspMrk";
             }
 
+            {
+                SP_LOGGER_SET("postProc");
+
+                if (postProc(m_poses, m_cpixs, m_cobjs, m_mrks, crsps, dpixs, poses) == false) throw "postProc";
+            }
         }
 
 
@@ -557,14 +588,14 @@ namespace sp{
             return true;
         }
 
-        Mem1<int> crspMrk(const Mem1<Pose> &poses, const Mem2<Byte> &img){
-
-            const int *dsize = m_mrks[0].img.dsize;
-            const int margin = static_cast<int>(0.1 * dsize[0]);
+        bool crspMrk(Mem1<Mem1<int> > &crsp, const Mem1<Pose> &poses, const Mem2<Byte> &img, const Mem1<Mem1<BitMarkerParam> > &mrks){
+            const int *dsize = mrks[0][0].img.dsize;
+            const int margin = round(dsize[0] * 0.1);
 
             Mem1<Mem2<Byte> > pimgs(poses.size());
             for (int p = 0; p < pimgs.size(); p++){
                 Mem2<Byte> &pimg = pimgs[p];
+
                 pimg.resize(dsize);
 
                 const CamParam &cam = m_cam;
@@ -586,6 +617,7 @@ namespace sp{
 
                 Byte maxv = 0;
                 Byte minv = SP_BYTEMAX;
+
                 for (int v = margin; v < dsize[1] - margin; v++){
                     for (int u = margin; u < dsize[0] - margin; u++){
                         maxv = maxVal(maxv, timg(u, v));
@@ -602,138 +634,191 @@ namespace sp{
                 cnvMem(pimg, pimg, rate, minv);
             }
 
-            Mem1<Mem1<double> > evals(m_mrks.size());
-            for (int m = 0; m < m_mrks.size(); m++){
-                const Mem2<Byte> &mimg = m_mrks[m].img;
+            Mem1<Mem1<Mem1<double> > > evals(mrks.size());
+            for (int i = 0; i < mrks.size(); i++) {
+                evals[i].resize(mrks[i].size());
 
-                for (int p = 0; p < pimgs.size(); p++){
-                    const Mem2<Byte> &pimg = pimgs[p];
+                for (int j = 0; j < mrks[i].size(); j++) {
+                    const Mem2<Byte> &mimg = mrks[i][j].img;
 
-                    int cnt = 0;
-                    double sum = 0.0;
-                    for (int v = margin; v < mimg.dsize[1] - margin; v++){
-                        for (int u = margin; u < mimg.dsize[0] - margin; u++){
-                            sum += abs(mimg(u, v) - pimg(u, v));
-                            cnt++;
+                    for (int p = 0; p < pimgs.size(); p++) {
+                        const Mem2<Byte> &pimg = pimgs[p];
+
+                        int cnt = 0;
+                        double sqsum = 0.0;
+
+                        for (int v = margin; v < mimg.dsize[1] - margin; v++) {
+                            for (int u = margin; u < mimg.dsize[0] - margin; u++) {
+                                sqsum += square(mimg(u, v) - pimg(u, v));
+                                cnt++;
+                            }
                         }
+                        const double eval = 1.0 - 1.0 * sqrt(sqsum / cnt) / SP_BYTEMAX;
+                        evals[i][j].push(eval);
                     }
-                    const double eval = 1.0 - 2.0 * sum / (cnt * SP_BYTEMAX);
-                    evals[m].push(eval);
                 }
             }
 
-            Mem1<int> dst(m_mrks.size());
-            for (int i = 0; i < dst.size(); i++){
-                dst[i] = -1;
+            crsp.resize(mrks.size());
+            for (int i = 0; i < mrks.size(); i++) {
+                crsp[i].resize(mrks[i].size());
+                for (int j = 0; j < mrks[i].size(); j++) {
+                    crsp[i][j] = -1;
+                }
             }
 
-            for (int i = 0; i < pimgs.size(); i++){
-                int id = -1;
-                int crsp = -1;
+            int cnt = 0;
+            for (int p = 0; p < pimgs.size(); p++){
+                int id[2] = { -1, -1 };
+                int c = -1;
 
                 double maxEval = -1.0;
-                for (int m = 0; m < m_mrks.size(); m++){
-                    for (int p = 0; p < pimgs.size(); p++){
-                        const Mem2<Byte> &mimg = m_mrks[i].img;
-                        const double eval = evals[m][p];
+                for (int i = 0; i < mrks.size(); i++){
+                    for (int j = 0; j < mrks[i].size(); j++) {
+                        for (int q = 0; q < pimgs.size(); q++) {
+                            const double eval = evals[i][j][q];
 
-                        if (eval > maxEval){
-                            maxEval = eval;
-                            id = m;
-                            crsp = p;
+                            if (eval > maxEval) {
+                                maxEval = eval;
+                                id[0] = i;
+                                id[1] = j;
+                                c = q;
+                            }
                         }
                     }
                 }
-                if (id < 0 || maxEval < 0.3) break;
+                if (c < 0 || maxEval < MRK_MATCHRATE) break;
 
-                dst[id] = crsp;
-                for (int m = 0; m < m_mrks.size(); m++){
-                    for (int p = 0; p < pimgs.size(); p++){
-                        if (m == id || p == crsp){
-                            evals[m][p] = -1.0;
+                cnt++;
+                crsp[id[0]][id[1]] = c;
+
+                for (int i = 0; i < mrks.size(); i++) {
+                    for (int j = 0; j < mrks[i].size(); j++) {
+                        for (int q = 0; q < pimgs.size(); q++) {
+                            if ((i == id[0] && j == id[1]) || q == c) {
+                                evals[i][j][q] = -1.0;
+                            }
                         }
                     }
                 }
             }
 
-            return dst;
+            return (cnt > 0) ? true : false;
         }
 
+        bool postProc(Mem1<Pose> &poses, Mem1<Mem1<Vec2> > &cpixs, Mem1<Mem1<Vec3> > &cobjs, const Mem1<Mem1<BitMarkerParam> > &mrks, const Mem1<Mem1<int> > &crsps, Mem1<Mem1<Vec2> > &dpixs, const Mem1<Pose> &cposes) {
+            poses.resize(mrks.size());
+            cpixs.resize(mrks.size());
+            cobjs.resize(mrks.size());
 
+            const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
+            const Mem1<Vec2> unit(4, _unit);
+
+            for (int i = 0; i < mrks.size(); i++) {
+                poses[i] = zeroPose();
+
+                if (maxVal(crsps[i]) < 0) continue;
+
+                Mem1<Pose> tposes;
+                Mem1<Vec2> tcpixs;
+                Mem1<Vec3> tcobjs;
+
+
+                for (int j = 0; j < mrks[i].size(); j++) {
+                    if (crsps[i][j] < 0) continue;
+                    Pose pose;
+                    pose = cposes[crsps[i][j]];
+                    pose.trn *= mrks[i][j].length;
+                    pose = pose * mrks[i][j].offset;
+
+                    tposes.push(pose);
+                    tcpixs.push(dpixs[crsps[i][j]]);
+                    tcobjs.push(invPose(mrks[i][j].offset) * (unit * mrks[i][j].length));
+                }
+
+                if (mrks[i].size() == 1) {
+                    poses[i] = tposes[0];
+                    cpixs[i] = tcpixs;
+                    cobjs[i] = tcobjs;
+                }
+                else {
+                    if (tposes.size() == 0) continue;
+
+                    double maxEval = 0.0;
+                    for (int j = 0; j < tposes.size(); j++) {
+                        Pose &pose = tposes[j];
+                        if (refinePose(pose, m_cam, tcpixs, tcobjs) == false) continue;
+
+                        const double eval = evalErr(errPose(pose, m_cam, tcpixs, tcobjs));
+
+                        if (eval > maxEval) {
+                            maxEval = eval;
+                            poses[i] = pose;
+                        }
+                    }
+
+                    cpixs[i] = tcpixs;
+                    cobjs[i] = tcobjs;
+                }
+
+            }
+            return true;
+        }
     };
 
 
-    //--------------------------------------------------------------------------------
-    // Bit Marker Array
-    //--------------------------------------------------------------------------------
-  
-    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance) {
-        Mem1<BitMarkerParam> mrks;
+ 
 
-        for (int y = 0; y < dsize1; y++) {
-            for (int x = 0; x < dsize0; x++) {
-                const int id = mrks.size();
+    //SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Byte> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
+    //    dst = zeroPose();
 
-                BitMarkerParam mrk(id, length);
-                mrk.setOffset(id, dsize0, dsize1, distance);
+    //    BitMarker bitMarker;
 
-                mrks.push(mrk);
-            }
-        }
+    //    bitMarker.setCam(cam);
+    //    bitMarker.setMrks(mrks);
+    //    
+    //    bitMarker.execute(img);
 
-        return mrks;
-    }
+    //    const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
+    //    const Mem1<Vec2> unit(4, _unit);
 
-    SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Byte> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
-        dst = zeroPose();
+    //    Mem1<Pose> vposes;
+    //    Mem1<Vec2> pixs;
+    //    Mem1<Vec3> objs;
+    //    for (int i = 0; i < mrks.size(); i++) {
+    //        if (bitMarker.getPose(i) == NULL || bitMarker.getCorners(i) == NULL) continue;
+    //        
+    //        Mem1<Vec3> pnts;
+    //        for (int j = 0; j < unit.size(); j++) {
+    //            pnts.push(invPose(mrks[i].offset) * (getVec(unit[j], 0.0) * mrks[i].length));
+    //        }
 
-        BitMarker bitMarker;
+    //        objs.push(pnts);
+    //        pixs.push(*bitMarker.getCorners(i));
+    //        vposes.push(*bitMarker.getPose(i) * mrks[i].offset);
 
-        bitMarker.setCam(cam);
-        bitMarker.setMrks(mrks);
-        
-        bitMarker.execute(img);
+    //    }
+    //    if (vposes.size() == 0) return false;
 
-        const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
-        const Mem1<Vec2> unit(4, _unit);
+    //    double maxEval = 0.0;
+    //    for (int i = 0; i < vposes.size(); i++) {
+    //        Pose &pose = vposes[i];
+    //        if (refinePose(pose, cam, pixs, objs) == false) continue;
 
-        Mem1<Pose> vposes;
-        Mem1<Vec2> pixs;
-        Mem1<Vec3> objs;
-        for (int i = 0; i < mrks.size(); i++) {
-            if (bitMarker.getPose(i) == NULL || bitMarker.getCorners(i) == NULL) continue;
-            
-            Mem1<Vec3> pnts;
-            for (int j = 0; j < unit.size(); j++) {
-                pnts.push(invPose(mrks[i].offset) * (getVec(unit[j], 0.0) * mrks[i].length));
-            }
+    //        const double eval = evalErr(errPose(pose, cam, pixs, objs));
 
-            objs.push(pnts);
-            pixs.push(*bitMarker.getCorners(i));
-            vposes.push(*bitMarker.getPose(i) * mrks[i].offset);
+    //        if (eval > maxEval) {
+    //            maxEval = eval;
+    //            dst = pose;
+    //        }
+    //    }
+    //    return true;
+    //}
 
-        }
-        if (vposes.size() == 0) return false;
-
-        double maxEval = 0.0;
-        for (int i = 0; i < vposes.size(); i++) {
-            Pose &pose = vposes[i];
-            if (refinePose(pose, cam, pixs, objs) == false) continue;
-
-            const double eval = evalErr(errPose(pose, cam, pixs, objs));
-
-            if (eval > maxEval) {
-                maxEval = eval;
-                dst = pose;
-            }
-        }
-        return true;
-    }
-
-    SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Col3> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
-        Mem2<Byte> gry;
-        cnvImg(gry, img);
-        return calcBitMarkerArrayPose(dst, gry, cam, mrks);
-    }
+    //SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Col3> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
+    //    Mem2<Byte> gry;
+    //    cnvImg(gry, img);
+    //    return calcBitMarkerArrayPose(dst, gry, cam, mrks);
+    //}
 }
 #endif

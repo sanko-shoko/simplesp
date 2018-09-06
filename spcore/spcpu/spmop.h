@@ -590,6 +590,42 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
+    // vectors operator
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Mem1<Vec2> operator * (const Mat &mat, const Mem1<Vec2> &vecs) {
+        Mem1<Vec2> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Mat &mat, const Mem1<Vec3> &vecs) {
+        Mem1<Vec3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec2> &vecs) {
+        Mem1<Vec3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = pose * getVec(vecs[i], 0.0);
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec3> &vecs) {
+        Mem1<Vec3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = pose * vecs[i];
+        }
+        return dst;
+    }
+
+    //--------------------------------------------------------------------------------
     // vector util
     //--------------------------------------------------------------------------------
     

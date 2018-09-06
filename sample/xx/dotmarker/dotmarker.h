@@ -54,8 +54,8 @@ private:
 
             if (m_keyAction[GLFW_KEY_A] == 1 && m_dotMarker.getPose() != NULL) {
                 printf("add detected points (i = %d)\n", pixsList.size());
-                pixsList.push(m_dotMarker.getCrspPix());
-                objsList.push(m_dotMarker.getCrspObj());
+                pixsList.push(*m_dotMarker.getCrspPixs());
+                objsList.push(*m_dotMarker.getCrspObjs());
 
             }
 

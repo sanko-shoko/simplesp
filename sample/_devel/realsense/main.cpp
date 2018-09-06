@@ -23,6 +23,9 @@ int main(){
     int key = 0;
     cv::Mat img(480, 640, CV_8UC1);
 
+    const double nearPlane = 100.0;
+    const double farPlane = 1500.0;
+
     // 27 = 'ESC' key
     while ((key = cv::waitKey(1)) != 27) {
 
@@ -33,7 +36,8 @@ int main(){
         // convert to image
         for (int i = 0; i < img.size().area(); i++) {
             const double depth = scale * ptr[i];
-            img.data[i] = (unsigned char)((depth / 1500.0) * 255);
+
+            img.data[i] = (unsigned char)((1.0 - (depth - nearPlane) / (farPlane - nearPlane)) * 255);
         }
 
         cv::imshow("realsense", img);

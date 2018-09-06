@@ -79,8 +79,8 @@ int main(){
                 detector.setMrk(mrk);
                 detector.execute(gry);
 
-                pixs = detector.getCrspPix();
-                objs = detector.getCrspObj();
+                pixs = *detector.getCrspPixs();
+                objs = *detector.getCrspObjs();
             }
 
             pixsList.push(pixs);

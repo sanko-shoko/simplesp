@@ -39,39 +39,28 @@ void sample(cv::Mat &cvimg, const int key){
     // convert data type
     cvCnvImg(img, cvimg);
 
+    // detector class
+    BitMarker bitMarker;
 
-    const double length = 50.0;
-    const double distance = 60.0;
-    Mem<BitMarkerParam> mrks = getBitMarkerArray(4, 3, length, distance);
+    // set marker info
+    {
+        const int dsize[2] = { 4, 3 };
+        const double length = 50.0;
+        const double distance = 60.0;
+        const Mem1<BitMarkerParam> mrks = getBitMarkerArray(dsize[0], dsize[1], length, distance);
 
-    // render
-    static bool flag = false;
-    if (key == 's') flag ^= true;
-
-    if (flag == false){
-        // detector class
-        BitMarker bitMarker;
-
-        bitMarker.setMrks(mrks);
-
-        // estimate marker pose
-        bitMarker.execute(img);
-
-        for (int i = 0; i < bitMarker.getMrks().size(); i++){
-            if (bitMarker.getPose(i) == NULL) continue;
-            const BitMarkerParam &mrk = bitMarker.getMrks()[i];
-
-            //renderAxis(img, bitMarker.getCamParam(), *bitMarker.getPose(i), mrk.length / 2.0, 2);
-
-            const Vec3 offset = getVec(0.0, 0.0, -mrk.length / 2);
-            const Pose pose = *bitMarker.getPose(i) * getPose(offset);
-            renderCube(img, bitMarker.getCam(), pose, mrk.length, getCol(50, 50, 200), 2);
-        }
+        bitMarker.addMrks(mrks);
     }
-    else{
-        Pose pose;
-        if (calcBitMarkerArrayPose(pose, img, getCamParam(img.dsize), mrks) == true){
-            renderAxis(img, getCamParam(img.dsize), pose, length, 2);
+
+    // estimate marker pose
+    bitMarker.execute(img);
+
+    if (bitMarker.getPose(0) != NULL){
+        renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), bitMarker.getMrks(0)[0].length / 2.0, 2);
+
+        const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
+        for (int i = 0; i < cpixs.size(); i++) {
+            renderPoint(img, cpixs[i], getCol(0, 255, 0), 3);
         }
     }
 

@@ -48,7 +48,7 @@ private:
             m_mrks.clear();
             m_mrks.push(mrk);
         }
-        m_bitMarker.setMrks(m_mrks);
+        m_bitMarker.addMrks(m_mrks);
 
         m_ui.start = true;
 
@@ -74,13 +74,13 @@ private:
 
     // capture next image
     void nextImg() {
-        if (0) {
+        if (1) {
             // usb camera
             static cv::VideoCapture cap;
             cvCaptureImg(m_crntImg, cap);
         }
         else {
-            //cvCnvImg(m_crntImg, cv::imread(SP_DATA_DIR  "/marker/cap_neko.bmp"));
+            cvCnvImg(m_crntImg, cv::imread(SP_DATA_DIR  "/marker/cap_neko.bmp"));
             cvCnvImg(m_crntImg, cv::imread("test.bmp"));
         }
     }
@@ -95,12 +95,12 @@ private:
             glRenderImg(m_crntImg);
         }
 
-        if (m_ui.test) {
+        if (1 || m_ui.test) {
             m_bitMarker.execute(m_crntImg);
 
             glLoadView3D(m_bitMarker.getCam(), m_viewPos, m_viewScale);
 
-            for (int i = 0; i < m_bitMarker.getMrks().size(); i++) {
+            for (int i = 0; i < m_bitMarker.size(); i++) {
                 if (m_bitMarker.getPose(i) == NULL) continue;
 
                 glLoadMatrix(*m_bitMarker.getPose(i));
@@ -110,18 +110,39 @@ private:
                 glAxis(30.0);
                 glEnd();
             }
+
+            glLoadView2D(m_crntImg.dsize, m_viewPos, m_viewScale);
+            for (int i = 0; i < m_bitMarker.size(); i++) {
+                if (m_bitMarker.getPose(i) == NULL) continue;
+
+                glPointSize(static_cast<float>(5));
+                const Mem1<Vec2> &cpixs = *m_bitMarker.getCrspPixs(i);
+                glBegin(GL_POINTS);
+                glColor(sp::getCol(0, 255, 0));
+                for (int j = 0; j < cpixs.size(); j++) {
+                    glVertex(cpixs[j]);
+                }
+
+                glColor(sp::getCol(0, 0, 255));
+                const Mem1<Vec3> &cobjs = *m_bitMarker.getCrspObjs(i);
+                for (int j = 0; j < cobjs.size(); j++) {
+                    glVertex(mulCamD(m_bitMarker.getCam(), prjVec(*m_bitMarker.getPose(i) * cobjs[j])));
+                }
+                glEnd();
+            }
+
         }
         else {
 
             Pose pose;
-            if (calcBitMarkerArrayPose(pose, m_crntImg, getCamParam(m_crntImg.dsize), m_mrks) == true) {
-                glLoadView3D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
-                glLoadMatrix(pose);
-                glLineWidth(4.0f);
-                glBegin(GL_LINES);
-                glAxis(60.0);
-                glEnd();
-            }
+            //if (calcBitMarkerArrayPose(pose, m_crntImg, getCamParam(m_crntImg.dsize), m_mrks) == true) {
+            //    glLoadView3D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
+            //    glLoadMatrix(pose);
+            //    glLineWidth(4.0f);
+            //    glBegin(GL_LINES);
+            //    glAxis(60.0);
+            //    glEnd();
+            //}
         }
 
 #if SP_USE_DEBUG
