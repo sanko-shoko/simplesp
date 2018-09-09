@@ -12,8 +12,7 @@ class ModelTrackGUI : public BaseWindow {
     Mem2<Col3> m_img;
     Mem2<Byte> m_gry;
 
-    // map
-    Mem2<VecPN3> m_map;
+    Mem2<double> m_depth;
 
     // model
     Mem1<Mesh3> m_model;
@@ -84,13 +83,15 @@ private:
         if (m_keyAction[GLFW_KEY_F] >= 1) {
             if (m_mode < 0) m_est = m_pose;
             m_mode = 1;
-            track3D(m_est, m_map, m_cam, m_pmodels, 1);
+            Mem2<Vec3> map;
+            cnvDepthToVec(map, m_cam, m_depth);
+            track3D(m_est, map, m_cam, m_pmodels, 1);
         }
 
     }
 
     virtual void display() {
-        // render depth map
+        // render
         {
             static double s = 0.0;
 
@@ -102,11 +103,13 @@ private:
                 s += 0.01;
             }
 
-            m_map.zero();
-            renderVecPN(m_map, m_cam, m_pose, m_model);
+            Mem2<VecPN3> map;
+            renderVecPN(map, m_cam, m_pose, m_model);
 
-            cnvNormalToImg(m_img, m_map);
+            cnvNormalToImg(m_img, map);
             cnvImg(m_gry, m_img);
+
+            cnvVecPNToDepth(m_depth, map);
         }
 
         // render image
@@ -118,10 +121,12 @@ private:
         // tracking
         if (m_start == true) {
             if (m_mode == 0) {
-                track2D(m_est, m_gry, m_cam, m_pmodels, 50, 5);
+                track2D(m_est, m_gry, m_cam, m_pmodels, 50, 3);
             }
             if (m_mode == 1) {
-                track3D(m_est, m_map, m_cam, m_pmodels, 5);
+                Mem2<Vec3> map;
+                cnvDepthToVec(map, m_cam, m_depth);
+                track3D(m_est, map, m_cam, m_pmodels, 3);
             }
         }
 

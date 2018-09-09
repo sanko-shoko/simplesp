@@ -130,7 +130,8 @@ namespace sp{
     // tracking 3d
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool track3D(Pose &pose, const Mem2<VecPN3> &map, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int maxit = 10) {
+    template<typename VEC>
+    SP_CPUFUNC bool track3D(Pose &pose, const Mem2<VEC> &map, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int maxit = 10) {
 
         bool ret = false;
         for (int i = 0; i < maxit; i++) {
