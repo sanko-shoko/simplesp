@@ -12,7 +12,7 @@ int main(){
         exit(0);
     }
 
-    printf("'s' key : switch center pose / markers pose\n");
+    printf("'s' key : switch center pose / each poses\n");
     printf("'ESC' key : exit\n");
 
     int key = 0;
@@ -63,17 +63,20 @@ void sample(cv::Mat &cvimg, const int key){
     // detector class
     BitMarker bitMarker;
 
-    static bool flag = true;
-    if (key == 's') flag ^= true;
+    static bool mode = true;
+    if (key == 's') mode ^= true;
 
     // detect marker
-    if(flag){
+    if(mode){
+        // center pose
 
         bitMarker.addMrks(mrks);
 
         bitMarker.execute(img);
     }
     else {
+        // each poses
+
         for (int i = 0; i < mrks.size(); i++) {
             mrks[i].offset = zeroPose();
             bitMarker.addMrks(mrks[i]);
