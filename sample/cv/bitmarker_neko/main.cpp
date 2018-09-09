@@ -51,7 +51,7 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
     // set marker info
     {
         const double length = 50.0;
-        const BitMarkerParam mrks(length, neko);
+        const BitMarkerParam mrks(neko, length);
 
         bitMarker.addMrks(mrks);
     }   
@@ -62,6 +62,11 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
     // render
     if (bitMarker.getPose(0) != NULL){
         renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), bitMarker.getMrks(0)[0].length / 2.0, 2);
+        
+        const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
+        for (int i = 0; i < cpixs.size(); i++) {
+            renderPoint(img, cpixs[i], getCol(0, 255, 0), 3);
+        }
 
         //const Vec3 offset = getVec(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
         //const Pose pose = *bitMarker.getPose(0) * getPose(offset);

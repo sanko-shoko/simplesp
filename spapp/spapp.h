@@ -11,6 +11,7 @@
 #include "spapp/spdata/spxml.h"
 #include "spapp/spdata/spply.h"
 #include "spapp/spdata/spbmp.h"
+#include "spapp/spdata/spsvg.h"
 #include "spapp/spdata/spmodel.h"
 #include "spapp/spdata/spvoxel.h"
 #include "spapp/spdata/spdataset.h"

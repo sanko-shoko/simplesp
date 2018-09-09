@@ -8,6 +8,9 @@ class ActiveStereoGUI : public BaseWindow {
     // camera & projector param
     CamParam m_cam, m_prj;
 
+    // rectified param
+    RectParam m_rects[2];
+
     // cam to prj pose
     Pose m_cam2prj;
 
@@ -113,13 +116,12 @@ private:
 
 
         // rectification
-        RectParam rects[2];
         Mem2<Vec2> tables[2];
         {
-            rectify(rects[0], rects[1], cams[0], cams[1], m_cam2prj, (cams[0].fx + cams[0].fy) / 2.0);
+            rectify(m_rects[0], m_rects[1], cams[0], cams[1], m_cam2prj, (cams[0].fx + cams[0].fy) / 2.0);
 
             for (int i = 0; i < 2; i++) {
-                makeRemapTable(tables[i], rects[i]);
+                makeRemapTable(tables[i], m_rects[i]);
             }
         }
 
@@ -133,12 +135,12 @@ private:
         }
 
         {
-            const int maxDisp = 120;
-            const int minDisp = 30;
+            const int maxDisp = 80;
+            const int minDisp = 0;
 
             StereoBase estimator;
             estimator.setRange(maxDisp, minDisp);
-            estimator.setCam(rects[0].cam, rects[1].cam, normVec(m_cam2prj.trn));
+            estimator.setCam(m_rects[0].cam, m_rects[1].cam, normVec(m_cam2prj.trn));
             estimator.setWinSize(15);
 
             // matching
@@ -149,21 +151,13 @@ private:
             Mem2<Byte> mask(rimgs[0].dsize);
             // mask
             {
-                const Mem2<Vec3> depthMap = estimator.getDepthMap(StereoBase::StereoL);
-
-                mask.resize(depthMap.dsize);
                 mask.zero();
 
-                Mem2<double> tmp(depthMap.dsize);
-                cnvVecToDepth(tmp, depthMap);
-
-                Mem2<int> map;
-                labeling(map, tmp, 5.0);
-
-                Mem1<int> cnt = getLabelCount(map);
+                Mem2<Byte> tmp;
+                maxFilter(tmp, rimgs[0], 15);
 
                 for (int i = 0; i < mask.size(); i++) {
-                    if (cnt[map[i]] < 100) {
+                    if (tmp[i] > 100) {
                         mask[i] = SP_BYTEMAX;
                     }
                 }
@@ -174,7 +168,7 @@ private:
                 cnvDispToImg(m_img, estimator.getDispMap(StereoBase::StereoL), maxDisp, minDisp);
 
                 for (int i = 0; i < mask.size(); i++) {
-                    if (mask[i] != 0) {
+                    if (mask[i] == 0) {
                         m_img[i] = getCol(0, 0, 0);
                     }
                 }
@@ -184,7 +178,7 @@ private:
 
                 m_pnts.clear();
                 for (int i = 0; i < depthMap.size(); i++) {
-                    if (depthMap[i].z > 0.0 && mask[i] == 0) {
+                    if (depthMap[i].z > 0.0 && mask[i] > 0) {
                         m_pnts.push(depthMap[i]);
                     }
                 }
@@ -193,7 +187,6 @@ private:
     }
 
     virtual void display() {
-
         if (m_view3d == false) {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
@@ -209,7 +202,7 @@ private:
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(m_rects[0].cam, m_viewPos, m_viewScale);
 
             // render points
             glLoadMatrix(m_view);

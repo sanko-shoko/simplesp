@@ -12,35 +12,34 @@
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spgeom/spgeometry.h"
 #include "spapp/spgeomex/sptrack.h"
+#include "spapp/spdata/spsvg.h"
 
 namespace sp{
 
     //--------------------------------------------------------------------------------
     // bit marker design parameter
     //--------------------------------------------------------------------------------
-    
+
+#define _SP_BITMARKERSIZE 80
+
     class BitMarkerParam{
-    private:
-        static const int size = 50;
 
     public:
+        // marker size [mm]
         double length;
+
+        // marker image
         Mem2<Byte> img;
+
         Pose offset;
 
         BitMarkerParam() {
         }
 
-        BitMarkerParam(const double length, const int id, const int block = 3){
-            setImg(id);
-            setLength(length);
-            this->offset = zeroPose();
-        }
-
-        BitMarkerParam(const double length, const Mem2<Col3> &img){
+        BitMarkerParam(const Mem2<Col3> &img, const double length, const Pose &offset = zeroPose()){
             setImg(img);
-            setLength(length);
-            this->offset = zeroPose();
+            this->length = length;
+            this->offset = offset;
         }
 
         BitMarkerParam(const BitMarkerParam &mrk){
@@ -48,24 +47,18 @@ namespace sp{
         }
 
         BitMarkerParam& operator = (const BitMarkerParam &mrk){
-            img = mrk.img;
-            length = mrk.length;
-            offset = mrk.offset;
+            this->img = mrk.img;
+            this->length = mrk.length;
+            this->offset = mrk.offset;
             return *this;
         }
 
-        void setImg(const int id, const int block = 3){
-            setImg(makeImg(id, block));
-        }
-
         void setImg(const Mem2<Col3> &img){
-            const double sigma = static_cast<double>(img.dsize[0]) / size;
+            const double sigma = static_cast<double>(img.dsize[0]) / _SP_BITMARKERSIZE;
 
-            Mem2<Col3> smooth;
-            gaussianFilter<Col3, Byte>(smooth, img, sigma / 2.0);
-
-            Mem2<Col3> tmp(size, size);
-            rescale<Col3, Byte>(tmp, smooth);
+            Mem2<Col3> tmp;
+            gaussianFilter<Col3, Byte>(tmp, img, sigma / 2.0);
+            rescale<Col3, Byte>(tmp, tmp);
 
             Mem2<Byte> gry;
             cnvImg(gry, tmp);
@@ -77,66 +70,82 @@ namespace sp{
             cnvMem(this->img, gry, rate, minv);
         }
 
-        void setLength(const double length){
-            this->length = length;
-        }
-
-        void setOffset(const Pose &offset){
-            this->offset = offset;
-        }
-
-    private:
-
-        Mem2<Col3> makeImg(const int id, const int block){
-            Mem2<Col3> dst(size, size);
-            dst.zero();
-
-            Mem1<bool> bit(block * block);
-            for (int i = 0; i < bit.size(); i++){
-                bit[i] = ((id >> i) & 0x01) ? true : false;
-            }
-
-            const int step = size / (block + 2);
-            const Rect rect = getRect2(0, 0, block, block);
-            for (int v = 0; v < dst.dsize[1]; v++){
-                for (int u = 0; u < dst.dsize[0]; u++){
-                    const int x = (u / step - 1);
-                    const int y = (v / step - 1);
-                    if (isInRect2(rect, x, y) == false) continue;
-
-                    const Byte val = bit[y * block + x] ? 0 : 255;
-                    dst(u, v) = getCol(val, val, val);
-                }
-            }
-            return dst;
-        }
-
     };
 
+    SP_CPUFUNC BitMarkerParam getBitMarkerParam(const int id, const int block, const double length, const Pose &offset = zeroPose()) {
 
-    //--------------------------------------------------------------------------------
-    // Bit Marker Array
-    //--------------------------------------------------------------------------------
+        Mem2<Col3> img(_SP_BITMARKERSIZE, _SP_BITMARKERSIZE);
+        img.zero();
 
-    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerArray(const int dsize0, const int dsize1, const double length, const double distance, const int startid = 0) {
+        Mem1<bool> bits(block * block);
+        for (int i = 0; i < bits.size(); i++) {
+            bits[i] = ((id >> i) & 0x01) ? true : false;
+        }
+
+        const int step = _SP_BITMARKERSIZE / (block + 2);
+
+        const Rect rect = getRect2(0, 0, block, block);
+        for (int v = 0; v < img.dsize[1]; v++) {
+            for (int u = 0; u < img.dsize[0]; u++) {
+                const int x = (u / step - 1);
+                const int y = (v / step - 1);
+                if (isInRect2(rect, x, y) == false) continue;
+
+                const Byte val = bits[y * block + x] ? 0 : SP_BYTEMAX;
+                img(u, v) = getCol(val, val, val);
+            }
+        }
+        renderPoint(img, getVec(-0.5, _SP_BITMARKERSIZE / 2.0 - 0.5), getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX), _SP_BITMARKERSIZE / 20.0);
+
+        return BitMarkerParam(img, length, offset);
+    }
+
+
+    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerParam(const int id, const int block, const double length, const int dsize0, const int dsize1, const double interval) {
         Mem1<BitMarkerParam> mrks;
 
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
-                const int id = mrks.size() + startid;
-
-                BitMarkerParam mrk(length, id);
-
-                mrk.offset.rot = zeroRot();
-                mrk.offset.trn = getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance;
-
-                mrks.push(mrk);
+                const double distance = length + interval;
+                const Pose offset = getPose(getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance);
+                
+                mrks.push(getBitMarkerParam(id + mrks.size(), block, length, offset));
             }
         }
 
         return mrks;
     }
 
+
+    SP_CPUFUNC bool saveBitMarkerParamSVG(const char *path, const int id, const int block, const double length, const int dsize0, const int dsize1, const double interval, const int w = 297, const int h = 210) {
+
+        const double distance = length + interval;
+        const double unit = length / (block + 2);
+
+        const Vec2 base = (getVec(w, h) - getVec(length + distance * (dsize0 - 1), length + distance * (dsize1 - 1))) / 2.0;
+
+        string str;
+        for (int y = 0; y < dsize1; y++) {
+            for (int x = 0; x < dsize0; x++) {
+                const Vec2 pos = getVec(x, y) * distance + getVec(round(base.x), round(base.y));
+                str += _svg::rect(pos.x, pos.y, length, length, "fill='#000000'");
+
+                str += _svg::rect(pos.x + unit, pos.y + unit, unit * block, unit * block, "fill='#FFFFFF'");
+
+                for(int by = 0; by < block; by++){
+                    for (int bx = 0; bx < block; bx++) {
+                        const bool bit = (((id + y * dsize0 + x) >> (by * block + bx)) & 0x01) ? true : false;
+                        if (bit == true) {
+                            str += _svg::rect(pos.x + (bx + 1) * unit, pos.y + (by + 1) * unit, unit, unit, "fill='#000000' stroke='#000000' stroke-width='1'");
+                        }
+                    }
+                }
+                str += _svg::circle(pos.x, pos.y + length / 2.0, length / 20.0, "fill='#FFFFFF'");
+            }
+        }
+        saveSVG(path, str.c_str(), w, h);
+        return true;
+    }
 
     //--------------------------------------------------------------------------------
     // bit marker pose estimater
@@ -485,7 +494,7 @@ namespace sp{
             return dst;
         }
 
-        bool calcMrk(Mem1<Pose> &poses, Mem1<Mem1<Vec2> > &corners2, const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
+        bool calcMrk(Mem1<Pose> &poses, Mem1<Mem1<Vec2> > &dpixs, const Mem2<Byte> &img, const Mem1<Mem1<Vec2> > corners) {
 
             // calc pose
             {
@@ -519,7 +528,7 @@ namespace sp{
                     }
                     if (check == true){
                         poses.push(pose);
-                        corners2.push(corners[i]);
+                        dpixs.push(corners[i]);
                     }
                 }
                 if (poses.size() > 0) false;
@@ -576,9 +585,9 @@ namespace sp{
                     if (id > 0) {
                         poses[i] = pose * getRotAngleZ(id * SP_PI / 2.0);
 
-                        const Mem1<Vec2> tmp = corners2[i];
+                        const Mem1<Vec2> tmp = dpixs[i];
                         for (int j = 0; j < 4; j++) {
-                            corners2[i][j] = tmp[(j + id) % 4];
+                            dpixs[i][j] = tmp[(j + id) % 4];
                         }
                     }
                 }
@@ -742,21 +751,26 @@ namespace sp{
                 else {
                     if (tposes.size() == 0) continue;
 
-                    double maxEval = 0.0;
+                    Pose pose;
+
+                    double minv = SP_INFINITY;
                     for (int j = 0; j < tposes.size(); j++) {
-                        Pose &pose = tposes[j];
-                        if (refinePose(pose, m_cam, tcpixs, tcobjs) == false) continue;
+                        Pose &tmp = tposes[j];
+                        if (refinePose(tmp, m_cam, tcpixs, tcobjs) == false) continue;
 
-                        const double eval = evalErr(errPose(pose, m_cam, tcpixs, tcobjs));
+                        const double err = medianVal(errPose(tmp, m_cam, tcpixs, tcobjs));
 
-                        if (eval > maxEval) {
-                            maxEval = eval;
-                            poses[i] = pose;
+                        if (err < minv) {
+                            minv = err;
+                            pose = tmp;
                         }
                     }
+                    if (minv == SP_INFINITY) continue;
 
-                    cpixs[i] = tcpixs;
-                    cobjs[i] = tcobjs;
+                    const Mem1<double> errs = errPose(pose, m_cam, tcpixs, tcobjs);
+                    poses[i] = pose;
+                    cpixs[i] = denoise(tcpixs, errs, minv * 3.0);
+                    cobjs[i] = denoise(tcobjs, errs, minv * 3.0);
                 }
 
             }
@@ -765,58 +779,5 @@ namespace sp{
     };
 
 
- 
-
-    //SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Byte> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
-    //    dst = zeroPose();
-
-    //    BitMarker bitMarker;
-
-    //    bitMarker.setCam(cam);
-    //    bitMarker.setMrks(mrks);
-    //    
-    //    bitMarker.execute(img);
-
-    //    const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
-    //    const Mem1<Vec2> unit(4, _unit);
-
-    //    Mem1<Pose> vposes;
-    //    Mem1<Vec2> pixs;
-    //    Mem1<Vec3> objs;
-    //    for (int i = 0; i < mrks.size(); i++) {
-    //        if (bitMarker.getPose(i) == NULL || bitMarker.getCorners(i) == NULL) continue;
-    //        
-    //        Mem1<Vec3> pnts;
-    //        for (int j = 0; j < unit.size(); j++) {
-    //            pnts.push(invPose(mrks[i].offset) * (getVec(unit[j], 0.0) * mrks[i].length));
-    //        }
-
-    //        objs.push(pnts);
-    //        pixs.push(*bitMarker.getCorners(i));
-    //        vposes.push(*bitMarker.getPose(i) * mrks[i].offset);
-
-    //    }
-    //    if (vposes.size() == 0) return false;
-
-    //    double maxEval = 0.0;
-    //    for (int i = 0; i < vposes.size(); i++) {
-    //        Pose &pose = vposes[i];
-    //        if (refinePose(pose, cam, pixs, objs) == false) continue;
-
-    //        const double eval = evalErr(errPose(pose, cam, pixs, objs));
-
-    //        if (eval > maxEval) {
-    //            maxEval = eval;
-    //            dst = pose;
-    //        }
-    //    }
-    //    return true;
-    //}
-
-    //SP_CPUFUNC bool calcBitMarkerArrayPose(Pose &dst, const Mem2<Col3> &img, const CamParam &cam, const Mem1<BitMarkerParam> &mrks) {
-    //    Mem2<Byte> gry;
-    //    cnvImg(gry, img);
-    //    return calcBitMarkerArrayPose(dst, gry, cam, mrks);
-    //}
 }
 #endif
