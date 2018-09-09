@@ -50,7 +50,7 @@ namespace sp{
         return distance;
     }
 
-    SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 60){
+    SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){
         const CamParam cam = getCamParam(density, density);
         const double distance = getModelDistance(model, cam);
         
@@ -91,7 +91,7 @@ namespace sp{
         return pnts;
     }
 
-    SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh3> &model, const int density = 60) {
+    SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh3> &model, const int density = 50) {
 
         KdTree<double> kdtree;
         kdtree.init(3);
@@ -184,7 +184,7 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const double distance, const int level = 2, const int density = 60) {
+    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const double distance, const int level = 2, const int density = 50) {
 
         const double radius = getModelRadius(model);
         const double unit = 2.0 * radius / density;

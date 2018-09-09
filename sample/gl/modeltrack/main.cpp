@@ -10,6 +10,7 @@ class ModelTrackGUI : public BaseWindow {
 
     // image
     Mem2<Col3> m_img;
+    Mem2<Byte> m_gry;
 
     // map
     Mem2<VecPN3> m_map;
@@ -17,21 +18,30 @@ class ModelTrackGUI : public BaseWindow {
     // model
     Mem1<Mesh3> m_model;
 
-    // pose
+    double m_radius;
+    double m_distance;
+
+    // object to cam pose
     Pose m_pose;
 
+    // estimated pose
+    Pose m_est;
+    
     // pose model
     Mem1<PoseModel> m_pmodels;
 
-    // mode
+    // mode (2D / 3D)
     int m_mode;
+
+    bool m_start;
 
 private:
 
     void help() {
-        printf("'r' key : render\n");
-        printf("'c' key : track 2d\n");
-        printf("'v' key : track 3d\n");
+        printf("'s' key : start & stop moving\n");
+        printf("'d' key : track 2d (edge based)\n");
+        printf("'f' key : track 3d (depth based)\n");
+        printf("'r' key : reset pose\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -39,70 +49,90 @@ private:
     virtual void init() {
         help();
 
-        m_mode = 0;
+        m_mode = -1;
 
         m_cam = getCamParam(640, 480);
 
-        if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
+        SP_ASSERT(loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply"));
 
-            // if could not find stanford bunny, load dummy model
-            loadGeodesicDorm(m_model, 100.0, 1);
-        }
-
-        const double distance = getModelDistance(m_model, m_cam);
+        m_radius = getModelRadius(m_model);
+        m_distance = getModelDistance(m_model, m_cam);
 
         printf("please wait...\n");
         const int level = 2;
-        m_pmodels = getPoseModel(m_model, distance, level);
+        m_pmodels = getPoseModel(m_model, m_distance, level);
 
-        m_pose = getPose(getVec(0.0, 0.0, distance));
+        m_pose = getPose(getVec(0.0, 0.0, m_distance));
+
+        m_start = true;
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_R] == 1) {
+            m_est = m_pose;
+        }
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            m_start = (m_start == false) ? true : false;
+        }
+
+        if (m_keyAction[GLFW_KEY_D] >= 1) {
+            if (m_mode < 0) m_est = m_pose;
+            m_mode = 0;
+            track2D(m_est, m_gry, m_cam, m_pmodels, 50, 1);
+        }
+        if (m_keyAction[GLFW_KEY_F] >= 1) {
+            if (m_mode < 0) m_est = m_pose;
+            m_mode = 1;
+            track3D(m_est, m_map, m_cam, m_pmodels, 1);
+        }
+
+    }
+
+    virtual void display() {
+        // render depth map
+        {
+            static double s = 0.0;
+
+            if (m_start == true) {
+                m_pose *= getRotAngle(getVec(+::sin(s), +::cos(s), +0.0), -0.02);
+                m_pose.trn.x = ::cos(s * 2.0) * m_radius * 0.4;
+                m_pose.trn.y = ::sin(s * 2.0) * m_radius * 0.4;
+
+                s += 0.01;
+            }
+
             m_map.zero();
             renderVecPN(m_map, m_cam, m_pose, m_model);
 
             cnvNormalToImg(m_img, m_map);
+            cnvImg(m_gry, m_img);
         }
-
-        if (m_keyAction[GLFW_KEY_C] > 0) {
-            if (m_img.size() == 0) return;
-            m_mode = 0;
-
-            Mem2<Byte> gry;
-            cnvImg(gry, m_img);
-
-            track2D(m_pose, gry, m_cam, m_pmodels, 50, 1);
-        }
-
-        if (m_keyAction[GLFW_KEY_V] > 0) {
-            if (m_map.size() == 0) return;
-            m_mode = 1;
-
-            track3D(m_pose, m_map, m_cam, m_pmodels, 1);
-        }
-    }
-
-    virtual void display() {
 
         // render image
         {
-
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
             glRenderImg(m_img);
         }
 
+        // tracking
+        if (m_start == true) {
+            if (m_mode == 0) {
+                track2D(m_est, m_gry, m_cam, m_pmodels, 50, 5);
+            }
+            if (m_mode == 1) {
+                track3D(m_est, m_map, m_cam, m_pmodels, 5);
+            }
+        }
+
         // render model
-        {
+        if(m_mode >= 0){
             glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
-            glLoadMatrix(m_pose);
+            glLoadMatrix(m_est);
 
             glClear(GL_DEPTH_BUFFER_BIT);
             {
-
                 glRenderOutline(m_model);
             }
 
@@ -113,7 +143,7 @@ private:
                 glBegin(GL_POINTS);
                 glColor3f(0.2f, 0.7f, 0.2f);
 
-                const int id = findPoseModel(m_pmodels, m_pose);
+                const int id = findPoseModel(m_pmodels, m_est);
 
                 if (m_mode == 0) {
                     for (int i = 0; i < m_pmodels[id].edges.size(); i++) {
@@ -129,26 +159,16 @@ private:
             }
 
             glClear(GL_DEPTH_BUFFER_BIT);
-            renderAxis();
         }
 
     }
 
-    void renderAxis() {
-        glLoadMatrix(m_pose);
-
-        glLineWidth(2.f);
-        glBegin(GL_LINES);
-        glAxis(100.0);
-        glEnd();
-    }
-
     virtual void mousePos(double x, double y) {
-        controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+        controlPose(m_est, m_mouse, m_wcam, m_viewScale);
     }
 
     virtual void mouseScroll(double x, double y) {
-        controlPose(m_pose, m_mouse, m_wcam, m_viewScale);
+        controlPose(m_est, m_mouse, m_wcam, m_viewScale);
     }
 
 };
