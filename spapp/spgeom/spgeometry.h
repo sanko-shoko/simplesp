@@ -717,8 +717,10 @@ namespace sp{
         const int unit = 4;
         if (pixs.size() < unit) return false;
 
+        const Mem1<Vec2> udpixs = pixUndist(cam, pixs);
+
         Mat hom;
-        if (calcHMat(hom, pixs, objs) == false) return false;
+        if (calcHMat(hom, udpixs, objs) == false) return false;
 
         if (calcPose(pose, cam, hom) == false) return false;
         return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);

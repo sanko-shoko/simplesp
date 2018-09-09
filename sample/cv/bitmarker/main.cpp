@@ -65,8 +65,8 @@ void sample(cv::Mat &cvimg, const int key){
 
     // if camra parameter exist
     //{
-    //    CamParam cam;
-    //    loadText("cam.txt", cam);
+    //    static CamParam cam;
+    //    SP_ONCE(loadText("cam.txt", cam));
     //    bitMarker.setCam(cam);
     //}
 
