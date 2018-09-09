@@ -63,6 +63,13 @@ void sample(cv::Mat &cvimg, const int key){
     // detector class
     BitMarker bitMarker;
 
+    // if camra parameter exist
+    //{
+    //    CamParam cam;
+    //    loadText("cam.txt", cam);
+    //    bitMarker.setCam(cam);
+    //}
+
     static bool mode = true;
     if (key == 's') mode ^= true;
 
