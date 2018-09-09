@@ -44,14 +44,14 @@ void sample(cv::Mat &cvimg, const int key){
 
     // set marker info
     {
-        const int dsize[2] = { 8, 6 };
+        const int dsize[2] = { 4, 3 };
         const int block = 3;
-        const double length = 28.0;
+        const double length = 60.0;
         const double interval = 5.0;
-
-        //const int dsize[2] = { 4, 3 };
+        
+        //const int dsize[2] = { 8, 6 };
         //const int block = 3;
-        //const double length = 60.0;
+        //const double length = 28.0;
         //const double interval = 5.0;
 
         const Mem1<BitMarkerParam> mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
