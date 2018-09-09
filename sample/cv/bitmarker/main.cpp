@@ -12,7 +12,7 @@ int main(){
         exit(0);
     }
 
-    printf("'s' key : switch marker pose / base pose\n");
+    printf("'s' key : switch center pose / markers pose\n");
     printf("'ESC' key : exit\n");
 
     int key = 0;
@@ -39,8 +39,8 @@ void sample(cv::Mat &cvimg, const int key){
     // convert data type
     cvCnvImg(img, cvimg);
 
-    // detector class
-    BitMarker bitMarker;
+    // markers parameter
+    Mem1<BitMarkerParam> mrks;
 
     // set marker info
     {
@@ -54,25 +54,50 @@ void sample(cv::Mat &cvimg, const int key){
         //const double length = 28.0;
         //const double interval = 5.0;
 
-        const Mem1<BitMarkerParam> mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
-
-        bitMarker.addMrks(mrks);
+        mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
 
         SP_ONCE(saveBitMarkerParamSVG("mrks.svg", 0, block, length, dsize[0], dsize[1], interval));
     }
 
-    // estimate marker pose
-    bitMarker.execute(img);
 
-    if (bitMarker.getPose(0) != NULL){
+    // detector class
+    BitMarker bitMarker;
 
-        const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
-        for (int i = 0; i < cpixs.size(); i++) {
-            renderPoint(img, cpixs[i], getCol(0, 255, 255), 3);
+    static bool flag = true;
+    if (key == 's') flag ^= true;
+
+    // detect marker
+    if(flag){
+        bitMarker.addMrks(mrks);
+
+        bitMarker.execute(img);
+
+        if (bitMarker.getPose(0) != NULL) {
+
+            const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
+            renderPoint(img, *bitMarker.getCrspPixs(0), getCol(0, 255, 255), 3);
+
+            renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), 50.0, 2);
+        }
+    }
+    else {
+        for (int i = 0; i < mrks.size(); i++) {
+            mrks[i].offset = zeroPose();
+            bitMarker.addMrks(mrks[i]);
         }
 
-        renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), 50.0, 2);
+        bitMarker.execute(img);
+
+        for (int i = 0; i < mrks.size(); i++) {
+            if (bitMarker.getPose(i) == NULL) continue;
+
+            const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(i);
+            renderPoint(img, cpixs, getCol(0, 255, 255), 3);
+
+            renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(i), 20.0, 2);
+        }
     }
+
 
     cvCnvImg(cvimg, img);
 }
