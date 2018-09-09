@@ -44,24 +44,34 @@ void sample(cv::Mat &cvimg, const int key){
 
     // set marker info
     {
-        const int dsize[2] = { 4, 3 };
-        const double length = 50.0;
-        const double distance = 60.0;
-        const Mem1<BitMarkerParam> mrks = getBitMarkerArray(dsize[0], dsize[1], length, distance);
+        const int dsize[2] = { 8, 6 };
+        const int block = 3;
+        const double length = 28.0;
+        const double interval = 5.0;
+
+        //const int dsize[2] = { 4, 3 };
+        //const int block = 3;
+        //const double length = 60.0;
+        //const double interval = 5.0;
+
+        const Mem1<BitMarkerParam> mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
 
         bitMarker.addMrks(mrks);
+
+        SP_ONCE(saveBitMarkerParamSVG("mrks.svg", 0, block, length, dsize[0], dsize[1], interval));
     }
 
     // estimate marker pose
     bitMarker.execute(img);
 
     if (bitMarker.getPose(0) != NULL){
-        renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), bitMarker.getMrks(0)[0].length / 2.0, 2);
 
         const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
         for (int i = 0; i < cpixs.size(); i++) {
-            renderPoint(img, cpixs[i], getCol(0, 255, 0), 3);
+            renderPoint(img, cpixs[i], getCol(0, 255, 255), 3);
         }
+
+        renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), 50.0, 2);
     }
 
     cvCnvImg(cvimg, img);
