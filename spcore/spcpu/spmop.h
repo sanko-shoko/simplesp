@@ -671,6 +671,76 @@ namespace sp{
     SP_GENFUNC Pose getPose(const Mat &mat) {
         return getPose(mat.ptr, mat.rows(), mat.cols());
     }
+
+
+    //--------------------------------------------------------------------------------
+    // camera
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Mem1<Vec2> mulCam(const CamParam cam, const Mem1<Vec2> &npxs) {
+        Mem1<Vec2> pixs(npxs.size());
+        for (int i = 0; i < pixs.size(); i++) {
+            pixs[i] = mulCam(cam, npxs[i]);
+        }
+        return pixs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> invCam(const CamParam cam, const Mem1<Vec2> &pixs) {
+        Mem1<Vec2> npxs(pixs.size());
+        for (int i = 0; i < npxs.size(); i++) {
+            npxs[i] = invCam(cam, pixs[i]);
+        }
+        return npxs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> pixDist(const CamParam cam, const Mem1<Vec2> &pixs) {
+        Mem1<Vec2> dpixs(pixs.size());
+        for (int i = 0; i < dpixs.size(); i++) {
+            dpixs[i] = pixDist(cam, pixs[i]);
+        }
+        return dpixs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> pixUndist(const CamParam cam, const Mem1<Vec2> &pixs) {
+        Mem1<Vec2> udpixs(pixs.size());
+        for (int i = 0; i < udpixs.size(); i++) {
+            udpixs[i] = pixUndist(cam, pixs[i]);
+        }
+        return udpixs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> npxDist(const CamParam cam, const Mem1<Vec2> &npxs) {
+        Mem1<Vec2> dnpxs(npxs.size());
+        for (int i = 0; i < dnpxs.size(); i++) {
+            dnpxs[i] = pixDist(cam, npxs[i]);
+        }
+        return dnpxs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> npxUndist(const CamParam cam, const Mem1<Vec2> &npxs) {
+        Mem1<Vec2> udnpxs(npxs.size());
+        for (int i = 0; i < udnpxs.size(); i++) {
+            udnpxs[i] = pixUndist(cam, npxs[i]);
+        }
+        return udnpxs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> mulCamD(const CamParam cam, const Mem1<Vec2> &npxs) {
+        Mem1<Vec2> pixs(npxs.size());
+        for (int i = 0; i < pixs.size(); i++) {
+            pixs[i] = mulCamD(cam, npxs[i]);
+        }
+        return pixs;
+    }
+
+    SP_GENFUNC Mem1<Vec2> invCamD(const CamParam cam, const Mem1<Vec2> &pixs) {
+        Mem1<Vec2> npxs(pixs.size());
+        for (int i = 0; i < npxs.size(); i++) {
+            npxs[i] = invCamD(cam, pixs[i]);
+        }
+        return npxs;
+    }
+
 }
 
 #endif
