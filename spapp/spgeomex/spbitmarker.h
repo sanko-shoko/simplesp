@@ -254,6 +254,8 @@ namespace sp{
 
             // clear output
             m_poses.clear();
+            m_cpixs.clear();
+            m_cobjs.clear();
 
             try{
                 if (src.size() == 0) throw "image size";
