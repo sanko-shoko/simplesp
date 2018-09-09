@@ -115,7 +115,12 @@ private:
         // render image
         {
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
-            glRenderImg(m_img);
+            if (m_mode <= 0) {
+                glRenderImg(m_img);
+            }
+            if (m_mode == 1) {
+                glRenderDepth<Byte>(m_depth, m_distance - m_radius, m_distance + m_radius);
+            }
         }
 
         // tracking
