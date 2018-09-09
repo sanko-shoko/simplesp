@@ -68,17 +68,10 @@ void sample(cv::Mat &cvimg, const int key){
 
     // detect marker
     if(flag){
+
         bitMarker.addMrks(mrks);
 
         bitMarker.execute(img);
-
-        if (bitMarker.getPose(0) != NULL) {
-
-            const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
-            renderPoint(img, *bitMarker.getCrspPixs(0), getCol(0, 255, 255), 3);
-
-            renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(0), 50.0, 2);
-        }
     }
     else {
         for (int i = 0; i < mrks.size(); i++) {
@@ -87,14 +80,17 @@ void sample(cv::Mat &cvimg, const int key){
         }
 
         bitMarker.execute(img);
+    }
 
-        for (int i = 0; i < mrks.size(); i++) {
+    // render
+    {
+        for (int i = 0; i < bitMarker.size(); i++) {
             if (bitMarker.getPose(i) == NULL) continue;
 
             const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(i);
             renderPoint(img, cpixs, getCol(0, 255, 255), 3);
 
-            renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(i), 20.0, 2);
+            renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(i), 30.0, 2);
         }
     }
 
