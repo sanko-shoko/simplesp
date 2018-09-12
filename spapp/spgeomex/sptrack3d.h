@@ -124,7 +124,7 @@ namespace sp{
                         const Vec2 pix = mulCam(cam, npx);
 
                         double d = depth(round(pix.x), round(pix.y));
-                        d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
+                        d = (d > 0.0) ? d : (1.0 + 0.1 * randValUnif()) * pose.trn.z;
 
                         const Vec3 v = getVec(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);

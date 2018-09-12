@@ -11,13 +11,13 @@ class VoxelGUI : public BaseWindow {
     // model
     Mem1<Mesh3> m_model;
 
-    // main pose
+    // view pose
     Pose m_view;
 
     // multi camerea poses
     Mem1<Pose> m_poses;
 
-    // multi camerea cameras
+    // multi camerea pameras
     Mem1<CamParam> m_cams;
 
     // voxel
