@@ -115,14 +115,14 @@ int main(){
         printf("cam test (generate test images)\n");
         printf("--------------------------------------------------------------------------------\n");
 
-        Mem1<Mem2<Byte> > imgList(poses.size());
+        Mem1<Mem2<Byte> > imgs(poses.size());
 
         // generate test images
         for (int i = 0; i < poses.size(); i++){
-            renderMarker(imgList[i], cam, poses[i], mrkMap);
+            renderMarker(imgs[i], cam, poses[i], mrkMap);
             char str[256];
             sprintf(str, "test%02d.bmp", i);
-            saveBMP(str, imgList[i]);
+            saveBMP(str, imgs[i]);
         }
 
         // simplesp calibration 
@@ -136,8 +136,8 @@ int main(){
             Mem1<Mem1<Vec2> > pixs, objs;
 
             // detect points
-            for (int i = 0; i < imgList.size(); i++){
-                if (dotMarker.execute(imgList[i])){
+            for (int i = 0; i < imgs.size(); i++){
+                if (dotMarker.execute(imgs[i])){
                     pixs.push(*dotMarker.getCrspPixs());
                     objs.push(*dotMarker.getCrspObjs());
                 }
@@ -164,9 +164,9 @@ int main(){
             vector<vector<Point3f> > cvobjs;
 
             const Size boardSize(mrk.map.dsize[0], mrk.map.dsize[1]);
-            for (int i = 0; i < imgList.size(); i++){
+            for (int i = 0; i < imgs.size(); i++){
                 cv::Mat img(cam.dsize[1], cam.dsize[0], CV_8UC1);
-                memcpy(img.ptr(), imgList[i].ptr, imgList[i].size());
+                memcpy(img.ptr(), imgs[i].ptr, imgs[i].size());
                 imwrite("test.png", img);
                 vector<cv::Point2f> pointbuf;
                 const bool found = findCirclesGrid(img, boardSize, pointbuf);
