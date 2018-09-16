@@ -53,19 +53,23 @@ namespace sp{
 
     class DotMarker {
     private:
+
         // input parameter
         CamParam m_cam;
 
         DotMarkerParam m_mrk;
+
+
+        // output parameter
+
+        // flag for tracking
+        bool m_track;
 
         // marker to camera pose
         Pose m_pose;
 
         // marker to image homography
         Mat m_hom;
-
-        // flag for tracking
-        bool m_track;
 
         // crsp pnts
         Mem1<Vec2> m_cpixs, m_cobjs;
@@ -81,6 +85,7 @@ namespace sp{
             m_pose = zeroPose();
             m_track = false;
         }
+
 
         //--------------------------------------------------------------------------------
         // input parameter
@@ -102,9 +107,14 @@ namespace sp{
             return m_cam;
         }
 
+
         //--------------------------------------------------------------------------------
         // output parameter
         //--------------------------------------------------------------------------------
+
+        const Mat* getHom() const {
+            return (m_track == true) ? &m_hom : NULL;
+        }
 
         const Pose* getPose() const{
             return (m_track == true) ? &m_pose : NULL;
@@ -137,34 +147,6 @@ namespace sp{
         bool execute(const Mem2<Byte> &src){
             return _execute(src);
         }
-
-
-        //--------------------------------------------------------------------------------
-        // diminish marker
-        //--------------------------------------------------------------------------------
-
-        bool diminish(void *src, const int dsize0, const int dsize1, const int ch){
-            Mem2<Col3> col;
-            cnvPtrToImg(col, src, dsize0, dsize1, ch);
-
-            if (_diminish(col) == false) return false;
-            cnvImgToPtr(src, col, ch);
-            return true;
-        }
-
-        bool diminish(Mem2<Byte> &src){
-            Mem2<Col3> col;
-            cnvImg(col, src);
-
-            if (_diminish(col) == false) return false;
-            cnvImg(src, col);
-            return true;
-        }
-
-        bool diminish(Mem2<Col3> &src){
-            return _diminish(src);
-        }
-
 
     private:
 
@@ -199,24 +181,6 @@ namespace sp{
                 SP_PRINTD("DotMarker.execute [%s]\n", str);
 
                 m_track = false;
-                return false;
-            }
-
-            return true;
-        }
-
-        bool _diminish(Mem2<Col3> &src){
-            SP_LOGGER_SET("-diminish");
-
-            try{
-                if (m_track == false) throw "track";
-                if (src.size() == 0) throw "image size";
-
-                // inpaint marker area
-                inpaint(src, m_hom);
-            }
-            catch (const char *str){
-                SP_PRINTD("DotMarker.diminish [%s]\n", str);
                 return false;
             }
 
@@ -258,6 +222,7 @@ namespace sp{
 
                 SP_HOLDER_SET("minImg", minImg);
             }
+
             Mem2<int> labelMap;
             {
                 SP_LOGGER_SET("labeling");
@@ -344,6 +309,7 @@ namespace sp{
                 }
             }
         }
+
 
         //--------------------------------------------------------------------------------
         // modules
@@ -677,78 +643,81 @@ namespace sp{
             return calcHMat(hom, cpixs, cobjs);
         }
 
-        bool inpaint(Mem2<Col3> &img, const Mat &hom){
-
-            Mem2<Col3> colMap(m_mrk.map.dsize[0] + 1, m_mrk.map.dsize[1] + 1);
-            {
-                const Vec2 offset = getVec(m_mrk.map.dsize[0], m_mrk.map.dsize[1]) * 0.5;
-
-                Mem2<bool> valid(colMap.dsize);
-                valid.zero();
-
-                double sum[3] = { 0 };
-                for (int y = 0; y < colMap.dsize[1]; y++){
-                    for (int x = 0; x < colMap.dsize[0]; x++){
-                        const Vec2 pix = hom * (getVec(x, y) - offset);
-                        if (isInRect2(img.dsize, pix.x, pix.y) == false) continue;
-                        
-                        acsc(colMap, x, y) = acsc(img, pix.x, pix.y);
-                        valid(x, y) = true;
-                    }
-                }
-
-                for (int y = 0; y < colMap.dsize[1]; y++){
-                    for (int x = 0; x < colMap.dsize[0]; x++){
-                        if (valid(x, y) == true) continue;
-
-                        int cnt = 0;
-                        double sum[3] = { 0 };
-
-                        const int win = 2;
-                        for (int b = -win; b <= win; b++){
-                            for (int a = -win; a <= win; a++){
-                                if (valid(x + a, y + b) == false) continue;
-                                for (int c = 0; c < 3; c++){
-                                    sum[c] += acs2<Col3, Byte>(colMap, x + a, y + b, c);
-                                }
-                                cnt++;
-                            }
-                        }
-                        if (cnt > 0){
-                            for (int c = 0; c < 3; c++){
-                                cnvVal(acs2<Col3, Byte>(colMap, x, y, c), sum[c] / cnt);
-                            }
-                        }
-                    }
-                }
-            }
-            gaussianFilter3x3<Col3, Byte>(colMap, colMap);
-
-            {
-                const Mat ihom = invMat(hom);
-
-                for (int v = 0; v < img.dsize[1]; v++){
-                    for (int u = 0; u < img.dsize[0]; u++){
-                        const Vec2 vec = mulMat(ihom.ptr, 3, 3, getVec(u, v));
-
-                        const double dw = m_mrk.map.dsize[0] / 2.0;
-                        const double dh = m_mrk.map.dsize[1] / 2.0;
-                        if (fabs(vec.x) > dw + 0.2 || fabs(vec.y) > dh + 0.2) continue;
-
-                        const double rw = maxVal(0.0, fabs(vec.x) - dw);
-                        const double rh = maxVal(0.0, fabs(vec.y) - dh);
-                        const double rate = 2 * maxVal(rw, rh);
-
-                        const Vec2 pos = vec + getVec(dw, dh);
-
-                        img(u, v) = blendCol(img(u, v), acsc(colMap, pos.x, pos.y), rate);
-                    }
-                }
-            }
-            return true;
-        }
     };
 
 
+    //--------------------------------------------------------------------------------
+    // diminish dot marker
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC void diminishDotMarker(Mem2<Col3> &img, const DotMarkerParam &mrk, const Mat &hom) {
+
+        Mem2<Col3> cmap(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1);
+        {
+            const Vec2 offset = getVec(mrk.map.dsize[0], mrk.map.dsize[1]) * 0.5;
+
+            Mem2<bool> valid(cmap.dsize);
+            valid.zero();
+
+            double sum[3] = { 0 };
+            for (int y = 0; y < cmap.dsize[1]; y++) {
+                for (int x = 0; x < cmap.dsize[0]; x++) {
+                    const Vec2 pix = hom * (getVec(x, y) - offset);
+                    if (isInRect2(img.dsize, pix.x, pix.y) == false) continue;
+
+                    acsc(cmap, x, y) = acsc(img, pix.x, pix.y);
+                    valid(x, y) = true;
+                }
+            }
+
+            for (int y = 0; y < cmap.dsize[1]; y++) {
+                for (int x = 0; x < cmap.dsize[0]; x++) {
+                    if (valid(x, y) == true) continue;
+
+                    int cnt = 0;
+                    double sum[3] = { 0 };
+
+                    const int win = 2;
+                    for (int b = -win; b <= win; b++) {
+                        for (int a = -win; a <= win; a++) {
+                            if (valid(x + a, y + b) == false) continue;
+                            for (int c = 0; c < 3; c++) {
+                                sum[c] += acs2<Col3, Byte>(cmap, x + a, y + b, c);
+                            }
+                            cnt++;
+                        }
+                    }
+                    if (cnt > 0) {
+                        for (int c = 0; c < 3; c++) {
+                            cnvVal(acs2<Col3, Byte>(cmap, x, y, c), sum[c] / cnt);
+                        }
+                    }
+                }
+            }
+        }
+        gaussianFilter3x3<Col3, Byte>(cmap, cmap);
+
+        {
+            const Mat ihom = invMat(hom);
+
+            for (int v = 0; v < img.dsize[1]; v++) {
+                for (int u = 0; u < img.dsize[0]; u++) {
+                    const Vec2 vec = mulMat(ihom.ptr, 3, 3, getVec(u, v));
+
+                    const double dw = mrk.map.dsize[0] / 2.0;
+                    const double dh = mrk.map.dsize[1] / 2.0;
+                    if (fabs(vec.x) > dw + 0.2 || fabs(vec.y) > dh + 0.2) continue;
+
+                    const double rw = maxVal(0.0, fabs(vec.x) - dw);
+                    const double rh = maxVal(0.0, fabs(vec.y) - dh);
+                    const double rate = 2 * maxVal(rw, rh);
+
+                    const Vec2 pos = vec + getVec(dw, dh);
+
+                    img(u, v) = blendCol(img(u, v), acsc(cmap, pos.x, pos.y), rate);
+                }
+            }
+        }
+    }
 }
 #endif

@@ -12,8 +12,8 @@ void DotMarkerGUI::calcOne(){
 
     m_dotMarker.execute(m_crntImg);
 
-    if (m_ui.useDiminish){
-        m_dotMarker.diminish(m_crntImg);
+    if (m_ui.useDiminish && m_dotMarker.getHom()){
+        diminishDotMarker(m_crntImg, m_dotMarker.getMrk(), *m_dotMarker.getHom());
     }
 
     Mem2<Vec2> table;
