@@ -650,7 +650,7 @@ namespace sp{
     // diminish dot marker
     //--------------------------------------------------------------------------------
 
-    void diminishDotMarker(Mem2<Col3> &img, const DotMarkerParam &mrk, const Mat &hom) {
+    SP_CPUFUNC void diminishDotMarker(Mem2<Col3> &img, const DotMarkerParam &mrk, const Mat &hom) {
 
         Mem2<Col3> cmap(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1);
         {
