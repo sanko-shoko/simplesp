@@ -63,7 +63,7 @@ void sample(cv::Mat &cvimg, const int key){
     // detector class
     BitMarker bitMarker;
 
-    // if camra parameter exist
+    //// if camra parameter exist
     //{
     //    static CamParam cam;
     //    SP_ONCE(loadText("cam.txt", cam));

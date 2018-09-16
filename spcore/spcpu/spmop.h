@@ -590,7 +590,7 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // vectors operator
+    //vectors operator
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC Mem1<Vec2> operator * (const Mat &mat, const Mem1<Vec2> &vecs) {
@@ -639,7 +639,7 @@ namespace sp{
         return getVec(vec[0], vec[1], vec[2]);
     }
 
-    SP_CPUFUNC Mem<Vec3> getVec(const Mem<Vec2> &vec, const double z) {
+    SP_CPUFUNC Mem1<Vec3> getVec(const Mem1<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = getVec(vec[i], z);

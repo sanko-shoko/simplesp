@@ -21,6 +21,7 @@ add_subdirectory(contour)
 ##add_subdirectory(backsub)
 
 ## geom
+add_subdirectory(calibration)
 add_subdirectory(hmat)
 add_subdirectory(fmat)
 add_subdirectory(rectification)

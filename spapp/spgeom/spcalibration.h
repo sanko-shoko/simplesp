@@ -16,17 +16,17 @@ namespace sp{
     
     namespace _calibration{
 
-        SP_CPUFUNC bool initCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList){
+        SP_CPUFUNC bool initCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs){
 
             Mem1<Mat> homs;
 
             // set valid data
-            for (int i = 0; i < pixsList.size(); i++){
-                const Mem1<Vec2> &pixs = pixsList[i] -(getVec(dsize[0] - 1, dsize[1] - 1) * 0.5);
-                const Mem1<Vec2> &objs = objsList[i];
+            for (int i = 0; i < pixs.size(); i++){
+                const Mem1<Vec2> &tpixs = pixs[i] -(getVec(dsize[0] - 1, dsize[1] - 1) * 0.5);
+                const Mem1<Vec2> &tobjs = objs[i];
 
                 Mat hom;
-                if (calcHMat(hom, pixs, objs) == false) continue;
+                if (calcHMat(hom, tpixs, tobjs) == false) continue;
 
                 homs.push(hom);
             }
@@ -69,26 +69,26 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
+        SP_CPUFUNC double optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
 
             Mem1<Pose> vposes;
-            Mem1<Mem1<Vec2> > vpixsList;
-            Mem1<Mem1<Vec2> > vobjsList;
+            Mem1<Mem1<Vec2> > vpixs;
+            Mem1<Mem1<Vec2> > vobjs;
 
             // set valid data
-            for (int i = 0; i < objsList.size(); i++){
+            for (int i = 0; i < objs.size(); i++){
                 Pose pose;
-                if (calcPose(pose, cam, pixsList[i], objsList[i]) == false) continue;
+                if (calcPose(pose, cam, pixs[i], objs[i]) == false) continue;
 
                 vposes.push(pose);
-                vpixsList.push(pixsList[i]);
-                vobjsList.push(objsList[i]);
+                vpixs.push(pixs[i]);
+                vobjs.push(objs[i]);
             }
 
 
             int pmax = 0;
             for (int i = 0; i < vposes.size(); i++){
-                pmax += vpixsList[i].size();
+                pmax += vpixs[i].size();
             }
 
             double ret = -1.0;
@@ -109,11 +109,11 @@ namespace sp{
                     Mat jCamToPix(2, 9);
                     Mat jPoseToPix(2, 6);
 
-                    const Mem1<Vec2> &vpixs = vpixsList[i];
-                    const Mem1<Vec2> &vobjs = vobjsList[i];
-                    for (int p = 0; p < vpixs.size(); p++){
-                        const Vec2 pix = vpixs[p];
-                        const Vec3 obj = getVec(vobjs[p].x, vobjs[p].y, 0.0);
+                    const Mem1<Vec2> &tpixs = vpixs[i];
+                    const Mem1<Vec2> &tobjs = vobjs[i];
+                    for (int p = 0; p < tpixs.size(); p++){
+                        const Vec2 pix = tpixs[p];
+                        const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
                         const Vec2 vec = mulCamD(cam, prjVec(pose * obj));
 
                         const Vec2 err = pix - vec;
@@ -169,19 +169,18 @@ namespace sp{
         }
 
 
-        SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
-            const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList){
+        SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs){
     
             double minv = SP_INFINITY;
 
-            for (int i = 0; i < objsList.size(); i++){
+            for (int i = 0; i < objs.size(); i++){
 
                 Pose pose0, pose1;
-                if (calcPose(pose0, cam0, pixsList0[i], objsList[i]) == false) continue;
-                if (calcPose(pose1, cam1, pixsList1[i], objsList[i]) == false) continue;
+                if (calcPose(pose0, cam0, pixs0[i], objs[i]) == false) continue;
+                if (calcPose(pose1, cam1, pixs1[i], objs[i]) == false) continue;
 
-                const Mem1<double> errs0 = errPose(pose0, cam0, pixsList0[i], objsList[i]);
-                const Mem1<double> errs1 = errPose(pose1, cam1, pixsList1[i], objsList[i]);
+                const Mem1<double> errs0 = errPose(pose0, cam0, pixs0[i], objs[i]);
+                const Mem1<double> errs1 = errPose(pose1, cam1, pixs1[i], objs[i]);
 
                 const double err = medianVal(errs0) + medianVal(errs1);
                 if (err < minv){
@@ -193,28 +192,28 @@ namespace sp{
             return (minv < SP_INFINITY) ? true : false;
         }
 
-        SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
-            const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20){
+        SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, int maxit = 20){
+            
             Mem1<Pose> vposes;
-            Mem1<Mem1<Vec2> > vpixsList0, vpixsList1;
-            Mem1<Mem1<Vec2> > vobjsList;
+            Mem1<Mem1<Vec2> > vpixs0, vpixs1;
+            Mem1<Mem1<Vec2> > vobjs;
 
             // set valid data
-            for (int i = 0; i < objsList.size(); i++){
+            for (int i = 0; i < objs.size(); i++){
                 Pose pose0, pose1;
-                if (calcPose(pose0, cam0, pixsList0[i], objsList[i]) == false) continue;
-                if (calcPose(pose1, cam1, pixsList1[i], objsList[i]) == false) continue;
+                if (calcPose(pose0, cam0, pixs0[i], objs[i]) == false) continue;
+                if (calcPose(pose1, cam1, pixs1[i], objs[i]) == false) continue;
 
                 vposes.push(pose0);
-                vpixsList0.push(pixsList0[i]);
-                vpixsList1.push(pixsList1[i]);
-                vobjsList.push(objsList[i]);
+                vpixs0.push(pixs0[i]);
+                vpixs1.push(pixs1[i]);
+                vobjs.push(objs[i]);
             }
 
 
             int pmax = 0;
             for (int i = 0; i < vposes.size(); i++){
-                pmax += vpixsList0[i].size();
+                pmax += vpixs0[i].size();
             }
 
             double rms = -1.0;
@@ -225,16 +224,16 @@ namespace sp{
                 // refine vpose
                 if(it > 0){
                     for (int i = 0; i < vposes.size(); i++){
-                        Mat J(4 * vpixsList0[i].size(), 6);
-                        Mat E(4 * vpixsList0[i].size(), 1);
+                        Mat J(4 * vpixs0[i].size(), 6);
+                        Mat E(4 * vpixs0[i].size(), 1);
 
                         const Pose pose0 = vposes[i];
                         const Pose pose1 = stereo * vposes[i];
 
                         const Mat sR = getMat(stereo.rot);
 
-                        for (int p = 0; p < vobjsList[i].size(); p++){
-                            const Vec3 obj = getVec(vobjsList[i][p].x, vobjsList[i][p].y, 0.0);
+                        for (int p = 0; p < vobjs[i].size(); p++){
+                            const Vec3 obj = getVec(vobjs[i][p].x, vobjs[i][p].y, 0.0);
 
                             double jPoseToPos0[3 * 6] = { 0 };
                             double jPoseToPos1[3 * 6] = { 0 };
@@ -249,8 +248,8 @@ namespace sp{
                             mulMat(&J(p * 4 + 0, 0), 2, 6, jPosToPix0, 2, 3, jPoseToPos0, 3, 6);
                             mulMat(&J(p * 4 + 2, 0), 2, 6, jPosToPix1, 2, 3, jPoseToPos1, 3, 6);
 
-                            const Vec2 err0 = vpixsList0[i][p] - mulCamD(cam0, prjVec(pose0 * obj));
-                            const Vec2 err1 = vpixsList1[i][p] - mulCamD(cam1, prjVec(pose1 * obj));
+                            const Vec2 err0 = vpixs0[i][p] - mulCamD(cam0, prjVec(pose0 * obj));
+                            const Vec2 err1 = vpixs1[i][p] - mulCamD(cam1, prjVec(pose1 * obj));
 
                             E(p * 4 + 0, 0) = err0.x;
                             E(p * 4 + 1, 0) = err0.y;
@@ -277,11 +276,11 @@ namespace sp{
 
                         const Pose &pose = vposes[i];
 
-                        const Mem1<Vec2> &vpixs = vpixsList1[i];
-                        const Mem1<Vec2> &vobjs = vobjsList[i];
-                        for (int p = 0; p < vpixs.size(); p++){
-                            const Vec2 pix = vpixs[p];
-                            const Vec3 obj = getVec(vobjs[p].x, vobjs[p].y, 0.0);
+                        const Mem1<Vec2> &tpixs = vpixs1[i];
+                        const Mem1<Vec2> &tobjs = vobjs[i];
+                        for (int p = 0; p < tpixs.size(); p++){
+                            const Vec2 pix = tpixs[p];
+                            const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
 
                             const Vec2 vec = mulCamD(cam1, prjVec(stereo * pose * obj));
 
@@ -304,8 +303,8 @@ namespace sp{
 
                 Mem1<double> errs;
                 for (int i = 0; i < vposes.size(); i++){
-                    errs.push(errPose(vposes[i], cam0, vpixsList0[i], vobjsList[i]));
-                    errs.push(errPose(stereo * vposes[i], cam1, vpixsList1[i], vobjsList[i]));
+                    errs.push(errPose(vposes[i], cam0, vpixs0[i], vobjs[i]));
+                    errs.push(errPose(stereo * vposes[i], cam1, vpixs1[i], vobjs[i]));
                 }
 
                 const double mean = meanVal(errs);
@@ -400,14 +399,14 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, int maxit = 20) {
+        SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, int maxit = 20) {
             const int num = Bs.size();
 
             Pose iZ = invPose(Z);
 
             int pmax = 0;
             for (int i = 0; i < num; i++) {
-                pmax += pixsList[i].size();
+                pmax += pixs[i].size();
             }
 
             double rms = -1.0;
@@ -423,21 +422,21 @@ namespace sp{
                 for (int i = 0; i < num; i++) {
                     const Pose iB = invPose(Bs[i]);
 
-                    const Mem1<Vec2> &pixs = pixsList[i];
-                    const Mem1<Vec2> &objs = objsList[i];
+                    const Mem1<Vec2> &tpixs = pixs[i];
+                    const Mem1<Vec2> &tobjs = objs[i];
 
                     Mat J0(2, 6);
                     Mat J1(2, 6);
-                    for (int j = 0; j < objs.size(); j++) {
+                    for (int j = 0; j < tobjs.size(); j++) {
                         {
-                            jacobPoseToPix(J0.ptr, X, cam, (iB * iZ) * objs[j]);
+                            jacobPoseToPix(J0.ptr, X, cam, (iB * iZ) * tobjs[j]);
                         }
                         {
                             Mat J1_6D3D(3, 6);
-                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(objs[j], 0.0));
+                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(tobjs[j], 0.0));
 
                             Mat J1_3D2D(2, 3);
-                            jacobPosToPix(J1_3D2D.ptr, cam, iZ * objs[j]);
+                            jacobPosToPix(J1_3D2D.ptr, cam, iZ * tobjs[j]);
 
                             J1 = J1_3D2D * getMat((X * iB).rot) * J1_6D3D;
                         }
@@ -450,7 +449,7 @@ namespace sp{
                             J(cnt * 2 + 1, p + 6) = J1(1, p);
                         }
 
-                        const Vec2 err = pixs[j] - mulCamD(cam, prjVec((X * iB * iZ) * objs[j]));
+                        const Vec2 err = tpixs[j] - mulCamD(cam, prjVec((X * iB * iZ) * tobjs[j]));
                         E(cnt * 2 + 0, 0) = err.x;
                         E(cnt * 2 + 1, 0) = err.y;
                         errs[cnt] = normVec(err);
@@ -484,17 +483,16 @@ namespace sp{
     // calibrate camera parameter
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibCam(CamParam &cam, const int dsize0, const int dsize1,
-        const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
+    SP_CPUFUNC double calibCam(CamParam &cam, const int dsize0, const int dsize1, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
         double rms = -1.0;
 
         try{
-            if (pixsList.size() < 3 || pixsList.size() != objsList.size()) throw "data size";
+            if (pixs.size() < 3 || pixs.size() != objs.size()) throw "data size";
 
             const int dsize[2] = { dsize0, dsize1 };
-            if (initCam(cam, dsize, pixsList, objsList) == false) throw "initCam";
+            if (initCam(cam, dsize, pixs, objs) == false) throw "initCam";
 
-            if ((rms = optCam(cam, dsize, pixsList, objsList, maxit)) < 0.0) throw "optCam";
+            if ((rms = optCam(cam, dsize, pixs, objs, maxit)) < 0.0) throw "optCam";
         }
         catch (const char *str){
             SP_PRINTD("calibCam [%s]\n", str);
@@ -508,17 +506,16 @@ namespace sp{
     // calibrate stereo pose
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
-        const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList, const int maxit = 20){
+    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
 
         double rms = -1.0;
 
         try{
-            if (pixsList0.size() < 3 || pixsList0.size() != pixsList1.size() || pixsList0.size() != objsList.size()) throw "data size";
+            if (pixs0.size() < 3 || pixs0.size() != pixs1.size() || pixs0.size() != objs.size()) throw "data size";
 
-            if (initStereo(stereo, cam0, cam1, pixsList0, pixsList1, objsList) == false) throw "initStereo";
+            if (initStereo(stereo, cam0, cam1, pixs0, pixs1, objs) == false) throw "initStereo";
             
-            if ((rms = optStereo(stereo, cam0, cam1, pixsList0, pixsList1, objsList, maxit)) < 0.0) throw "optStereo";
+            if ((rms = optStereo(stereo, cam0, cam1, pixs0, pixs1, objs, maxit)) < 0.0) throw "optStereo";
         }
         catch (const char *str){
             SP_PRINTD("calibStereo [%s]\n", str);
@@ -527,31 +524,29 @@ namespace sp{
         return rms;
     }
     
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,
-        const Mem1<Mem1<Vec2> > &pixsList0, const Mem1<Mem1<Vec2> > &pixsList1, const Mem1<Mem1<Vec2> > &objsList0, const Mem1<Mem1<Vec2> > &objsList1, const int maxit = 20){
+    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs0, const Mem1<Mem1<Vec2> > &objs1, const int maxit = 20){
 
-        Mem1<Mem1<Vec2> > cpixsList0, cpixsList1, cobjsList;
-        for (int i = 0; i < pixsList0.size(); i++){
+        Mem1<Mem1<Vec2> > cpixs0, cpixs1, cobjs;
+        for (int i = 0; i < pixs0.size(); i++) {
 
-            Mem1<Vec2> cpixs0, cpixs1, cobjs;
-            for (int j = 0; j < pixsList0[i].size(); j++){
-                for (int k = 0; k < pixsList1[i].size(); k++){
-                    if (cmpVec(objsList0[i][j], objsList1[i][k]) == true){
-                        cpixs0.push(pixsList0[i][j]);
-                        cpixs1.push(pixsList1[i][k]);
-                        cobjs.push(objsList0[i][j]);
+            Mem1<Vec2> tpixs0, tpixs1, tobjs;
+            for (int j = 0; j < pixs0[i].size(); j++) {
+                for (int k = 0; k < pixs1[i].size(); k++) {
+                    if (cmpVec(objs0[i][j], objs1[i][k]) == true) {
+                        tpixs0.push(pixs0[i][j]);
+                        tpixs1.push(pixs1[i][k]);
+                        tobjs.push(objs0[i][j]);
                         break;
                     }
                 }
             }
-            cpixsList0.push(cpixs0);
-            cpixsList1.push(cpixs1);
-            cobjsList.push(cobjs);
+            cpixs0.push(tpixs0);
+            cpixs1.push(tpixs1);
+            cobjs.push(tobjs);
         }
 
-        return calibStereo(stereo, cam0, cam1, cpixsList0, cpixsList1, cobjsList, maxit);
+        return calibStereo(stereo, cam0, cam1, cpixs0, cpixs1, cobjs, maxit);
     }
-
 
     //--------------------------------------------------------------------------------
     // calibrate robot to cam
@@ -559,7 +554,7 @@ namespace sp{
 
     // 
 
-    SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixsList, const Mem1<Mem1<Vec2> > &objsList) {
+    SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs) {
 
         Mem1<Pose> As;
 
@@ -568,7 +563,7 @@ namespace sp{
 
             for (int i = 0; i < num; i++) {
                 Pose mrk2camPose;
-                calcPose(mrk2camPose, cam, pixsList[i], objsList[i]);
+                calcPose(mrk2camPose, cam, pixs[i], objs[i]);
                 As.push(invPose(mrk2camPose));
             }
         }
@@ -576,11 +571,11 @@ namespace sp{
         double rms = -1.0;
 
         try {
-            if (Bs.size() < 5 || Bs.size() != pixsList.size() || Bs.size() != objsList.size()) throw "data size";
+            if (Bs.size() < 5 || Bs.size() != pixs.size() || Bs.size() != objs.size()) throw "data size";
 
             if (initRobotCam(X, Z, As, Bs) == false) throw "initRobotCam";
             
-            if ((rms = optRobotCam(X, Z, Bs, cam, pixsList, objsList)) < 0.0) throw "optRobotCam";
+            if ((rms = optRobotCam(X, Z, Bs, cam, pixs, objs)) < 0.0) throw "optRobotCam";
         }
         catch (const char *str) {
             SP_PRINTD("calibRobotCam [%s]\n", str);
