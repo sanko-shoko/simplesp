@@ -33,17 +33,15 @@ private:
     virtual void init() {
         if (1) {
             
-            m_mrks = getBitMarkerArray(4, 3, 50.0, 60.0);
+            m_mrks = getBitMarkerParam(0, 3, 50.0, 4, 3, 5.0);
         }
         else {
 
-            BitMarkerParam mrk;
             cv::Mat cvneko = cv::imread(SP_DATA_DIR  "/marker/neko.bmp");
             Mem2<Col3> neko;
             cvCnvImg(neko, cvneko);
 
-            mrk.setImg(neko);
-            mrk.setLength(50.0);
+            BitMarkerParam mrk(neko, 50.0);
 
             m_mrks.clear();
             m_mrks.push(mrk);
