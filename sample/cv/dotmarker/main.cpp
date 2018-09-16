@@ -56,8 +56,8 @@ void sample(cv::Mat &cvimg, const int key){
         static bool flag = false;
         if (key == 'd') flag ^= true;
         
-        if (flag == true){
-            dotMarker.diminish(img);
+        if (flag == true && dotMarker.getHom() != NULL){
+            diminishDotMarker(img, dotMarker.getMrk(), *dotMarker.getHom());
         }
     }
 

@@ -32,7 +32,7 @@ namespace sp {
 
 
     // A3 (420mm x 297mm), A4 (297mm x 210mm)
-    void saveSVG(const char *path, const char *str, const int w = 297, const int h = 210) {
+    SP_CPUFUNC void saveSVG(const char *path, const char *str, const int w = 297, const int h = 210) {
         File file(path, "w");
 
         file.printf("<!DOCTYPE svg PUBLIC ' -//W3C//DTD SVG 1.1//EN\' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n");
