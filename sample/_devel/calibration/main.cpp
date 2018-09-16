@@ -44,20 +44,20 @@ int main(){
         printf("cam test (generate test points)\n");
         printf("--------------------------------------------------------------------------------\n");
 
-        Mem1<Mem1<Vec2> > pixsList, objsList;
+        Mem1<Mem1<Vec2> > pixs, objs;
 
         // generate test points
         for (int i = 0; i < poses.size(); i++){
-            Mem1<Vec2> pixs, objs;
+            Mem1<Vec2> tpixs, tobjs;
             for (int n = 0; n < mrkMap.size(); n++){
                 const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
                 const Vec2 pix = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
 
-                pixs.push(pix);
-                objs.push(mrkMap[n]);
+                tpixs.push(pix);
+                tobjs.push(mrkMap[n]);
             }
-            pixsList.push(pixs);
-            objsList.push(objs);
+            pixs.push(tpixs);
+            objs.push(tobjs);
         }
 
         // simplesp calibration 
@@ -67,7 +67,7 @@ int main(){
 
             // calibration
             CamParam dst;
-            const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixsList, objsList);
+            const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixs, objs);
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
@@ -83,25 +83,25 @@ int main(){
             printf("opencv\n");
 
             // Point2d is not available in cv::calibrateCamera
-            vector<vector<Point2f> > cvpixsList;
-            vector<vector<Point3f> > cvobjsList;
+            vector<vector<Point2f> > cvpixs;
+            vector<vector<Point3f> > cvobjs;
 
-            for (int i = 0; i < pixsList.size(); i++){
-                vector<Point2f> cvpixs;
-                vector<Point3f> cvobjs;
-                for (int j = 0; j < pixsList[i].size(); j++){
-                    cvpixs.push_back(Point2f(static_cast<float>(pixsList[i][j].x), static_cast<float>(pixsList[i][j].y)));
-                    cvobjs.push_back(Point3f(static_cast<float>(objsList[i][j].x), static_cast<float>(objsList[i][j].y), 0.f));
+            for (int i = 0; i < pixs.size(); i++){
+                vector<Point2f> tpixs;
+                vector<Point3f> tobjs;
+                for (int j = 0; j < pixs[i].size(); j++){
+                    tpixs.push_back(Point2f(static_cast<float>(pixs[i][j].x), static_cast<float>(pixs[i][j].y)));
+                    tobjs.push_back(Point3f(static_cast<float>(objs[i][j].x), static_cast<float>(objs[i][j].y), 0.f));
                 }
-                cvpixsList.push_back(cvpixs);
-                cvobjsList.push_back(cvobjs);
+                cvpixs.push_back(tpixs);
+                cvobjs.push_back(tobjs);
             }
 
             const Size imgSize(cam.dsize[0], cam.dsize[1]);
             cv::Mat camMat, dist;
             vector<cv::Mat> rvecs, tvecs;
 
-            const double rms = cv::calibrateCamera(cvobjsList, cvpixsList, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
+            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
             printf("opencv rms error: %g\n", rms);
             cout << "camMat = " << endl << camMat << endl;
             cout << "dist = " << endl << dist << endl;
@@ -133,19 +133,19 @@ int main(){
             DotMarker dotMarker;
             dotMarker.setMrk(mrk);
 
-            Mem1<Mem1<Vec2> > pixsList, objsList;
+            Mem1<Mem1<Vec2> > pixs, objs;
 
             // detect points
             for (int i = 0; i < imgList.size(); i++){
                 if (dotMarker.execute(imgList[i])){
-                    pixsList.push(*dotMarker.getCrspPixs());
-                    objsList.push(*dotMarker.getCrspObjs());
+                    pixs.push(*dotMarker.getCrspPixs());
+                    objs.push(*dotMarker.getCrspObjs());
                 }
             }
 
             // calibration
             CamParam dst;
-            const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixsList, objsList);
+            const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixs, objs);
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
@@ -160,8 +160,8 @@ int main(){
             printf("\n\n");
             printf("opencv\n");
 
-            vector<vector<Point2f> > cvpixsList;
-            vector<vector<Point3f> > cvobjsList;
+            vector<vector<Point2f> > cvpixs;
+            vector<vector<Point3f> > cvobjs;
 
             const Size boardSize(mrk.map.dsize[0], mrk.map.dsize[1]);
             for (int i = 0; i < imgList.size(); i++){
@@ -172,21 +172,21 @@ int main(){
                 const bool found = findCirclesGrid(img, boardSize, pointbuf);
                 if (found == false) continue;
                 
-                vector<Point2f> cvvpixs;
-                vector<Point3f> cvvobjs;
+                vector<Point2f> tpixs;
+                vector<Point3f> tobjs;
 
                 for (int n = 0; n < pointbuf.size(); n++){
-                    cvvpixs.push_back(pointbuf[n]);
-                    cvvobjs.push_back(cv::Point3f(static_cast<float>(mrkMap[n].x), static_cast<float>(mrkMap[n].y), 0.f));
+                    tpixs.push_back(pointbuf[n]);
+                    tobjs.push_back(cv::Point3f(static_cast<float>(mrkMap[n].x), static_cast<float>(mrkMap[n].y), 0.f));
                 }
-                cvpixsList.push_back(cvvpixs);
-                cvobjsList.push_back(cvvobjs);
+                cvpixs.push_back(tpixs);
+                cvobjs.push_back(tobjs);
             }
 
             cv::Mat camMat, dist;
             vector<cv::Mat> rvecs, tvecs;
 
-            const double rms = cv::calibrateCamera(cvobjsList, cvpixsList, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
+            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
             printf("opencv rms error: %g\n", rms);
             cout << "camMat = " << endl << camMat << endl;
             cout << "dist = " << endl << dist << endl;
@@ -200,24 +200,24 @@ int main(){
         printf("stereo test (generate test points)\n");
         printf("--------------------------------------------------------------------------------\n");
 
-        Mem1<Mem1<Vec2> > pixsList0, pixsList1, objsList0, objsList1;
+        Mem1<Mem1<Vec2> > pixs0, pixs1, objs0, objs1;
 
         // generate test points
         for (int i = 0; i < poses.size(); i++){
-            Mem1<Vec2> pixs0, pixs1, objs;
+            Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int n = 0; n < mrkMap.size(); n++){
                 const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
                 const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
                 const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randVecGauss(0.1, 0.1);
 
-                pixs0.push(pix0);
-                pixs1.push(pix1);
-                objs.push(mrkMap[n]);
+                tpixs0.push(pix0);
+                tpixs1.push(pix1);
+                tobjs.push(mrkMap[n]);
             }
-            pixsList0.push(pixs0);
-            pixsList1.push(pixs1);
-            objsList0.push(objs);
-            objsList1.push(objs);
+            pixs0.push(tpixs0);
+            pixs1.push(tpixs1);
+            objs0.push(tobjs);
+            objs1.push(tobjs);
         }
 
         // simplesp calibration 
@@ -227,7 +227,7 @@ int main(){
 
             // calibration
             Pose dst;
-            const double rms = calibStereo(dst, cam, cam, pixsList0, pixsList1, objsList0, objsList1);
+            const double rms = calibStereo(dst, cam, cam, pixs0, pixs1, objs0, objs1);
             printf("simplesp rms error: %g\n", rms);
 
             print(dst);
@@ -243,22 +243,22 @@ int main(){
             printf("opencv\n");
 
             // Point2d is not available in cv::calibrateCamera
-            vector<vector<Point2f> > cvpixsList0;
-            vector<vector<Point2f> > cvpixsList1;
-            vector<vector<Point3f> > cvobjsList;
+            vector<vector<Point2f> > cvpixs0;
+            vector<vector<Point2f> > cvpixs1;
+            vector<vector<Point3f> > cvobjs;
 
-            for (int i = 0; i < pixsList0.size(); i++){
-                vector<Point2f> cvpixs0;
-                vector<Point2f> cvpixs1;
-                vector<Point3f> cvobjs;
-                for (int j = 0; j < pixsList0[i].size(); j++){
-                    cvpixs0.push_back(Point2f(static_cast<float>(pixsList0[i][j].x), static_cast<float>(pixsList0[i][j].y)));
-                    cvpixs1.push_back(Point2f(static_cast<float>(pixsList1[i][j].x), static_cast<float>(pixsList1[i][j].y)));
-                    cvobjs.push_back(Point3f(static_cast<float>(objsList0[i][j].x), static_cast<float>(objsList0[i][j].y), 0.f));
+            for (int i = 0; i < pixs0.size(); i++){
+                vector<Point2f> tpixs0;
+                vector<Point2f> tpixs1;
+                vector<Point3f> tobjs;
+                for (int j = 0; j < pixs0[i].size(); j++){
+                    tpixs0.push_back(Point2f(static_cast<float>(pixs0[i][j].x), static_cast<float>(pixs0[i][j].y)));
+                    tpixs1.push_back(Point2f(static_cast<float>(pixs1[i][j].x), static_cast<float>(pixs1[i][j].y)));
+                    tobjs.push_back(Point3f(static_cast<float>(objs0[i][j].x), static_cast<float>(objs0[i][j].y), 0.f));
                 }
-                cvpixsList0.push_back(cvpixs0);
-                cvpixsList1.push_back(cvpixs1);
-                cvobjsList.push_back(cvobjs);
+                cvpixs0.push_back(tpixs0);
+                cvpixs1.push_back(tpixs1);
+                cvobjs.push_back(tobjs);
             }
 
             const Size imgSize(cam.dsize[0], cam.dsize[1]);
@@ -278,7 +278,7 @@ int main(){
             dist.at<double>(4) = cam.k3;
             cv::Mat R, T, E, F;
 
-            const double rms = cv::stereoCalibrate(cvobjsList, cvpixsList0, cvpixsList1, camMat, dist, camMat, dist, imgSize, R, T, E, F);
+            const double rms = cv::stereoCalibrate(cvobjs, cvpixs0, cvpixs1, camMat, dist, camMat, dist, imgSize, R, T, E, F);
             printf("opencv rms error: %g\n", rms);
             cout << "R " << R << endl;
             cout << "T " << T << endl;
