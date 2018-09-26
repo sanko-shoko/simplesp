@@ -64,12 +64,11 @@ int main() {
 
         {
             printf("\n\n");
-            printf("simplesp\n");
 
             // calibration
             CamParam dst;
             const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixs, objs);
-            printf("simplesp rms error: %g\n", rms);
+            printf("rms error: %g\n", rms);
 
             print(dst);
             saveText("cam0.txt", dst);
@@ -96,7 +95,6 @@ int main() {
         // simplesp calibration 
         {
             printf("\n\n");
-            printf("simplesp\n");
 
             DotMarker dotMarker;
             dotMarker.setMrk(mrk);
@@ -114,7 +112,7 @@ int main() {
             // calibration
             CamParam dst;
             const double rms = calibCam(dst, cam.dsize[0], cam.dsize[1], pixs, objs);
-            printf("simplesp rms error: %g\n", rms);
+            printf("rms error: %g\n", rms);
 
             print(dst);
             saveText("cam1.txt", dst);
@@ -151,12 +149,11 @@ int main() {
         // simplesp calibration 
         {
             printf("\n\n");
-            printf("simplesp\n");
 
             // calibration
             Pose dst;
             const double rms = calibStereo(dst, cam, cam, pixs0, pixs1, objs0, objs1);
-            printf("simplesp rms error: %g\n", rms);
+            printf("rms error: %g\n", rms);
 
             print(dst);
             saveText("pose.txt", dst);

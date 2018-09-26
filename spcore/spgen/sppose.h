@@ -566,7 +566,7 @@ namespace sp{
         mulMat(jacob, 2, 6, jPosToNpx, 2, 3, jPoseToPos, 3, 6);
     }
 
-    SP_GENFUNC void jacobPoseToPix(double *jacob, const Pose &pose, const CamParam &cam, const Vec3 &pos) {
+    SP_GENFUNC void jacobPoseToPix(double *jacob, const CamParam &cam, const Pose &pose, const Vec3 &pos) {
         double pmat[3 * 4];
         getMat(pmat, 3, 4, pose);
 

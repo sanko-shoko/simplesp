@@ -18,7 +18,7 @@ namespace sp{
     SP_CPUFUNC void renderPoint(Mem<TYPE> &dst, const Vec2 &pix, const TYPE &val, const double radius = 1.0){
         SP_ASSERT(isValid(2, dst));
         
-        const int w = ceil(radius - 1);
+        const int w = ceil(radius - 0.1);
         for (int y = -w; y <= w; y++){
             for (int x = -w; x <= w; x++){
                 if (pythag(x, y) >= radius) continue;

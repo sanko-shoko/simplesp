@@ -547,7 +547,7 @@ namespace sp{
 
         for (int it = 0; it < maxit; it++) {
             for (int i = 0; i < pixs.size(); i++) {
-                jacobPoseToPix(&J(i * 2, 0), pose, cam, objs[i]);
+                jacobPoseToPix(&J(i * 2, 0), cam, pose, objs[i]);
 
                 const Vec2 err = pixs[i] - mulCamD(cam, prjVec(pose * objs[i]));
                 E(i * 2 + 0, 0) = err.x;

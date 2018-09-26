@@ -286,6 +286,21 @@ namespace sp{
         return getVec(a * y + b, y);
     }
 
+    // update
+    SP_GENFUNC CamParam updateCam(const CamParam &cam, const double *delta) {
+        CamParam dst = cam;
+        dst.fx += delta[0];
+        dst.fy += delta[1];
+        dst.cx += delta[2];
+        dst.cy += delta[3];
+
+        dst.k1 += delta[4];
+        dst.k2 += delta[5];
+        dst.k3 += delta[6];
+        dst.p1 += delta[7];
+        dst.p2 += delta[8];
+        return dst;
+    }
 
     //--------------------------------------------------------------------------------
     // rescale 
