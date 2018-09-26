@@ -383,7 +383,7 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, int maxit = 20) {
+        SP_CPUFUNC double optMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, int maxit = 40) {
             const int cnum = pixs.size();
             const int onum = pixs[0].size();
 
@@ -480,7 +480,7 @@ namespace sp{
                     Mat delta;
                     if (solveEq(delta, J, E, errs) == false) return false;
 
-                    delta *= 0.1;
+                    delta *= 0.5;
                     vposes[i] = updatePose(vposes[i], delta.ptr);
                 }
 
@@ -546,6 +546,8 @@ namespace sp{
 
                         Mat delta;
                         if (solveEq(delta, J, E, errs) == false) return -1.0;
+
+                        delta *= 0.5;
                         poses[i] = updatePose(poses[i], &delta[0]);
                     }
                 }
@@ -812,7 +814,7 @@ namespace sp{
     // calibrate multi camera
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, const int maxit = 20) {
+    SP_CPUFUNC double calibMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, const int maxit = 40) {
 
         double rms = -1.0;
 
