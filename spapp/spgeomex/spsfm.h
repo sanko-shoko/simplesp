@@ -133,10 +133,11 @@ namespace sp {
         // execute sfm
         //--------------------------------------------------------------------------------
 
-        void addData(const Mem2<Col3> &img, const CamParam &cam = getCamParam(0, 0)) {
-            SP_LOGGER_SET("-addData");
+        void addView(const Mem2<Col3> &img, const CamParam &cam = getCamParam(0, 0)) {
+            SP_LOGGER_SET("-addView");
 
-            addData(m_views, m_mdmat, img, cam);
+            CamParam tmp = (cmpSize(2, cam.dsize, img.dsize) == true) ? cam : getCamParam(img.dsize);
+            addView(m_views, m_mdmat, img, tmp);
         }
 
         bool update(const int itmax = 1) {
@@ -193,20 +194,17 @@ namespace sp {
 
     private:
 
-        //--------------------------------------------------------------------------------
-        // add data
-        //--------------------------------------------------------------------------------
-
-        void addData(Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const Mem2<Col3> &img, const CamParam &cam) {
+        void addView(Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const Mem2<Col3> &img, const CamParam &cam) {
 
             ViewData &view = *views.extend();
 
-            // invalid pose
+            // set pose
             view.valid = false;
+            view.pose = zeroPose();
 
             // set img and cam
             view.img = img;
-            view.cam = (cmpSize(2, cam.dsize, img.dsize) == true) ? cam : getCamParam(img.dsize);
+            view.cam = cam;
 
             // set features
             SIFT sift;
@@ -220,30 +218,12 @@ namespace sp {
             view.mcnt = 0;
         }
 
-
+        // g: gpnts id, v: views id, m: matches id
         void addIndex(Mem1<PointData> &gpnts, Mem1<ViewData> &views, const int g, const int v, const int m) {
             if (views[v].index[m] >= 0) return;
 
             gpnts[g].index.push(Int2(v, m));
             views[v].index[m] = g;
-        }
-
-        void setCol(Mem1<PointData> &gpnts, Mem1<ViewData> &views, const int g) {
-
-            const Mem1<Int2> &index = gpnts[g].index;
-
-            Vec3 vec = getVec(0.0, 0.0, 0.0);
-
-            for (int i = 0; i < index.size(); i++) {
-                const int v = index[i][0];
-                const int m = index[i][1];
-                const Vec2 pix = views[v].fts[m].pix;
-                vec += getVec(acsc(views[v].img, pix.x, pix.y));
-            }
-            if (index.size() > 0) {
-                vec /= index.size();
-            }
-            gpnts[g].col = getCol(vec);
         }
 
         // initialize pair
@@ -310,7 +290,7 @@ namespace sp {
                     addIndex(gpnts, views, gpnts.size() - 1, a, i);
                     addIndex(gpnts, views, gpnts.size() - 1, b, j);
 
-                    setCol(gpnts, views, gpnts.size() - 1);
+                    updateColor(gpnts, views, gpnts.size() - 1);
                 }
 
                 views[a].valid = true;
@@ -413,6 +393,24 @@ namespace sp {
             }
         }
 
+        void updateColor(Mem1<PointData> &gpnts, Mem1<ViewData> &views, const int g) {
+
+            const Mem1<Int2> &index = gpnts[g].index;
+
+            Vec3 vec = getVec(0.0, 0.0, 0.0);
+
+            for (int i = 0; i < index.size(); i++) {
+                const int v = index[i][0];
+                const int m = index[i][1];
+                const Vec2 pix = views[v].fts[m].pix;
+                vec += getVec(acsc(views[v].img, pix.x, pix.y));
+            }
+            if (index.size() > 0) {
+                vec /= index.size();
+            }
+            gpnts[g].col = getCol(vec);
+        }
+
         bool updateValid(Mem1<PointData> &gpnts, Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const int update) {
             SP_LOGGER_SET("updateValid");
 
@@ -424,8 +422,10 @@ namespace sp {
 
                 for (int a = 0; a < views.size(); a++) {
                     if (views[a].valid == true) continue;
+
                     for (int b = 0; b < views.size(); b++) {
                         if (views[b].valid == false) continue;
+
                         if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
                         tmps.push(Int2(a, b));
                         rates.push(mdmat(a, b).rate);
@@ -587,7 +587,7 @@ namespace sp {
                     addIndex(gpnts, views, gpnts.size() - 1, a, i);
                     addIndex(gpnts, views, gpnts.size() - 1, b, j);
 
-                    setCol(gpnts, views, gpnts.size() - 1);
+                    updateColor(gpnts, views, gpnts.size() - 1);
                 }
             }
 
@@ -618,7 +618,7 @@ namespace sp {
                     
                     gpnts[g].pos = pnt;
 
-                    setCol(gpnts, views, g);
+                    updateColor(gpnts, views, g);
                 }
             }
             return false;

@@ -91,8 +91,8 @@ private:
         // detect dot marker
         m_dotMarker.execute(img);
 
-        if (m_diminish == true) {
-            m_dotMarker.diminish(img);
+        if (m_diminish == true && m_dotMarker.getHom()) {
+            diminishDotMarker(img, m_dotMarker.getMrk(), *m_dotMarker.getHom());
         }
 
         {

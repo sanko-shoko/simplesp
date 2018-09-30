@@ -17,6 +17,7 @@ private:
 
     void help() {
         printf("'a' key : update\n");
+        printf("'s' key : reset\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -28,27 +29,35 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
+        reset();
+    }
 
-        {
-            CamParam cam;
-            loadText(SP_DATA_DIR "/image/shiba.txt", cam);
+    void reset(){
+        m_sfm.clear();
 
-            Mem2<Col3> img[7];
-            for (int i = 0; i < 7; i++) {
-                char path[512];
-                sprintf(path, SP_DATA_DIR "/image/shiba%02d.bmp", i);
-                loadBMP(path, img[i]);
+        CamParam cam;
+        loadText(SP_DATA_DIR "/image/shiba.txt", cam);
 
-                m_sfm.addData(img[i], cam);
-            }
-            m_sfm.update();
+        for (int i = 0; i < 7; i++) {
+            char path[512];
+            sprintf(path, SP_DATA_DIR "/image/shiba%02d.bmp", i);
+
+            Mem2<Col3> img;
+            loadBMP(path, img);
+
+            m_sfm.addView(img, cam);
         }
+        m_sfm.update();
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] >= 1) {
             m_sfm.update();
+        }
+
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            reset();
         }
 
     }
