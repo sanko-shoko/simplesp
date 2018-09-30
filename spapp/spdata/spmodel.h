@@ -341,7 +341,7 @@ namespace sp{
     // sample model
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool loadBunny(Mem1<Mesh3> &model, const char *path) {
+    SP_CPUFUNC bool loadBunny(const char *path, Mem1<Mesh3> &model) {
         if (loadPLY(path, model) == false) return false;
 
         Vec3 center = getModelCenter(model);

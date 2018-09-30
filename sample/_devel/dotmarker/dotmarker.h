@@ -42,7 +42,7 @@ private:
 
     virtual void init(){
 
-        //if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false){
+        //if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false){
         //    exit(0);
         //}
 
