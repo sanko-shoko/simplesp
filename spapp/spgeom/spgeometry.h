@@ -567,6 +567,42 @@ namespace sp{
         return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
 
+    // objs0 <- objs1 pose
+    SP_CPUFUNC bool calcPose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1) {
+        SP_ASSERT(objs0.size() == objs1.size());
+
+        const int unit = 3;
+        if (objs0.size() < unit) return false;
+
+        Mem1<Vec3> mobjs0, mobjs1;
+        {
+            const Vec3 cnt0 = meanVec(objs0);
+            const Vec3 cnt1 = meanVec(objs1);
+            pose.trn = cnt1 - cnt0;
+
+            mobjs0 = objs0 - cnt0;
+            mobjs1 = objs1 - cnt1;
+        }
+        {
+            Mat mat = zeroMat(3, 3);
+            for (int i = 0; i < mobjs0.size(); i++) {
+                const double *x = reinterpret_cast<double*>(&mobjs0[i]);
+                const double *y = reinterpret_cast<double*>(&mobjs1[i]);
+
+                for (int r = 0; r < 3; r++) {
+                    for (int c = 0; c < 3; c++) {
+                        mat(r, c) += x[r] * y[c];
+                    }
+                }
+            }
+            Mat U, S, V;
+            svdMat(U, S, V, mat);
+            pose.rot = getRot(V * trnMat(U));
+        }
+
+        print(pose);
+        return true;
+    }
     //// P3P
     //SP_CPUFUNC bool calcP3P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
     //    SP_ASSERT(pixs.size() == objs.size());

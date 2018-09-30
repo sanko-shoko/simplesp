@@ -45,6 +45,9 @@ namespace sp {
 
             // index -> [point]
             Mem1<int> index;
+
+            // 
+            int mcnt;
         };
 
         struct PointData {
@@ -99,10 +102,6 @@ namespace sp {
             m_gpnts.reserve(1000 * maxview);
         }
 
-        int size() const {
-            return m_views.size();
-        }
-
         void clear() {
             m_update = 0;
 
@@ -111,6 +110,28 @@ namespace sp {
             m_gpnts.clear();
             reserve();
         }
+
+
+        //--------------------------------------------------------------------------------
+        // data
+        //--------------------------------------------------------------------------------
+    
+        int size() const {
+            return m_views.size();
+        }
+
+        const Mem1<ViewData>* getViews() const {
+            return (m_views.size() > 0) ? &m_views : NULL;
+        }
+
+        const Mem1<PointData>* getPnts() const {
+            return (m_gpnts.size() > 0) ? &m_gpnts : NULL;
+        }
+
+ 
+        //--------------------------------------------------------------------------------
+        // execute sfm
+        //--------------------------------------------------------------------------------
 
         void addData(const Mem2<Col3> &img, const CamParam &cam = getCamParam(0, 0)) {
             SP_LOGGER_SET("-addData");
@@ -127,9 +148,13 @@ namespace sp {
                     if (m_views.size() < 2) throw "data size < 2";
 
                     if (m_update == 0) {
+                        updateMatch(m_views, m_mdmat, m_views.size() / 2);
+
                         if (initPair(m_gpnts, m_views, m_mdmat) == false) throw "initPair";
                     }
                     else {
+                        updateMatch(m_views, m_mdmat, 1);
+
                         // update invalid -> valid and calc pose
                         updateValid(m_gpnts, m_views, m_mdmat, m_update);
 
@@ -192,49 +217,9 @@ namespace sp {
             view.index.resize(view.fts.size());
             setElm(view.index, -1);
 
-            // set matches
-            {
-                // new view id
-                const int a = views.size() - 1;
-
-                // old view size
-                const int osize = views.size() - 1;
-
-                // old view evals
-                Mem1<double> evals(osize);
-                evals.zero();
-
-                const Mem1<int> list = shuffle(osize);
-
-                for (int i = 0; i < minVal(20, osize); i++) {
-                    int b = 0;
-                    double maxv = -osize;
-                    for (int j = 0; j < osize; j++) {
-                        const int k = list[j];
-
-                        if (evals[k] > maxv) {
-                            b = k;
-                            maxv = evals[k];
-                        }
-                    }
-
-                    mdmat(a, b).matches = findMatch(views[a].fts, views[b].fts);
-                    mdmat(a, b).rate = getMatchRate(mdmat(a, b).matches);
-                    //SP_PRINTF("%d %d %lf\n", a, b, mdmat(a, b).rate);
-
-                    evals[b] = -osize;
-                    for (int j = 0; j < osize; j++) {
-                        const int k = list[j];
-
-                        evals[k] += (mdmat(a, b).rate - MIN_MATCHRATE) * (mdmat(b, k).rate - MIN_MATCHRATE);
-                    }
-
-                    if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
-                    mdmat(b, a).matches = findMatch(views[b].fts, views[a].fts);
-                    mdmat(b, a).rate = getMatchRate(mdmat(b, a).matches);
-                }
-            }
+            view.mcnt = 0;
         }
+
 
         void addIndex(Mem1<PointData> &gpnts, Mem1<ViewData> &views, const int g, const int v, const int m) {
             if (views[v].index[m] >= 0) return;
@@ -340,7 +325,7 @@ namespace sp {
         double evalPair(Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const int a, const int b) {
             MatchData &mdata = mdmat(a, b);
 
-            if (mdata.eval >= 0.0 || mdata.rate < MIN_MATCHRATE) return mdmat(a, b).eval;
+            if (mdata.eval >= 0.0 || mdata.rate < MIN_MATCHRATE) return mdata.eval;
             mdata.eval = 0.0;
 
             const Mem1<Feature> &fts0 = views[a].fts;
@@ -386,6 +371,47 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // update
         //--------------------------------------------------------------------------------
+    
+        void updateMatch(Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const int itmax) {
+            SP_LOGGER_SET("updateMatch");
+
+            for (int it = 0; it < itmax; it++) {
+                int a = 0;
+                {
+                    int minv = views.size();
+                    for (int i = 0; i < views.size(); i++) {
+                        if (views[i].mcnt < minv) {
+                            a = i;
+                            minv = views[i].mcnt;
+                        }
+                    }
+                }
+
+                Mem1<int> list;
+                for (int i = 0; i < minVal(10, views.size()); i++) {
+                    if (mdmat(a, i).eval < 0.0) {
+                        list.push(i);
+                    }
+                }
+
+                if (list.size() == 0) return;
+
+                list = shuffle(list);
+
+                for (int i = 0; i < list.size(); i++) {
+                    const int b = list[i];
+
+                    mdmat(a, b).matches = findMatch(views[a].fts, views[b].fts);
+                    mdmat(a, b).rate = getMatchRate(mdmat(a, b).matches);
+
+                    mdmat(b, a).matches = findMatch(views[b].fts, views[a].fts);
+                    mdmat(b, a).rate = getMatchRate(mdmat(b, a).matches);
+
+                    views[a].mcnt++;
+                    views[b].mcnt++;
+                }
+            }
+        }
 
         bool updateValid(Mem1<PointData> &gpnts, Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const int update) {
             SP_LOGGER_SET("updateValid");
