@@ -73,71 +73,70 @@ namespace sp{
 
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
-            csrc.clear();
-            cref.clear();
+        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1) {
+            cpnts0.clear();
+            cpnts1.clear();
 
-            csrc.reserve(src.size());
-            cref.reserve(src.size());
+            cpnts0.reserve(pnts1.size());
+            cpnts1.reserve(pnts1.size());
 
-            for (int i = 0; i < src.size(); i++){
-                const TYEP0 vec = pose * src[i];
+            for (int i = 0; i < pnts1.size(); i++){
+                const TYEP1 vec = pose * pnts1[i];
 
                 int c = -1;
                 double minNorm = SP_INFINITY;
-                for (int j = 0; j < ref.size(); j++){
-                    const double norm = normVec(getPos(ref[j]) - getPos(vec));
+                for (int j = 0; j < pnts0.size(); j++){
+                    const double norm = normVec(getPos(pnts0[j]) - getPos(vec));
                     if (norm < minNorm){
                         minNorm = norm;
                         c = j;
                     }
                 }
-                if (c < 0 || checkOutlier(src[i], ref[c]) == false) continue;
+                if (c < 0 || checkOutlier(pnts1[i], pnts0[c]) == false) continue;
 
-                csrc.push(src[i]);
-                cref.push(ref[c]);
+                cpnts0.push(pnts0[c]);
+                cpnts1.push(pnts1[i]);
             }
         }
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &csrc, Mem1<TYEP1> &cref, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref){
-            csrc.clear();
-            cref.clear();
+        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1){
+            cpnts0.clear();
+            cpnts1.clear();
 
-            csrc.reserve(src.size());
-            cref.reserve(src.size());
+            cpnts0.reserve(pnts1.size());
+            cpnts1.reserve(pnts1.size());
 
-            for (int i = 0; i < src.size(); i++){
-                const TYEP0 vec = pose * src[i];
+            for (int i = 0; i < pnts1.size(); i++){
+                const TYEP1 vec = pose * pnts1[i];
 
                 const Vec2 pix = mulCam(cam, prjVec(getPos(vec)));
-                if (isInRect2(ref.dsize, pix.x, pix.y) == false) continue;
+                if (isInRect2(pnts0.dsize, pix.x, pix.y) == false) continue;
 
-                const int c = acsid2(ref.dsize, round(pix.x), round(pix.y));
-                if (checkOutlier(vec, ref[c]) == false) continue;
+                const int c = acsid2(pnts0.dsize, round(pix.x), round(pix.y));
+                if (checkOutlier(vec, pnts0[c]) == false) continue;
 
-                if (getPos(ref[c]).z == 0.0) continue;
-
-                csrc.push(src[i]);
-                cref.push(ref[c]);
+                if (getPos(pnts0[c]).z == 0.0) continue;
+                cpnts0.push(pnts0[c]);
+                cpnts1.push(pnts1[i]);
             }
         }
 
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC bool solve(Mat &result, const Pose &pose, const Mem1<TYEP0> &csrc, const Mem1<TYEP1> &cref){
-            Mat J(1 * csrc.size(), 6);
-            Mat E(1 * csrc.size(), 1);
-            Mem1<double> errs(csrc.size());
+        SP_CPUFUNC bool solve(Mat &result, const Pose &pose, const Mem1<TYEP0> &cpnts0, const Mem1<TYEP1> &cpnts1){
+            Mat J(1 * cpnts0.size(), 6);
+            Mat E(1 * cpnts0.size(), 1);
+            Mem1<double> errs(cpnts0.size());
 
-            for (int i = 0; i < csrc.size(); i++){
-                const TYEP0 vec = pose * csrc[i];
+            for (int i = 0; i < cpnts1.size(); i++){
+                const TYEP1 vec = pose * cpnts1[i];
 
-                const Vec3 err = getPos(cref[i]) - getPos(vec);
-                const Vec3 drc = getDrc(vec, cref[i]);
+                const Vec3 err = getPos(cpnts0[i]) - getPos(vec);
+                const Vec3 drc = getDrc(vec, cpnts0[i]);
 
                 double jPoseToPos[3 * 6] = { 0 };
-                jacobPoseToPos(jPoseToPos, pose, getPos(csrc[i]));
+                jacobPoseToPos(jPoseToPos, pose, getPos(cpnts1[i]));
 
                 double jDrc[3] = { drc.x, drc.y, drc.z };
                 mulMat(&J(i, 0), 1, 6, jDrc, 1, 3, jPoseToPos, 3, 6);
@@ -150,19 +149,20 @@ namespace sp{
         }
     }
 
+    // pnts0 <- pnts1 pose
     template<typename TYEP0, typename TYEP1>
-    SP_CPUFUNC bool calcICP(Pose &pose, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
-        SP_ASSERT(src.dim == 1 && ref.dim == 1);
-
-        Mem1<TYEP0> csrc;
-        Mem1<TYEP1> cref;
+    SP_CPUFUNC bool calcICP(Pose &pose, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1, const int maxit = 10){
+        SP_ASSERT(pnts0.dim == 1 && pnts1.dim == 1);
 
         for (int it = 0; it < maxit; it++){
-            _icp::getCrsp(csrc, cref, pose, src, ref);
-            if (csrc.size() < SP_ICP_MIN_CRSP) return false;
+            Mem1<TYEP0> cpnts0;
+            Mem1<TYEP1> cpnts1;    
+            
+            _icp::getCrsp(cpnts0, cpnts1, pose, pnts0, pnts1);
+            if (cpnts0.size() < SP_ICP_MIN_CRSP) return false;
 
             Mat delta;
-            if (_icp::solve(delta, pose, csrc, cref) == false) return false;
+            if (_icp::solve(delta, pose, cpnts0, cpnts1) == false) return false;
 
 
             pose = updatePose(pose, delta.ptr);
@@ -171,19 +171,20 @@ namespace sp{
         return true;
     }
 
+    // pnts0 <- pnts1 pose
     template<typename TYEP0, typename TYEP1>
-    SP_CPUFUNC bool calcICP(Pose &pose, const CamParam &cam, const Mem<TYEP0> &src, const Mem<TYEP1> &ref, const int maxit = 10){
-        SP_ASSERT(src.dim == 1 && ref.dim == 2);
-
-        Mem1<TYEP0> csrc;
-        Mem1<TYEP1> cref;
+    SP_CPUFUNC bool calcICP(Pose &pose, const CamParam &cam, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1, const int maxit = 10){
+        SP_ASSERT(pnts0.dim == 2 && pnts1.dim == 1);
 
         for (int it = 0; it < maxit; it++){
-            _icp::getCrsp(csrc, cref, pose, cam, src, ref);
-            if (csrc.size() < SP_ICP_MIN_CRSP) return false;
+            Mem1<TYEP0> cpnts0;
+            Mem1<TYEP1> cpnts1;
+
+            _icp::getCrsp(cpnts0, cpnts1, pose, cam, pnts0, pnts1);
+            if (cpnts0.size() < SP_ICP_MIN_CRSP) return false;
 
             Mat delta;
-            if (_icp::solve(delta, pose, csrc, cref) == false) return false;
+            if (_icp::solve(delta, pose, cpnts0, cpnts1) == false) return false;
 
             pose = updatePose(pose, delta.ptr);
         }

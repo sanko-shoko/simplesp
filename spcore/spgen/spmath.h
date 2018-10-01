@@ -36,9 +36,20 @@ namespace sp{
         return ret;
     }
 
-    // a * a
-    SP_GENFUNC double square(const double a){
-        return a * a;
+    // x * x
+    SP_GENFUNC double square(const double x){
+        return x * x;
+    }
+
+    // x * x * x
+    SP_GENFUNC double cubic(const double x) {
+        return x * x * x;
+    }
+
+    // cubic root
+    SP_GENFUNC double cbrt(const double x) {
+        const double z = pow(fabs(x), 1.0 / 3.0);
+        return (x >= 0.0) ? z : -z;
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
@@ -874,6 +885,219 @@ namespace sp{
         return true;
     }
 
+
+    //--------------------------------------------------------------------------------
+    // equation
+    //--------------------------------------------------------------------------------
+
+    // a * x^2 + b * x + c = 0
+    SP_GENFUNC int eq2(double xs[2][2], const double a, const double b, const double c) {
+        if (fabs(a) < SP_SMALL) {
+            if (fabs(b) < SP_SMALL) {
+                return 0;
+            }
+            else {
+                xs[0][0] = -c / b;
+                xs[0][1] = 0.0;
+                return 1;
+            }
+        }
+
+        const double D = b * b - 4.0 * a * c;
+
+        int ret = 0;
+        if (fabs(D) < SP_SMALL) {
+
+            xs[0][0] = -b / (2.0 * a);
+            xs[0][1] = 0.0;
+
+            ret = 1;
+        }
+        else if (D > 0.0) {
+
+            xs[0][0] = (-b + sqrt(D)) / (2.0 * a);
+            xs[0][1] = 0.0;
+
+            xs[1][0] = (-b - sqrt(D)) / (2.0 * a);
+            xs[1][1] = 0.0;
+
+            ret = 2;
+        }
+        else if (D < 0.0) {
+
+            xs[0][0] = -b / (2.0 * a);
+            xs[0][1] = +sqrt(-D) / (2.0 * a);
+
+            xs[1][0] = -b / (2.0 * a);
+            xs[1][1] = -sqrt(-D) / (2.0 * a);
+
+            ret = 2;
+        }
+        return ret;
+    }
+
+    // a * x^3 + b * x^2 + c * x + d = 0
+    SP_GENFUNC int eq3(double xs[3][2], const double a, const double b, const double c, const double d) {
+        if (fabs(a) < SP_SMALL) {
+            return eq2(xs, b, c, d);
+        }
+
+        const double nb = b / a;
+        const double nc = c / a;
+        const double nd = d / a;
+
+        const double p = nc - nb * nb / 3.0;
+        const double q = nd - nb * nc / 3.0 + 2.0 * nb * nb * nb / 27.0;
+
+        const double D = -square(q / 2.0) - cubic(p / 3.0);
+
+        const double A = -nb / 3.0;
+        const double B = q / 2.0;
+
+        int ret = 0;
+        if (fabs(D) < SP_SMALL) {
+            if (fabs(q) < SP_SMALL) {
+
+                xs[0][0] = A;
+                xs[0][1] = 0.0;
+
+                ret = 1;
+            }
+            else {
+
+                xs[0][0] = A - 2 * cbrt(B);
+                xs[0][1] = 0.0;
+
+                xs[1][0] = A + cbrt(B);
+                xs[1][1] = 0.0;
+
+                ret = 2;
+            }
+        }
+        else if (D > 0.0) {
+
+            const double theta = atan2(sqrt(D), -B);
+            const double R = pow(B * B + D, 1.0 / 6.0) * cos(theta / 3.0);
+            const double Q = pow(B * B + D, 1.0 / 6.0) * sin(theta / 3.0);
+
+            xs[0][0] = A + 2 * R;
+            xs[0][1] = 0.0;
+
+            xs[1][0] = A - R - Q * sqrt(3.0);
+            xs[1][1] = 0.0;
+
+            xs[2][0] = A - R + Q * sqrt(3.0);
+            xs[2][1] = 0.0;
+
+            ret = 3;
+        }
+        else if (D < 0.0) {
+
+            const double S = cbrt(-B + sqrt(-D));
+            const double T = cbrt(-B - sqrt(-D));
+
+            xs[0][0] = A + (S + T);
+            xs[0][1] = 0.0;
+
+            xs[1][0] = A - (S + T) / 2.0;
+            xs[1][1] = +(S - T) * sqrt(3.0) / 2.0;
+
+            xs[2][0] = A - (S + T) / 2.0;
+            xs[2][1] = -(S - T) * sqrt(3.0) / 2.0;
+
+            ret = 3;
+        }
+        return ret;
+    }
+
+    // a * x^4 + b * x^3 + c * x^2 + d * x + e = 0
+    SP_GENFUNC int eq4(double xs[3][2], const double a, const double b, const double c, const double d, const double e) {
+        if (fabs(a) < SP_SMALL) {
+            return eq3(xs, b, c, d, e);
+        }
+
+        const double nb = b / a;
+        const double nc = c / a;
+        const double nd = d / a;
+        const double ne = e / a;
+
+        const double b2 = nb / 4;
+
+        const double p = nc - 6 * b2 * b2;
+        const double q = nd - 2 * nc * b2 + 8 * pow(b2, 3);
+
+        const double r = ne - nd * b2 + nc * b2 * b2 - 3 * pow(b2, 4);
+        const double x = 2 * p;
+        const double y = p * p - 4 * r;
+        const double z = -q * q;
+
+        double e3[3][2];
+        const int nn = eq3(e3, 1.0, x, y, z);
+        const double u = e3[0][0];
+
+        const double R = -sqrt(u) / 2;
+        const double S = (p + u) / 2;
+        const double T = -q / (4 * R);
+        const double Dp = R * R - S + T;
+        const double Dm = R * R - S - T;
+
+        int ret = 0;
+        if (fabs(Dp) < SP_SMALL) {
+            xs[ret + 0][0] = -b2 + R;
+            xs[ret + 0][1] = 0.0;
+
+            ret++;
+        }
+        else if (Dp > 0.0){
+            
+            xs[ret + 0][0] = -b2 + R + sqrt(Dp);
+            xs[ret + 0][1] = 0.0;
+
+            xs[ret + 1][0] = -b2 + R - sqrt(Dp);
+            xs[ret + 1][1] = 0.0;
+
+            ret += 2;
+        }
+        else if (Dp < 0.0){
+            
+            xs[ret + 0][0] = -b2 + R;
+            xs[ret + 0][1] = +sqrt(-Dp);
+
+            xs[ret + 1][0] = -b2 + R;
+            xs[ret + 1][1] = -sqrt(-Dp);
+
+            ret += 2;
+        }
+
+        if (fabs(Dm) < SP_SMALL) {
+            xs[ret + 0][0] = -b2 - R;
+            xs[ret + 0][1] = 0.0;
+
+            ret++;
+        }
+        else if (Dm > 0.0) {
+
+            xs[ret + 0][0] = -b2 - R + sqrt(Dm);
+            xs[ret + 0][1] = 0.0;
+
+            xs[ret + 1][0] = -b2 - R - sqrt(Dm);
+            xs[ret + 1][1] = 0.0;
+
+            ret += 2;
+        }
+        else if (Dm < 0.0) {
+
+            xs[ret + 0][0] = -b2 - R;
+            xs[ret + 0][1] = +sqrt(-Dm);
+
+            xs[ret + 1][0] = -b2 - R;
+            xs[ret + 1][1] = -sqrt(-Dm);
+
+            ret += 2;
+        }
+
+        return ret;
+    }
 }
 
 #endif
