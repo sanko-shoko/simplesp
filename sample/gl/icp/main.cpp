@@ -26,9 +26,9 @@ private:
 
     void help() {
         printf("dataA (point cloud) controlled by mouse\n");
-        printf("'p' key : render dataB (point cloud)\n");
-        printf("'d' key : render dataB (depth map)\n");
-        printf("'c' key : calc ICP (dataA <-> dataB)\n");
+        printf("'a' key : render dataB (point cloud)\n");
+        printf("'s' key : render dataB (depth map)\n");
+        printf("'d' key : calc ICP (dataA <-> dataB)\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -38,7 +38,7 @@ private:
 
         m_cam = getCamParam(640, 480);
 
-        if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
+        if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false) {
 
             // if could not find stanford bunny, load dummy model
             loadGeodesicDorm(m_model, 100.0, 1);
@@ -50,7 +50,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_D] == 1) {
+        if (m_keyAction[GLFW_KEY_A] == 1) {
             m_dataB.resize(2, m_cam.dsize);
 
             m_dataB.zero();
@@ -61,7 +61,7 @@ private:
             cnvDepthToImg(m_img, m_dataB, distance - 2 * radius, distance + 2 * radius);
         }
 
-        if (m_keyAction[GLFW_KEY_P] == 1) {
+        if (m_keyAction[GLFW_KEY_S] == 1) {
             const int dsize[1] = { m_dataA.size() };
             m_dataB.resize(1, dsize);
 
@@ -70,16 +70,16 @@ private:
             }
         }
 
-        if (m_keyAction[GLFW_KEY_C] > 0) {
+        if (m_keyAction[GLFW_KEY_D] > 0) {
 
             // point to point
             if (m_dataB.dim == 1) {
-                calcICP(m_pose, m_dataA, m_dataB, 1);
+                calcICP(m_pose, m_dataB, m_dataA, 1);
             }
 
             // point to 2d map
-            else if (m_dataB.dim == 2) {
-                calcICP(m_pose, m_cam, m_dataA, m_dataB, 1);
+            if (m_dataB.dim == 2) {
+                calcICP(m_pose, m_cam, m_dataB, m_dataA, 1);
             }
         }
     }

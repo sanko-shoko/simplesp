@@ -54,10 +54,10 @@ namespace sp{
 
             Mat result;
             if (solveEqZero(result, M) == false) return false;
-            
-            if (fabs(result[2]) < SP_SMALL) return false;
-            result /= result[2];
 
+            if (fabs(result[2]) < SP_SMALL) return false;
+
+            result /= result[2];
             if (result[0] < SP_SMALL || result[1] < SP_SMALL) return false;
 
             // set param
@@ -113,15 +113,10 @@ namespace sp{
                     const Mem1<Vec2> &tobjs = vobjs[i];
                     for (int p = 0; p < tpixs.size(); p++){
                         const Vec2 pix = tpixs[p];
-                        const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
-                        const Vec2 vec = mulCamD(cam, prjVec(pose * obj));
-
-                        const Vec2 err = pix - vec;
-                        E(cnt * 2 + 0, 0) = err.x;
-                        E(cnt * 2 + 1, 0) = err.y;
+                        const Vec3 obj = getVec(tobjs[p], 0.0);
 
                         jacobCamToPix(jCamToPix.ptr, cam, prjVec(pose * obj));
-                        jacobPoseToPix(jPoseToPix.ptr, pose, cam, obj);
+                        jacobPoseToPix(jPoseToPix.ptr, cam, pose, obj);
 
                         for (int r = 0; r < 2; r++){
                             for (int c = 0; c < 9; c++){
@@ -131,6 +126,10 @@ namespace sp{
                                 J(cnt * 2 + r, c + 9 + i * 6) = jPoseToPix(r, c);
                             }
                         }
+
+                        const Vec2 err = pix - mulCamD(cam, prjVec(pose * obj));
+                        E(cnt * 2 + 0, 0) = err.x;
+                        E(cnt * 2 + 1, 0) = err.y;
 
                         errs[cnt] = normVec(err);
                         cnt++;
@@ -144,18 +143,7 @@ namespace sp{
                 Mat delta;
                 if (solveEq(delta, J, E, errs) == false) return ret;
 
-                {
-                    cam.fx += delta[0];
-                    cam.fy += delta[1];
-                    cam.cx += delta[2];
-                    cam.cy += delta[3];
-
-                    cam.k1 += delta[4];
-                    cam.k2 += delta[5];
-                    cam.k3 += delta[6];
-                    cam.p1 += delta[7];
-                    cam.p2 += delta[8];
-                }
+                cam = updateCam(cam, &delta[0]);
 
                 for (int n = 0; n < vposes.size(); n++){
                     vposes[n] = updatePose(vposes[n], &delta[9 + n * 6]);
@@ -222,45 +210,43 @@ namespace sp{
             for (int it = 0; it < maxit; it++){
 
                 // refine vpose
-                if(it > 0){
-                    for (int i = 0; i < vposes.size(); i++){
-                        Mat J(4 * vpixs0[i].size(), 6);
-                        Mat E(4 * vpixs0[i].size(), 1);
+                for (int i = 0; i < vposes.size(); i++){
+                    Mat J(4 * vpixs0[i].size(), 6);
+                    Mat E(4 * vpixs0[i].size(), 1);
 
-                        const Pose pose0 = vposes[i];
-                        const Pose pose1 = stereo * vposes[i];
+                    const Pose pose0 = vposes[i];
+                    const Pose pose1 = stereo * vposes[i];
 
-                        const Mat sR = getMat(stereo.rot);
+                    const Mat sR = getMat(stereo.rot);
 
-                        for (int p = 0; p < vobjs[i].size(); p++){
-                            const Vec3 obj = getVec(vobjs[i][p].x, vobjs[i][p].y, 0.0);
+                    for (int p = 0; p < vobjs[i].size(); p++){
+                        const Vec3 obj = getVec(vobjs[i][p].x, vobjs[i][p].y, 0.0);
 
-                            double jPoseToPos0[3 * 6] = { 0 };
-                            double jPoseToPos1[3 * 6] = { 0 };
-                            jacobPoseToPos(jPoseToPos0, pose0, obj);
-                            mulMat(jPoseToPos1, 3, 6, sR.ptr, 3, 3, jPoseToPos0, 3, 6);
+                        double jPoseToPos0[3 * 6] = { 0 };
+                        double jPoseToPos1[3 * 6] = { 0 };
+                        jacobPoseToPos(jPoseToPos0, pose0, obj);
+                        mulMat(jPoseToPos1, 3, 6, sR.ptr, 3, 3, jPoseToPos0, 3, 6);
 
-                            double jPosToPix0[2 * 3] = { 0 };
-                            double jPosToPix1[2 * 3] = { 0 };
-                            jacobPosToPix(jPosToPix0, cam0, pose0 * obj);
-                            jacobPosToPix(jPosToPix1, cam1, pose1 * obj);
+                        double jPosToPix0[2 * 3] = { 0 };
+                        double jPosToPix1[2 * 3] = { 0 };
+                        jacobPosToPix(jPosToPix0, cam0, pose0 * obj);
+                        jacobPosToPix(jPosToPix1, cam1, pose1 * obj);
 
-                            mulMat(&J(p * 4 + 0, 0), 2, 6, jPosToPix0, 2, 3, jPoseToPos0, 3, 6);
-                            mulMat(&J(p * 4 + 2, 0), 2, 6, jPosToPix1, 2, 3, jPoseToPos1, 3, 6);
+                        mulMat(&J(p * 4 + 0, 0), 2, 6, jPosToPix0, 2, 3, jPoseToPos0, 3, 6);
+                        mulMat(&J(p * 4 + 2, 0), 2, 6, jPosToPix1, 2, 3, jPoseToPos1, 3, 6);
 
-                            const Vec2 err0 = vpixs0[i][p] - mulCamD(cam0, prjVec(pose0 * obj));
-                            const Vec2 err1 = vpixs1[i][p] - mulCamD(cam1, prjVec(pose1 * obj));
+                        const Vec2 err0 = vpixs0[i][p] - mulCamD(cam0, prjVec(pose0 * obj));
+                        const Vec2 err1 = vpixs1[i][p] - mulCamD(cam1, prjVec(pose1 * obj));
 
-                            E(p * 4 + 0, 0) = err0.x;
-                            E(p * 4 + 1, 0) = err0.y;
-                            E(p * 4 + 2, 0) = err1.x;
-                            E(p * 4 + 3, 0) = err1.y;
-                        }
-                        Mat delta;
-                        if (solveEq(delta, J, E) == false) return false;
-
-                        vposes[i] = updatePose(vposes[i], delta.ptr);
+                        E(p * 4 + 0, 0) = err0.x;
+                        E(p * 4 + 1, 0) = err0.y;
+                        E(p * 4 + 2, 0) = err1.x;
+                        E(p * 4 + 3, 0) = err1.y;
                     }
+                    Mat delta;
+                    if (solveEq(delta, J, E) == false) return false;
+
+                    vposes[i] = updatePose(vposes[i], delta.ptr);
                 }
 
                 // refine stereo
@@ -288,7 +274,7 @@ namespace sp{
                             E(cnt * 2 + 0, 0) = err.x;
                             E(cnt * 2 + 1, 0) = err.y;
 
-                            jacobPoseToPix(&J[2 * 6 * cnt], stereo, cam1, pose * obj);
+                            jacobPoseToPix(&J[2 * 6 * cnt], cam1, stereo, pose * obj);
 
                             errs[cnt] = normVec(err);
                             cnt++;
@@ -316,6 +302,281 @@ namespace sp{
 
             return rms;
         }
+
+        SP_CPUFUNC bool initMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs) {
+            const int cnum = pixs.size();
+            const int bnum = pixs[0].size();
+
+            poses.resize(cnum);
+
+            Mem2<Pose> mem(cnum, bnum);
+            Mem2<double> eval(cnum, bnum);
+
+            for (int i = 0; i < cnum; i++) {
+                Mem1<Mem1<Vec2> > vpixs;
+                Mem1<Mem1<Vec2> > vobjs;
+                for (int j = 0; j < bnum; j++) {
+                    if (pixs[i][j].size() >= 4) {
+                        vpixs.push(pixs[i][j]);
+                        vobjs.push(objs[i][j]);
+                    }
+                }
+                CamParam cam;
+#if 0
+                //if (initCam(cam, dsizes[i].arr, vpixs, vobjs) == false) return false;
+                //if (optCam(cam, dsizes[i].arr, vpixs, vobjs) < 0.0) return false;
+                cams[i] = cam;
+#else
+                cam = cams[i];
+#endif
+
+                for (int j = 0; j < bnum; j++) {
+                    mem(i, j) = zeroPose();
+                    eval(i, j) = 0.0;
+                    if (pixs[i][j].size() >= 4) {
+
+                        Pose pose;
+                        if (calcPose(pose, cam, pixs[i][j], objs[i][j]) == true) {
+                            mem(i, j) = pose;
+                            eval(i, j) = evalErr(errPose(pose, cam, pixs[i][j], objs[i][j]));
+                        }
+                    }
+                }
+
+            }
+
+            Mem1<bool> valid(cnum);
+            valid.zero();
+
+            poses[0] = zeroPose();
+            valid[0] = true;
+
+            for (int it = 0; it < cnum - 1; it++) {
+                Pose pose;
+                int id = - 1;
+                double maxe = 0.0;
+                for (int i = 0; i < cnum; i++) {
+                    if (valid[i] == true) continue;
+
+                    for (int j = 0; j < cnum; j++) {
+                        if (valid[j] == false) continue;
+
+                        for (int k = 0; k < bnum; k++) {
+                            const double e = eval(i, k) * eval(j, k);
+                            if (e > maxe) {
+                                id = i;
+                                maxe = e;
+                                pose = mem(i, k) * invPose(mem(j, k)) * poses[j];
+                            }
+                        }
+                    }
+                }
+                if (id > 0) {
+                    poses[id] = pose;
+                    valid[id] = true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        SP_CPUFUNC double optMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, int maxit = 40) {
+            const int cnum = pixs.size();
+            const int onum = pixs[0].size();
+
+            Mem1<Pose> vposes;
+            Mem1<Mem1<Mem1<Vec2> > > vpixs;
+            Mem1<Mem1<Mem1<Vec2> > > vobjs;
+
+            // set valid data
+            for (int i = 0; i < onum; i++) {
+                Pose pose;
+                double maxe = 0.0;
+                for (int j = 0; j < cnum; j++) {
+                    Pose tmp;
+                    if (calcPose(tmp, cams[j], pixs[j][i], objs[j][i]) == false) continue;
+
+                    const double e = evalErr(errPose(tmp, cams[j], pixs[j][i], objs[j][i]));
+                    if (e > maxe) {
+                        maxe = e;
+                        pose = invPose(poses[j]) * tmp;
+                    }
+                }
+                if (maxe > 0.0) {
+                    vposes.push(pose);
+
+                    Mem1<Mem1<Vec2> > tpixs;
+                    Mem1<Mem1<Vec2> > tobjs;
+                    for (int j = 0; j < cnum; j++) {
+                        tpixs.push(pixs[j][i]);
+                        tobjs.push(objs[j][i]);
+                    }
+
+                    vpixs.push(tpixs);
+                    vobjs.push(tobjs);
+                }
+            }
+
+            int pmax = 0;
+            for (int i = 0; i < vposes.size(); i++) {
+                for (int j = 0; j < vpixs[i].size(); j++) {
+                    pmax += vpixs[i][j].size();
+                }
+            }
+
+            double rms = -1.0;
+
+            // gauss-newton
+            for (int it = 0; it < maxit; it++) {
+                // refine vpose
+                for (int i = 0; i < vposes.size(); i++) {
+                    int cnt = 0;
+                    for (int j = 0; j < cnum; j++) {
+                        cnt += vpixs[i][j].size();
+                    }
+
+                    Mat J(2 * cnt, 6);
+                    Mat E(2 * cnt, 1);
+                    Mem1<double> errs(cnt);
+
+                    Mem1<Pose> rposes;
+                    Mem1<Mat> Rs;
+                    for (int j = 0; j < cnum; j++) {
+                        Pose pose = poses[j] * vposes[i];
+                        rposes.push(pose);
+                        Rs.push(getMat(poses[j].rot));
+                    }
+
+                    cnt = 0;
+                    for (int j = 0; j < cnum; j++) {
+                        for (int k = 0; k < vpixs[i][j].size(); k++) {
+                            const Vec2 pix = vpixs[i][j][k];
+                            const Vec3 obj = getVec(vobjs[i][j][k], 0.0);
+
+                            double tmp[3 * 6] = { 0 };
+                            jacobPoseToPos(tmp, vposes[i], obj);
+
+                            double jPoseToPos[3 * 6] = { 0 };
+                            mulMat(jPoseToPos, 3, 6, Rs[j].ptr, 3, 3, tmp, 3, 6);
+
+                            double jPosToPix[2 * 3] = { 0 };
+                            jacobPosToPix(jPosToPix, cams[j], rposes[j] * obj);
+
+                            mulMat(&J(cnt * 2 + 0, 0), 2, 6, jPosToPix, 2, 3, jPoseToPos, 3, 6);
+
+                            const Vec2 prj = mulCamD(cams[j], prjVec(rposes[j] * obj));
+                            const Vec2 err = pix - prj;
+
+                            E(cnt * 2 + 0, 0) = err.x;
+                            E(cnt * 2 + 1, 0) = err.y;
+                            errs[cnt] = normVec(err);
+                            cnt++;
+                        }
+                    }
+
+                    Mat delta;
+                    if (solveEq(delta, J, E, errs) == false) return false;
+
+                    delta *= 0.5;
+                    vposes[i] = updatePose(vposes[i], delta.ptr);
+                }
+
+                // refine multi cam
+                for (int i = 0; i < cnum; i++) {
+                    int cnt = 0;
+                    for (int j = 0; j < vposes.size(); j++) {
+                        cnt += vpixs[j][i].size();
+                    }
+#if 0
+                    {
+                        Mat J(cnt * 2, 9);
+                        Mat E(cnt * 2, 1);
+                        Mem1<double> errs(cnt);
+
+                        cnt = 0;
+                        for (int j = 0; j < vposes.size(); j++) {
+                            for (int k = 0; k < vpixs[j][i].size(); k++) {
+                                const Vec2 pix = vpixs[j][i][k];
+                                const Vec3 obj = getVec(vobjs[j][i][k], 0.0);
+
+                                const Pose pose = poses[i] * vposes[j];
+
+                                jacobCamToPix(&J(cnt * 2 + 0, 0), cams[i], prjVec(pose * obj));
+
+                                const Vec2 err = pix - mulCamD(cams[i], prjVec(pose * obj));
+                                E(cnt * 2 + 0, 0) = err.x;
+                                E(cnt * 2 + 1, 0) = err.y;
+
+                                errs[cnt] = normVec(err);
+                                cnt++;
+                            }
+                        }
+
+                        Mat delta;
+                        if (solveEq(delta, J, E, errs) == false) return -1.0;
+                        cams[i] = updateCam(cams[i], &delta[0]);
+                    }
+#endif
+
+                    {
+                        Mat J(cnt * 2, 6);
+                        Mat E(cnt * 2, 1);
+                        Mem1<double> errs(cnt);
+                        cnt = 0;
+                        for (int j = 0; j < vposes.size(); j++) {
+                            for (int k = 0; k < vpixs[j][i].size(); k++) {
+                                const Vec2 pix = vpixs[j][i][k];
+                                const Vec3 obj = getVec(vobjs[j][i][k], 0.0);
+
+                                const Pose pose = poses[i] * vposes[j];
+
+                                jacobPoseToPix(&J(cnt * 2 + 0, 0), cams[i], pose, obj);
+
+                                const Vec2 err = pix - mulCamD(cams[i], prjVec(pose * obj));
+                                E(cnt * 2 + 0, 0) = err.x;
+                                E(cnt * 2 + 1, 0) = err.y;
+
+                                errs[cnt] = normVec(err);
+                                cnt++;
+                            }
+                        }
+
+                        Mat delta;
+                        if (solveEq(delta, J, E, errs) == false) return -1.0;
+
+                        delta *= 0.5;
+                        poses[i] = updatePose(poses[i], &delta[0]);
+                    }
+                }
+                {
+                    Pose base = poses[0];
+                    for (int i = 0; i < cnum; i++) {
+                        poses[i] = poses[i] * invPose(base);
+                    }
+
+                }
+                {
+                    Mem1<double> errs;
+                    for (int i = 0; i < vposes.size(); i++) {
+                        for (int j = 0; j < cnum; j++) {
+                            errs.push(errPose(poses[j] * vposes[i], cams[j], vpixs[i][j], vobjs[i][j]));
+                        }
+                    }
+
+                    const double mean = meanVal(errs);
+                    const double median = medianVal(errs);
+                    rms = sqrt(meanSq(errs));
+
+                    SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+                }
+            }
+
+            return rms;
+        }
+
 
         SP_CPUFUNC bool initRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &As, const Mem1<Pose> &Bs) {
             const int num = As.size();
@@ -429,7 +690,7 @@ namespace sp{
                     Mat J1(2, 6);
                     for (int j = 0; j < tobjs.size(); j++) {
                         {
-                            jacobPoseToPix(J0.ptr, X, cam, (iB * iZ) * tobjs[j]);
+                            jacobPoseToPix(J0.ptr, cam, X, (iB * iZ) * tobjs[j]);
                         }
                         {
                             Mat J1_6D3D(3, 6);
@@ -548,11 +809,31 @@ namespace sp{
         return calibStereo(stereo, cam0, cam1, cpixs0, cpixs1, cobjs, maxit);
     }
 
+
+    //--------------------------------------------------------------------------------
+    // calibrate multi camera
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC double calibMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, const int maxit = 40) {
+
+        double rms = -1.0;
+
+        try {
+            if (initMultiCam(poses, cams, pixs, objs) == false) throw "initCam";
+
+            if ((rms = optMultiCam(poses, cams, pixs, objs, maxit)) < 0.0) throw "optMultiCam";
+        }
+        catch (const char *str) {
+            SP_PRINTD("calibMultiCam [%s]\n", str);
+        }
+
+        return rms;
+    }
+
+
     //--------------------------------------------------------------------------------
     // calibrate robot to cam
     //--------------------------------------------------------------------------------
-
-    // 
 
     SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs) {
 

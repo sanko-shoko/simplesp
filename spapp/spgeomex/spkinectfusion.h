@@ -154,7 +154,7 @@ namespace sp{
             }
 
             Pose delta = zeroPose();
-            if (calcICP(delta, cam, sample, cast, 20) == false) return false;
+            if (calcICP(delta, cam, cast, sample, 20) == false) return false;
             pose = invPose(delta) * pose;
 
             return true;

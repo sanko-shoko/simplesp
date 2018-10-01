@@ -608,7 +608,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE, int SIZE> class MemA {
-    private:
+    public:
         TYPE arr[SIZE];
 
     public:

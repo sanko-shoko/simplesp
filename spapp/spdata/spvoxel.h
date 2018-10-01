@@ -603,16 +603,47 @@ namespace sp{
 //        const double radius = normVec(cent * tsdf.unit);
 //
 //        Mem2<double> depth(cam.dsize);
+//        Mem2<double> eval(cam.dsize);
+//
 //        for (int v = 0; v < depth.dsize[1]; v++) {
 //            for (int u = 0; u < depth.dsize[0]; u++) {
+//                const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
+//
+//                double maxv;
+//                double minv;
+//                {
+//                    const double a = sqVec(cvec);
+//                    const double b = -2.0 * dotVec(cvec, pose.trn);
+//                    const double c = sqVec(pose.trn) - square(radius);
+//
+//                    const double D = b * b - 4 * a * c;
+//                    if (D <= 0) continue;
+//
+//                    maxv = (-b + sqrt(D)) / (2.0 * a);
+//                    minv = (-b - sqrt(D)) / (2.0 * a);
+//
+//                    if (maxv <= 0) continue;
+//                    minv = maxVal(minv, 0.0);
+//                }
+//
 //                depth(u, v) = radius * randValUnif() + pose.trn.z;
+//                //depth(u, v) = (maxv - minv) * randValUnif() * 0.5 + (minv + maxv) * 0.5;
+//
+//                const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
+//                const Vec3 mpos = (ipose.trn + mvec * depth(u, v)) / tsdf.unit + cent;
+//                if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
+//
+//                const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_TSDF_QUANT;
+//                const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
+//                if (weight > 0) {
+//                    eval(u, v) = val;
+//                }
+//                else {
+//                    eval(u, v) = (depth(u, v) < pose.trn.z) ? +1.0 : -1.0;
+//                }
 //            }
 //        }
-//
-//        Mem2<double> eval(map.dsize);
-//        setElm(eval, 1.0);
-//
-//        for (int it = 0; it < 100; it++) {
+//        for (int it = 0; it < 15; it++) {
 //            // eval
 //
 //#if SP_USE_OMP
@@ -623,30 +654,23 @@ namespace sp{
 //
 //                    const double delta = eval(u, v) * mu;
 //
-//                    const Vec2 npx = invCam(cam, getVec(u, v));
-//                    const Vec3 cvec = getVec(npx.x, npx.y, 1.0);
-//
-//                    const Vec3 mvec = ipose.rot * cvec;
+//                    const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
 //                    const Vec3 mpos = (ipose.trn + mvec * (depth(u, v) + delta)) / tsdf.unit + cent;
-//
 //                    if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
 //
-//                    const char &val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z));
-//                    const char &weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
+//                    const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_TSDF_QUANT;
+//                    const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
 //
 //                    if (weight == 0) {
-//                        depth(u, v) -= delta;
-//                        continue;
+//                        depth(u, v) += delta;
 //                    }
-//                    const double e = val / SP_TSDF_QUANT;
-//
-//                    if (fabs(e) < fabs(eval(u, v))) {
-//                        eval(u, v) = e;
+//                    if (fabs(val) < fabs(eval(u, v))) {
+//                        eval(u, v) = val;
 //                        depth(u, v) += delta;
 //                    }
 //                }
 //            }
-//            continue;
+//            //continue;
 //            // propagate
 //            const int prop = (it % 2 == 0) ? +1 : -1;
 //
@@ -654,36 +678,29 @@ namespace sp{
 //#pragma omp parallel for
 //#endif
 //            for (int v = 0; v < depth.dsize[1]; v++) {
-//                for (int iu = 0; iu < depth.dsize[0]; iu++) {
-//                    const int u = (prop > 0) ? iu : depth.dsize[0] - iu;
+//                for (int iu = 1; iu < depth.dsize[0]; iu++) {
+//                    const int u = (prop > 0) ? iu : depth.dsize[0] - 1 - iu;
 //
-//                    const Vec2 npx = invCam(cam, getVec(u, v));
-//                    const Vec3 cvec = getVec(npx.x, npx.y, 1.0);
-//
-//                    const Vec3 mvec = ipose.rot * cvec;
-//
-//                    const double ce = eval(u, v);
 //                    const double cd = depth(u, v);
+//                    const double ce = eval(u, v);
 //
-//                    const int x = u + prop;
-//                    const int y = v;
-//                    if (isInRect2(depth.dsize, x, y) == false) continue;
+//                    const double rd = depth(u - prop, v);
+//                    const double re = eval(u - prop, v);
 //
-//                    const double re = eval(x, y);
-//                    const double rd = depth(x, y);
-//
-//                    if (re < 0.5 && rd < cd - mu) {
-//                        const Vec3 mpos = (ipose.trn + mvec * rd + cent) / tsdf.unit;
+//                    if (fabs(re) < fabs(ce) && (ce == 1.0 || rd < cd + mu)) {
+//                        const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
+//                        const Vec3 mpos = (ipose.trn + mvec * rd) / tsdf.unit + cent;
 //
 //                        if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
 //
-//                        const char &val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z));
-//                        const char &weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
+//                        const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_TSDF_QUANT;
+//                        const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
 //
 //                        if (weight == 0) continue;
-//
-//                        depth(u, v) = rd;
-//                        eval(u, v) = val / SP_TSDF_QUANT;
+//                        if (fabs(val) < fabs(ce)) {
+//                            depth(u, v) = rd;
+//                            eval(u, v) = val;
+//                        }
 //                    }
 //                }
 //            }
@@ -694,10 +711,7 @@ namespace sp{
 //                for (int iv = 0; iv < depth.dsize[1]; iv++) {
 //                    const int v = (prop > 0) ? iv : depth.dsize[1] - iv;
 //
-//                    const Vec2 npx = invCam(cam, getVec(u, v));
-//                    const Vec3 cvec = getVec(npx.x, npx.y, 1.0);
-//
-//                    const Vec3 mvec = ipose.rot * cvec;
+//                    const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
 //
 //                    const double ce = eval(u, v);
 //                    const double cd = depth(u, v);
@@ -710,7 +724,7 @@ namespace sp{
 //                    const double rd = depth(x, y);
 //
 //                    if (re < 0.5 && rd < cd - mu) {
-//                        const Vec3 mpos = (ipose.trn + mvec * rd + cent) / tsdf.unit;
+//                        const Vec3 mpos = (ipose.trn + mvec * rd) / tsdf.unit + cent;
 //
 //                        if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
 //
@@ -736,7 +750,7 @@ namespace sp{
 //                    const Vec3 mvec = ipose.rot * cvec;
 //
 //                    const double detect = depth(u, v);
-//                    const Vec3 mpos = (ipose.trn + mvec * detect + cent) / tsdf.unit;
+//                    const Vec3 mpos = (ipose.trn + mvec * detect) / tsdf.unit + cent;
 //                    const Vec3 mnrm = getSDFNrm(tsdf.vmap, round(mpos.x), round(mpos.y), round(mpos.z));
 //
 //                    const Vec3 cpos = cvec * detect;

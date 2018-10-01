@@ -62,7 +62,7 @@ private:
         }
 
         {
-            if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
+            if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false) {
 
                 // if could not find stanford bunny, load dummy model
                 loadGeodesicDorm(m_model, 100.0, 1);

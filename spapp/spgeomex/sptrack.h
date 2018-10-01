@@ -83,7 +83,7 @@ namespace sp{
                     const Vec2 nrm = cnrms[i];
 
                     double jacob[2 * 6];
-                    jacobPoseToPix(jacob, pose, cam, cobjs[i]);
+                    jacobPoseToPix(jacob, cam, pose, cobjs[i]);
 
                     mulMat(&J(i, 0), 1, 6, (const double*)&nrm, 1, 2, jacob, 2, 6);
 

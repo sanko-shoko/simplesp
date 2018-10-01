@@ -31,7 +31,7 @@ private:
 
         help();
 
-        if (loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply") == false) {
+        if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false) {
 
             // if could not find stanford bunny, load dummy model
             loadGeodesicDorm(m_model, 100.0, 1);
@@ -91,8 +91,8 @@ private:
         // detect dot marker
         m_dotMarker.execute(img);
 
-        if (m_diminish == true) {
-            m_dotMarker.diminish(img);
+        if (m_diminish == true && m_dotMarker.getHom()) {
+            diminishDotMarker(img, m_dotMarker.getMrk(), *m_dotMarker.getHom());
         }
 
         {

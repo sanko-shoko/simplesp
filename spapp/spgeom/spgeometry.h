@@ -547,7 +547,7 @@ namespace sp{
 
         for (int it = 0; it < maxit; it++) {
             for (int i = 0; i < pixs.size(); i++) {
-                jacobPoseToPix(&J(i * 2, 0), pose, cam, objs[i]);
+                jacobPoseToPix(&J(i * 2, 0), cam, pose, objs[i]);
 
                 const Vec2 err = pixs[i] - mulCamD(cam, prjVec(pose * objs[i]));
                 E(i * 2 + 0, 0) = err.x;
@@ -567,29 +567,142 @@ namespace sp{
         return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
 
-    //// P3P
-    //SP_CPUFUNC bool calcP3P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
-    //    SP_ASSERT(pixs.size() == objs.size());
+    // objs0 <- objs1 pose
+    SP_CPUFUNC bool calcPose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1) {
+        SP_ASSERT(objs0.size() == objs1.size());
 
-    //    const int unit = 3;
-    //    if (pixs.size() < unit) return false;
+        const int unit = 3;
+        if (objs0.size() < unit) return false;
 
-    //    Mem1<Vec2> npxs;
-    //    for (int i = 0; i < pixs.size(); i++) {
-    //        const Vec2 npx = invCamD(cam, pixs[i]);
-    //        npxs.push(npx);
-    //    }
+        const Vec3 cent0 = meanVec(objs0);
+        const Vec3 cent1 = meanVec(objs1);
 
-    //    const double Rab = normVec(objs[1] - objs[0]);
-    //    const double Rbc = normVec(objs[2] - objs[1]);
-    //    const double Rca = normVec(objs[0] - objs[2]);
+        const Mem1<Vec3> mobjs0 = objs0 - cent0;
+        const Mem1<Vec3> mobjs1 = objs1 - cent1;
 
-    //    const double cos_ab = dotVec(objs[1], objs[0]) / (normVec(objs[1]) * normVec(objs[0]));
-    //    const double cos_bc = dotVec(objs[2], objs[1]) / (normVec(objs[2]) * normVec(objs[1]));
-    //    const double cos_ca = dotVec(objs[0], objs[2]) / (normVec(objs[0]) * normVec(objs[2]));
+        {
+            Mat mat = zeroMat(3, 3);
+            for (int i = 0; i < mobjs0.size(); i++) {
+                const double *y = reinterpret_cast<const double*>(&mobjs0[i]);
+                const double *x = reinterpret_cast<const double*>(&mobjs1[i]);
 
-    //    
-    //}
+                for (int r = 0; r < 3; r++) {
+                    for (int c = 0; c < 3; c++) {
+                        mat(r, c) += x[r] * y[c];
+                    }
+                }
+            }
+            Mat U, S, V;
+            svdMat(U, S, V, mat, false);
+
+            Mat H = eyeMat(3, 3);
+            H(2, 2) = detMat(V * trnMat(U));
+
+            pose.rot = getRot(V * H * trnMat(U));
+
+            print(getMat(pose.rot));
+            pose.trn = cent0 - pose.rot * cent1;
+        }
+        return true;
+    }
+
+    // P3P
+    SP_CPUFUNC bool calcPoseP3P(Mem1<Pose> &poses, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+
+        SP_ASSERT(pixs.size() == 3 && objs.size() == 3);
+
+        Mem1<Vec3> nrms;
+        for (int i = 0; i < 3; i++) {
+            const Vec2 npx = invCamD(cam, pixs[i]);
+            const Vec3 vec = getVec(npx, 1.0);
+            const Vec3 nrm = vec / normVec(vec);
+            nrms.push(nrm);
+        }
+
+        const double a = normVec(objs[1] - objs[0]);
+        const double b = normVec(objs[2] - objs[1]);
+        const double c = normVec(objs[0] - objs[2]);
+        if (a < SP_SMALL || b < SP_SMALL || c < SP_SMALL) return false;
+
+        const double cos_a = dotVec(nrms[1], nrms[0]);
+        const double cos_b = dotVec(nrms[2], nrms[1]);
+        const double cos_c = dotVec(nrms[0], nrms[2]);
+
+        const double cos2_a = cos_a * cos_a;
+        const double cos2_b = cos_b * cos_b;
+        const double cos2_c = cos_c * cos_c;
+        
+        const double na = square(a / b);
+        const double nc = square(c / b);
+
+        const double s = na + nc;
+        const double t = na - nc;
+
+        const double A4 = square(t - 1.0) - 4.0 * nc * cos2_a;
+        const double A3 = 4.0 * (t * (1.0 - t) * cos_b - (1.0 - s) * cos_a * cos_c + 2.0 * nc * cos2_a * cos_b);
+        const double A2 = 2.0 * (t * t - 1.0 + 2.0 * t * t * cos2_b + 2.0 * (1.0 - nc) * cos2_a - 4.0 * s * cos_a * cos_b * cos_c + 2.0 * (1.0 - na) * cos2_c);
+        const double A1 = 4.0 * (-t * (1.0 + t) * cos_b + 2.0 * na * cos2_c * cos_b - (1.0 - s) * cos_a * cos_c);
+        const double A0 = square(1.0 + t) - 4.0 * na * cos2_c;
+
+        double vs[4][2];
+        const int n = eq4(vs, A4, A3, A2, A1, A0);
+
+        poses.clear();
+        for (int i = 0; i < n; i++) {
+            if (fabs(vs[i][1]) > SP_SMALL) continue;
+
+            const double v = vs[i][0];
+            const double u = ((-1.0 + t) * v * v - 2.0 * t * cos_b * v + 1.0 + t) / (2.0 * (cos_c - v * cos_a));
+
+            const double x = a * a / (u * u + v * v - 2.0 * u * v * cos_a);
+            const double y = b * b / (1 + v * v - 2.0 * v * cos_b);
+            const double z = c * c / (1 + u * u - 2.0 * u * cos_c);
+            if (x < 0.0) continue;
+
+            const double s1 = sqrt(x);
+            const double s2 = u * s1;
+            const double s3 = v * s1;
+
+            Mem1<Vec3> pnts;
+            pnts.push(nrms[0] * s2);
+            pnts.push(nrms[1] * s3);
+            pnts.push(nrms[2] * s1);
+
+            Pose pose;
+            if (calcPose(pose, pnts, objs) == true) {
+                poses.push(pose);
+            }
+        }
+
+        return true;
+    }
+
+    // P4P
+    SP_CPUFUNC bool calcPoseP4P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+
+        SP_ASSERT(pixs.size() == 4 && objs.size() == 4);
+
+        Mem1<Vec2> tpixs;
+        Mem1<Vec3> tobjs;
+        for (int i = 0; i < 3; i++) {
+            tpixs.push(pixs[i]);
+            tobjs.push(objs[i]);
+        }
+
+        Mem1<Pose> poses;
+        if(calcPoseP3P(poses, cam, tpixs, tobjs) == false) return false;
+
+        double mine = SP_INFINITY;
+        for (int i = 0; i < poses.size(); i++) {
+            const Pose test = poses[i];
+            const double err = sumVal(errPose(test, cam, pixs, objs));
+            if (err < mine) {
+                mine = err;
+                pose = test;
+            }
+        }
+        return true;
+    }
 
     // 
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {

@@ -82,7 +82,7 @@ private:
                 else {
                     tmp = img;
                 }
-                m_sfm.addData(tmp, cam);
+                m_sfm.addView(tmp, cam);
             }
         }
         printf("\n");

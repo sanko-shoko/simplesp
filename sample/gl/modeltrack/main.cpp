@@ -52,7 +52,7 @@ private:
 
         m_cam = getCamParam(640, 480);
 
-        SP_ASSERT(loadBunny(m_model, SP_DATA_DIR "/stanford/bun_zipper.ply"));
+        SP_ASSERT(loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model));
 
         m_radius = getModelRadius(m_model);
         m_distance = getModelDistance(m_model, m_cam);
