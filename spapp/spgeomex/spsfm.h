@@ -145,10 +145,10 @@ namespace sp {
         // execute sfm
         //--------------------------------------------------------------------------------
 
-        void addView(const Mem2<Col3> &img, const CamParam &cam = getCamParam(0, 0)) {
+        void addView(const Mem2<Col3> &img, const CamParam *cam = NULL) {
             SP_LOGGER_SET("-addView");
 
-            CamParam tmp = (cmpSize(2, cam.dsize, img.dsize) == true) ? cam : getCamParam(img.dsize);
+            CamParam tmp = (cam != NULL && cmpSize(2, cam->dsize, img.dsize) == true) ? *cam : getCamParam(img.dsize);
             addView(m_views, m_mdmat, img, tmp);
         }
 

@@ -30,6 +30,9 @@
 #define SP_USE_OMP 1
 #endif
 
+#ifndef SP_USE_THREAD
+#define SP_USE_THREAD 0
+#endif
 
 //--------------------------------------------------------------------------------
 // call

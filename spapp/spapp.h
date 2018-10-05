@@ -59,11 +59,13 @@
 #include "spapp/spgeomex/spprojector.h"
 
 #include "spapp/spgeomex/spkinectfusion.h"
-//#include "spapp/spgeomex/sptrack3d.h"
 
 // learning
 #include "spapp/splearn/spneubase.h"
 #include "spapp/splearn/spneulayer.h"
 #include "spapp/splearn/spneumodel.h"
+
+// util
+#include "spapp/spthread.h"
 
 #endif

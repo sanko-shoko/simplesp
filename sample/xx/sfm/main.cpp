@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_THREAD 1
+
+#include "simplesp.h"
 #include "spex/spgl.h"
 #include "spex/spcv.h"
 
@@ -17,9 +19,9 @@ class SfMGUI : public BaseWindow {
 
     CamParam m_cam;
     Mem2<Col3> m_img;
-
-    // 
-    bool m_thread;
+ 
+    // thread;
+    Thread m_thread;
 
 private:
 
@@ -37,31 +39,39 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
-        m_thread = false;
-        reset();
+    }
+
+    //bool thUsed = false;
+
+    template<class Func>
+    void makeThread(Func func, const bool wait = true) {
+        //if (wait == false && thUsed == true) {
+        //    return;
+        //}
+        //else {
+        //    while (thUsed == true) {
+        //        sleep(30);
+        //    }
+        //    thUsed = true;
+        //    thread th(func, this);
+        //    th.detach();
+        //}
+        static Thread thread;
+
+        thread.run(this, func, wait);
     }
 
     void reset() {
-        while (1) {
-            if (m_thread == false) {
-                m_thread = true;
-                printf("testB");
-                m_sfm.clear();
-                printf("testA");
-                loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
-                m_thread = false;
-                return;
-            }
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
-        }
+        m_sfm.clear();
+        loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
     }
 
-    void update() {
-        if (m_thread == false) {
-            m_thread = true;
-            m_sfm.update();
-            m_thread = false;
-        }
+    void update(){
+        m_sfm.update();
+    }
+
+    void addView() {
+        m_sfm.addView(m_img, &m_cam);
     }
 
     void capture(Mem2<Col3> &img) {
@@ -75,14 +85,11 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] >= 1) {
-            m_sfm.update();
+            m_thread.run<SfMGUI, &SfMGUI::addView>(this);
         }
 
         if (m_keyAction[GLFW_KEY_S] == 1) {
-            reset();
-        }
-        if (m_keyAction[GLFW_KEY_D] == 1) {
-            m_sfm.addView(m_img, m_cam);
+            m_thread.run<SfMGUI, &SfMGUI::reset>(this);
         }
     }
 
@@ -91,8 +98,7 @@ private:
             capture(m_img);
         }
         {
-            thread th(&SfMGUI::update, this);
-            th.detach();
+            m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
         }
         {
             const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
@@ -134,7 +140,7 @@ private:
                     glLoadMatrix(m_pose * invPose(views[i].pose));
 
                     glBegin(GL_LINES);
-                    glCam(views[i].cam, 0.2);
+                    glCam(views[i].cam, 0.03 * m_pose.trn.z);
                     glEnd();
                 }
             }
@@ -145,7 +151,7 @@ private:
 
                 glLineWidth(2.f);
                 glBegin(GL_LINES);
-                glAxis(1.0);
+                glAxis(0.05 * m_pose.trn.z);
                 glEnd();
             }
         }
