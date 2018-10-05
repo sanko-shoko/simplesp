@@ -29,8 +29,8 @@ class ICPGUI : public BaseWindow {
 private:
 
     void help() {
-        printf("[point cloud] : controlled by mouse\n");
-        printf("'a' key : render target (point cloud)\n");
+        printf("[points] : controlled by mouse\n");
+        printf("'a' key : render target (points)\n");
         printf("'s' key : render target (depth map)\n");
         printf("'d' key : calc ICP\n");
         printf("'ESC' key : exit\n");
@@ -155,7 +155,7 @@ private:
             if (m_dataA.size() > 0) {
                 const Vec2 pixA = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
                 const string strA = "data A (points)";
-                ImGui::showText(strA.c_str(), ImVec2(float(pixA.x + 120.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
+                ImGui::showText(strA.c_str(), ImVec2(float(pixA.x + 100.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
                 const Vec2 pixB = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
