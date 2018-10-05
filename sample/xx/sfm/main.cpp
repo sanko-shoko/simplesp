@@ -35,30 +35,10 @@ private:
     virtual void init() {
         help();
 
-        const double distance = 5.0;
+        const double distance = 20.0;
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
-    }
-
-    //bool thUsed = false;
-
-    template<class Func>
-    void makeThread(Func func, const bool wait = true) {
-        //if (wait == false && thUsed == true) {
-        //    return;
-        //}
-        //else {
-        //    while (thUsed == true) {
-        //        sleep(30);
-        //    }
-        //    thUsed = true;
-        //    thread th(func, this);
-        //    th.detach();
-        //}
-        static Thread thread;
-
-        thread.run(this, func, wait);
     }
 
     void reset() {

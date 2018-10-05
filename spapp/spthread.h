@@ -32,14 +32,10 @@ namespace sp {
 
             thread th([this, ptr, wait] {
                 m_mtx.lock();
-                while (m_used == true) {
-                    sleep(10);
-                }
                 m_used = true;
-                m_mtx.unlock();
-
                 (static_cast<Class*>(ptr)->*Func)();
                 m_used = false;
+                m_mtx.unlock();
             });
             th.detach();
             return true;

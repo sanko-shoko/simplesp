@@ -83,36 +83,45 @@ namespace sp {
     // control
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse) {
-        if (mouse.bDownL) {
+    SP_CPUFUNC bool controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse) {
+        bool ret = false;
+        if (mouse.bDownL && normVec(mouse.move) > 0.0) {
             viewpPos += mouse.move;
+            ret = true;
         }
 
         if (mouse.scroll != 0) {
             viewpPos *= (1.0 + mouse.scroll * 0.1);
             viewScale *= (1.0 + mouse.scroll * 0.1);
+            ret = true;
         }
+        return ret;
     }
 
-    SP_CPUFUNC void controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
+    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
+        bool ret = false;
 
         Pose cpose = pose * invPose(base);
-        if (cpose.trn.z < 0.0) return;
+        if (cpose.trn.z < 0.0) return false;
 
-        if (mouse.bDownM) {
+        if (mouse.bDownM && normVec(mouse.move) > 0.0) {
             cpose.trn.x += mouse.move.x * cpose.trn.z / (cam.fx * viewScale);
             cpose.trn.y += mouse.move.y * cpose.trn.z / (cam.fy * viewScale);
+            ret = true;
         }
 
-        if (mouse.bDownL) {
+        if (mouse.bDownL && normVec(mouse.move) > 0.0) {
             cpose.rot = getRotAngle(getVec(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
+            ret = true;
         }
 
         if (mouse.scroll != 0) {
             cpose.trn -= unitVec(cpose.trn) * (cpose.trn.z * mouse.scroll * 0.02);
+            ret = true;
         }
 
         pose = cpose * base;
+        return ret;
     }
 
 
