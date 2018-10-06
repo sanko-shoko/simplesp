@@ -536,7 +536,7 @@ namespace sp{
                     const double c = sqVec(pose.trn) - square(radius);
 
                     const double D = b * b - 4 * a * c;
-                    if (D <= 0) continue;
+                    if (D <= 0.0) continue;
 
                     maxv = (-b + sqrt(D)) / (2.0 * a);
                     minv = (-b - sqrt(D)) / (2.0 * a);
