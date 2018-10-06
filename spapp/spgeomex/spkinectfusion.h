@@ -23,7 +23,7 @@ namespace sp{
         // camera parameter
         CamParam m_cam;
 
-        // map pose
+        // camera <- map pose
         Pose m_pose;
 
         // flag for tracking
@@ -99,6 +99,7 @@ namespace sp{
             // clear data
             if (m_track == false){
                 m_tsdf.zero();
+                m_cast.zero();
             }
 
             try{
