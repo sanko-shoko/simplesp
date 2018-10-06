@@ -72,10 +72,9 @@ private:
         // kinect fusion
         {
 
-            if (m_kfusion.track() == false) {
+            if (m_kfusion.valid() == false) {
                 const double radius = getModelRadius(m_model);
-                m_kfusion.setMap(200, radius / 100.0, m_pose);
-                m_kfusion.setCam(m_cam);
+                m_kfusion.init(200, radius / 100.0, m_cam, m_pose);
             }
 
             m_kfusion.execute(depth);
@@ -84,7 +83,7 @@ private:
         // render
         {
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale);
-            glRenderNormal<Byte>(m_kfusion.getCast());
+            glRenderNormal<Byte>(*m_kfusion.getCast());
 
 
             glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale);
@@ -92,7 +91,7 @@ private:
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glBegin(GL_QUADS);
-            glCube(m_kfusion.getMap().dsize[0] * m_kfusion.getMap().unit);
+            glCube(m_kfusion.getMap()->dsize[0] * m_kfusion.getMap()->unit);
             glEnd();
         }
 

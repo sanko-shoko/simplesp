@@ -68,18 +68,16 @@ private:
 
         // kinect fusion
         {
-            m_kfusion.setCam(minCam);
-
             if (m_start == false) {
-                Mem1<double> list;
-                list.reserve(minDepth.size());
+                Mem1<double> zlist;
+                zlist.reserve(minDepth.size());
                 for (int i = 0; i < minDepth.size(); i++) {
-                    if (minDepth[i] > 0.0) list.push(minDepth[i]);
+                    if (minDepth[i] > 0.0) zlist.push(minDepth[i]);
                 }
 
-                const double mean = meanVal(list);
+                const double mean = meanVal(zlist);
 
-                m_kfusion.setMap(120, mean / 100.0, getPose(getVec(0.0, 0.0, mean)));
+                m_kfusion.init(120, mean / 100.0, minCam, getPose(getVec(0.0, 0.0, mean)));
             }
             else {
                 m_kfusion.execute(minDepth);
@@ -93,7 +91,7 @@ private:
                 cnvDepthToImg(view, minDepth, nearPlane, farPlane);
             }
             else {
-                cnvNormalToImg(view, m_kfusion.getCast(), nearPlane, farPlane);
+                cnvNormalToImg(view, *m_kfusion.getCast(), nearPlane, farPlane);
             }
 
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale * 2.0);
@@ -103,7 +101,7 @@ private:
             glLoadMatrix(*m_kfusion.getPose());
 
             glBegin(GL_LINES);
-            glCube(m_kfusion.getMap().dsize[0] * m_kfusion.getMap().unit);
+            glCube(m_kfusion.getMap()->dsize[0] * m_kfusion.getMap()->unit);
             glEnd();
         }
     }

@@ -33,7 +33,7 @@ namespace sp{
             unit = 0.0;
         }
 
-        void init(const int size, const double unit) {
+        void resize(const int size, const double unit) {
             dsize[0] = size;
             dsize[1] = size;
             dsize[2] = size;
@@ -58,7 +58,7 @@ namespace sp{
     SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh3> &model, const double unit = 1.0) {
 
         const int size = (ceil(getModelRadius(model) / unit) + 2) * 2;
-        voxel.init(size, unit);
+        voxel.resize(size, unit);
 
         const CamParam cam = getCamParam(size * 2, size * 2);
         const double distance = sqrt(3.0) * getModelDistance(model, cam);
@@ -418,7 +418,7 @@ namespace sp{
         }
 
         const int size = static_cast<int>(meanDist / 2.0 / unit);
-        voxel.init(size, unit);
+        voxel.resize(size, unit);
 
         const Vec3 cent = voxel.center();
 
