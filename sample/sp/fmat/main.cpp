@@ -14,8 +14,8 @@ int main(){
     sift1.execute(img1);
 
     // get feature
-    const Mem1<Feature> &fts0 = sift0.getFeatrue();
-    const Mem1<Feature> &fts1 = sift1.getFeatrue();
+    const Mem1<Feature> &fts0 = *sift0.getFeatrue();
+    const Mem1<Feature> &fts1 = *sift1.getFeatrue();
 
     // get match pix
     Mem1<Vec2> pixs0, pixs1;

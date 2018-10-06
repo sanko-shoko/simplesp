@@ -220,8 +220,9 @@ namespace sp {
 
             // set features
             SIFT sift;
-            sift.execute(img);
-            view.fts = sift.getFeatrue();
+            if (sift.execute(img) == true) {
+                view.fts = *sift.getFeatrue();
+            }
 
             // init index
             view.index.resize(view.fts.size());

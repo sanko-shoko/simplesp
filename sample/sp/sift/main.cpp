@@ -41,7 +41,9 @@ int main(){
 
     {
         for (int i = 0; i < 2; i++) {
-            const Mem1<Feature> &fts = sift[i].getFeatrue();
+            if (sift[i].getFeatrue() == NULL) continue;
+
+            const Mem1<Feature> &fts = *sift[i].getFeatrue();
 
             for (int j = 0; j < fts.size(); j++) {
                 renderCircle(imgs[i], fts[j].pix, fts[j].scale, getCol(100, 255, 100), 1);
@@ -53,9 +55,10 @@ int main(){
     }
 
     // matching
-    {
-        const Mem1<Feature> &fts0 = sift[0].getFeatrue();
-        const Mem1<Feature> &fts1 = sift[1].getFeatrue();
+    if(sift[0].getFeatrue() != NULL && sift[1].getFeatrue() != NULL){
+
+        const Mem1<Feature> &fts0 = *sift[0].getFeatrue();
+        const Mem1<Feature> &fts1 = *sift[1].getFeatrue();
 
         const Mem1<int> matches = findMatch(fts0, fts1);
 
