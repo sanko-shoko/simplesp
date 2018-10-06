@@ -5,7 +5,6 @@ using namespace sp;
 int main(){
     
     CamParam cam;
-    Pose pose;
     
     Mem1<Vec3> objs;
     Mem1<Vec2> pixs;
@@ -14,7 +13,7 @@ int main(){
     {
         cam = getCamParam(640, 480);
 
-        pose = getPose(getVec(0.0, 0.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0);
+        const Pose pose = getPose(getVec(0.0, 0.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0);
 
         objs.push(getVec(-50.0, -50.0, 0.0));
         objs.push(getVec(+50.0, -50.0, 0.0));
@@ -40,7 +39,24 @@ int main(){
     }
 
     {
-        printf("P4P");
+        printf("\n\n");
+        printf("--------------------------------------------------------------------------------\n");
+        printf("P3P\n");
+        printf("--------------------------------------------------------------------------------\n");  
+
+        Mem1<Pose> poses;
+        calcPoseP3P(poses, cam, pixs.slice(0, 0, 3), objs.slice(0, 0, 3));
+
+        for (int i = 0; i < poses.size(); i++) {
+            print(poses[i]);
+        }
+    }
+
+    {
+        printf("\n\n");
+        printf("--------------------------------------------------------------------------------\n");
+        printf("P4P\n");
+        printf("--------------------------------------------------------------------------------\n");
 
         Pose pose;
         calcPoseP4P(pose, cam, pixs, objs);

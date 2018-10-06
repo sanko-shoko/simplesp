@@ -602,7 +602,6 @@ namespace sp{
 
             pose.rot = getRot(V * H * trnMat(U));
 
-            print(getMat(pose.rot));
             pose.trn = cent0 - pose.rot * cent1;
         }
         return true;
@@ -763,7 +762,10 @@ namespace sp{
         if (pixs.size() < unit) return false;
 
         if (pixs.size() < 6) {
-            if (calcPoseP4P(pose, cam, pixs, objs) == false) return false;
+            const Mem1<Vec2> tpixs = pixs.slice(0, 0, 4);
+            const Mem1<Vec3> tobjs = objs.slice(0, 0, 4);
+
+            if (calcPoseP4P(pose, cam, tpixs, tobjs) == false) return false;
         }
         else {
             if (calcPoseDLT(pose, cam, pixs, objs) == false) return false;
