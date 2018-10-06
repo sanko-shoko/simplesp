@@ -20,7 +20,7 @@ namespace sp{
         Vec2 drc;
 
         // feature scale
-        double scale;
+        double scl;
 
         // feature descripter
         Mem1<Byte> dsc;
@@ -34,7 +34,7 @@ namespace sp{
         Feature() {
             pix = getVec(0.0, 0.0);
             drc = getVec(0.0, 0.0);
-            scale = 0.0;
+            scl = 0.0;
             type = DSC_32F;
         }
 
@@ -45,7 +45,7 @@ namespace sp{
         Feature& operator = (const Feature &ft) {
             pix = ft.pix;
             drc = ft.drc;
-            scale = ft.scale;
+            scl = ft.scl;
             dsc = ft.dsc;
             return *this;
         }

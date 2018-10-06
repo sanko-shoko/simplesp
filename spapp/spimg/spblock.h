@@ -20,8 +20,8 @@ namespace sp {
         int sad = 0;
         for (int wy = 0; wy < winSize; wy++) {
             for (int wx = 0; wx < winSize; wx++) {
-                const int v0 = acs2(src0, x + wx - offset, y + wy - offset);
-                const int v1 = acs2(src1, x + wx - offset + fx, y + wy - offset + fy);
+                const int v0 = acs2(src0, x + wx - offset + fx, y + wy - offset + fy);
+                const int v1 = acs2(src1, x + wx - offset, y + wy - offset);
                 sad += abs(v0 - v1);
             }
         }
@@ -41,8 +41,8 @@ namespace sp {
     //    double sum1 = 0.0;
     //    for (int wy = 0; wy < winSize; wy++) {
     //        for (int wx = 0; wx < winSize; wx++) {
-    //            const int v0 = acs2(src0, x + wx - offset, y + wy - offset);
-    //            const int v1 = acs2(src1, x + wx - offset + fx, y + wy - offset + fy);
+    //            const int v0 = acs2(src0, x + wx - offset + fx, y + wy - offset + fy);
+    //            const int v1 = acs2(src1, x + wx - offset, y + wy - offset);
     //            sum0 += v0;
     //            sum1 += v1;
     //        }
@@ -56,8 +56,8 @@ namespace sp {
     //    double m11 = 0.0;
     //    for (int wy = 0; wy < winSize; wy++) {
     //        for (int wx = 0; wx < winSize; wx++) {
-    //            const int v0 = acs2(src0, x + wx - offset, y + wy - offset) - mean0;
-    //            const int v1 = acs2(src1, x + wx - offset + fx, y + wy - offset + fy) - mean1;
+    //            const int v0 = acs2(src0, x + wx - offset + fx, y + wy - offset + fy) - mean0;
+    //            const int v1 = acs2(src1, x + wx - offset, y + wy - offset) - mean1;
     //            m00 += v0 * v0;
     //            m01 += v0 * v1;
     //            m11 += v1 * v1;

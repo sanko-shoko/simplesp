@@ -16,7 +16,7 @@
 
 namespace sp{
 
-    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs) {
+    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         SP_LOGGER_INSTANCE;
         SP_LOGGER_SET("opticalFlowLK");
 
@@ -27,38 +27,44 @@ namespace sp{
         flows.zero();
 
         masks.resize(pixs.size());
-        masks.zero();
+        setElm(masks, true);
 
-        const int pysize = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 20.0));
+        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 10.0));
 
-        Mem1<Mem2<Byte> > pyimg0s(pysize);
-        Mem1<Mem2<Byte> > pyimg1s(pysize);
+        Mem1<Mem2<Byte> > pyimgs0(pynum);
+        Mem1<Mem2<Byte> > pyimgs1(pynum);
 
-        for (int p = 0; p < pysize; p++) {
+        for (int p = 0; p < pynum; p++) {
             if (p == 0) {
-                pyimg0s[p] = img0;
-                pyimg1s[p] = img1;
+                pyimgs0[p] = img0;
+                pyimgs1[p] = img1;
             }
             else {
-                pyrdown(pyimg0s[p], pyimg0s[p - 1]);
-                pyrdown(pyimg1s[p], pyimg1s[p - 1]);
+                pyrdown(pyimgs0[p], pyimgs0[p - 1]);
+                pyrdown(pyimgs1[p], pyimgs1[p - 1]);
             }
         }
 
-        for(int p = pysize - 1; p >= 0; p--){
-            const Mem2<Byte> &pyimg0 = pyimg0s[p];
-            const Mem2<Byte> &pyimg1 = pyimg1s[p];
+        const bool scalecheck = (scls.size() == pixs.size()) ? true : false;
+
+        for(int p = pynum - 1; p >= 0; p--){
+            const Mem2<Byte> &pyimg0 = pyimgs0[p];
+            const Mem2<Byte> &pyimg1 = pyimgs1[p];
 
             const double scale = pow(0.5, p);
 
             Mem2<float> scharrX, scharrY;
-            scharrFilterX(scharrX, pyimg0);
-            scharrFilterY(scharrY, pyimg0);
+            scharrFilterX(scharrX, pyimg1);
+            scharrFilterY(scharrY, pyimg1);
 
             const Rect rect = getRect2(img1.dsize);
             const int offset = WIN_SIZE / 2;
 
+            const double wscale = (p + 1) * (WIN_SIZE / 2) * 0.5;
+
             for (int i = 0; i < pixs.size(); i++) {
+                if (masks[i] == false) continue;
+                if (scalecheck == true && scls[i] > wscale) continue;
 
                 // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
                 Mat A(WIN_SIZE * WIN_SIZE, 2);
@@ -85,7 +91,7 @@ namespace sp{
                             A(i, 0) = gx;
                             A(i, 1) = gy;
 
-                            I(i, 0) = acs2(pyimg0, p0.x, p0.y);
+                            I(i, 0) = acs2(pyimg1, p0.x, p0.y);
 
                             AtA(0, 0) += gx * gx;
                             AtA(0, 1) += gx * gy;
@@ -101,8 +107,10 @@ namespace sp{
 
                     const double mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
 
-                    if (mineig / (WIN_SIZE * WIN_SIZE) < square(EIG_THRESH)) continue;
-                    if (fabs(D) < SP_SMALL) continue;
+                    if (mineig / (WIN_SIZE * WIN_SIZE) < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
+                        if (p == 0) masks[i] = false;
+                        continue;
+                    }
                 }
 
                 const Mat invAtA = invMat(AtA);
@@ -126,36 +134,35 @@ namespace sp{
                             const double gx = A(i, 0);
                             const double gy = A(i, 1);
 
-                            const double d = (I(i, 0) - acs2(pyimg1, p1.x, p1.y)) / SP_BYTEMAX;
+                            const double d = (I(i, 0) - acs2(pyimg0, p1.x, p1.y)) / SP_BYTEMAX;
                             AtB(0, 0) += gx * d;
                             AtB(1, 0) += gy * d;
                         }
                     }
 
                     const Mat result = invAtA * AtB;
-                    if (result.size() == 0) continue;
+                    if (result.size() == 0) {
+                        if(p == 0) masks[i] = false;
+                        break;
+                    }
+
+                    Vec2 delta = getVec(result[0], result[1]);
 
                     const double limit = 2.0;
-                    Vec2 delta = getVec(result[0], result[1]);
-                    delta.x = (delta.x > 0) ? minVal(+limit, delta.x) : maxVal(-limit, delta.x);
-                    delta.y = (delta.y > 0) ? minVal(+limit, delta.y) : maxVal(-limit, delta.y);
+                    if (normVec(delta) > 2.0) delta *= limit / normVec(delta);
 
                     flows[i] += delta / scale;
-
-                    if (p == 0) {
-                        masks[i] = true;
-                    }
                 }
             }
         }
     }
 
-    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs) {
+    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         Mem2<Byte> gry0, gry1;
         cnvImg(gry0, img0);
         cnvImg(gry1, img1);
 
-        opticalFlowLK(flows, masks, gry0, gry1, pixs);
+        opticalFlowLK(flows, masks, gry0, gry1, pixs, scls);
     }
 }
 

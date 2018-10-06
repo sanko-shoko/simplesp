@@ -22,7 +22,7 @@ namespace sp{
         flows.zero();
 
         masks.resize(img0.dsize);
-        masks.zero();
+        setElm(masks, true);
 
         Mem2<int> evals(img0.dsize);
         evals.zero();

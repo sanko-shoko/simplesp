@@ -448,7 +448,7 @@ namespace sp{
 
                     fts[i].pix = key.pix;
                     fts[i].drc = key.drc;
-                    fts[i].scale = key.scale;
+                    fts[i].scl = key.scale;
 
                     fts[i].dsc.resize(dsc.size() * sizeof(float));
 
