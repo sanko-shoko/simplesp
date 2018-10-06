@@ -46,7 +46,7 @@ int main(){
             const Mem1<Feature> &fts = *sift[i].getFeatrue();
 
             for (int j = 0; j < fts.size(); j++) {
-                renderCircle(imgs[i], fts[j].pix, fts[j].scale, getCol(100, 255, 100), 1);
+                renderCircle(imgs[i], fts[j].pix, fts[j].scl, getCol(100, 255, 100), 1);
             }
         }
 

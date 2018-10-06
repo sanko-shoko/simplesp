@@ -13,8 +13,8 @@ int main() {
     // load image
     {
         if (1) {
-            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img0));
-            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img1));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         }
         else {
             Mem2<Col3> img;
@@ -39,9 +39,9 @@ int main() {
 
     // detect corner
     {
-        harris(pixs, img0);
+        harris(pixs, img1);
 
-        Mem2<Col3> img = img0;
+        Mem2<Col3> img = img1;
         renderCircle(img, pixs, 4, getCol(0, 255, 0), 1);
 
         saveBMP("corner.bmp", img);
@@ -53,7 +53,7 @@ int main() {
         Mem1<bool> masks;
         opticalFlowLK(flows, masks, img0, img1, pixs);
 
-        Mem2<Col3> img = img1;
+        Mem2<Col3> img = img0;
 
         for (int i = 0; i < flows.size(); i++) {
             if (masks[i] == false) continue;
