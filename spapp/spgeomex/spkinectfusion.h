@@ -144,9 +144,9 @@ namespace sp{
             Mem1<VecPN3> sample;
             sample.reserve(pnmap.size());
 
-            const int block = 4;
-            for (int v = block; v < pnmap.dsize[1] - block; v += block){
-                for (int u = block; u < pnmap.dsize[0] - block; u += block){
+            const int step = 4;
+            for (int v = step; v < pnmap.dsize[1] - step; v += step){
+                for (int u = step; u < pnmap.dsize[0] - step; u += step){
                     const VecPN3 &pn = pnmap(u, v);
                     if (pn.pos.z == 0.0) continue;
 

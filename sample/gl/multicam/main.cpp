@@ -27,8 +27,8 @@ class VoxelGUI : public BaseWindow {
 private:
 
     void help() {
-        printf("'v' key : execute visual hull\n");
-        printf("'s' key : switch mode (original model <-> reconstructed model)\n");
+        printf("'a' key : switch board\n");
+        printf("'s' key : calibration\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
