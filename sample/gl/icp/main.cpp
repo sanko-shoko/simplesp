@@ -169,6 +169,7 @@ private:
                 sprintf(str, "icp iteration : %d", m_it);
                 ImGui::showText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
             }
+
         }
  
     }
