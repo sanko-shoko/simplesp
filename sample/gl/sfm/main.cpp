@@ -45,7 +45,7 @@ private:
             Mem2<Col3> img;
             loadBMP(path, img);
 
-            m_sfm.addView(img, cam);
+            m_sfm.addView(img, &cam);
         }
         m_sfm.update();
     }
@@ -96,7 +96,7 @@ private:
                 glLoadMatrix(m_pose * invPose(views[i].pose));
 
                 glBegin(GL_LINES);
-                glCam(views[i].cam, 0.2);
+                glCam(views[i].cam, 0.03 * m_pose.trn.z);
                 glEnd();
             }
         }
@@ -107,7 +107,7 @@ private:
 
             glLineWidth(2.f);
             glBegin(GL_LINES);
-            glAxis(1.0);
+            glAxis(0.05 * m_pose.trn.z);
             glEnd();
         }
     }

@@ -510,7 +510,7 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // pose
+    // pose 
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
@@ -536,6 +536,8 @@ namespace sp{
     }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
+        if (maxit <= 0.0) return false;
+
         SP_ASSERT(pixs.size() == objs.size());
 
         const int unit = 3;
@@ -704,8 +706,8 @@ namespace sp{
         return true;
     }
 
-    // 
-    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+    // DLT
+    SP_CPUFUNC bool calcPoseDLT(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int unit = 6;
@@ -752,50 +754,24 @@ namespace sp{
 
         return true;
     }
-
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
+   
+    // PNP
+    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
         SP_ASSERT(pixs.size() == objs.size());
 
-        const int unit = 6;
-        if (pixs.size() < unit * SP_RANSAC_NUM) return false;
+        const int unit = 4;
+        if (pixs.size() < unit) return false;
 
-        int maxit = SP_RANSAC_ITMAX;
-
-        Mem1<Vec2> spixs, rpixs;
-        Mem1<Vec3> sobjs, robjs;
-
-        double maxv = 0.0;
-        for (int it = 0; it < maxit; it++) {
-            const int p = it % (pixs.size() - unit);
-            if (p == 0) {
-                spixs = shuffle(pixs, it);
-                sobjs = shuffle(objs, it);
-            }
-            rpixs.resize(unit, &spixs[p]);
-            robjs.resize(unit, &sobjs[p]);
-
-            Pose test;
-            if (calcPose(test, cam, rpixs, robjs) == false) continue;
-
-            const Mem1<double> errs = errPose(test, cam, pixs, objs);
-            const double eval = evalErr(errs, thresh);
-
-            if (eval > maxv) {
-                //SP_PRINTD("eval %lf\n", eval);
-                maxv = eval;
-                maxit = adaptiveStop(eval, unit);
-
-                pose = test;
-            }
+        if (pixs.size() < 6) {
+            if (calcPoseP4P(pose, cam, pixs, objs) == false) return false;
         }
-        if (maxv < SP_RANSAC_RATE) return false;
+        else {
+            if (calcPoseDLT(pose, cam, pixs, objs) == false) return false;
+        }
 
-        // refine
-        const Mem1<double> errs = errPose(pose, cam, pixs, objs);
-        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
-        const Mem1<Vec3> dobjs = denoise(objs, errs, thresh);
+        if (refinePose(pose, cam, pixs, objs, maxit) == false) return false;
 
-        return refinePose(pose, cam, dpixs, dobjs);
+        return true;
     }
 
     //
@@ -836,7 +812,9 @@ namespace sp{
         if (calcHMat(hom, udpixs, objs) == false) return false;
 
         if (calcPose(pose, cam, hom) == false) return false;
-        return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
+        if (refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit) == false) return false;
+     
+        return true;
     }
 
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
@@ -854,6 +832,56 @@ namespace sp{
         if (calcFMatRANSAC(F, upixs0, upixs1) == false) return false;
 
         if (dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1) == false) return false;
+        return true;
+    }
+
+
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
+        SP_ASSERT(pixs.size() == objs.size());
+
+        const int unit = 6;
+        if (pixs.size() < unit * SP_RANSAC_NUM) return false;
+
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Vec2> spixs, rpixs;
+        Mem1<Vec3> sobjs, robjs;
+
+        double maxv = 0.0;
+        for (int it = 0; it < maxit; it++) {
+            const int p = it % (pixs.size() - unit);
+            if (p == 0) {
+                spixs = shuffle(pixs, it);
+                sobjs = shuffle(objs, it);
+            }
+            rpixs.resize(unit, &spixs[p]);
+            robjs.resize(unit, &sobjs[p]);
+
+            Pose test;
+            if (calcPose(test, cam, rpixs, robjs, 0) == false) continue;
+
+            const Mem1<double> errs = errPose(test, cam, pixs, objs);
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxv) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxv = eval;
+                maxit = adaptiveStop(eval, unit);
+
+                pose = test;
+            }
+        }
+        if (maxv < SP_RANSAC_RATE) return false;
+
+        // refine
+        {
+            const Mem1<double> errs = errPose(pose, cam, pixs, objs);
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
+            const Mem1<Vec3> dobjs = denoise(objs, errs, thresh);
+
+            if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
+        }
+
         return true;
     }
 

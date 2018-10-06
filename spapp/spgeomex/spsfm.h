@@ -19,6 +19,9 @@ namespace sp {
 
             Mem1<int> matches;
 
+            // pair view id
+            int a, b;
+
             // match features rate
             double rate;
 
@@ -26,8 +29,17 @@ namespace sp {
             double eval;
 
             MatchData() {
+                a = -1;
+                b = -1;
                 rate = -1.0;
                 eval = -1.0;
+            }
+            void init(const int a, const int b, const Mem<int> &matches, const double rate, const double eval) {
+                this->matches = matches;
+                this->a = a;
+                this->b = b;
+                this->rate = rate;
+                this->eval = eval;
             }
         };
 
@@ -133,10 +145,10 @@ namespace sp {
         // execute sfm
         //--------------------------------------------------------------------------------
 
-        void addView(const Mem2<Col3> &img, const CamParam &cam = getCamParam(0, 0)) {
+        void addView(const Mem2<Col3> &img, const CamParam *cam = NULL) {
             SP_LOGGER_SET("-addView");
 
-            CamParam tmp = (cmpSize(2, cam.dsize, img.dsize) == true) ? cam : getCamParam(img.dsize);
+            CamParam tmp = (cam != NULL && cmpSize(2, cam->dsize, img.dsize) == true) ? *cam : getCamParam(img.dsize);
             addView(m_views, m_mdmat, img, tmp);
         }
 
@@ -177,7 +189,7 @@ namespace sp {
             return true;
         }
 
-        bool savePly(const char *path) {
+        bool savePLY(const char *path) {
             Mem1<Vec3> pnts;
             Mem1<Col3> cols;
             for (int i = 0; i < m_gpnts.size(); i++) {
@@ -185,7 +197,7 @@ namespace sp {
                 cols.push(m_gpnts[i].col);
             }
 
-            return savePLY(path, pnts, cols);
+            return sp::savePLY(path, pnts, cols);
         }
 
     private:
@@ -226,36 +238,49 @@ namespace sp {
             views[v].index[m] = g;
         }
 
+        Mem1<MatchData*> getPairs(const Mem1<ViewData> &views, const Mem2<MatchData> &mdmat, const bool aValid, const bool bValid) {
+            Mem1<MatchData*> mds;
+            mds.reserve((views.size() - 1) * views.size());
+            for (int a = 0; a < views.size(); a++) {
+                if (views[a].valid != aValid) continue;
+
+                for (int b = 0; b < views.size(); b++) {
+                    if (a == b) continue;
+
+                    if (views[b].valid != bValid) continue;
+                    if (aValid == bValid && b < a) continue;
+
+                    if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
+                    mds.push(const_cast<MatchData*>(&mdmat(a, b)));
+                }
+            }
+            return mds;
+        }
+
         // initialize pair
         bool initPair(Mem1<PointData> &gpnts, Mem1<ViewData> &views, Mem2<MatchData> &mdmat) {
 
             // select pair
-            Int2 pair;
+            MatchData *md = NULL;
             {
-                Mem1<Int2> pairs;
-                for (int a = 0; a < views.size(); a++) {
-                    for (int b = a + 1; b < views.size(); b++) {
-                        if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
-                        pairs.push(Int2(a, b));
-                    }
-                }
-                pairs = shuffle(pairs);
+                const Mem1<MatchData*> mds = shuffle(getPairs(views, mdmat, false, false));
 
                 double maxv = 0.0;
-                for (int i = 0; i < minVal(10, pairs.size()); i++) {
-                    const double eval = evalPair(views, mdmat, pairs[i][0], pairs[i][1]);
+                for (int i = 0; i < minVal(10, mds.size()); i++) {
+
+                    const double eval = evalPair(views, mdmat, mds[i]->a, mds[i]->b);
                     if (eval < maxv) continue;
 
                     maxv = eval;
-                    pair = pairs[i];
+                    md = mds[i];
                 }
                 if (maxv == 0.0) return false;
             }
 
             // initialize pair
             {
-                const int a = pair[0];
-                const int b = pair[1];
+                const int a = md->a;
+                const int b = md->b;
 
                 const Mem1<Feature> &fts0 = views[a].fts;
                 const Mem1<Feature> &fts1 = views[b].fts;
@@ -328,6 +353,7 @@ namespace sp {
             else {
                 pose = views[b].pose * invPose(views[a].pose);
             }
+            pose.trn /= normVec(pose.trn);
 
             Mem1<double> zlist;
             for (int i = 0; i < matches.size(); i++) {
@@ -368,7 +394,7 @@ namespace sp {
                 }
 
                 Mem1<int> list;
-                for (int i = 0; i < minVal(10, views.size()); i++) {
+                for (int i = 0; i < views.size(); i++) {
                     if (mdmat(a, i).eval < 0.0) {
                         list.push(i);
                     }
@@ -378,14 +404,14 @@ namespace sp {
 
                 list = shuffle(list);
 
-                for (int i = 0; i < list.size(); i++) {
+                for (int i = 0; i < minVal(10, list.size()); i++) {
                     const int b = list[i];
 
-                    mdmat(a, b).matches = findMatch(views[a].fts, views[b].fts);
-                    mdmat(a, b).rate = getMatchRate(mdmat(a, b).matches);
+                    const Mem1<int> m_ab = findMatch(views[a].fts, views[b].fts);
+                    const Mem1<int> m_ba = findMatch(views[b].fts, views[a].fts);
 
-                    mdmat(b, a).matches = findMatch(views[b].fts, views[a].fts);
-                    mdmat(b, a).rate = getMatchRate(mdmat(b, a).matches);
+                    mdmat(a, b).init(a, b, m_ab, getMatchRate(m_ab), -1.0);
+                    mdmat(b, a).init(b, a, m_ba, getMatchRate(m_ba), -1.0);
 
                     views[a].mcnt++;
                     views[b].mcnt++;
@@ -415,41 +441,19 @@ namespace sp {
             SP_LOGGER_SET("updateValid");
 
             // select pair
-            Int2 pair;
+            MatchData *md = NULL;
             {
-                Mem1<double> rates;
-                Mem1<Int2> tmps;
+                // [invalid, valid] pair
+                const Mem1<MatchData*> mds = shuffle(getPairs(views, mdmat, false, true), update);
+                if (mds.size() == 0) return false;
 
-                for (int a = 0; a < views.size(); a++) {
-                    if (views[a].valid == true) continue;
-
-                    for (int b = 0; b < views.size(); b++) {
-                        if (views[b].valid == false) continue;
-
-                        if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
-                        tmps.push(Int2(a, b));
-                        rates.push(mdmat(a, b).rate);
-                    }
-                }
-                if (tmps.size() == 0) return false;
-
-                const double thresh = medianVal(rates);
-
-                Mem1<Int2> pairs;
-                for (int i = 0; i < tmps.size(); i++) {
-                    if (rates[i] >= thresh) {
-                        pairs.push(tmps[i]);
-                    }
-                }
-
-                srand(update);
-                pair = pairs[rand() % pairs.size()];
+                md = mds[0];
             }
-
+            
             // calc pose
-            {
-                const int a = pair[0];
-                const int b = pair[1];
+            if(md != NULL) {
+                const int a = md->a;
+                const int b = md->b;
 
                 const Mem1<Feature> &fts0 = views[a].fts;
                 const Mem1<Feature> &fts1 = views[b].fts;
@@ -509,39 +513,37 @@ namespace sp {
             SP_LOGGER_SET("updatePnt");
 
             // select pair
-            Int2 pair;
+            MatchData *md = NULL;
             {
-                Mem1<Int2> pairs;
-                for (int a = 0; a < views.size(); a++) {
-                    if (views[a].valid == false) continue;
+                // [valid, valid] pair
+                const Mem1<MatchData*> mds = getPairs(views, mdmat, true, true);
+                if (mds.size() == 0) return false;
 
-                    Int2 select;
-                    double maxv = 0.0;
-                    for (int b = a + 1; b < views.size(); b++) {
-                        if (views[b].valid == false) continue;
+                struct Tmp {
+                    int id, cnt;
+                    bool operator > (const Tmp t) const { return this->cnt > t.cnt; }
+                    bool operator < (const Tmp t) const { return this->cnt < t.cnt; }
+                };
 
-                        if (mdmat(a, b).rate < MIN_MATCHRATE) continue;
-
-                        const double eval = evalPair(views, mdmat, a, b);
-                        if (eval < maxv) continue;
-
-                        maxv = eval;
-                        select.set(a, b);
-                    }
-                    if (maxv > 0.0) {
-                        pairs.push(select);
-                    }
+                Mem1<Tmp> tmps;
+                for (int i = 0; i < mds.size(); i++) {
+                    Tmp tmp;
+                    tmp.id = i;
+                    tmp.cnt = minVal(views[mds[i]->a].index.size(), views[mds[i]->b].index.size());
+                    tmps.push(tmp);
                 }
-                if (pairs.size() == 0) return false;
+                sort(tmps);
 
-                srand(update);
-                pair = pairs[rand() % pairs.size()];
+                const double x = (randValUnif() + 1.0) / 2.0;
+                const int i = tmps[floor(pow(x, 2.0) * tmps.size())].id;
+
+                md = mds[tmps[i].id];
             }
 
             // add new pnt
-            {
-                const int a = pair[0];
-                const int b = pair[1];
+            if (md != NULL) {
+                const int a = md->a;
+                const int b = md->b;
 
                 const Mem1<Feature> &fts0 = views[a].fts;
                 const Mem1<Feature> &fts1 = views[b].fts;
