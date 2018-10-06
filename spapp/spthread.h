@@ -33,7 +33,7 @@ namespace sp {
             thread th([this, ptr, wait] {
                 m_mtx.lock();
                 m_used = true;
-                (static_cast<Class*>(ptr)->*Func)();
+                (ptr->*Func)();
                 m_used = false;
                 m_mtx.unlock();
             });

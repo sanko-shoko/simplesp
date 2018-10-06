@@ -190,7 +190,7 @@ namespace sp{
             }
 
             try {
-                if (src.size() == 0) throw "image size";
+                if (src.size() == 0) throw "input size";
 
                 // detect blob
                 Mem1<Vec2> pixs;
@@ -200,7 +200,7 @@ namespace sp{
                 estimate(src, pixs, scales);
             }
             catch (const char *str) {
-                SP_PRINTD("DotPattern.execute [%s]\n", str);
+                SP_PRINTD("DotPattern::execute [%s]\n", str);
 
                 return false;
             }

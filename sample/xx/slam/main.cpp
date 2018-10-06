@@ -6,7 +6,7 @@
 
 using namespace sp;
 
-class SfMGUI : public BaseWindow {
+class SLAMGUI : public BaseWindow {
 
     SfM m_sfm;
 
@@ -41,7 +41,7 @@ private:
     }
 
     void reset() {
-        m_sfm.init();
+        m_sfm.clear();
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
     }
 
@@ -154,8 +154,8 @@ private:
 
 int main() {
 
-    SfMGUI win;
-    win.execute("sfm", 800, 600);
+    SLAMGUI win;
+    win.execute("slam", 800, 600);
 
     return 0;
 }
