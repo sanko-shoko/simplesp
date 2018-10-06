@@ -49,23 +49,25 @@ private:
             m_sift0.execute(m_imgs[0]);
             m_sift1.execute(m_imgs[1]);
 
-            const Mem1<Feature> &fts0 = m_sift0.getFeatrue();
-            const Mem1<Feature> &fts1 = m_sift1.getFeatrue();
-            m_matches = findMatch(fts0, fts1);
+            if (m_sift0.getFeatrue() != NULL && m_sift1.getFeatrue() != NULL) {
+                const Mem1<Feature> &fts0 = *m_sift0.getFeatrue();
+                const Mem1<Feature> &fts1 = *m_sift1.getFeatrue();
+                m_matches = findMatch(fts0, fts1);
 
-            Mem1<Vec2> pixs0, pixs1;
+                Mem1<Vec2> pixs0, pixs1;
 
-            const Mem1<int> matches = findMatch(fts0, fts1);
-            for (int i = 0; i < matches.size(); i++) {
-                const int j = matches[i];
-                if (j < 0) continue;
+                const Mem1<int> matches = findMatch(fts0, fts1);
+                for (int i = 0; i < matches.size(); i++) {
+                    const int j = matches[i];
+                    if (j < 0) continue;
 
-                pixs0.push(fts0[i].pix);
-                pixs1.push(fts1[j].pix);
+                    pixs0.push(fts0[i].pix);
+                    pixs1.push(fts1[j].pix);
+                }
+
+                calcHMatRANSAC(m_hom, pixs1, pixs0);
+                print(m_hom);
             }
-
-            calcHMatRANSAC(m_hom, pixs1, pixs0);
-            print(m_hom);
         }
     }
 
@@ -83,8 +85,8 @@ private:
                 glRenderImg(m_imgs[1]);
             }
 
-            const Mem1<Feature> &fts0 = m_sift0.getFeatrue();
-            const Mem1<Feature> &fts1 = m_sift1.getFeatrue();
+            const Mem1<Feature> &fts0 = *m_sift0.getFeatrue();
+            const Mem1<Feature> &fts1 = *m_sift1.getFeatrue();
         
             {
                 glLoadView2D(cam, m_viewPos, m_viewScale);

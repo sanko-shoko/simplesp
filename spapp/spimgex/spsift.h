@@ -49,10 +49,14 @@ namespace sp{
 
     public:
 
+        //--------------------------------------------------------------------------------
+        // data
+        //--------------------------------------------------------------------------------
 
-        const Mem1<Feature>& getFeatrue() const {
-            return m_fts;
+        const Mem1<Feature>* getFeatrue() const {
+            return (m_fts.size() > 0) ? &m_fts : NULL;
         }
+
 
         //--------------------------------------------------------------------------------
         // execute detection and description
@@ -98,6 +102,7 @@ namespace sp{
 
                 // detect key points
                 Mem1<KeyPoint> keys = detect();
+                if (keys.size() == 0) throw "no keys";
 
                 // descript features
                 m_fts = descript(keys);
