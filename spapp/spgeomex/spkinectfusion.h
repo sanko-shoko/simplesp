@@ -14,14 +14,14 @@ namespace sp{
     class KinectFusion{
 
     private:
-        // camera parameter
-        CamParam m_cam;
-
         // tsdf map
         Voxel m_tsdf;
 
         // casted pn
         Mem2<VecPN3> m_cast;
+
+        // camera parameter
+        CamParam m_cam;
 
         // map pose
         Pose m_pose;
@@ -33,48 +33,48 @@ namespace sp{
         SP_LOGGER_INSTANCE;
 
         KinectFusion(){
+            init(100, 2.0, getCamParam(0, 0), zeroPose());
+        }
+
+        void init(const int size, const double unit, const CamParam &cam, const Pose &base) {
+            m_tsdf.resize(size, unit);
+            m_tsdf.zero();
+
+            m_cast.resize(cam.dsize);
+            m_cast.zero();
+
+            m_cam = cam;
+            m_pose = base;
             m_track = false;
-            m_cam = getCamParam(0, 0);
-            setMap(100, 2.0, zeroPose());
+        }
+
+        const CamParam& getCam() const {
+            return m_cam;
         }
 
         void reset() {
             m_track = false;
         }
 
-        bool track() {
+        bool valid() {
             return m_track;
         }
 
-        void setMap(const int size, const double unit, const Pose &base){
-            m_tsdf.init(size, unit);
-
-            m_pose = base;
-        }
-
-        void setCam(const CamParam &cam) {
-            m_cam = cam;
-        }
-
 
         //--------------------------------------------------------------------------------
-        // get status 
+        // data
         //--------------------------------------------------------------------------------
 
-        const CamParam& getCam() const{
-            return m_cam;
-        }
-    
         const Pose* getPose() const{
             return (m_track == true) ? &m_pose : NULL;
         }
 
-        const Mem2<VecPN3>& getCast() const{
-            return m_cast;
+        const Mem2<VecPN3>* getCast() const{
+            return (m_track == true) ? &m_cast : NULL; ;
         }
 
-        const Voxel& getMap() const {
-            return m_tsdf;
+        const Voxel* getMap() const {
+            return (m_track == true) ? &m_tsdf : NULL; ;
         }
 
 

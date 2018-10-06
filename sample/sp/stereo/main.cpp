@@ -26,8 +26,8 @@ int main() {
     Pose stereo;
     {
         SfM sfm;
-        sfm.addView(imgs[0], cam0);
-        sfm.addView(imgs[1], cam1);
+        sfm.addView(imgs[0], &cam0);
+        sfm.addView(imgs[1], &cam1);
         sfm.update(10);
 
         stereo = sfm.m_views[1].pose * invPose(sfm.m_views[0].pose);
