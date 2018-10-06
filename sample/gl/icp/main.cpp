@@ -191,7 +191,7 @@ private:
 int main(){
 
     ICPGUI win;
-    win.execute("render", 800, 600);
+    win.execute("icp", 800, 600);
 
     return 0;
 }
