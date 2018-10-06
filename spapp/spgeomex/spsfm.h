@@ -395,7 +395,7 @@ namespace sp {
 
                 Mem1<int> list;
                 for (int i = 0; i < views.size(); i++) {
-                    if (mdmat(a, i).eval < 0.0) {
+                    if (mdmat(a, i).rate < 0.0) {
                         list.push(i);
                     }
                 }
