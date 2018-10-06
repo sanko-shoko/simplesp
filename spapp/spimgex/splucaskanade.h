@@ -23,8 +23,10 @@ namespace sp{
         const int WIN_SIZE = 21;
         const double EIG_THRESH = 0.01;
 
-        flows.resize(pixs.size());
-        flows.zero();
+        if (flows.size() != pixs.size()) {
+            flows.resize(pixs.size());
+            flows.zero();
+        }
 
         masks.resize(pixs.size());
         setElm(masks, true);
@@ -50,7 +52,6 @@ namespace sp{
         for(int p = pynum - 1; p >= 0; p--){
             const Mem2<Byte> &pyimg0 = pyimgs0[p];
             const Mem2<Byte> &pyimg1 = pyimgs1[p];
-
             const double scale = pow(0.5, p);
 
             Mem2<float> scharrX, scharrY;
@@ -60,11 +61,11 @@ namespace sp{
             const Rect rect = getRect2(img1.dsize);
             const int offset = WIN_SIZE / 2;
 
-            const double wscale = (p + 1) * (WIN_SIZE / 2) * 0.5;
+            const double wscale = (p + 1) * (WIN_SIZE / 2);
 
             for (int i = 0; i < pixs.size(); i++) {
                 if (masks[i] == false) continue;
-                if (scalecheck == true && scls[i] > wscale) continue;
+                if (p != pynum - 1 && scalecheck == true && scls[i] > wscale) continue;
 
                 // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
                 Mat A(WIN_SIZE * WIN_SIZE, 2);
@@ -119,8 +120,8 @@ namespace sp{
                 for (int it = 0; it < maxit; it++) {
                     AtB.zero();
 
-                    const Vec2 pix0 = pixs[i] * scale;
-                    const Vec2 pix1 = (pixs[i] + flows[i]) * scale;
+                    const Vec2 pix0 = (pixs[i] + flows[i]) * scale; 
+                    const Vec2 pix1 = pixs[i] * scale;
 
                     for (int y = 0; y < WIN_SIZE; y++) {
                         for (int x = 0; x < WIN_SIZE; x++) {
@@ -129,12 +130,12 @@ namespace sp{
 
                             const Vec2 p0 = pix0 + v;
                             const Vec2 p1 = pix1 + v;
-                            if (isInRect2(rect, p0.x, p0.y) == false) continue;
+                            if (isInRect2(rect, p0.x, p0.y) == false || isInRect2(rect, p1.x, p1.y) == false) continue;
 
                             const double gx = A(i, 0);
                             const double gy = A(i, 1);
 
-                            const double d = (I(i, 0) - acs2(pyimg0, p1.x, p1.y)) / SP_BYTEMAX;
+                            const double d = (I(i, 0) - acs2(pyimg0, p0.x, p0.y)) / SP_BYTEMAX;
                             AtB(0, 0) += gx * d;
                             AtB(1, 0) += gy * d;
                         }

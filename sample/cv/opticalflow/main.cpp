@@ -46,23 +46,23 @@ void sample(cv::Mat &cvimg, const int key){
     static Mem1<Vec2> pixs;
     static Mem1<double> scls;
 
-    if (key == 'a') {
+    // detect features
+    if (key == 'a' || key == 's') { 
         prev = crnt;
-
-        harris(pixs, crnt, 6);
-        scls.clear();
-    }  
-    if (key == 's') {
-        prev = crnt;
-
-        SIFT sift;
-        sift.execute(crnt);
-        const Mem1<Feature> &fts = *sift.getFeatrue();
         pixs.clear();
         scls.clear();
-        for (int i = 0; i < fts.size(); i++) {
-            pixs.push(fts[i].pix);
-            scls.push(fts[i].scl);
+
+        if (key == 'a') {
+            harris(pixs, crnt, 6);
+        }
+        if (key == 's') {
+            SIFT sift;
+            sift.execute(crnt);
+            const Mem1<Feature> &fts = *sift.getFeatrue();
+            for (int i = 0; i < fts.size(); i++) {
+                pixs.push(fts[i].pix);
+                scls.push(fts[i].scl);
+            }
         }
     }
 
@@ -72,7 +72,7 @@ void sample(cv::Mat &cvimg, const int key){
     Mem1<Vec2> flows;
     Mem1<bool> masks;
     {
-        opticalFlowLK(flows, masks, crnt, prev, pixs);
+        opticalFlowLK(flows, masks, crnt, prev, pixs, scls);
     }
 
     for (int i = 0; i < flows.size(); i++) {

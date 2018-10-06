@@ -12,7 +12,7 @@ int main() {
 
     // load image
     {
-        if (1) {
+        if (0) {
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         }
@@ -24,8 +24,8 @@ int main() {
             Rect rect0 = rect;
             Rect rect1 = rect;
 
-            rect1.dbase[0] += 10;
-            rect1.dbase[1] += 10;
+            rect1.dbase[0] += 30;
+            rect1.dbase[1] += 30;
 
             crop<Col3, Byte>(img0, img, rect0);
             crop<Col3, Byte>(img1, img, rect1);
@@ -52,7 +52,6 @@ int main() {
         Mem1<Vec2> flows;
         Mem1<bool> masks;
         opticalFlowLK(flows, masks, img0, img1, pixs);
-
         Mem2<Col3> img = img0;
 
         for (int i = 0; i < flows.size(); i++) {
