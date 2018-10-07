@@ -51,6 +51,7 @@
 #include "spapp/spgeom/spvertex.h"
 
 #include "spapp/spgeomex/spsfm.h"
+#include "spapp/spgeomex/spslam.h"
 #include "spapp/spgeomex/sptrack.h"
 #include "spapp/spgeomex/sptrackrf.h"
 #include "spapp/spgeomex/spdotmarker.h"

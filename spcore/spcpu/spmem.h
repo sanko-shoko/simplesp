@@ -183,14 +183,6 @@ namespace sp{
             return ret;
         }
 
-        //Mem& index() {
-        //    Mem<TYPE> ret(dim, dsize);
-
-        //    for (int i = 0; i < ret.size(); i++) {
-        //        cnvVal(ret[i], i);
-        //    }
-        //    return ret;
-        //}
     };
 
 
