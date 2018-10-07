@@ -71,8 +71,17 @@ namespace sp{
         if (matches.size() <= thresh) return 0.0;
 
         const double scale = 1.0 - 1.0 / (matches.size() - thresh);
-        return scale * getMatchCnt(matches) / matches.size();
+        return getMatchCnt(matches) * scale / matches.size();
     };
+
+    SP_CPUFUNC void getMatchPixs(Mem1<Vec2> &mpixs0, Mem1<Vec2> &mpixs1, const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mem1<int> &matches) {
+        for (int i = 0; i < matches.size(); i++) {
+            const int j = matches[i];
+            if (j < 0) continue;
+            mpixs0.push(fts0[i].pix);
+            mpixs1.push(fts1[j].pix);
+        }
+    }
 
     SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {
 
@@ -168,43 +177,6 @@ namespace sp{
         return matches;
     }
 
-    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Feature> &fts0, const CamParam &cam1, const Mem1<Feature> &fts1, const Mem1<int> &matches, const Pose *stereo = NULL){
-
-        Mem1<Vec2> pixs0, pixs1;
-        for (int i = 0; i < matches.size(); i++) {
-            const int j = matches[i];
-            if (j < 0) continue;
-
-            pixs0.push(fts0[i].pix);
-            pixs1.push(fts1[j].pix);
-        }
-
-        Pose pose;
-        if (stereo == NULL) {
-            if (calcPose(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
-        }
-        else {
-            pose = *stereo;
-        }
-        pose.trn /= normVec(pose.trn);
-
-        Mem1<double> zlist;
-        for (int i = 0; i < matches.size(); i++) {
-            const int j = matches[i];
-            if (j < 0) continue;
-
-            Vec3 pnt;
-            if (calcPnt3d(pnt, zeroPose(), cam0, fts0[i].pix, pose, cam1, fts1[j].pix) == false) continue;
-
-            const double err = errPose(zeroPose(), cam0, fts0[i].pix, pnt);
-            if (evalErr(err) == 0.0) continue;
-
-            zlist.push(pnt.z);
-        }
-
-        const double eval = (zlist.size() == 0) ? 0.0 : zlist.size() / maxVal(1.0, medianVal(zlist));
-        return eval;
-    }
 }
 
 #endif

@@ -298,7 +298,13 @@ namespace sp {
             md.a = a;
             md.b = b;
             md.rate = getMatchRate(md.matches);
-            md.eval = -1.0;
+
+            if (md.rate > MIN_MATCHRATE) {
+                Mem1<Vec2> mpixs0, mpixs1;
+                getMatchPixs(mpixs0, mpixs1, views[a].fts, views[b].fts, md.matches);
+
+                md.eval = evalStereo(views[a].cam, mpixs0, views[b].cam, mpixs1);
+            }
 
             views[a].mcnt++;
         }
@@ -333,7 +339,7 @@ namespace sp {
                 double maxv = 0.0;
                 for (int i = 0; i < minVal(10, mds.size()); i++) {
 
-                    const double eval = evalPair(views, mdmat, mds[i]->a, mds[i]->b);
+                    const double eval = mds[i]->eval;
                     if (eval < maxv) continue;
 
                     maxv = eval;
@@ -390,6 +396,30 @@ namespace sp {
                 views[b].pose = pose;
             }
             return true;
+        }
+
+        double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const  Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
+
+            Pose pose;
+            if (stereo == NULL) {
+                if (calcPose(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+            }
+            else {
+                pose = *stereo;
+            }
+            pose.trn /= normVec(pose.trn);
+
+            Mem1<double> zlist;
+            for (int i = 0; i < pixs0.size(); i++) {
+
+                Vec3 pnt;
+                if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+
+                zlist.push(pnt.z);
+            }
+
+            const double eval = (zlist.size() == 0) ? 0.0 : zlist.size() / maxVal(1.0, medianVal(zlist));
+            return eval;
         }
 
         double evalPair(Mem1<ViewData> &views, Mem2<MatchData> &mdmat, const int a, const int b) {

@@ -569,6 +569,36 @@ namespace sp{
         return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
 
+    SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
+        if (maxit <= 0.0) return false;
+
+        SP_ASSERT(pixs0.size() == pixs1.size());
+
+        const int unit = 3;
+        if (pixs0.size() < unit) return false;
+
+        for (int it = 0; it < maxit; it++) {
+            Mem1<Vec2> pixs;
+            Mem1<Vec3> objs;
+
+            for (int i = 0; i < pixs0.size(); i++) {
+                Vec3 obj;
+                if (calcPnt3d(obj, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+              
+                pixs.push(pixs1[i]);
+                objs.push(obj);
+            }
+
+            // calc pose
+            if (refinePose(pose, cam1, pixs, objs, 1) == false) {
+                return false;
+            }
+            pose.trn /= normVec(pose.trn);
+        }
+
+        return true;
+    }
+
     // objs0 <- objs1 pose
     SP_CPUFUNC bool calcPose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1) {
         SP_ASSERT(objs0.size() == objs1.size());
@@ -816,7 +846,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
+    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         Mem1<Vec2> upixs0(pixs0.size());
@@ -831,9 +861,11 @@ namespace sp{
         if (calcFMatRANSAC(F, upixs0, upixs1) == false) return false;
 
         if (dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1) == false) return false;
+
+        if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
+        
         return true;
     }
-
 
     SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());

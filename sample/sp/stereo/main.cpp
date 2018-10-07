@@ -25,13 +25,25 @@ int main() {
     // estimate camera pose
     Pose stereo;
     {
-        SfM sfm;
-        sfm.addView(imgs[0], &cam0);
-        sfm.addView(imgs[1], &cam1);
-        sfm.update(10);
+        // sift execute
+        SIFT sift0, sift1;
+        sift0.execute(imgs[0]);
+        sift1.execute(imgs[1]);
 
-        stereo = sfm.m_views[1].pose * invPose(sfm.m_views[0].pose);
-        //print(stereo);
+        // get feature
+        const Mem1<Feature> &fts0 = *sift0.getFeatrue();
+        const Mem1<Feature> &fts1 = *sift1.getFeatrue();
+        const Mem1<int> matches = findMatch(fts0, fts1);
+
+        Mem1<Vec2> mpixs0, mpixs1;
+        for (int i = 0; i < matches.size(); i++) {
+            const int j = matches[i];
+            if (j < 0) continue;
+            mpixs0.push(fts0[i].pix);
+            mpixs1.push(fts1[j].pix);
+        }
+
+        calcPose(stereo, cam0, mpixs0, cam1, mpixs1);
     }
 
 
