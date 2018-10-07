@@ -12,7 +12,7 @@
 
 namespace sp {
 
-    void sleep(const long long ms) {
+    SP_CPUFUNC void sleep(const long long ms) {
         std::this_thread::sleep_for(std::chrono::milliseconds(ms));
     }
 
@@ -46,14 +46,10 @@ namespace sp {
 
             thread th([this, func, wait] {
                 m_mtx.lock();
-                while (m_used == true) {
-                    sleep(10);
-                }
                 m_used = true;
-                m_mtx.unlock();
-
                 func();
                 m_used = false;
+                m_mtx.unlock();
             });
             th.detach();
             return true;
