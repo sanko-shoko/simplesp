@@ -227,29 +227,29 @@ namespace sp{
         // execute pose estimation
         //--------------------------------------------------------------------------------
 
-        bool execute(const void *src, const int dsize0, const int dsize1, const int ch) {
+        bool execute(const void *img, const int dsize0, const int dsize1, const int ch) {
             Mem2<Byte> gry;
-            cnvPtrToImg(gry, src, dsize0, dsize1, ch);
+            cnvPtrToImg(gry, img, dsize0, dsize1, ch);
             return _execute(gry);
         }
 
-        bool execute(const Mem2<Col3> &src) {
+        bool execute(const Mem2<Col3> &img) {
             Mem2<Byte> gry;
-            cnvImg(gry, src);
+            cnvImg(gry, img);
             return _execute(gry);
         }
 
-        bool execute(const Mem2<Byte> &src) {
-            return _execute(src);
+        bool execute(const Mem2<Byte> &img) {
+            return _execute(img);
         }
 
     private:
-        bool _execute(const Mem2<Byte> &src){
+        bool _execute(const Mem2<Byte> &img){
             SP_LOGGER_SET("-execute");
 
             // set default camera parameter
-            if (cmpSize(2, m_cam.dsize, src.dsize) == false) {
-                m_cam = getCamParam(src.dsize);
+            if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
+                m_cam = getCamParam(img.dsize);
             }
 
             // clear output
@@ -258,18 +258,17 @@ namespace sp{
             m_cobjs.clear();
 
             try{
-                if (src.size() == 0) throw "image size";
-                if (m_mrks.size() == 0) throw "mrks size";
+                if (img.size() == 0 || m_mrks.size() == 0) throw "input size";
 
                 // detect corners
-                const Mem1<Mem1<Vec2> > corners = detect(src);
+                const Mem1<Mem1<Vec2> > corners = detect(img);
 
                 // estimate marker pose
-                estimate(src, corners);
+                estimate(img, corners);
 
             }
             catch (const char *str){
-                SP_PRINTD("BitMarker.execute [%s]\n", str);
+                SP_PRINTD("BitMarker::execute [%s]\n", str);
                 return false;
             }
 

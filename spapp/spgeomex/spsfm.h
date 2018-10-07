@@ -11,6 +11,8 @@ namespace sp {
 
     class SfM {
 
+#define SP_SFM_MAXVIEW 1000
+
     public:
 
         typedef MemA<int, 2> Int2;
@@ -93,6 +95,8 @@ namespace sp {
 
         int m_update;
 
+        int m_maxview;
+
         Mem1<ViewData> m_views;
 
         // match data matrix
@@ -104,14 +108,16 @@ namespace sp {
     public:
 
         SfM() {
-            m_update = 0;
-            reserve();
+            init();
         }
 
-        void reserve(const int maxview = 1000) {
+        void init(const int maxview = SP_SFM_MAXVIEW) {
+            clear();
+
+            m_maxview = maxview;
             m_views.reserve(maxview);
             m_mdmat.resize(maxview, maxview);
-            m_gpnts.reserve(1000 * maxview);
+            m_gpnts.reserve(100 * maxview);
         }
 
         void clear() {
@@ -120,14 +126,13 @@ namespace sp {
             m_views.clear();
             m_mdmat.clear();
             m_gpnts.clear();
-            reserve();
         }
 
 
         //--------------------------------------------------------------------------------
-        // data
+        // output parameter
         //--------------------------------------------------------------------------------
-    
+
         int size() const {
             return m_views.size();
         }
@@ -142,14 +147,18 @@ namespace sp {
 
  
         //--------------------------------------------------------------------------------
-        // execute sfm
+        // execute
         //--------------------------------------------------------------------------------
 
-        void addView(const Mem2<Col3> &img, const CamParam *cam = NULL) {
+        bool addView(const Mem2<Col3> &img, const CamParam *cam = NULL) {
             SP_LOGGER_SET("-addView");
+
+            if (m_views.size() == m_maxview) return false;
 
             CamParam tmp = (cam != NULL && cmpSize(2, cam->dsize, img.dsize) == true) ? *cam : getCamParam(img.dsize);
             addView(m_views, m_mdmat, img, tmp);
+
+            return true;
         }
 
         bool update(const int itmax = 1) {
@@ -494,8 +503,6 @@ namespace sp {
                 }
                 if (cnt < 0.5 * index.size()) return false;
 
-                views[a].valid = true;
-
                 // add index
                 for (int i = 0; i < index.size(); i++) {
                     const int j = index[i][0];
@@ -506,6 +513,8 @@ namespace sp {
 
                     addIndex(gpnts, views, g, a, j);
                 }
+
+                views[a].valid = true;
             }
             return true;
         }
