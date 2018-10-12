@@ -133,7 +133,7 @@ namespace sp{
                     Mat val = zeroMat(6, 1);
                     Mat dev = zeroMat(6, 1);
 
-                    Mem1<const RandomForestReg::Node*> &rfnode = node.rf.execute2(data);
+                    const Mem1<const RandomForestReg::Node*> &rfnode = node.rf.execute2(data);
                     for (int s = 0; s < 6; s++) {
                         val[s] = rfnode[s]->val;
                         dev[s] = rfnode[s]->dev;
