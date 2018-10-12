@@ -8,7 +8,7 @@ using namespace sp;
 
 class SLAMGUI : public BaseWindow {
 
-    SfM m_sfm;
+    SLAM m_slam;
 
     // cam pose (object to cam pose)
     Pose m_pose;
@@ -41,43 +41,43 @@ private:
     }
 
     void reset() {
-        m_sfm.clear();
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
+        m_slam.init(m_cam);
     }
 
     void update(){
-        m_sfm.update();
+        m_slam.updateMap(m_img);
     }
 
     void addView() {
-        m_sfm.addView(m_img, &m_cam);
+        //m_slam.addView(m_img, &m_cam);
     }
 
-    void capture(Mem2<Col3> &img) {
+    void capture() {
         static cv::VideoCapture cap(0);
         cv::Mat cvimg;
         cap >> cvimg;
 
-        cvCnvImg(img, cvimg);
+        cvCnvImg(m_img, cvimg);
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] >= 1) {
-            m_thread.run<SfMGUI, &SfMGUI::addView>(this);
+            m_thread.run<SLAMGUI, &SLAMGUI::addView>(this);
         }
 
         if (m_keyAction[GLFW_KEY_S] == 1) {
-            m_thread.run<SfMGUI, &SfMGUI::reset>(this);
+            m_thread.run<SLAMGUI, &SLAMGUI::reset>(this);
         }
     }
 
     virtual void display() {
         {
-            capture(m_img);
+            capture();
         }
         {
-            m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
+            m_thread.run<SLAMGUI, &SLAMGUI::update>(this, false);
         }
         {
             const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
@@ -91,8 +91,8 @@ private:
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
             // render points
-            if (m_sfm.getPnts() != NULL) {
-                const Mem1<SfM::PointData> &pnts = *m_sfm.getPnts();
+            if (m_slam.getPnts() != NULL) {
+                const Mem1<SfM::PointData> &pnts = *m_slam.getPnts();
 
                 glPointSize(4.f);
 
@@ -107,8 +107,8 @@ private:
             }
 
             // render cam
-            if (m_sfm.getViews() != NULL) {
-                const Mem1<SfM::ViewData> &views = *m_sfm.getViews();
+            if (m_slam.getViews() != NULL) {
+                const Mem1<SfM::ViewData> &views = *m_slam.getViews();
 
                 glLineWidth(2.f);
 

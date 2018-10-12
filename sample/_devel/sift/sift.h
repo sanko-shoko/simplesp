@@ -49,9 +49,9 @@ private:
             m_sift0.execute(m_imgs[0]);
             m_sift1.execute(m_imgs[1]);
 
-            if (m_sift0.getFeatrue() != NULL && m_sift1.getFeatrue() != NULL) {
-                const Mem1<Feature> &fts0 = *m_sift0.getFeatrue();
-                const Mem1<Feature> &fts1 = *m_sift1.getFeatrue();
+            if (m_sift0.getFeatures() != NULL && m_sift1.getFeatures() != NULL) {
+                const Mem1<Feature> &fts0 = *m_sift0.getFeatures();
+                const Mem1<Feature> &fts1 = *m_sift1.getFeatures();
                 m_matches = findMatch(fts0, fts1);
 
                 Mem1<Vec2> pixs0, pixs1;
@@ -85,8 +85,8 @@ private:
                 glRenderImg(m_imgs[1]);
             }
 
-            const Mem1<Feature> &fts0 = *m_sift0.getFeatrue();
-            const Mem1<Feature> &fts1 = *m_sift1.getFeatrue();
+            const Mem1<Feature> &fts0 = *m_sift0.getFeatures();
+            const Mem1<Feature> &fts1 = *m_sift1.getFeatures();
         
             {
                 glLoadView2D(cam, m_viewPos, m_viewScale);

@@ -31,10 +31,14 @@ namespace sp{
         };
         Type type;
 
+        // map id;
+        int mid;
+
         Feature() {
             pix = getVec(0.0, 0.0);
             drc = getVec(0.0, 0.0);
             scl = 0.0;
+            mid = -1;
             type = DSC_32F;
         }
 
@@ -47,6 +51,8 @@ namespace sp{
             drc = ft.drc;
             scl = ft.scl;
             dsc = ft.dsc;
+            mid = ft.mid;
+            type = ft.type;
             return *this;
         }
 
@@ -67,6 +73,16 @@ namespace sp{
         const double scale = 1.0 - 1.0 / (matches.size() - thresh);
         return getMatchCnt(matches) * scale / matches.size();
     };
+
+
+    SP_CPUFUNC void getMatchPixs(Mem1<Vec2> &mpixs0, Mem1<Vec2> &mpixs1, const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mem1<int> &matches) {
+        for (int i = 0; i < matches.size(); i++) {
+            const int j = matches[i];
+            if (j < 0) continue;
+            mpixs0.push(fts0[i].pix);
+            mpixs1.push(fts1[j].pix);
+        }
+    }
 
     SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {
 

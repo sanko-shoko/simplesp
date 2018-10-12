@@ -152,7 +152,7 @@ int main() {
 
             // calibration
             Pose dst;
-            const double rms = calibStereo(dst, cam, cam, pixs0, pixs1, objs0, objs1);
+            const double rms = calibStereo(dst, cam, pixs0, objs0, cam, pixs1, objs1);
             printf("rms error: %g\n", rms);
 
             print(dst);

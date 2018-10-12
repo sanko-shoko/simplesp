@@ -23,6 +23,7 @@ namespace sp {
         Pose m_pose;
 
     public:
+        SP_LOGGER_INSTANCE;
 
         SLAM() {
         }
@@ -55,6 +56,14 @@ namespace sp {
         
         const Pose* getPose() const {
             return (m_track == true) ? &m_pose : NULL;
+        }
+
+        const Mem1<SfM::ViewData>* getViews() const {
+            return m_sfm.getViews();
+        }
+
+        const Mem1<SfM::MapData>* getMPnts() const {
+            return m_sfm.getMPnts();
         }
 
 

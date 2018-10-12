@@ -58,7 +58,7 @@ void sample(cv::Mat &cvimg, const int key){
         if (key == 's') {
             SIFT sift;
             sift.execute(crnt);
-            const Mem1<Feature> &fts = *sift.getFeatrue();
+            const Mem1<Feature> &fts = *sift.getFeatures();
             for (int i = 0; i < fts.size(); i++) {
                 pixs.push(fts[i].pix);
                 scls.push(fts[i].scl);

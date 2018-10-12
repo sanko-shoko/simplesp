@@ -157,7 +157,7 @@ namespace sp{
         }
 
 
-        SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs){
+        SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs){
     
             double minv = SP_INFINITY;
 
@@ -180,7 +180,7 @@ namespace sp{
             return (minv < SP_INFINITY) ? true : false;
         }
 
-        SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, int maxit = 20){
+        SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, int maxit = 20){
             
             Mem1<Pose> vposes;
             Mem1<Mem1<Vec2> > vpixs0, vpixs1;
@@ -767,16 +767,16 @@ namespace sp{
     // calibrate stereo pose
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
+    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
 
         double rms = -1.0;
 
         try{
             if (pixs0.size() < 3 || pixs0.size() != pixs1.size() || pixs0.size() != objs.size()) throw "data size";
 
-            if (initStereo(stereo, cam0, cam1, pixs0, pixs1, objs) == false) throw "initStereo";
+            if (initStereo(stereo, cam0, pixs0, cam1, pixs1, objs) == false) throw "initStereo";
             
-            if ((rms = optStereo(stereo, cam0, cam1, pixs0, pixs1, objs, maxit)) < 0.0) throw "optStereo";
+            if ((rms = optStereo(stereo, cam0, pixs0, cam1, pixs1, objs, maxit)) < 0.0) throw "optStereo";
         }
         catch (const char *str){
             SP_PRINTD("calibStereo [%s]\n", str);
@@ -785,7 +785,7 @@ namespace sp{
         return rms;
     }
     
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const CamParam &cam1,const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs0, const Mem1<Mem1<Vec2> > &objs1, const int maxit = 20){
+    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &objs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs1, const int maxit = 20){
 
         Mem1<Mem1<Vec2> > cpixs0, cpixs1, cobjs;
         for (int i = 0; i < pixs0.size(); i++) {
@@ -806,7 +806,7 @@ namespace sp{
             cobjs.push(tobjs);
         }
 
-        return calibStereo(stereo, cam0, cam1, cpixs0, cpixs1, cobjs, maxit);
+        return calibStereo(stereo, cam0, cpixs0, cam1, cpixs1, cobjs, maxit);
     }
 
 

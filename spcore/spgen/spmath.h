@@ -12,6 +12,175 @@
 namespace sp{
 
     //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
+
+    // x * x
+    SP_GENFUNC double square(const double x) {
+        return x * x;
+    }
+
+    // x * x * x
+    SP_GENFUNC double cubic(const double x) {
+        return x * x * x;
+    }
+
+    // cubic root
+    SP_GENFUNC double cbrt(const double x) {
+        const double z = pow(fabs(x), 1.0 / 3.0);
+        return (x >= 0.0) ? z : -z;
+    }
+
+    // sqrt(a * a + b * b) without destructive underflow or overflow
+    SP_GENFUNC double pythag(const double a, const double b) {
+        const double x = fabs(a);
+        const double y = fabs(b);
+        if (x > y) {
+            return x * sqrt(1.0 + (y / x) * (y / x));
+        }
+        else {
+            return (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
+        }
+    }
+
+    // combination
+    SP_GENFUNC int nCk(const int n, const int k) {
+        int ret = 1;
+        for (int i = 1; i <= k; i++) {
+            ret = ret * (n - i + 1) / i;
+        }
+        return ret;
+    }
+    
+
+    //--------------------------------------------------------------------------------
+    // complex
+    //--------------------------------------------------------------------------------
+
+    // get complex
+    SP_GENFUNC Cmp getCmp(const double re, const double im) {
+        Cmp dst;
+        dst.re = re, dst.im = im;
+        return dst;
+    }
+
+    // addition
+    SP_GENFUNC Cmp addCmp(const Cmp &cmp0, const Cmp &cmp1) {
+        return getCmp(cmp0.re + cmp1.re, cmp0.im + cmp1.im);
+    }
+
+    // addition
+    SP_GENFUNC Cmp addCmp(const Cmp &cmp, const double val) {
+        return getCmp(cmp.re + val, cmp.im);
+    }
+
+    // subtraction
+    SP_GENFUNC Cmp subCmp(const Cmp &cmp0, const Cmp &cmp1) {
+        return getCmp(cmp0.re - cmp1.re, cmp0.im - cmp1.im);
+    }
+
+    // addition
+    SP_GENFUNC Cmp subCmp(const Cmp &cmp, const double val) {
+        return getCmp(cmp.re - val, cmp.im);
+    }
+
+    // multiple
+    SP_GENFUNC Cmp mulCmp(const Cmp &cmp0, const Cmp &cmp1) {
+        return getCmp(cmp0.re * cmp1.re - cmp0.im * cmp1.im, cmp0.re * cmp1.im + cmp0.im * cmp1.re);
+    }
+
+    // multiple
+    SP_GENFUNC Cmp mulCmp(const Cmp &cmp, const double val) {
+        return getCmp(cmp.re * val, cmp.im * val);
+    }
+
+    // division
+    SP_GENFUNC Cmp divCmp(const Cmp &cmp0, const Cmp &cmp1) {
+        Cmp dst = mulCmp(cmp0, getCmp(cmp1.re, -cmp1.im));
+        const double div = cmp1.re * cmp1.re + cmp1.im * cmp1.im;
+        dst.re /= div;
+        dst.im /= div;
+        return dst;
+    }
+
+    // division
+    SP_GENFUNC Cmp divCmp(const Cmp &cmp, const double val) {
+        return getCmp(cmp.re / val, cmp.im / val);
+    }
+
+    SP_GENFUNC double fabs(const Cmp cmp) {
+        return pythag(cmp.re, cmp.im);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // complex operator
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Cmp operator + (const Cmp &cmp0, const Cmp &cmp1) {
+        return addCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC Cmp operator + (const Cmp &cmp, const double val) {
+        return addCmp(cmp, val);
+    }
+    SP_GENFUNC Cmp operator + (const Cmp &cmp) {
+        return cmp;
+    }
+
+    SP_GENFUNC Cmp operator - (const Cmp &cmp0, const Cmp &cmp1) {
+        return subCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC Cmp operator - (const Cmp &cmp, const double val) {
+        return subCmp(cmp, val);
+    }
+    SP_GENFUNC Cmp operator - (const Cmp &cmp) {
+        return mulCmp(cmp, -1.0);
+    }
+
+    SP_GENFUNC Cmp operator * (const Cmp &cmp0, const Cmp &cmp1) {
+        return mulCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC Cmp operator * (const Cmp &cmp, const double val) {
+        return mulCmp(cmp, val);
+    }
+
+    SP_GENFUNC Cmp operator / (const Cmp &cmp0, const Cmp &cmp1) {
+        return divCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC Cmp operator / (const Cmp &cmp, const double val) {
+        return divCmp(cmp, val);
+    }
+
+    SP_GENFUNC void operator += (Cmp &cmp0, const Cmp &cmp1) {
+        cmp0 = addCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC void operator += (Cmp &cmp, const double val) {
+        cmp = addCmp(cmp, val);
+    }
+
+    SP_GENFUNC void operator -= (Cmp &cmp0, const Cmp &cmp1) {
+        cmp0 = subCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC void operator -= (Cmp &cmp, const double val) {
+        cmp = subCmp(cmp, val);
+    }
+
+    SP_GENFUNC void operator *= (Cmp &cmp0, const Cmp &cmp1) {
+        cmp0 = mulCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC void operator *= (Cmp &cmp, const double val) {
+        cmp = mulCmp(cmp, val);
+    }
+
+    SP_GENFUNC void operator /= (Cmp &cmp0, const Cmp &cmp1) {
+        cmp0 = divCmp(cmp0, cmp1);
+    }
+    SP_GENFUNC void operator /= (Cmp &cmp, const double val) {
+        cmp = divCmp(cmp, val);
+    }
+
+
+    //--------------------------------------------------------------------------------
     // function
     //--------------------------------------------------------------------------------
 
@@ -36,41 +205,44 @@ namespace sp{
         return ret;
     }
 
-    // x * x
-    SP_GENFUNC double square(const double x){
-        return x * x;
-    }
-
-    // x * x * x
-    SP_GENFUNC double cubic(const double x) {
-        return x * x * x;
-    }
-
-    // cubic root
-    SP_GENFUNC double cbrt(const double x) {
-        const double z = pow(fabs(x), 1.0 / 3.0);
-        return (x >= 0.0) ? z : -z;
-    }
-
-    // sqrt(a * a + b * b) without destructive underflow or overflow
-    SP_GENFUNC double pythag(const double a, const double b){
-        const double x = fabs(a);
-        const double y = fabs(b);
-        if (x > y){
-            return x * sqrt(1.0 + (y / x) * (y / x));
+    // f = c[0] * x^(n-1) + c[1] * x^(n-2) + ...
+    SP_GENFUNC double funcX(const double x, const int n, const double *c) {
+        // Horner method
+        double f = 0.0;
+        for (int i = 0; i < n; i++) {
+            f = f * x + c[i];
         }
-        else{
-            return (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
-        }
+        return f;
     }
 
-    // combination
-    SP_GENFUNC int nCk(const int n, const int k) {
-        int ret = 1;
-        for (int i = 1; i <= k; i++){
-            ret = ret * (n - i + 1) / i;
+    // f = c[0] * x^(n-1) + c[1] * x^(n-2) + ...
+    SP_GENFUNC Cmp funcX(const Cmp &x, const int n, const double *c) {
+        // Horner method
+        Cmp f = getCmp(0.0, 0.0);
+        for (int i = 0; i < n; i++) {
+            f = f * x + c[i];
         }
-        return ret;
+        return f;
+    }
+
+    // f' = c[0] * (n-1) * x^(n-2) + c[1] * (n-2) * x^(n-3) + ...
+    SP_GENFUNC double dfuncX(const double x, const int n, const double *c) {
+        // Horner method
+        double df = 0.0;
+        for (int i = 0; i < n - 1; i++) {
+            df = df * x + (n - 1 - i) * c[i];
+        }
+        return df;
+    }
+
+    // f' = c[0] * (n-1) * x^(n-2) + c[1] * (n-2) * x^(n-3) + ...
+    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int n, const double *c) {
+        // Horner method
+        Cmp df = getCmp(0.0, 0.0);
+        for (int i = 0; i < n - 1; i++) {
+            df = df * x + (n - 1 - i) * c[i];
+        }
+        return df;
     }
 
 
@@ -891,14 +1063,13 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // a * x^2 + b * x + c = 0
-    SP_GENFUNC int eq2(double xs[2][2], const double a, const double b, const double c) {
+    SP_GENFUNC int eq2(Cmp xs[2], const double a, const double b, const double c) {
         if (fabs(a) < SP_SMALL) {
             if (fabs(b) < SP_SMALL) {
                 return 0;
             }
             else {
-                xs[0][0] = -c / b;
-                xs[0][1] = 0.0;
+                xs[0] = getCmp(-c / b, 0.0);
                 return 1;
             }
         }
@@ -908,28 +1079,21 @@ namespace sp{
         int ret = 0;
         if (fabs(D) < SP_SMALL) {
 
-            xs[0][0] = -b / (2.0 * a);
-            xs[0][1] = 0.0;
+            xs[0] = getCmp(-b / (2.0 * a), 0.0);
 
             ret = 1;
         }
         else if (D > 0.0) {
 
-            xs[0][0] = (-b + sqrt(D)) / (2.0 * a);
-            xs[0][1] = 0.0;
-
-            xs[1][0] = (-b - sqrt(D)) / (2.0 * a);
-            xs[1][1] = 0.0;
+            xs[0] = getCmp((-b + sqrt(D)) / (2.0 * a), 0.0);
+            xs[1] = getCmp((-b - sqrt(D)) / (2.0 * a), 0.0);
 
             ret = 2;
         }
         else if (D < 0.0) {
 
-            xs[0][0] = -b / (2.0 * a);
-            xs[0][1] = +sqrt(-D) / (2.0 * a);
-
-            xs[1][0] = -b / (2.0 * a);
-            xs[1][1] = -sqrt(-D) / (2.0 * a);
+            xs[0] = getCmp(-b / (2.0 * a), +sqrt(-D) / (2.0 * a));
+            xs[1] = getCmp(-b / (2.0 * a), -sqrt(-D) / (2.0 * a));
 
             ret = 2;
         }
@@ -937,7 +1101,7 @@ namespace sp{
     }
 
     // a * x^3 + b * x^2 + c * x + d = 0
-    SP_GENFUNC int eq3(double xs[3][2], const double a, const double b, const double c, const double d) {
+    SP_GENFUNC int eq3(Cmp xs[3], const double a, const double b, const double c, const double d) {
         if (fabs(a) < SP_SMALL) {
             return eq2(xs, b, c, d);
         }
@@ -958,18 +1122,14 @@ namespace sp{
         if (fabs(D) < SP_SMALL) {
             if (fabs(q) < SP_SMALL) {
 
-                xs[0][0] = A;
-                xs[0][1] = 0.0;
+                xs[0] = getCmp(A, 0.0);
 
                 ret = 1;
             }
             else {
 
-                xs[0][0] = A - 2 * cbrt(B);
-                xs[0][1] = 0.0;
-
-                xs[1][0] = A + cbrt(B);
-                xs[1][1] = 0.0;
+                xs[0] = getCmp(A - 2 * cbrt(B), 0.0);
+                xs[1] = getCmp(A + cbrt(B), 0.0);
 
                 ret = 2;
             }
@@ -980,14 +1140,9 @@ namespace sp{
             const double R = pow(B * B + D, 1.0 / 6.0) * cos(theta / 3.0);
             const double Q = pow(B * B + D, 1.0 / 6.0) * sin(theta / 3.0);
 
-            xs[0][0] = A + 2 * R;
-            xs[0][1] = 0.0;
-
-            xs[1][0] = A - R - Q * sqrt(3.0);
-            xs[1][1] = 0.0;
-
-            xs[2][0] = A - R + Q * sqrt(3.0);
-            xs[2][1] = 0.0;
+            xs[0] = getCmp(A + 2 * R, 0.0);
+            xs[1] = getCmp(A - R - Q * sqrt(3.0), 0.0);
+            xs[2] = getCmp(A - R + Q * sqrt(3.0), 0.0);
 
             ret = 3;
         }
@@ -996,14 +1151,9 @@ namespace sp{
             const double S = cbrt(-B + sqrt(-D));
             const double T = cbrt(-B - sqrt(-D));
 
-            xs[0][0] = A + (S + T);
-            xs[0][1] = 0.0;
-
-            xs[1][0] = A - (S + T) / 2.0;
-            xs[1][1] = +(S - T) * sqrt(3.0) / 2.0;
-
-            xs[2][0] = A - (S + T) / 2.0;
-            xs[2][1] = -(S - T) * sqrt(3.0) / 2.0;
+            xs[0] = getCmp(A + (S + T), 0.0);
+            xs[1] = getCmp(A - (S + T) / 2.0, +(S - T) * sqrt(3.0) / 2.0);
+            xs[2] = getCmp(A - (S + T) / 2.0, -(S - T) * sqrt(3.0) / 2.0);
 
             ret = 3;
         }
@@ -1011,7 +1161,7 @@ namespace sp{
     }
 
     // a * x^4 + b * x^3 + c * x^2 + d * x + e = 0
-    SP_GENFUNC int eq4(double xs[3][2], const double a, const double b, const double c, const double d, const double e) {
+    SP_GENFUNC int eq4(Cmp xs[4], const double a, const double b, const double c, const double d, const double e) {
         if (fabs(a) < SP_SMALL) {
             return eq3(xs, b, c, d, e);
         }
@@ -1031,9 +1181,9 @@ namespace sp{
         const double y = p * p - 4 * r;
         const double z = -q * q;
 
-        double e3[3][2];
+        Cmp e3[3];
         const int nn = eq3(e3, 1.0, x, y, z);
-        const double u = e3[0][0];
+        const double u = e3[0].re;
 
         const double R = -sqrt(u) / 2;
         const double S = (p + u) / 2;
@@ -1043,55 +1193,41 @@ namespace sp{
 
         int ret = 0;
         if (fabs(Dp) < SP_SMALL) {
-            xs[ret + 0][0] = -b2 + R;
-            xs[ret + 0][1] = 0.0;
+            xs[ret + 0] = getCmp(-b2 + R, 0.0);
 
             ret++;
         }
         else if (Dp > 0.0){
             
-            xs[ret + 0][0] = -b2 + R + sqrt(Dp);
-            xs[ret + 0][1] = 0.0;
-
-            xs[ret + 1][0] = -b2 + R - sqrt(Dp);
-            xs[ret + 1][1] = 0.0;
+            xs[ret + 0] = getCmp(-b2 + R + sqrt(Dp), 0.0);
+            xs[ret + 1] = getCmp(-b2 + R - sqrt(Dp), 0.0);
 
             ret += 2;
         }
         else if (Dp < 0.0){
             
-            xs[ret + 0][0] = -b2 + R;
-            xs[ret + 0][1] = +sqrt(-Dp);
-
-            xs[ret + 1][0] = -b2 + R;
-            xs[ret + 1][1] = -sqrt(-Dp);
+            xs[ret + 0] = getCmp(-b2 + R, +sqrt(-Dp));
+            xs[ret + 1] = getCmp(-b2 + R, -sqrt(-Dp));
 
             ret += 2;
         }
 
         if (fabs(Dm) < SP_SMALL) {
-            xs[ret + 0][0] = -b2 - R;
-            xs[ret + 0][1] = 0.0;
+            xs[ret + 0] = getCmp(-b2 - R, 0.0);
 
             ret++;
         }
         else if (Dm > 0.0) {
 
-            xs[ret + 0][0] = -b2 - R + sqrt(Dm);
-            xs[ret + 0][1] = 0.0;
-
-            xs[ret + 1][0] = -b2 - R - sqrt(Dm);
-            xs[ret + 1][1] = 0.0;
+            xs[ret + 0] = getCmp(-b2 - R + sqrt(Dm), 0.0);
+            xs[ret + 1] = getCmp(-b2 - R - sqrt(Dm), 0.0);
 
             ret += 2;
         }
         else if (Dm < 0.0) {
 
-            xs[ret + 0][0] = -b2 - R;
-            xs[ret + 0][1] = +sqrt(-Dm);
-
-            xs[ret + 1][0] = -b2 - R;
-            xs[ret + 1][1] = -sqrt(-Dm);
+            xs[ret + 0] = getCmp(-b2 - R, +sqrt(-Dm));
+            xs[ret + 1] = getCmp(-b2 - R, -sqrt(-Dm));
 
             ret += 2;
         }

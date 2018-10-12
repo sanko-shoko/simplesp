@@ -38,7 +38,7 @@ namespace sp {
     // stdio 
     //--------------------------------------------------------------------------------
 
-#if    SP_USE_CONSOLE
+#if SP_USE_CONSOLE
 #define SP_PRINTF(...) ::printf(__VA_ARGS__);
 #else
 #define SP_PRINTF(...) if(0){ ::printf(__VA_ARGS__); }
@@ -60,6 +60,10 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // print 
     //--------------------------------------------------------------------------------
+   
+    SP_CPUFUNC void print(const Cmp &cmp) {
+        SP_PRINTF("Cmp [ %+.5lf, %+.5lf ]\n", cmp.re, cmp.im);
+    }
 
     SP_CPUFUNC void print(const int dim, const int *dsize) {
         SP_PRINTF("dim %d, ", dim);

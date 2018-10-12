@@ -41,8 +41,8 @@ private:
     }
 
     void reset() {
-        m_sfm.init();
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
+        m_sfm.init();
     }
 
     void update(){
@@ -53,12 +53,12 @@ private:
         m_sfm.addView(m_img, &m_cam);
     }
 
-    void capture(Mem2<Col3> &img) {
+    void capture() {
         static cv::VideoCapture cap(0);
         cv::Mat cvimg;
         cap >> cvimg;
 
-        cvCnvImg(img, cvimg);
+        cvCnvImg(m_img, cvimg);
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -74,7 +74,7 @@ private:
 
     virtual void display() {
         {
-            capture(m_img);
+            capture();
         }
         {
             m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
@@ -91,17 +91,17 @@ private:
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
             // render points
-            if (m_sfm.getPnts() != NULL) {
-                const Mem1<SfM::PointData> &pnts = *m_sfm.getPnts();
+            if (m_sfm.getMPnts() != NULL) {
+                const Mem1<SfM::MapData> &mpnts = *m_sfm.getMPnts();
 
                 glPointSize(4.f);
 
                 glLoadMatrix(m_pose);
 
                 glBegin(GL_POINTS);
-                for (int i = 0; i < pnts.size(); i++) {
-                    glColor(pnts[i].col);
-                    glVertex(pnts[i].pos);
+                for (int i = 0; i < mpnts.size(); i++) {
+                    glColor(mpnts[i].col);
+                    glVertex(mpnts[i].pos);
                 }
                 glEnd();
             }
