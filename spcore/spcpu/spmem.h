@@ -285,11 +285,15 @@ namespace sp{
             }
         }
 
-        TYPE* extend() {
-            if (this->dsize[0] + 1 > this->msize) {
-                Mem<TYPE>::malloc((this->dsize[0] + 1) * 2, this->ptr);
+        TYPE* extend(const int ex = 1) {
+            const int s = this->dsize[0];
+
+            if (s + ex > this->msize) {
+                Mem<TYPE>::malloc((s + ex) * 2, this->ptr);
             }
-            return &this->ptr[this->dsize[0]++];
+            this->dsize[0] += ex;
+
+            return &this->ptr[s];
         }
 
         void push(const TYPE &data){

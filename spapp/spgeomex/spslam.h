@@ -62,8 +62,8 @@ namespace sp {
             return m_sfm.getViews();
         }
 
-        const Mem1<SfM::PointData>* getPnts() const {
-            return m_sfm.getPnts();
+        const Mem1<SfM::MapData>* getMPnts() const {
+            return m_sfm.getMPnts();
         }
 
 

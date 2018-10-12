@@ -1,5 +1,6 @@
 add_subdirectory(testcore)
 add_subdirectory(cvmat)
+add_subdirectory(equation)
 add_subdirectory(file)
 add_subdirectory(geom)
 add_subdirectory(calibration)

@@ -53,37 +53,43 @@ namespace sp{
         // data
         //--------------------------------------------------------------------------------
 
-        const Mem1<Feature>* getFeatrue() const {
+        const Mem1<Feature>* getFeatures() const {
             return (m_fts.size() > 0) ? &m_fts : NULL;
         }
 
+        template<typename T>
+        static Mem1<Feature> getFeatures(const Mem2<T> &img) {
+            SIFT sift;
+            sift.execute(img);
+            return (sift.getFeatures() != NULL) ? *sift.getFeatures() : Mem1<Feature>();
+        }
 
         //--------------------------------------------------------------------------------
         // execute detection and description
         //--------------------------------------------------------------------------------
 
-        bool execute(const void *src, const int dsize0, const int dsize1, const int ch){
+        bool execute(const void *img, const int dsize0, const int dsize1, const int ch){
 
             Mem2<Byte> gry;
-            cnvPtrToImg(gry, src, dsize0, dsize1, ch);
+            cnvPtrToImg(gry, img, dsize0, dsize1, ch);
             return _execute(gry);
         }
 
-        bool execute(const Mem2<Col3> &src){
+        bool execute(const Mem2<Col3> &img){
 
             Mem2<Byte> gry;
-            cnvImg(gry, src);
+            cnvImg(gry, img);
             return _execute(gry);
         }
 
-        bool execute(const Mem2<Byte> &src){
+        bool execute(const Mem2<Byte> &img){
 
-            return _execute(src);
+            return _execute(img);
         }
 
     private:
 
-        bool _execute(const Mem2<Byte> &src){
+        bool _execute(const Mem2<Byte> &img){
             SP_LOGGER_SET("-execute");
 
             // clear data
@@ -92,13 +98,13 @@ namespace sp{
             }
 
             try{
-                if (src.size() == 0) throw "image size";
+                if (img.size() == 0) throw "image size";
 
-                Mem2<float> img;
-                cnvMem(img, src, 1.0 / 255.0);
+                Mem2<float> imgf;
+                cnvMem(imgf, img, 1.0 / 255.0);
 
                 // make DoG
-                makeDoG(img);
+                makeDoG(imgf);
 
                 // detect key points
                 Mem1<KeyPoint> keys = detect();
@@ -462,7 +468,6 @@ namespace sp{
             return fts;
         }
     };
-
 
 }
 

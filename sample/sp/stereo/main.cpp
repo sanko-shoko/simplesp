@@ -25,14 +25,9 @@ int main() {
     // estimate camera pose
     Pose stereo;
     {
-        // sift execute
-        SIFT sift0, sift1;
-        sift0.execute(imgs[0]);
-        sift1.execute(imgs[1]);
-
         // get feature
-        const Mem1<Feature> &fts0 = *sift0.getFeatrue();
-        const Mem1<Feature> &fts1 = *sift1.getFeatrue();
+        const Mem1<Feature> fts0 = SIFT::getFeatures(imgs[0]);
+        const Mem1<Feature> fts1 = SIFT::getFeatures(imgs[1]);
         const Mem1<int> matches = findMatch(fts0, fts1);
 
         Mem1<Vec2> mpixs0, mpixs1;

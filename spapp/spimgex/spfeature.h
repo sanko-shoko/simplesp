@@ -74,6 +74,7 @@ namespace sp{
         return getMatchCnt(matches) * scale / matches.size();
     };
 
+
     SP_CPUFUNC void getMatchPixs(Mem1<Vec2> &mpixs0, Mem1<Vec2> &mpixs1, const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mem1<int> &matches) {
         for (int i = 0; i < matches.size(); i++) {
             const int j = matches[i];

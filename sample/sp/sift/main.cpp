@@ -30,23 +30,15 @@ int main(){
         saveBMP("input.bmp", imgM);
     }
 
-    SIFT sift[2];
-
-    // detection and description
+    Mem1<Feature> fts[2];
+ 
+    // get features
     {
         for (int i = 0; i < 2; i++) {
-            sift[i].execute(imgs[i]);
-        }
-    }
+            fts[i] = SIFT::getFeatures(imgs[i]);
 
-    {
-        for (int i = 0; i < 2; i++) {
-            if (sift[i].getFeatrue() == NULL) continue;
-
-            const Mem1<Feature> &fts = *sift[i].getFeatrue();
-
-            for (int j = 0; j < fts.size(); j++) {
-                renderCircle(imgs[i], fts[j].pix, fts[j].scl, getCol(100, 255, 100), 1);
+            for (int j = 0; j < fts[i].size(); j++) {
+                renderCircle(imgs[i], fts[i][j].pix, fts[i][j].scl, getCol(100, 255, 100), 1);
             }
         }
 
@@ -55,20 +47,16 @@ int main(){
     }
 
     // matching
-    if(sift[0].getFeatrue() != NULL && sift[1].getFeatrue() != NULL){
-
-        const Mem1<Feature> &fts0 = *sift[0].getFeatrue();
-        const Mem1<Feature> &fts1 = *sift[1].getFeatrue();
-
-        const Mem1<int> matches = findMatch(fts0, fts1);
+    {
+        const Mem1<int> matches = findMatch(fts[0], fts[1]);
 
         Mem1<Vec2> pixs0, pixs1;
         for (int i = 0; i < matches.size(); i++) {
             const int j = matches[i];
             if (j < 0) continue;
 
-            pixs0.push(fts0[i].pix);
-            pixs1.push(fts1[j].pix);
+            pixs0.push(fts[0][i].pix);
+            pixs1.push(fts[1][j].pix);
         }
 
         const int w = imgs[0].dsize[0];
