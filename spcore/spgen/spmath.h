@@ -1294,9 +1294,9 @@ namespace sp{
                 const Cmp f = funcX(xs[i], csize, cs);
                 
                 Cmp df = getCmp(cs[0], 0.0);
-                for (int k = 0; k < n; k++) {
-                    if (k != i) {
-                        df *= xs[i] - xs[k];
+                for (int j = 0; j < n; j++) {
+                    if (j != i) {
+                        df *= xs[i] - xs[j];
                     }
                 }
 
@@ -1354,7 +1354,7 @@ namespace sp{
     }
 
 
-    // f(x) = 0 
+    // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
     SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
         if (csize < 2) return 0;
 

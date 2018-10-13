@@ -13,85 +13,101 @@ namespace sp{
     // jacob
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC void jacobHMat(double *jacob, const double *img, const double *obj){
-        jacob[0 * 9 + 0] = obj[0];
-        jacob[0 * 9 + 1] = obj[1];
-        jacob[0 * 9 + 2] = 1.0;
+    // s * (vec0_3) = (M_3x3) * (vec1_3) - > (J_2x9) * (M_9) = 0
+    SP_GENFUNC void jacobMatType0(double *jacob, const double *vec0, const double *vec1){
+        jacob[0 * 9 + 0] = +vec0[2] * vec1[0];
+        jacob[0 * 9 + 1] = +vec0[2] * vec1[1];
+        jacob[0 * 9 + 2] = +vec0[2] * vec1[2];
         jacob[0 * 9 + 3] = 0.0;
         jacob[0 * 9 + 4] = 0.0;
         jacob[0 * 9 + 5] = 0.0;
-        jacob[0 * 9 + 6] = -img[0] * obj[0];
-        jacob[0 * 9 + 7] = -img[0] * obj[1];
-        jacob[0 * 9 + 8] = -img[0];
+        jacob[0 * 9 + 6] = -vec0[0] * vec1[0];
+        jacob[0 * 9 + 7] = -vec0[0] * vec1[1];
+        jacob[0 * 9 + 8] = -vec0[0] * vec1[2];
 
         jacob[1 * 9 + 0] = 0.0;
         jacob[1 * 9 + 1] = 0.0;
         jacob[1 * 9 + 2] = 0.0;
-        jacob[1 * 9 + 3] = obj[0];
-        jacob[1 * 9 + 4] = obj[1];
-        jacob[1 * 9 + 5] = 1.0;
-        jacob[1 * 9 + 6] = -img[1] * obj[0];
-        jacob[1 * 9 + 7] = -img[1] * obj[1];
-        jacob[1 * 9 + 8] = -img[1];
+        jacob[1 * 9 + 3] = +vec0[2] * vec1[0];
+        jacob[1 * 9 + 4] = +vec0[2] * vec1[1];
+        jacob[1 * 9 + 5] = +vec0[2] * vec1[2];
+        jacob[1 * 9 + 6] = -vec0[1] * vec1[0];
+        jacob[1 * 9 + 7] = -vec0[1] * vec1[1];
+        jacob[1 * 9 + 8] = -vec0[1] * vec1[2];
+    }
+
+    // s * (vec0_3) = (M_3x4) * (vec1_3) - > (J_2x12) * (M_12) = 0
+    SP_GENFUNC void jacobMatType1(double *jacob, const double *vec0, const double *vec1) {
+        jacob[0 * 12 +  0] = +vec0[2] * vec1[0];
+        jacob[0 * 12 +  1] = +vec0[2] * vec1[1];
+        jacob[0 * 12 +  2] = +vec0[2] * vec1[2];
+        jacob[0 * 12 +  3] = +vec0[2] * 1.0;
+        jacob[0 * 12 +  4] = 0.0;
+        jacob[0 * 12 +  5] = 0.0;
+        jacob[0 * 12 +  6] = 0.0;
+        jacob[0 * 12 +  7] = 0.0;
+        jacob[0 * 12 +  8] = -vec0[0] * vec1[0];
+        jacob[0 * 12 +  9] = -vec0[0] * vec1[1];
+        jacob[0 * 12 + 10] = -vec0[0] * vec1[2];
+        jacob[0 * 12 + 11] = -vec0[0] * 1.0;
+
+        jacob[1 * 12 +  0] = 0.0;
+        jacob[1 * 12 +  1] = 0.0;
+        jacob[1 * 12 +  2] = 0.0;
+        jacob[1 * 12 +  3] = 0.0;
+        jacob[1 * 12 +  4] = +vec0[2] * vec1[0];
+        jacob[1 * 12 +  5] = +vec0[2] * vec1[1];
+        jacob[1 * 12 +  6] = +vec0[2] * vec1[2];
+        jacob[1 * 12 +  7] = +vec0[2] * 1.0;
+        jacob[1 * 12 +  8] = -vec0[1] * vec1[0];
+        jacob[1 * 12 +  9] = -vec0[1] * vec1[1];
+        jacob[1 * 12 + 10] = -vec0[1] * vec1[2];
+        jacob[1 * 12 + 11] = -vec0[1] * 1.0;
+    }
+
+    // (vec1_3)^T * (M_3x3) * (vec0_3) = 0 -> (J_1x9) * (M_9) = 0
+    SP_GENFUNC void jacobMatType2(double *jacob, const double *vec0, const double *vec1) {
+        jacob[0] = vec0[0] * vec1[0];
+        jacob[1] = vec0[1] * vec1[0];
+        jacob[2] = vec0[2] * vec1[0];
+        jacob[3] = vec0[0] * vec1[1];
+        jacob[4] = vec0[1] * vec1[1];
+        jacob[5] = vec0[2] * vec1[1];
+        jacob[6] = vec0[0] * vec1[2];
+        jacob[7] = vec0[1] * vec1[2];
+        jacob[8] = vec0[2] * vec1[2];
+    }
+
+    SP_GENFUNC void jacobHMat(double *jacob, const double *img, const double *obj) {
+        double pimg[3] = { img[0], img[1], 1.0 };
+        double pobj[3] = { obj[0], obj[1], 1.0 };
+        jacobMatType0(jacob, pimg, pobj);
     }
 
     SP_GENFUNC void jacobHMat(double *jacob, const Vec2 &img, const Vec2 &obj){
-        double pimg[2] = { img.x, img.y };
-        double pobj[2] = { obj.x, obj.y };
-        jacobHMat(jacob, pimg, pobj);
+        double pimg[3] = { img.x, img.y, 1.0 };
+        double pobj[3] = { obj.x, obj.y, 1.0 };
+        jacobMatType0(jacob, pimg, pobj);
     }
 
-    SP_GENFUNC void jacobFMat(double *jacob, const double *pix0, const double *pix1){
-        jacob[0] = pix1[0] * pix0[0];
-        jacob[1] = pix1[0] * pix0[1];
-        jacob[2] = pix1[0];
-        jacob[3] = pix1[1] * pix0[0];
-        jacob[4] = pix1[1] * pix0[1];
-        jacob[5] = pix1[1];
-        jacob[6] = pix0[0];
-        jacob[7] = pix0[1];
-        jacob[8] = 1.0;
+    SP_GENFUNC void jacobPMat(double *jacob, const Vec2 &img, const Vec3 &obj) {
+        double pimg[3] = { img.x, img.y, 1.0 };
+        double pobj[3] = { obj.x, obj.y, obj.z };
+        jacobMatType1(jacob, pimg, pobj);
+    }
+
+    SP_GENFUNC void jacobFMat(double *jacob, const double *pix0, const double *pix1) {
+        double ppix0[3] = { pix0[0], pix0[1], 1.0 };
+        double ppix1[3] = { pix1[0], pix1[1], 1.0 };
+        jacobMatType2(jacob, ppix0, ppix1);
     }
 
     SP_GENFUNC void jacobFMat(double *jacob, const Vec2 &pix0, const Vec2 &pix1){
-        double ppix0[2] = { pix0.x, pix0.y };
-        double ppix1[2] = { pix1.x, pix1.y };
-        jacobFMat(jacob, ppix0, ppix1);
+        double ppix0[3] = { pix0.x, pix0.y, 1.0 };
+        double ppix1[3] = { pix1.x, pix1.y, 1.0 };
+        jacobMatType2(jacob, ppix0, ppix1);
     }
 
-    SP_GENFUNC void jacobPMat(double *jacob, const double *img, const double *obj){
-        jacob[0 * 12 + 0] = obj[0];
-        jacob[0 * 12 + 1] = obj[1];
-        jacob[0 * 12 + 2] = obj[2];
-        jacob[0 * 12 + 3] = 1.0;
-        jacob[0 * 12 + 4] = 0.0;
-        jacob[0 * 12 + 5] = 0.0;
-        jacob[0 * 12 + 6] = 0.0;
-        jacob[0 * 12 + 7] = 0.0;
-        jacob[0 * 12 + 8] = -img[0] * obj[0];
-        jacob[0 * 12 + 9] = -img[0] * obj[1];
-        jacob[0 * 12 + 10] = -img[0] * obj[2];
-        jacob[0 * 12 + 11] = -img[0];
-
-        jacob[1 * 12 + 0] = 0.0;
-        jacob[1 * 12 + 1] = 0.0;
-        jacob[1 * 12 + 2] = 0.0;
-        jacob[1 * 12 + 3] = 0.0;
-        jacob[1 * 12 + 4] = obj[0];
-        jacob[1 * 12 + 5] = obj[1];
-        jacob[1 * 12 + 6] = obj[2];
-        jacob[1 * 12 + 7] = 1.0;
-        jacob[1 * 12 + 8] = -img[1] * obj[0];
-        jacob[1 * 12 + 9] = -img[1] * obj[1];
-        jacob[1 * 12 + 10] = -img[1] * obj[2];
-        jacob[1 * 12 + 11] = -img[1];
-    }
-
-    SP_GENFUNC void jacobPMat(double *jacob, const Vec2 &img, const Vec3 &obj){
-        double pimg[2] = { img.x, img.y };
-        double pobj[3] = { obj.x, obj.y, obj.z };
-        jacobPMat(jacob, pimg, pobj);
-    }
 
 
     //--------------------------------------------------------------------------------
@@ -542,18 +558,19 @@ namespace sp{
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
         if (maxit <= 0.0) return false;
-
         SP_ASSERT(pixs.size() == objs.size());
 
-        const int unit = 3;
-        if (pixs.size() < unit) return false;
+        const int num = pixs.size();
 
-        Mat J(2 * pixs.size(), 6);
-        Mat E(2 * pixs.size(), 1);
-        Mem1<double> errs(pixs.size());
+        const int unit = 3;
+        if (num < unit) return false;
+
+        Mat J(2 * num, 6);
+        Mat E(2 * num, 1);
+        Mem1<double> errs(num);
 
         for (int it = 0; it < maxit; it++) {
-            for (int i = 0; i < pixs.size(); i++) {
+            for (int i = 0; i < num; i++) {
                 jacobPoseToPix(&J(i * 2, 0), cam, pose, objs[i]);
 
                 const Vec2 err = pixs[i] - mulCamD(cam, prjVec(pose * objs[i]));
@@ -576,12 +593,65 @@ namespace sp{
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
         if (maxit <= 0.0) return false;
-
         SP_ASSERT(pixs0.size() == pixs1.size());
 
-        const int unit = 3;
-        if (pixs0.size() < unit) return false;
+        const int num = pixs0.size();
 
+        const int unit = 3;
+        if (num < unit) return false;
+
+        //Mem1<Vec2> npxs0, npxs1;
+        //for (int i = 0; i < num; i++) {
+        //    const Vec2 npx0 = invCamD(cam0, pixs0[i]);
+        //    const Vec2 npx1 = invCamD(cam1, pixs1[i]);
+
+        //    npxs0.push(npx0);
+        //    npxs1.push(npx1);
+        //}
+        //for (int it = 0; it < maxit; it++) {
+        //    const Mat R = getMat(pose.rot);
+        //    const Mat Tx = skewMat(pose.trn);
+        //    const Mat Em = Tx * R;
+        //    const Mat Tt = trnMat(Tx);
+
+        //    Mat J(num, 6);
+        //    Mat E(num, 1);
+        //    Mem1<double> errs(num);
+        //    for (int i = 0; i < num; i++) {
+        //        const Vec3 vec0 = getVec(npxs0[i], 1.0);
+        //        const Vec3 vec1 = getVec(npxs1[i], 1.0);
+
+        //        const Vec3 line0 = Em * vec0;
+
+        //        const double err = dotVec(vec1, Em * vec0);
+
+        //        const Vec3 rvec = R * vec0;
+        //        const Vec3 tvec = Tt * vec1;
+
+        //        double jt[9], jr[9];
+        //        jacobMatType2(jt, (double*)&vec1, (double*)&rvec);
+        //        jacobMatType2(jr, (double*)&tvec, (double*)&rvec);
+
+        //        const double div = pythag(line0.x, line0.y);
+        //        J(i, 0) = jr[5] - jr[7];
+        //        J(i, 1) = jr[6] - jr[2];
+        //        J(i, 2) = jr[1] - jr[3];
+
+        //        J(i, 3) = (jt[7] - jt[5]) / div;
+        //        J(i, 4) = (jt[2] - jt[6]) / div;
+        //        J(i, 5) = (jt[3] - jt[1]) / div;
+
+        //        E(i, 0) = err;
+        //        errs[i] = fabs(err);
+        //    }
+        //    Mat delta;
+        //    if (solveEq(delta, J, E, errs) == false) return false;
+        //    updateRot(pose.rot, delta.ptr);
+        //    const Vec3 dvec = getVec(delta[3], delta[4], delta[5]);
+        //    const double scale = (normVec(dvec) < 0.5) ? 1.0 : 0.5 / normVec(dvec);
+        //    pose.trn = pose.trn + dvec * scale;
+        //    pose.trn /= normVec(pose.trn);
+        //}
         for (int it = 0; it < maxit; it++) {
             Mem1<Vec2> pixs;
             Mem1<Vec3> objs;
@@ -867,7 +937,7 @@ namespace sp{
 
         if (dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1) == false) return false;
 
-        //if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
+        if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
         
         return true;
     }

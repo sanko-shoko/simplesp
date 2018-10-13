@@ -414,9 +414,11 @@ namespace sp{
         eigVec.resize(mat.dsize);
         eigVal.resize(mat.dsize);
         Mat V(mat.dsize);
-        return svdMat(eigVec.ptr, eigVal.ptr, V.ptr, mat.ptr, mat.rows(), mat.cols(), minOrder);
+        if (svdMat(eigVec.ptr, eigVal.ptr, V.ptr, mat.ptr, mat.rows(), mat.cols(), minOrder) == false) return false;
 
-        //return eigMat(eigVec.ptr, eigVal.ptr, mat.ptr, mat.rows(), mat.cols(), minOrder);
+        //if (eigMat(eigVec.ptr, eigVal.ptr, mat.ptr, mat.rows(), mat.cols(), minOrder) == false) return false;
+
+        return true;
     }
 
     SP_CPUFUNC bool svdMat(Mat &U, Mat &S, Mat &V, const Mat &mat, const bool minOrder = true){
@@ -430,11 +432,14 @@ namespace sp{
         else{
             m = mat;
         }
+
         U.resize(m.rows(), m.cols());
         S.resize(m.cols(), m.cols());
         V.resize(m.cols(), m.cols());
 
-        return svdMat(U.ptr, S.ptr, V.ptr, m.ptr, m.rows(), m.cols(), minOrder);
+        if (svdMat(U.ptr, S.ptr, V.ptr, m.ptr, m.rows(), m.cols(), minOrder) == false) return false;
+
+        return true;
     }
 
 
