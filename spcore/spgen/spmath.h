@@ -74,14 +74,24 @@ namespace sp{
         return getCmp(cmp.re + val, cmp.im);
     }
 
+    // addition
+    SP_GENFUNC Cmp addCmp(const double val, const Cmp &cmp) {
+        return getCmp(val + cmp.re, cmp.im);
+    }
+
     // subtraction
     SP_GENFUNC Cmp subCmp(const Cmp &cmp0, const Cmp &cmp1) {
         return getCmp(cmp0.re - cmp1.re, cmp0.im - cmp1.im);
     }
 
-    // addition
+    // subtraction
     SP_GENFUNC Cmp subCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re - val, cmp.im);
+    }
+
+    // subtraction
+    SP_GENFUNC Cmp subCmp(const double val, const Cmp &cmp) {
+        return getCmp(val - cmp.re, cmp.im);
     }
 
     // multiple
@@ -94,18 +104,26 @@ namespace sp{
         return getCmp(cmp.re * val, cmp.im * val);
     }
 
+    // multiple
+    SP_GENFUNC Cmp mulCmp(const double val, const Cmp &cmp) {
+        return getCmp(cmp.re * val, cmp.im * val);
+    }
+
     // division
     SP_GENFUNC Cmp divCmp(const Cmp &cmp0, const Cmp &cmp1) {
-        Cmp dst = mulCmp(cmp0, getCmp(cmp1.re, -cmp1.im));
+        const Cmp tmp = mulCmp(cmp0, getCmp(cmp1.re, -cmp1.im));
         const double div = cmp1.re * cmp1.re + cmp1.im * cmp1.im;
-        dst.re /= div;
-        dst.im /= div;
-        return dst;
+        return getCmp(tmp.re / div, tmp.im / div);
     }
 
     // division
     SP_GENFUNC Cmp divCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re / val, cmp.im / val);
+    }
+
+    // division
+    SP_GENFUNC Cmp divCmp(const double val, const Cmp &cmp) {
+        return divCmp(getCmp(val, 0.0), cmp);
     }
 
     SP_GENFUNC double fabs(const Cmp cmp) {
@@ -123,6 +141,9 @@ namespace sp{
     SP_GENFUNC Cmp operator + (const Cmp &cmp, const double val) {
         return addCmp(cmp, val);
     }
+    SP_GENFUNC Cmp operator + (const double val, const Cmp &cmp) {
+        return addCmp(val, cmp);
+    }
     SP_GENFUNC Cmp operator + (const Cmp &cmp) {
         return cmp;
     }
@@ -132,6 +153,9 @@ namespace sp{
     }
     SP_GENFUNC Cmp operator - (const Cmp &cmp, const double val) {
         return subCmp(cmp, val);
+    }
+    SP_GENFUNC Cmp operator - (const double val, const Cmp &cmp) {
+        return subCmp(val, cmp);
     }
     SP_GENFUNC Cmp operator - (const Cmp &cmp) {
         return mulCmp(cmp, -1.0);
@@ -143,12 +167,18 @@ namespace sp{
     SP_GENFUNC Cmp operator * (const Cmp &cmp, const double val) {
         return mulCmp(cmp, val);
     }
+    SP_GENFUNC Cmp operator * (const double val, const Cmp &cmp) {
+        return mulCmp(val, cmp);
+    }
 
     SP_GENFUNC Cmp operator / (const Cmp &cmp0, const Cmp &cmp1) {
         return divCmp(cmp0, cmp1);
     }
     SP_GENFUNC Cmp operator / (const Cmp &cmp, const double val) {
         return divCmp(cmp, val);
+    }
+    SP_GENFUNC Cmp operator / (const double val, const Cmp &cmp) {
+        return divCmp(val, cmp);
     }
 
     SP_GENFUNC void operator += (Cmp &cmp0, const Cmp &cmp1) {
@@ -205,42 +235,42 @@ namespace sp{
         return ret;
     }
 
-    // f = c[0] * x^(n-1) + c[1] * x^(n-2) + ...
-    SP_GENFUNC double funcX(const double x, const int n, const double *c) {
+    // f = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
+    SP_GENFUNC double funcX(const double x, const int n, const double *cs) {
         // Horner method
         double f = 0.0;
         for (int i = 0; i < n; i++) {
-            f = f * x + c[i];
+            f = f * x + cs[i];
         }
         return f;
     }
 
-    // f = c[0] * x^(n-1) + c[1] * x^(n-2) + ...
-    SP_GENFUNC Cmp funcX(const Cmp &x, const int n, const double *c) {
+    // f = sc[0] * x^(n-1) + cs[1] * x^(n-2) + ...
+    SP_GENFUNC Cmp funcX(const Cmp &x, const int n, const double *cs) {
         // Horner method
         Cmp f = getCmp(0.0, 0.0);
         for (int i = 0; i < n; i++) {
-            f = f * x + c[i];
+            f = f * x + cs[i];
         }
         return f;
     }
 
-    // f' = c[0] * (n-1) * x^(n-2) + c[1] * (n-2) * x^(n-3) + ...
-    SP_GENFUNC double dfuncX(const double x, const int n, const double *c) {
+    // f' = cs[0] * (n-1) * x^(n-2) + cs[1] * (n-2) * x^(n-3) + ...
+    SP_GENFUNC double dfuncX(const double x, const int n, const double *cs) {
         // Horner method
         double df = 0.0;
         for (int i = 0; i < n - 1; i++) {
-            df = df * x + (n - 1 - i) * c[i];
+            df = df * x + (n - 1 - i) * cs[i];
         }
         return df;
     }
 
-    // f' = c[0] * (n-1) * x^(n-2) + c[1] * (n-2) * x^(n-3) + ...
-    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int n, const double *c) {
+    // f' = cs[0] * (n-1) * x^(n-2) + cs[1] * (n-2) * x^(n-3) + ...
+    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int n, const double *cs) {
         // Horner method
         Cmp df = getCmp(0.0, 0.0);
         for (int i = 0; i < n - 1; i++) {
-            df = df * x + (n - 1 - i) * c[i];
+            df = df * x + (n - 1 - i) * cs[i];
         }
         return df;
     }
@@ -1233,6 +1263,110 @@ namespace sp{
         }
 
         return ret;
+    }
+
+    // newton method
+    SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+
+        for (int it = 0; it < maxit; it++) {
+            const double f = funcX(x, csize, cs);
+            const double df = dfuncX(x, csize, cs);
+
+            const double dx = f / (df + 0.001);
+            x = x - dx;
+            
+            const double err = fabs(funcX(x, csize, cs));
+            if (err < eps) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // newton method (Durand-Kerner method)
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+       
+        const int n = csize - 1;
+        for (int it = 0; it < maxit; it++) {
+
+            for (int i = 0; i < n; i++) {
+                const Cmp f = funcX(xs[i], csize, cs);
+                
+                Cmp df = getCmp(cs[0], 0.0);
+                for (int k = 0; k < n; k++) {
+                    if (k != i) {
+                        df *= xs[i] - xs[k];
+                    }
+                }
+
+                xs[i] = xs[i] - f / df;
+            }
+
+            double maxe = 0.0;
+            for (int i = 0; i < n; i++) {
+                const double err = fabs(funcX(xs[i], csize, cs));
+                if (err > maxe) {
+                    maxe = err;
+                }
+            }
+
+            if (maxe < eps) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+
+        const int n = csize - 1;
+
+        const Cmp zc = -getCmp(cs[1], 0.0) / (cs[0] * n);
+
+        Cmp a[100];
+        for (int i = 0; i < csize; i++) {
+            a[i] = getCmp(cs[i], 0.0);
+        }
+
+        // horner coeff
+        for (int i = 0; i < csize; i++) {
+            for (int j = 1; j < csize - i; j++) {
+                a[j] += zc * a[j - 1];
+            }
+        }
+
+        double b[100];
+        for (int i = 0; i < csize; ++i) {
+            b[i] = (i == 0) ? +fabs(a[i]) : -fabs(a[i]);
+        }
+
+        double r = 100.0;
+        if(newton(r, csize, b, maxit, eps) == false) return false;
+
+        for (int i = 0; i < n; i++) {
+            const double theta = (2 * SP_PI / n) * i + SP_PI / (2.0 * n);
+            xs[i] = zc + r * getCmp(cos(theta), sin(theta));
+        }
+
+        return true;
+    }
+
+
+    // f(x) = 0 
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+        if (csize < 2) return 0;
+
+        if (fabs(cs[0]) < SP_SMALL) {
+            return eqn(xs, csize - 1, cs + 1, maxit, eps);
+        }
+        else {
+            if (aberth(xs, csize, cs, maxit, eps) == false) return 0;
+
+            if (newton(xs, csize, cs, maxit, eps) == false) return 0;
+            return csize - 1;
+        }
     }
 }
 
