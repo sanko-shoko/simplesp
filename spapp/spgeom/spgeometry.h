@@ -446,7 +446,7 @@ namespace sp{
             rpixs1.resize(unit, &spixs1[p]);
 
             Mat test;
-            if (calcFMat(test, rpixs0, rpixs1) == false) continue;
+            if (calcFMat(test, rpixs0, rpixs1, 1) == false) continue;
 
             const Mem1<double> errs = errFMat(test, upixs0, upixs1);
             const double eval = evalErr(errs, thresh);
@@ -600,63 +600,11 @@ namespace sp{
         const int unit = 3;
         if (num < unit) return false;
 
-        //Mem1<Vec2> npxs0, npxs1;
-        //for (int i = 0; i < num; i++) {
-        //    const Vec2 npx0 = invCamD(cam0, pixs0[i]);
-        //    const Vec2 npx1 = invCamD(cam1, pixs1[i]);
-
-        //    npxs0.push(npx0);
-        //    npxs1.push(npx1);
-        //}
-        //for (int it = 0; it < maxit; it++) {
-        //    const Mat R = getMat(pose.rot);
-        //    const Mat Tx = skewMat(pose.trn);
-        //    const Mat Em = Tx * R;
-        //    const Mat Tt = trnMat(Tx);
-
-        //    Mat J(num, 6);
-        //    Mat E(num, 1);
-        //    Mem1<double> errs(num);
-        //    for (int i = 0; i < num; i++) {
-        //        const Vec3 vec0 = getVec(npxs0[i], 1.0);
-        //        const Vec3 vec1 = getVec(npxs1[i], 1.0);
-
-        //        const Vec3 line0 = Em * vec0;
-
-        //        const double err = dotVec(vec1, Em * vec0);
-
-        //        const Vec3 rvec = R * vec0;
-        //        const Vec3 tvec = Tt * vec1;
-
-        //        double jt[9], jr[9];
-        //        jacobMatType2(jt, (double*)&vec1, (double*)&rvec);
-        //        jacobMatType2(jr, (double*)&tvec, (double*)&rvec);
-
-        //        const double div = pythag(line0.x, line0.y);
-        //        J(i, 0) = jr[5] - jr[7];
-        //        J(i, 1) = jr[6] - jr[2];
-        //        J(i, 2) = jr[1] - jr[3];
-
-        //        J(i, 3) = (jt[7] - jt[5]) / div;
-        //        J(i, 4) = (jt[2] - jt[6]) / div;
-        //        J(i, 5) = (jt[3] - jt[1]) / div;
-
-        //        E(i, 0) = err;
-        //        errs[i] = fabs(err);
-        //    }
-        //    Mat delta;
-        //    if (solveEq(delta, J, E, errs) == false) return false;
-        //    updateRot(pose.rot, delta.ptr);
-        //    const Vec3 dvec = getVec(delta[3], delta[4], delta[5]);
-        //    const double scale = (normVec(dvec) < 0.5) ? 1.0 : 0.5 / normVec(dvec);
-        //    pose.trn = pose.trn + dvec * scale;
-        //    pose.trn /= normVec(pose.trn);
-        //}
         for (int it = 0; it < maxit; it++) {
             Mem1<Vec2> pixs;
             Mem1<Vec3> objs;
 
-            for (int i = 0; i < pixs0.size(); i++) {
+            for (int i = 0; i < num; i++) {
                 Vec3 obj;
                 if (calcPnt3d(obj, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
               
@@ -664,10 +612,8 @@ namespace sp{
                 objs.push(obj);
             }
 
-            // calc pose
-            if (refinePose(pose, cam1, pixs, objs, 1) == false) {
-                return false;
-            }
+            if (refinePose(pose, cam1, pixs, objs, 1) == false) return false;
+            
             pose.trn /= normVec(pose.trn);
         }
 
