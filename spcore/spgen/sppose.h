@@ -490,7 +490,7 @@ namespace sp{
     SP_GENFUNC Pose updatePose(const Pose &pose, const double *delta){
         Pose dst;
         dst.rot = updateRot(pose.rot, &delta[0]);
-        dst.trn = addVec(pose.trn, getVec(delta[3], delta[4], delta[5]));
+        dst.trn = pose.trn + getVec(delta[3], delta[4], delta[5]);
         return dst;
     }
 

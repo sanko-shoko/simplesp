@@ -563,7 +563,7 @@ namespace sp{
 
 
         //--------------------------------------------------------------------------------
-        // base method
+        // util
         //--------------------------------------------------------------------------------
 
         int rows() const{
@@ -574,26 +574,28 @@ namespace sp{
             return this->dsize[0];
         }
 
-        //--------------------------------------------------------------------------------
-        // util
-        //--------------------------------------------------------------------------------
-
-        void setPart(const int rbase, const int cbase, const int rsize, const int csize, Mat &mat) {
-            for (int r = 0; r < rsize; r++) {
-                for (int c = 0; c < csize; c++) {
-                    (*this)(rbase + r, cbase + c) = mat(r, c);
-                }
-            }
-        }
-
-        Mat getPart(const int rbase, const int cbase, const int rsize, const int csize) {
-            Mat mat(rsize, csize);
-            for (int r = 0; r < rsize; r++) {
-                for (int c = 0; c < csize; c++) {
+        Mat part(const int rbase, const int cbase, const int rlast, const int clast) const {
+            Mat mat(rlast - rbase, clast - cbase);
+            for (int r = 0; r < rlast - rbase; r++) {
+                for (int c = 0; c < clast - cbase; c++) {
                     mat(r, c) = (*this)(rbase + r, cbase + c);
                 }
             }
             return mat;
+        }
+
+        Mat row(const int rbase) const {
+            return part(rbase, 0, rbase + 1, cols());
+        }
+        Mat row(const int rbase, const int rlast) const {
+            return part(rbase, 0, rlast, cols());
+        }
+
+        Mat col(const int cbase) const {
+            return part(0, cbase, rows(), cbase + 1);
+        }
+        Mat col(const int cbase, const int clast) const {
+            return part(0, cbase, rows(), clast);
         }
 
     };
