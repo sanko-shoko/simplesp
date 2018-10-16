@@ -68,8 +68,8 @@ private:
         glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
         // render points
-        if (m_sfm.getPnts() != NULL) {
-            const Mem1<SfM::PointData> &pnts = *m_sfm.getPnts();
+        if (m_sfm.getMPnts() != NULL) {
+            const Mem1<SfM::MapData> &pnts = *m_sfm.getMPnts();
 
             glPointSize(4.f);
 

@@ -217,7 +217,7 @@ namespace sp {
 
     private:
 
-        double MIN_MATCHRATE = 0.1;
+        double MIN_MATCHRATE = 0.2;
 
     private:
 
@@ -386,7 +386,6 @@ namespace sp {
             {
                 const int a = md->a;
                 const int b = md->b;
-
                 const Mem1<Feature> &fts0 = views[a].fts;
                 const Mem1<Feature> &fts1 = views[b].fts;
                 const Mem1<int> &matches = pairs(a, b).matches;
