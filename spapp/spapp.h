@@ -44,6 +44,7 @@
 #include "spapp/spimgex/spstereo.h"
 
 // geometry
+#include "spapp/spgeom/spxmat.h"
 #include "spapp/spgeom/spgeometry.h"
 #include "spapp/spgeom/spdepth.h"
 #include "spapp/spgeom/spcalibration.h"

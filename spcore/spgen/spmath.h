@@ -130,6 +130,19 @@ namespace sp{
         return pythag(cmp.re, cmp.im);
     }
 
+    SP_GENFUNC Cmp pow(const Cmp cmp, const double n) {
+        Cmp ret = getCmp(0.0, 0.0);
+        
+        double a = pow(fabs(cmp), n);
+        if (a > SP_SMALL) {
+            const double theta = atan2(cmp.im, cmp.re);
+
+            ret.re = a * cos(n * theta);
+            ret.im = a * sin(n * theta);
+        }
+
+        return ret;
+    }
 
     //--------------------------------------------------------------------------------
     // complex operator
@@ -235,43 +248,48 @@ namespace sp{
         return ret;
     }
 
-    // f = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC double funcX(const double x, const int n, const double *cs) {
-        // Horner method
-        double f = 0.0;
+    // f = cs[0] * x^(n) + cs[1] * x^(n-1) + ... + cs[n]
+    SP_GENFUNC double funcX(const double x, const int csize, const double *cs) {
+        const int n = csize - 1;
+
+        double f = cs[n];
         for (int i = 0; i < n; i++) {
-            f = f * x + cs[i];
+            f += cs[i] * pow(x, n - i);
         }
         return f;
     }
 
-    // f = sc[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC Cmp funcX(const Cmp &x, const int n, const double *cs) {
-        // Horner method
-        Cmp f = getCmp(0.0, 0.0);
+    // f = sc[0] * x^(n-1) + cs[1] * x^(n-2) + ... + cs[n]
+    SP_GENFUNC Cmp funcX(const Cmp &x, const int csize, const double *cs) {
+        const int n = csize - 1;
+
+        Cmp f = getCmp(cs[n], 0.0);
         for (int i = 0; i < n; i++) {
-            f = f * x + cs[i];
+            f += cs[i] * pow(x, n - i);
         }
         return f;
     }
 
-    // f' = cs[0] * (n-1) * x^(n-2) + cs[1] * (n-2) * x^(n-3) + ...
-    SP_GENFUNC double dfuncX(const double x, const int n, const double *cs) {
-        // Horner method
-        double df = 0.0;
+    // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
+    SP_GENFUNC double dfuncX(const double x, const int csize, const double *cs) {
+        const int n = csize - 1;
+
+        double df = cs[n - 1];
         for (int i = 0; i < n - 1; i++) {
-            df = df * x + (n - 1 - i) * cs[i];
+            df += cs[i] * (n - i) * pow(x, n - 1 - i);
         }
         return df;
     }
 
-    // f' = cs[0] * (n-1) * x^(n-2) + cs[1] * (n-2) * x^(n-3) + ...
-    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int n, const double *cs) {
-        // Horner method
-        Cmp df = getCmp(0.0, 0.0);
+    // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
+    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int csize, const double *cs) {
+        const int n = csize - 1;
+
+        Cmp df = getCmp(cs[n - 1], 0.0);
         for (int i = 0; i < n - 1; i++) {
-            df = df * x + (n - 1 - i) * cs[i];
+            df += cs[i] * (n - i) * pow(x, n - 1 - i);
         }
+
         return df;
     }
 
@@ -1266,27 +1284,32 @@ namespace sp{
     }
 
     // newton method
-    SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+    SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+
+        double pre = SP_INFINITY;
 
         for (int it = 0; it < maxit; it++) {
             const double f = funcX(x, csize, cs);
             const double df = dfuncX(x, csize, cs);
 
-            const double dx = f / (df + 0.001);
+            const double dx = f / (df + 1e-10);
+
             x = x - dx;
             
             const double err = fabs(funcX(x, csize, cs));
             if (err < eps) {
                 return true;
             }
+
         }
 
         return false;
     }
 
     // newton method (Durand-Kerner method)
-    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
        
+        double pre = SP_INFINITY;
         const int n = csize - 1;
         for (int it = 0; it < maxit; it++) {
 
@@ -1299,7 +1322,6 @@ namespace sp{
                         df *= xs[i] - xs[j];
                     }
                 }
-
                 xs[i] = xs[i] - f / df;
             }
 
@@ -1319,7 +1341,7 @@ namespace sp{
         return false;
     }
 
-    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
 
         const int n = csize - 1;
 
@@ -1355,16 +1377,27 @@ namespace sp{
 
 
     // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 50, const double eps = 1e-6) {
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
         if (csize < 2) return 0;
 
         if (fabs(cs[0]) < SP_SMALL) {
             return eqn(xs, csize - 1, cs + 1, maxit, eps);
         }
         else {
-            if (aberth(xs, csize, cs, maxit, eps) == false) return 0;
+            double ts[100];
+            double sum = 0.0;
+            for (int i = 0; i < csize; i++) {
+                sum += cs[i];
+            }
+            const double mean = sum / csize;
 
-            if (newton(xs, csize, cs, maxit, eps) == false) return 0;
+            for (int i = 0; i < csize; i++) {
+                ts[i] = cs[i] / mean;
+            }
+
+            if (aberth(xs, csize, ts, maxit, eps) == false) return 0;
+
+            if (newton(xs, csize, ts, maxit, eps) == false) return 0;
             return csize - 1;
         }
     }

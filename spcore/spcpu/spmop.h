@@ -442,6 +442,16 @@ namespace sp{
         return true;
     }
 
+    SP_GENFUNC int eqn(Mem1<Cmp> &xs, const Mem1<double> cs, const int maxit = 100, const double eps = 1e-6) {
+        Mem1<Cmp> tmp(cs.size() - 1);
+        const int n = eqn(tmp.ptr, cs.size(), cs.ptr, maxit, eps);
+
+        xs.clear();
+        for (int i = 0; i < n; i++) {
+            xs.push(tmp[i]);
+        }
+        return n;
+    }
 
     //--------------------------------------------------------------------------------
     // calc matrix
