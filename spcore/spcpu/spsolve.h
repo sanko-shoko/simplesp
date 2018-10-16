@@ -74,14 +74,14 @@ namespace sp{
 
     };
 
-    SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         Mat AtW = trnMat(A);
 
         if (errs.size() > 0){
             const int num = AtW.cols() / errs.size();
 
-            const double median = medianVal(errs);
-            const double thresh = 5.0 * maxVal(median, minErr);
+            const double sigma = 1.4826 * medianVal(errs);
+            const double thresh = 3.0 * maxVal(sigma, minErr);
 
             for (int r = 0; r < AtW.rows(); r++){
                 for (int c = 0; c < AtW.cols(); c++){
@@ -93,7 +93,7 @@ namespace sp{
     }
 
     // solve equation (A * X = B)
-    SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         
         const Mat AtW = calcAtWeight(A, errs, minErr);
 
@@ -102,7 +102,7 @@ namespace sp{
     }
 
     // solve equation (A * X = 0)
-    SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         
         const Mat AtW = calcAtWeight(A, errs, minErr);
 
