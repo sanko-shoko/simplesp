@@ -134,6 +134,8 @@ namespace sp {
 
         int m_maxview;
 
+        Int2 m_bpair;
+
         Mem1<ViewData> m_views;
 
         // pair data matrix
@@ -159,6 +161,7 @@ namespace sp {
 
         void clear() {
             m_update = 0;
+            m_bpair.set(-1, -1);
 
             m_views.clear();
             m_pairs.clear();
@@ -427,6 +430,8 @@ namespace sp {
 
                 views[a].pose = zeroPose();
                 views[b].pose = pose;
+
+                m_bpair.set(a, b);
             }
             return true;
         }
@@ -682,6 +687,7 @@ namespace sp {
 
             Mem1<int> list;
             for (int a = 0; a < views.size(); a++) {
+                if (a == m_bpair[0] || a == m_bpair[1]) continue;
                 if (views[a].valid == false) continue;
                 list.push(a);
             }
@@ -701,10 +707,13 @@ namespace sp {
                     objs.push(mpnts[m].pos);
                 }
 
+                const Pose backup = views[a].pose;
+
                 // calc pose
                 if (refinePose(views[a].pose, views[a].cam, pixs, objs) == false) {
                     return false;
                 }
+
             }
             return true;
         }
