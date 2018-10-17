@@ -181,14 +181,8 @@ namespace sp{
     }
 
 
-
-    SP_CPUFUNC bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
-        SP_ASSERT(pixs0.size() == pixs1.size());
-
-        const int unit = 8;
-        if (pixs0.size() < unit) return false;
-
-        const Mat E = trnMat(getMat(cam1)) * F * getMat(cam0);
+    SP_CPUFUNC bool dcmpEMat(Pose &pose, const Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
+        SP_ASSERT(npxs0.size() == npxs1.size());
 
         Mat U, S, V;
         if (svdMat(U, S, V, E, false) == false) return false;
@@ -211,19 +205,19 @@ namespace sp{
             T[1] = getVec(U(0, 2), U(1, 2), U(2, 2)) * (-1);
         }
 
-        const Mem1<double> errs = errFMat(F, pixs0, pixs1);
-        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs);
-        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs);
+        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, 5.0 * 1.0e-3);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, 5.0 * 1.0e-3);
 
         int maxv = 0;
         for (int i = 0; i < 4; i++) {
             const Pose test = getPose(R[i % 2], T[i / 2]);
 
-            Mem1<Vec3> pnts(dpixs0.size());
+            Mem1<Vec3> pnts(dnpxs0.size());
 
             int cnt = 0;
-            for (int i = 0; i < dpixs0.size(); i++) {
-                if (calcPnt3d(pnts[i], zeroPose(), cam0, dpixs0[i], test, cam1, dpixs1[i]) == false) continue;
+            for (int i = 0; i < dnpxs0.size(); i++) {
+                if (calcPnt3d(pnts[i], zeroPose(), dnpxs0[i], test, dnpxs1[i]) == false) continue;
                 cnt++;
             }
 
@@ -235,6 +229,20 @@ namespace sp{
 
         return true;
     }
+
+    SP_CPUFUNC bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
+        SP_ASSERT(pixs0.size() == pixs1.size());
+
+        const Mat E = trnMat(getMat(cam1)) * F * getMat(cam0);
+
+        const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
+        const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
+
+        if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
+
+        return true;
+    }
+
     //--------------------------------------------------------------------------------
     // pose 
     //--------------------------------------------------------------------------------

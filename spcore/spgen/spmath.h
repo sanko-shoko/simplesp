@@ -1287,6 +1287,7 @@ namespace sp{
     SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
 
         double pre = SP_INFINITY;
+        double rate = 1.0;
 
         for (int it = 0; it < maxit; it++) {
             const double f = funcX(x, csize, cs);
@@ -1294,13 +1295,22 @@ namespace sp{
 
             const double dx = f / (df + 1e-10);
 
-            x = x - dx;
+            const double backup = x;
+            x = x - rate * dx;
             
             const double err = fabs(funcX(x, csize, cs));
             if (err < eps) {
                 return true;
             }
 
+            if (it == 0 || err < pre) {
+                pre = err;
+                rate = 1.0;
+            }
+            else {
+                x = backup;
+                rate *= 0.5;
+            }
         }
 
         return false;
@@ -1308,11 +1318,13 @@ namespace sp{
 
     // newton method (Durand-Kerner method)
     SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
-       
-        double pre = SP_INFINITY;
         const int n = csize - 1;
+
+        double pre = SP_INFINITY;
+        double rate = 1.0;
         for (int it = 0; it < maxit; it++) {
 
+            Cmp backup[100];
             for (int i = 0; i < n; i++) {
                 const Cmp f = funcX(xs[i], csize, cs);
                 
@@ -1322,7 +1334,10 @@ namespace sp{
                         df *= xs[i] - xs[j];
                     }
                 }
-                xs[i] = xs[i] - f / df;
+                const Cmp dx = f / (df + 1e-10);
+
+                backup[i] = xs[i];
+                xs[i] = xs[i] - rate * dx;
             }
 
             double maxe = 0.0;
@@ -1335,6 +1350,17 @@ namespace sp{
 
             if (maxe < eps) {
                 return true;
+            }
+
+            if (it == 0 || maxe < pre) {
+                pre = maxe;
+                rate = 1.0;
+            }
+            else {
+                for (int i = 0; i < n; i++) {
+                    xs[i] = backup[i];
+                }
+                rate *= 0.5;
             }
         }
 

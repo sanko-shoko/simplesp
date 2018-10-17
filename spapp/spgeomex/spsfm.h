@@ -361,7 +361,7 @@ namespace sp {
                 zlist.push(pnt.z);
             }
 
-            const double eval = (zlist.size() == 0) ? 0.0 : zlist.size() / maxVal(1.0, medianVal(zlist));
+            const double eval = (zlist.size() == 0) ? 0.0 : zlist.size() / maxVal(5.0, medianVal(zlist));
             return eval;
         }
 
@@ -687,7 +687,8 @@ namespace sp {
 
             Mem1<int> list;
             for (int a = 0; a < views.size(); a++) {
-                if (a == m_bpair[0] || a == m_bpair[1]) continue;
+                //if (a == m_bpair[0] || a == m_bpair[1]) continue;
+                if (a == m_bpair[0]) continue;
                 if (views[a].valid == false) continue;
                 list.push(a);
             }
