@@ -15,64 +15,33 @@ namespace sp{
     // solve util
     //--------------------------------------------------------------------------------
 
-    class NrmData{
+    template<typename TYPE, typename ELEM = double>
+    SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
 
-    public:
+        const int dim = sizeof(TYPE) / sizeof(ELEM);
 
-        int dim;
+        Mat data(mem.size(), dim, mem.ptr);
 
-        // data matrix
-        Mat V;
+        const Mat mean = meanVal(data, 0);
+        data -= mean;
 
-        // transform matrix
-        Mat T;
+        double scale = meanSqrt(sumSq(data, 1));
+        if (scale < SP_SMALL) return false;
+        data /= scale;
 
-        NrmData(const int dim){
-            this->dim = dim;
+        T = eyeMat(dim + 1, dim + 1);
+        for (int c = 0; c < dim; c++) {
+            T(c, c) /= scale;
+            T(c, dim) -= mean(0, c) / scale;
         }
 
-        NrmData(const NrmData &data){
-            *this = data;
+        dst.resize(mem.dim, mem.dsize);
+        ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
+        for (int i = 0; i < dim * dst.size(); i++) {
+            cnvVal(ptr[i], data[i]);
         }
-
-        NrmData& operator = (const NrmData &data){
-            dim = data.dim;
-            V = data.V;
-            T = data.T;
-            return *this;
-        }
-
-        bool cnvData(const void *ptr, const int size) {
-            if (size == 0) return false;
-
-            V.resize(size, dim, ptr);
-
-            const Mat mean = meanVal(V, 0);
-
-            V -= mean;
-
-            // calc scale
-            double scale = meanSqrt(sumSq(V, 1));
-
-            V /= scale;
-
-            if (scale < SP_SMALL) return false;
-
-            T = eyeMat(dim + 1, dim + 1);
-            for (int c = 0; c < dim; c++) {
-                T(c, c) /= scale;
-                T(c, dim) -= mean(0, c) / scale;
-            }
-
-            return true;
-        }
-
-        template<typename TYPE>
-        bool cnvData(const Mem<TYPE> &mem){
-            return cnvData(mem.ptr, mem.size());
-        }
-
-    };
+        return true;
+    }
 
     SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         Mat AtW = trnMat(A);

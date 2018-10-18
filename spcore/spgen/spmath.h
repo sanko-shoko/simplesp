@@ -1287,7 +1287,6 @@ namespace sp{
     SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
 
         double pre = SP_INFINITY;
-        double rate = 1.0;
 
         for (int it = 0; it < maxit; it++) {
             const double f = funcX(x, csize, cs);
@@ -1296,28 +1295,20 @@ namespace sp{
             const double dx = f / (df + 1e-10);
 
             const double backup = x;
-            x = x - rate * dx;
+            x = x - dx;
             
             const double err = fabs(funcX(x, csize, cs));
             if (err < eps) {
                 return true;
             }
 
-            if (it == 0 || err < pre) {
-                pre = err;
-                rate = 1.0;
-            }
-            else {
-                x = backup;
-                rate *= 0.5;
-            }
         }
 
-        return false;
+        return true;
     }
 
     // newton method (Durand-Kerner method)
-    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
         const int n = csize - 1;
 
         double pre = SP_INFINITY;
@@ -1352,22 +1343,13 @@ namespace sp{
                 return true;
             }
 
-            if (it == 0 || maxe < pre) {
-                pre = maxe;
-                rate = 1.0;
-            }
-            else {
-                for (int i = 0; i < n; i++) {
-                    xs[i] = backup[i];
-                }
-                rate *= 0.5;
-            }
+
         }
 
-        return false;
+        return true;
     }
 
-    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
 
         const int n = csize - 1;
 
@@ -1403,7 +1385,7 @@ namespace sp{
 
 
     // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
         if (csize < 2) return 0;
 
         if (fabs(cs[0]) < SP_SMALL) {
