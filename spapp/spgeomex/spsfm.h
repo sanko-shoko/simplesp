@@ -562,7 +562,61 @@ namespace sp {
 
                 views[a].valid = true;
             }
+
+            // add new pnt
+            addNewPnt(views, pairs, mpnts, md->a, md->b);
+
             return true;
+        }
+
+        void addNewPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int a, const int b) {
+
+            const Mem1<Feature> &fts0 = views[a].fts;
+            const Mem1<Feature> &fts1 = views[b].fts;
+            const Mem1<int> &matches = pairs(a, b).matches;
+
+            const Pose pose = views[b].pose * invPose(views[a].pose);
+            for (int i = 0; i < matches.size(); i++) {
+                if (views[a].fts[i].mid >= 0) continue;
+
+                int find = -1;
+                for (int v = 0; v < views.size(); v++) {
+                    if (a == v || pairs(a, v).rate < MIN_MATCHRATE) continue;
+
+                    const int j = pairs(a, v).matches[i];
+                    if (j < 0) continue;
+
+                    const int m = views[v].fts[j].mid;
+                    if (m < 0) continue;
+
+                    //const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, mpnts[m].pos);
+                    //if (evalErr(err) < 1.0) continue;
+
+                    find = m;
+                    break;
+                }
+                if (find >= 0) {
+                    setPoint(views, mpnts, find, a, i);
+                    continue;
+                }
+
+                const int j = matches[i];
+                if (j < 0) continue;
+
+                Vec3 pnt;
+                if (calcPnt3d(pnt, views[a].pose, views[a].cam, fts0[i].pix, views[b].pose, views[b].cam, fts1[j].pix) == false) continue;
+
+                const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, pnt);
+                if (evalErr(err) < 1.0) continue;
+
+                MapData *gp = mpnts.extend();
+                gp->pos = pnt;
+
+                setPoint(views, mpnts, mpnts.size() - 1, a, i);
+                setPoint(views, mpnts, mpnts.size() - 1, b, j);
+
+                updateColor(views, mpnts, mpnts.size() - 1);
+            }
         }
 
         bool updatePnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
@@ -597,57 +651,7 @@ namespace sp {
             }
 
             // add new pnt
-            {
-                const int a = md->a;
-                const int b = md->b;
-
-                const Mem1<Feature> &fts0 = views[a].fts;
-                const Mem1<Feature> &fts1 = views[b].fts;
-                const Mem1<int> &matches = pairs(a, b).matches;
-
-                const Pose pose = views[b].pose * invPose(views[a].pose);
-                for (int i = 0; i < matches.size(); i++) {
-                    if (views[a].fts[i].mid >= 0) continue;
-
-                    int find = -1;
-                    for (int v = 0; v < views.size(); v++) {
-                        if (a == v || pairs(a, v).rate < MIN_MATCHRATE) continue;
-
-                        const int j = pairs(a, v).matches[i];
-                        if (j < 0) continue;
-
-                        const int m = views[v].fts[j].mid;
-                        if (m < 0) continue;
-
-                        //const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, mpnts[m].pos);
-                        //if (evalErr(err) < 1.0) continue;
-
-                        find = m;
-                        break;
-                    }
-                    if (find >= 0) {
-                        setPoint(views, mpnts, find, a, i);
-                        continue;
-                    }
-
-                    const int j = matches[i];
-                    if (j < 0) continue;
-
-                    Vec3 pnt;
-                    if(calcPnt3d(pnt, views[a].pose, views[a].cam, fts0[i].pix, views[b].pose, views[b].cam, fts1[j].pix) == false) continue;
-
-                    const double err = errPose(views[a].pose, views[a].cam, fts0[i].pix, pnt);
-                    if (evalErr(err) < 1.0) continue;
-
-                    MapData *gp = mpnts.extend();
-                    gp->pos = pnt;
-
-                    setPoint(views, mpnts, mpnts.size() - 1, a, i);
-                    setPoint(views, mpnts, mpnts.size() - 1, b, j);
-
-                    updateColor(views, mpnts, mpnts.size() - 1);
-                }
-            }
+            addNewPnt(views, pairs, mpnts, md->a, md->b);
 
             // refine pnt
             {
