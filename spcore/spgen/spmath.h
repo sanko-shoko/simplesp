@@ -1294,6 +1294,7 @@ namespace sp{
 
             const double dx = f / (df + 1e-10);
 
+            const double backup = x;
             x = x - dx;
             
             const double err = fabs(funcX(x, csize, cs));
@@ -1303,16 +1304,18 @@ namespace sp{
 
         }
 
-        return false;
+        return true;
     }
 
     // newton method (Durand-Kerner method)
-    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
-       
-        double pre = SP_INFINITY;
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
         const int n = csize - 1;
+
+        double pre = SP_INFINITY;
+        double rate = 1.0;
         for (int it = 0; it < maxit; it++) {
 
+            Cmp backup[100];
             for (int i = 0; i < n; i++) {
                 const Cmp f = funcX(xs[i], csize, cs);
                 
@@ -1322,7 +1325,10 @@ namespace sp{
                         df *= xs[i] - xs[j];
                     }
                 }
-                xs[i] = xs[i] - f / df;
+                const Cmp dx = f / (df + 1e-10);
+
+                backup[i] = xs[i];
+                xs[i] = xs[i] - rate * dx;
             }
 
             double maxe = 0.0;
@@ -1336,12 +1342,14 @@ namespace sp{
             if (maxe < eps) {
                 return true;
             }
+
+
         }
 
-        return false;
+        return true;
     }
 
-    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
 
         const int n = csize - 1;
 
@@ -1377,7 +1385,7 @@ namespace sp{
 
 
     // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 100, const double eps = 1.0e-10) {
         if (csize < 2) return 0;
 
         if (fabs(cs[0]) < SP_SMALL) {

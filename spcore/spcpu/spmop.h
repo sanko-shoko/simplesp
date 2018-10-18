@@ -442,7 +442,7 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC int eqn(Mem1<Cmp> &xs, const Mem1<double> cs, const int maxit = 100, const double eps = 1e-6) {
+    SP_GENFUNC int eqn(Mem1<Cmp> &xs, const Mem1<double> cs, const int maxit = 100, const double eps = 1.0e-10) {
         Mem1<Cmp> tmp(cs.size() - 1);
         const int n = eqn(tmp.ptr, cs.size(), cs.ptr, maxit, eps);
 

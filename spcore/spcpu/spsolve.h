@@ -15,73 +15,42 @@ namespace sp{
     // solve util
     //--------------------------------------------------------------------------------
 
-    class NrmData{
+    template<typename TYPE, typename ELEM = double>
+    SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
 
-    public:
+        const int dim = sizeof(TYPE) / sizeof(ELEM);
 
-        int dim;
+        Mat data(mem.size(), dim, mem.ptr);
 
-        // data matrix
-        Mat V;
+        const Mat mean = meanVal(data, 0);
+        data -= mean;
 
-        // transform matrix
-        Mat T;
+        double scale = meanSqrt(sumSq(data, 1));
+        if (scale < SP_SMALL) return false;
+        data /= scale;
 
-        NrmData(const int dim){
-            this->dim = dim;
+        T = eyeMat(dim + 1, dim + 1);
+        for (int c = 0; c < dim; c++) {
+            T(c, c) /= scale;
+            T(c, dim) -= mean(0, c) / scale;
         }
 
-        NrmData(const NrmData &data){
-            *this = data;
+        dst.resize(mem.dim, mem.dsize);
+        ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
+        for (int i = 0; i < dim * dst.size(); i++) {
+            cnvVal(ptr[i], data[i]);
         }
+        return true;
+    }
 
-        NrmData& operator = (const NrmData &data){
-            dim = data.dim;
-            V = data.V;
-            T = data.T;
-            return *this;
-        }
-
-        bool cnvData(const void *ptr, const int size) {
-            if (size == 0) return false;
-
-            V.resize(size, dim, ptr);
-
-            const Mat mean = meanVal(V, 0);
-
-            V -= mean;
-
-            // calc scale
-            double scale = meanSqrt(sumSq(V, 1));
-
-            V /= scale;
-
-            if (scale < SP_SMALL) return false;
-
-            T = eyeMat(dim + 1, dim + 1);
-            for (int c = 0; c < dim; c++) {
-                T(c, c) /= scale;
-                T(c, dim) -= mean(0, c) / scale;
-            }
-
-            return true;
-        }
-
-        template<typename TYPE>
-        bool cnvData(const Mem<TYPE> &mem){
-            return cnvData(mem.ptr, mem.size());
-        }
-
-    };
-
-    SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         Mat AtW = trnMat(A);
 
         if (errs.size() > 0){
             const int num = AtW.cols() / errs.size();
 
-            const double median = medianVal(errs);
-            const double thresh = 5.0 * maxVal(median, minErr);
+            const double sigma = 1.4826 * medianVal(errs);
+            const double thresh = 3.0 * maxVal(sigma, minErr);
 
             for (int r = 0; r < AtW.rows(); r++){
                 for (int c = 0; c < AtW.cols(); c++){
@@ -93,7 +62,7 @@ namespace sp{
     }
 
     // solve equation (A * X = B)
-    SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         
         const Mat AtW = calcAtWeight(A, errs, minErr);
 
@@ -102,7 +71,7 @@ namespace sp{
     }
 
     // solve equation (A * X = 0)
-    SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 1.0){
+    SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
         
         const Mat AtW = calcAtWeight(A, errs, minErr);
 
