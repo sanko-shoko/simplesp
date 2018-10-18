@@ -205,19 +205,15 @@ namespace sp{
             T[1] = getVec(U(0, 2), U(1, 2), U(2, 2)) * (-1);
         }
 
-        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
-        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, 5.0 * 1.0e-3);
-        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, 5.0 * 1.0e-3);
-
         int maxv = 0;
         for (int i = 0; i < 4; i++) {
             const Pose test = getPose(R[i % 2], T[i / 2]);
 
-            Mem1<Vec3> pnts(dnpxs0.size());
+            Mem1<Vec3> pnts(npxs0.size());
 
             int cnt = 0;
-            for (int i = 0; i < dnpxs0.size(); i++) {
-                if (calcPnt3d(pnts[i], zeroPose(), dnpxs0[i], test, dnpxs1[i]) == false) continue;
+            for (int i = 0; i < npxs0.size(); i++) {
+                if (calcPnt3d(pnts[i], zeroPose(), npxs0[i], test, npxs1[i]) == false) continue;
                 cnt++;
             }
 
