@@ -1,4 +1,5 @@
 ﻿#define SP_USE_THREAD 1
+#define SP_USE_IMGUI 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"
@@ -22,6 +23,9 @@ class SfMGUI : public BaseWindow {
     // thread;
     Thread m_thread;
 
+    // 
+    float m_err;
+
 private:
 
     void help() {
@@ -38,6 +42,7 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
+        m_err = 1.0f;
     }
 
     void reset() {
@@ -73,6 +78,21 @@ private:
     }
 
     virtual void display() {
+        // test window
+        if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
+
+            ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
+            ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
+
+            if (ImGui::Button("Button")) {
+                printf("Button\n");
+            }
+
+            ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
+
+            ImGui::End();
+        }
+
         {
             capture();
         }
@@ -100,6 +120,7 @@ private:
 
                 glBegin(GL_POINTS);
                 for (int i = 0; i < mpnts.size(); i++) {
+                    if (mpnts[i].err > static_cast<double>(m_err)) continue;
                     glColor(mpnts[i].col);
                     glVertex(mpnts[i].pos);
                 }

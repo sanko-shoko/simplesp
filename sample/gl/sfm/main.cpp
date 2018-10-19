@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_IMGUI 1
+
+#include "simplesp.h"
 #include "spex/spgl.h"
 
 using namespace sp;
@@ -12,6 +14,9 @@ class SfMGUI : public BaseWindow {
 
     // axis pose (cam to axis pose)
     Pose m_axis;
+
+    // 
+    float m_err;
 
 private:
 
@@ -29,6 +34,8 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
+        m_err = 1.0f;
+        ImGui::GetIO().IniFilename = NULL;
         reset();
     }
 
@@ -63,6 +70,20 @@ private:
     }
 
     virtual void display() {
+        // test window
+        //if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
+
+        //    ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
+        //    ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
+
+        //    if (ImGui::Button("Button")) {
+        //        printf("Button\n");
+        //    }
+
+        //    ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
+
+        //    ImGui::End();
+        //}
 
         // view 3D
         glLoadView3D(m_wcam, m_viewPos, m_viewScale);
@@ -77,6 +98,7 @@ private:
 
             glBegin(GL_POINTS);
             for (int i = 0; i < pnts.size(); i++) {
+                if (pnts[i].err > m_err) continue;
                 glColor(pnts[i].col);
                 glVertex(pnts[i].pos);
             }
