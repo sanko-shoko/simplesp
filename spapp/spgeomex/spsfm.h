@@ -239,6 +239,9 @@ namespace sp {
 
         double MIN_MATCHRATE = 0.15;
         double MIN_MATCHEVAL = 0.1;
+        
+        int MIN_POSEPNT = 20;
+        
         double MAX_PIXERR = 3.0;
         double MIN_ANGLE = 3.0 * SP_PI / 180.0;
 
@@ -274,7 +277,7 @@ namespace sp {
                     if (m_update == 0) {
                         updatePair(m_views, m_pairs, m_views.size());
 
-                        if (findGoodPair(m_views, m_pairs, m_mpnts) == false) throw "findGoodPair";
+                        if (initStereo(m_views, m_pairs, m_mpnts) == false) throw "initStereo";
                     }
                     else {
                         updatePair(m_views, m_pairs, 1);
@@ -467,7 +470,7 @@ namespace sp {
         // initialize
         //--------------------------------------------------------------------------------
 
-        bool findGoodPair(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts) {
+        bool initStereo(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts) {
 
             // select pair
             PairData *md = NULL;
@@ -641,7 +644,7 @@ namespace sp {
 
                     index.push(Int2(j, m));
                 }
-                if (index.size() < 6) return false;
+                if (index.size() < MIN_POSEPNT) return false;
 
                 Mem1<Vec2> pixs;
                 Mem1<Vec3> objs;

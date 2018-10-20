@@ -153,6 +153,12 @@ namespace sp{
                     if (normVec(delta) > 2.0) delta *= limit / normVec(delta);
 
                     flows[i] += delta / scale;
+
+                    const Vec2 test = pixs[i] + flows[i];
+                    if (isInRect2(rect, test.x, test.y) == false) {
+                        masks[i] = false;
+                        break;
+                    }
                 }
             }
         }
