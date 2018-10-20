@@ -15,7 +15,17 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC double errPrj(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
-        return normVec(pix - mulCamD(cam, prjVec(pose * obj)));
+        const Vec3 vec = pose * obj;
+
+        double ret = 0.0;
+        if (vec.z > 0) {
+            ret = normVec(pix - mulCamD(cam, prjVec(vec)));
+        }
+        else {
+            ret = SP_INFINITY;
+        }
+
+        return ret;
     }
 
     SP_CPUFUNC double errPrj(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
@@ -436,7 +446,7 @@ namespace sp {
     // P3P
     SP_CPUFUNC bool calcPoseP3P(Mem1<Pose> &poses, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 
-        SP_ASSERT(pixs.size() == 3 && objs.size() == 3);
+        SP_ASSERT(pixs.size() >= 3 && pixs.size() == objs.size());
 
         Mem1<Vec3> nrms;
         for (int i = 0; i < 3; i++) {
@@ -507,17 +517,10 @@ namespace sp {
     // P4P
     SP_CPUFUNC bool calcPoseP4P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 
-        SP_ASSERT(pixs.size() == 4 && objs.size() == 4);
-
-        Mem1<Vec2> tpixs;
-        Mem1<Vec3> tobjs;
-        for (int i = 0; i < 3; i++) {
-            tpixs.push(pixs[i]);
-            tobjs.push(objs[i]);
-        }
+        SP_ASSERT(pixs.size() >= 4 && pixs.size() == objs.size());
 
         Mem1<Pose> poses;
-        if(calcPoseP3P(poses, cam, tpixs, tobjs) == false) return false;
+        if(calcPoseP3P(poses, cam, pixs.slice(0, 0, 3), objs.slice(0, 0, 3)) == false) return false;
 
         double mine = SP_INFINITY;
         for (int i = 0; i < poses.size(); i++) {

@@ -237,8 +237,8 @@ namespace sp {
 
     private:
 
-        double MIN_MATCHRATE = 0.1;
-        double MIN_MATCHEVAL = 0.2;
+        double MIN_MATCHRATE = 0.15;
+        double MIN_MATCHEVAL = 0.1;
         double MAX_PIXERR = 3.0;
         double MIN_ANGLE = 3.0 * SP_PI / 180.0;
 
@@ -252,13 +252,12 @@ namespace sp {
         //--------------------------------------------------------------------------------
         
         bool _addView(const Mem2<Col3> &img, const CamParam *cam = NULL) {
-            SP_LOGGER_SET("-addView");
 
             if (m_views.size() == m_maxview) return false;
 
-            CamParam tmp = (cam != NULL && cmpSize(2, cam->dsize, img.dsize) == true) ? *cam : getCamParam(img.dsize);
-
             const int v = m_views.size();
+
+            CamParam tmp = (cam != NULL && cmpSize(2, cam->dsize, img.dsize) == true) ? *cam : getCamParam(img.dsize);
 
             setView(m_views, v, img, tmp);
 
@@ -282,7 +281,9 @@ namespace sp {
 
                         // update view [invalid -> valid]
                         updateView(m_views, m_pairs, m_mpnts, m_update);
+                    }
 
+                    {
                         // update pnt 3d
                         updateMPnt(m_views, m_pairs, m_mpnts, m_update);
 
@@ -303,7 +304,7 @@ namespace sp {
 
 
         //--------------------------------------------------------------------------------
-        // view
+        // view (v: view id)
         //--------------------------------------------------------------------------------
 
         void setView(Mem1<ViewData> &views, const int v, const Mem2<Col3> &img, const CamParam &cam) {
@@ -322,10 +323,9 @@ namespace sp {
 
 
         //--------------------------------------------------------------------------------
-        // pair
+        // pair (a, b: view id)
         //--------------------------------------------------------------------------------
         
-        // a, b: view id, 
         void initPair(Mem1<ViewData> &views, Mem2<PairData> &pairs, const int a, const int b) {
 
             PairData &pair = pairs(a, b);
@@ -404,7 +404,7 @@ namespace sp {
         }
 
         //--------------------------------------------------------------------------------
-        // map point
+        // map point (m: mpnts id, v: views id, f: features id)
         //--------------------------------------------------------------------------------
 
         double errMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m) {
@@ -452,7 +452,6 @@ namespace sp {
             mpnts[m].err = errMPnt(views, mpnts, m);
         }
 
-        // m: mpnts id, v: views id, f: features id
         void setMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m, const int v, const int f) {
             if (views[v].fts[f].mid >= 0) return;
 
@@ -461,60 +460,6 @@ namespace sp {
             mpnts[m].err = errMPnt(views, mpnts, m);
             views[v].fts[f].mid = m;
             views[v].mcnt++;
-        }
-
-        void addNewMPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int a, const int b) {
-
-            const Mem1<Feature> &fts0 = views[a].fts;
-            const Mem1<Feature> &fts1 = views[b].fts;
-            const Mem1<int> &matches = pairs(a, b).matches;
-
-            for (int f = 0; f < matches.size(); f++) {
-                if (views[a].fts[f].mid >= 0) continue;
-
-                int find = -1;
-                for (int i = 0; i < views[a].links.size(); i++) {
-                    const int v = views[a].links[i];
-                    if (v == b) continue;
-
-                    const int j = pairs(a, v).matches[f];
-                    if (j < 0) continue;
-
-                    const int m = views[v].fts[j].mid;
-                    if (m < 0) continue;
-
-                    //const double err = errPrj(views[a].pose, views[a].cam, fts0[f].pix, mpnts[m].pos);
-                    //if (evalErr(err) < 1.0) continue;
-
-                    find = m;
-                    break;
-                }
-                if (find >= 0) {
-                    setMPnt(views, mpnts, find, a, f);
-                    continue;
-                }
-
-                const int g = matches[f];
-                if (g < 0) continue;
-
-                Vec3 pos;
-                if (calcPnt3d(pos, views[a].pose, views[a].cam, fts0[f].pix, views[b].pose, views[b].cam, fts1[g].pix) == false) continue;
-
-                const double err0 = errPrj(views[a].pose, views[a].cam, fts0[f].pix, pos);
-                const double err1 = errPrj(views[b].pose, views[b].cam, fts1[g].pix, pos);
-                if ((err0 + err1) / 2.0 > MAX_PIXERR) continue;
-
-                const Vec3 vec0 = unitVec(views[a].pose.trn - pos);
-                const Vec3 vec1 = unitVec(views[b].pose.trn - pos);
-                const double angle = acos(dotVec(vec0, vec1));
-                if (angle < MIN_ANGLE) continue;
-
-                const int m = mpnts.size();
-                setMPnt(views, mpnts, m, pos);
-                setMPnt(views, mpnts, m, a, f);
-                setMPnt(views, mpnts, m, b, g);
-
-            }
         }
 
 
@@ -567,11 +512,66 @@ namespace sp {
                 m_ipair.set(a, b);
             }
 
-            addNewMPnt(views, pairs, mpnts, md->a, md->b);
-
             return true;
         }
 
+        void addNewMPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int a, const int b) {
+
+            const bool init = (mpnts.size() == 0) ? true : false;
+
+            const Mem1<Feature> &fts0 = views[a].fts;
+            const Mem1<Feature> &fts1 = views[b].fts;
+            const Mem1<int> &matches = pairs(a, b).matches;
+
+            for (int f = 0; f < matches.size(); f++) {
+                if (views[a].fts[f].mid >= 0) continue;
+
+                int find = -1;
+                for (int i = 0; i < views[a].links.size(); i++) {
+                    const int v = views[a].links[i];
+                    if (v == b) continue;
+
+                    const int j = pairs(a, v).matches[f];
+                    if (j < 0) continue;
+
+                    const int m = views[v].fts[j].mid;
+                    if (m < 0) continue;
+
+                    //const double err = errPrj(views[a].pose, views[a].cam, fts0[f].pix, mpnts[m].pos);
+                    //if (evalErr(err) < 1.0) continue;
+
+                    find = m;
+                    break;
+                }
+                if (find >= 0) {
+                    setMPnt(views, mpnts, find, a, f);
+                    continue;
+                }
+
+                const int g = matches[f];
+                if (g < 0) continue;
+
+                Vec3 pos;
+                if (calcPnt3d(pos, views[a].pose, views[a].cam, fts0[f].pix, views[b].pose, views[b].cam, fts1[g].pix) == false) continue;
+
+                const double err0 = errPrj(views[a].pose, views[a].cam, fts0[f].pix, pos);
+                const double err1 = errPrj(views[b].pose, views[b].cam, fts1[g].pix, pos);
+                if ((err0 + err1) / 2.0 > MAX_PIXERR) continue;
+
+                if (init == false) {
+                    const Vec3 vec0 = unitVec(views[a].pose.trn - pos);
+                    const Vec3 vec1 = unitVec(views[b].pose.trn - pos);
+                    const double angle = acos(dotVec(vec0, vec1));
+                    if (angle < MIN_ANGLE) continue;
+                }
+
+                const int m = mpnts.size();
+                setMPnt(views, mpnts, m, pos);
+                setMPnt(views, mpnts, m, a, f);
+                setMPnt(views, mpnts, m, b, g);
+
+            }
+        }
 
         //--------------------------------------------------------------------------------
         // update
@@ -618,10 +618,10 @@ namespace sp {
             PairData *md = NULL;
             {
                 // [invalid, valid] pair
-                const Mem1<PairData*> mds = shuffle(getPairs(views, pairs, false, true), update);
+                const Mem1<PairData*> mds = shuffle(getPairs(views, pairs, false, true));
                 if (mds.size() == 0) return false;
 
-                md = mds[0];
+                md = mds[update % mds.size()];
             }
             
             // calc pose & add pnts
@@ -652,8 +652,8 @@ namespace sp {
                     objs.push(mpnts[m].pos);
                 }
 
-                Pose pose = zeroPose();
-                if (calcPoseRANSAC(pose, views[a].cam, pixs, objs) == false) return false;
+                Pose pose = views[a].pose;
+                if (refinePose(pose, views[a].cam, pixs, objs) == false) return false;
               
                 int cnt = 0;
                 for (int i = 0; i < index.size(); i++) {
@@ -661,7 +661,7 @@ namespace sp {
                     const int m = index[i][1];
 
                     const double err = errPrj(pose, views[a].cam, fts0[j].pix, mpnts[m].pos);
-                    if (evalErr(err) == 0.0) continue;
+                    if (err >= MAX_PIXERR) continue;
                     cnt++;
                 }
                 if (cnt < 0.5 * index.size()) return false;
@@ -678,11 +678,9 @@ namespace sp {
                 }
 
                 setView(views, a, pose);
+             
+                addNewMPnt(views, pairs, mpnts, a, b);
             }
-
-            // add new pnt
-            addNewMPnt(views, pairs, mpnts, md->a, md->b);
-
             return true;
         }
 
@@ -717,9 +715,8 @@ namespace sp {
                 md = mds[tmps[i].id];
             }
 
-            // add new pnt
             addNewMPnt(views, pairs, mpnts, md->a, md->b);
-
+            
             // refine pnt
             {
                 srand(update);
