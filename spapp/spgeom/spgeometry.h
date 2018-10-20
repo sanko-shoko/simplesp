@@ -656,8 +656,14 @@ namespace sp {
         Mat E;
         if (calcEMatRANSAC(E, npxs0, npxs1, thresh) == false) return false;
 
-        if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
+        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh);
+        if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
+
+        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, thresh);
+        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, thresh);
         if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
         
         return true;

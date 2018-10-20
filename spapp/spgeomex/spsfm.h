@@ -463,26 +463,26 @@ namespace sp {
         bool initStereo(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts) {
 
             // select pair
-            PairData *md = NULL;
+            PairData *pair = NULL;
             {
-                const Mem1<PairData*> mds = shuffle(getPairs(views, pairs, false, false));
+                const Mem1<PairData*> list = shuffle(getPairs(views, pairs, false, false));
 
                 double maxv = 0.0;
-                for (int i = 0; i < mds.size(); i++) {
+                for (int i = 0; i < list.size(); i++) {
 
-                    const double eval = mds[i]->eval;
+                    const double eval = list[i]->eval;
                     if (eval < maxv) continue;
 
                     maxv = eval;
-                    md = mds[i];
+                    pair = list[i];
                 }
                 if (maxv < MIN_MATCHEVAL) return false;
             }
 
             // initialize pair
             {
-                const int a = md->a;
-                const int b = md->b;
+                const int a = pair->a;
+                const int b = pair->b;
 
                 const Mem1<Vec2> pixs0 = getMatchPixs(views[a].fts, pairs(a, b).matches, true);
                 const Mem1<Vec2> pixs1 = getMatchPixs(views[b].fts, pairs(a, b).matches, false);
@@ -599,19 +599,19 @@ namespace sp {
             SP_LOGGER_SET("updateView");
 
             // select pair
-            PairData *md = NULL;
+            PairData *pair = NULL;
             {
                 // [invalid, valid] pair
-                const Mem1<PairData*> mds = shuffle(getPairs(views, pairs, false, true));
-                if (mds.size() == 0) return false;
+                const Mem1<PairData*> list = shuffle(getPairs(views, pairs, false, true));
+                if (list.size() == 0) return false;
 
-                md = mds[update % mds.size()];
+                pair = list[update % list.size()];
             }
             
             // calc pose & add pnts
             {
-                const int a = md->a;
-                const int b = md->b;
+                const int a = pair->a;
+                const int b = pair->b;
 
                 const Mem1<int> &matches = pairs(b, a).matches;
 
@@ -667,37 +667,37 @@ namespace sp {
         }
 
         bool updateMPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
-            SP_LOGGER_SET("updatePnt");
+            SP_LOGGER_SET("updateMPnt");
 
             // select pair
-            PairData *md = NULL;
+            PairData *pair = NULL;
             {
                 // [valid, valid] pair
-                const Mem1<PairData*> mds = getPairs(views, pairs, true, true);
-                if (mds.size() == 0) return false;
+                const Mem1<PairData*> list = shuffle(getPairs(views, pairs, true, true));
+                if (list.size() == 0) return false;
 
                 struct Tmp {
-                    int id, cnt;
-                    bool operator > (const Tmp t) const { return this->cnt > t.cnt; }
-                    bool operator < (const Tmp t) const { return this->cnt < t.cnt; }
+                    PairData *pair;
+                    int mcnt;
+                    bool operator > (const Tmp t) const { return this->mcnt > t.mcnt; }
+                    bool operator < (const Tmp t) const { return this->mcnt < t.mcnt; }
                 };
 
                 Mem1<Tmp> tmps;
-                for (int i = 0; i < mds.size(); i++) {
+                for (int i = 0; i < list.size(); i++) {
                     Tmp tmp;
-                    tmp.id = i;
-                    tmp.cnt = minVal(views[mds[i]->a].mcnt, views[mds[i]->b].mcnt);
+                    tmp.pair = list[i];
+                    tmp.mcnt = minVal(views[list[i]->a].mcnt, views[list[i]->b].mcnt);
                     tmps.push(tmp);
                 }
                 sort(tmps);
 
-                const double x = (randValUnif() + 1.0) / 2.0;
-                const int i = tmps[floor(pow(x, 2.0) * tmps.size())].id;
-
-                md = mds[tmps[i].id];
+                const double x = fabs(randValUnif());
+                const int i = floor(pow(x, 2.0) * tmps.size()) % tmps.size();
+                pair = tmps[i].pair;
             }
 
-            addNewMPnt(views, pairs, mpnts, md->a, md->b);
+            addNewMPnt(views, pairs, mpnts, pair->a, pair->b);
             
             // refine pnt
             {
