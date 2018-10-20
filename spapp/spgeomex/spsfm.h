@@ -286,8 +286,11 @@ namespace sp {
                     }
 
                     {
-                        // update pnt 3d
-                        updateMPnt(m_views, m_pairs, m_mpnts, m_update);
+                        // update map pnt [add new]
+                        updateMPnt1(m_views, m_pairs, m_mpnts, m_update);
+
+                        // update map pnt [refine]
+                        updateMPnt2(m_views, m_pairs, m_mpnts, m_update);
 
                         // update view pose
                         updatePose(m_views, m_pairs, m_mpnts, m_update);
@@ -607,7 +610,7 @@ namespace sp {
 
                 pair = list[update % list.size()];
             }
-            
+
             // calc pose & add pnts
             {
                 const int a = pair->a;
@@ -666,8 +669,8 @@ namespace sp {
             return true;
         }
 
-        bool updateMPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
-            SP_LOGGER_SET("updateMPnt");
+        bool updateMPnt1(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+            SP_LOGGER_SET("updateMPnt1");
 
             // select pair
             PairData *pair = NULL;
@@ -676,78 +679,64 @@ namespace sp {
                 const Mem1<PairData*> list = shuffle(getPairs(views, pairs, true, true));
                 if (list.size() == 0) return false;
 
-                struct Tmp {
-                    PairData *pair;
-                    int mcnt;
-                    bool operator > (const Tmp t) const { return this->mcnt > t.mcnt; }
-                    bool operator < (const Tmp t) const { return this->mcnt < t.mcnt; }
-                };
-
-                Mem1<Tmp> tmps;
-                for (int i = 0; i < list.size(); i++) {
-                    Tmp tmp;
-                    tmp.pair = list[i];
-                    tmp.mcnt = minVal(views[list[i]->a].mcnt, views[list[i]->b].mcnt);
-                    tmps.push(tmp);
-                }
-                sort(tmps);
-
-                const double x = fabs(randValUnif());
-                const int i = floor(pow(x, 2.0) * tmps.size()) % tmps.size();
-                pair = tmps[i].pair;
+                pair = list[update % list.size()];
             }
 
             addNewMPnt(views, pairs, mpnts, pair->a, pair->b);
-            
-            // refine pnt
-            {
-                srand(update);
 
-                for (int i = 0; i < minVal(MAX_MPNTUPDATE, mpnts.size()); i++) {
-                    const int m = rand() % mpnts.size();
+            return true;
+        }
 
-                    const Mem1<Int2> &index = mpnts[m].index;
-                    if (index.size() < 2) continue;
+        bool updateMPnt2(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+            SP_LOGGER_SET("updateMPnt2");
 
-                    Mem1<Pose> poses(index.size());
-                    Mem1<CamParam> cams(index.size());
-                    Mem1<Vec2> pixs(index.size());
-                    for (int i = 0; i < index.size(); i++) {
-                        const int v = index[i][0];
-                        const int f = index[i][1];
-                        poses[i] = views[v].pose;
-                        cams[i] = views[v].cam;
-                        pixs[i] = views[v].fts[f].pix;
-                    }
+            srand(update);
 
-                    Vec3 pos = getVec(0.0, 0.0, 0.0);
-                    if (calcPnt3dRANSAC(pos, poses, cams, pixs) == false) continue;
-                    
-                    Mem1<double> errs;
-                    for (int v = 0; v < index.size(); v++) {
-                        const double err = errPrj(poses[v], cams[v], pixs[v], pos);
-                        errs.push(err);
-                    }
-                    if (medianVal(errs) > MAX_PIXERR) continue;
+            for (int i = 0; i < minVal(MAX_MPNTUPDATE, mpnts.size()); i++) {
+                const int m = rand() % mpnts.size();
 
-                    Mem1<double> angles;
-                    for (int a = 0; a < index.size(); a++) {
-                        for (int b = a + 1; b < index.size(); b++) {
-                            if (errs[a] > MAX_PIXERR || errs[b] > MAX_PIXERR) continue;
+                const Mem1<Int2> &index = mpnts[m].index;
+                if (index.size() < 2) continue;
 
-                            const Vec3 vec0 = unitVec(views[a].pose.trn - pos);
-                            const Vec3 vec1 = unitVec(views[b].pose.trn - pos);
-                            const double angle = acos(dotVec(vec0, vec1));
-                            angles.push(angle);
-                        }
-                    }
-                                
-                    if (maxVal(angles) < MIN_ANGLE) continue;
-
-
-                    setMPnt(views, mpnts, m, pos);
+                Mem1<Pose> poses(index.size());
+                Mem1<CamParam> cams(index.size());
+                Mem1<Vec2> pixs(index.size());
+                for (int i = 0; i < index.size(); i++) {
+                    const int v = index[i][0];
+                    const int f = index[i][1];
+                    poses[i] = views[v].pose;
+                    cams[i] = views[v].cam;
+                    pixs[i] = views[v].fts[f].pix;
                 }
+
+                Vec3 pos = getVec(0.0, 0.0, 0.0);
+                if (calcPnt3dRANSAC(pos, poses, cams, pixs) == false) continue;
+                    
+                Mem1<double> errs;
+                for (int v = 0; v < index.size(); v++) {
+                    const double err = errPrj(poses[v], cams[v], pixs[v], pos);
+                    errs.push(err);
+                }
+                if (medianVal(errs) > MAX_PIXERR) continue;
+
+                Mem1<double> angles;
+                for (int a = 0; a < index.size(); a++) {
+                    for (int b = a + 1; b < index.size(); b++) {
+                        if (errs[a] > MAX_PIXERR || errs[b] > MAX_PIXERR) continue;
+
+                        const Vec3 vec0 = unitVec(views[a].pose.trn - pos);
+                        const Vec3 vec1 = unitVec(views[b].pose.trn - pos);
+                        const double angle = acos(dotVec(vec0, vec1));
+                        angles.push(angle);
+                    }
+                }
+                                
+                if (maxVal(angles) < MIN_ANGLE) continue;
+
+
+                setMPnt(views, mpnts, m, pos);
             }
+
             return true;
         }
 
