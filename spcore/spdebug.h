@@ -186,17 +186,6 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
-    SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
-        SP_PRINTF("Mat %d %d [\n", rows, cols);
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                SP_PRINTF("%g ", mat[r * cols + c]);
-            }
-            SP_PRINTF("\n");
-        }
-        SP_PRINTF("]\n");
-    }
-
     SP_CPUFUNC void _print(const Rot &rot) {
         SP_PRINTF("[ %+.5lf %+.5lf %+.5lf %+.5lf ]", rot.qx, rot.qy, rot.qz, rot.qw);
     }
@@ -216,7 +205,7 @@ namespace sp {
     SP_CPUFUNC void print(const Pose &pose) {
         SP_PRINTF("Pose ");
         _print(pose);
-        SP_PRINTF("]\n");
+        SP_PRINTF("\n");
     }
 
     SP_CPUFUNC void _print(const CamParam &cam) {
@@ -234,6 +223,17 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
+    SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
+        SP_PRINTF("Mat %d %d [\n", rows, cols);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                SP_PRINTF("%g ", mat[r * cols + c]);
+            }
+            SP_PRINTF("\n");
+        }
+        SP_PRINTF("]\n");
+    }
+    
     template <typename TYPE>
     SP_CPUFUNC void print(const ExPtr<TYPE> &mem) {
         SP_PRINTF("Mem ");

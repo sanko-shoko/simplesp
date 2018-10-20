@@ -15,10 +15,9 @@ int main(){
 
         const Pose pose = getPose(getVec(0.0, 0.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0);
 
-        objs.push(getVec(-50.0, -50.0, 0.0));
-        objs.push(getVec(+50.0, -50.0, 0.0));
-        objs.push(getVec(-50.0, +50.0, 0.0));
-        objs.push(getVec(+50.0, +50.0, 0.0));
+        for (int i = 0; i < 100; i++) {
+            objs.push(randVecGauss(20.0, 20.0, 20.0));
+        }
 
         for (int i = 0; i < objs.size(); i++) {
             const Vec3 pos = pose * objs[i];
@@ -59,11 +58,29 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");
 
         Pose pose;
-        calcPoseP4P(pose, cam, pixs, objs);
+        calcPoseP4P(pose, cam, pixs.slice(0, 0, 4), objs.slice(0, 0, 4));
 
         print(pose);
     }
 
+    {
+        printf("\n\n");
+        printf("--------------------------------------------------------------------------------\n");
+        printf("RANSAC\n");
+        printf("--------------------------------------------------------------------------------\n");
+
+        const double noise = 0.5;
+        for (int i = 0; i < pixs.size(); i++) {
+            if ((randValUnif() + 1.0) / 2.0 < noise) {
+                pixs[i] += randVecUnif(100, 100);
+            }
+        }
+
+        Pose pose;
+        calcPoseRANSAC(pose, cam, pixs, objs);
+
+        print(pose);
+    }
 
     return 0;
 }
