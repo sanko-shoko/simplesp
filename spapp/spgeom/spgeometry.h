@@ -8,7 +8,40 @@
 #include "spcore/spcore.h"
 #include "spapp/spgeom/spxmat.h"
 
-namespace sp{
+namespace sp {
+
+    //--------------------------------------------------------------------------------
+    // projection error
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC double errPrj(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
+        return normVec(pix - mulCamD(cam, prjVec(pose * obj)));
+    }
+
+    SP_CPUFUNC double errPrj(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
+        return errPrj(pose, cam, pix, getVec(obj, 0.0));
+    }
+
+    SP_CPUFUNC Mem1<double> errPrj(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
+        SP_ASSERT(pixs.size() == objs.size());
+
+        Mem1<double> errs(pixs.size());
+        for (int i = 0; i < pixs.size(); i++) {
+            errs[i] = errPrj(pose, cam, pixs[i], objs[i]);
+        }
+        return errs;
+    }
+
+
+    SP_CPUFUNC Mem1<double> errPrj(const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const Vec3 &obj) {
+        SP_ASSERT(poses.size() == cams.size() && poses.size() == pixs.size());
+
+        Mem1<double> errs(poses.size());
+        for (int i = 0; i < poses.size(); i++) {
+            errs[i] = errPrj(poses[i], cams[i], pixs[i], obj);
+        }
+        return errs;
+    }
 
     //--------------------------------------------------------------------------------
     // triangulation
@@ -110,6 +143,60 @@ namespace sp{
         return calcPnt3d(pnt, poses, npxs);
     }
 
+    SP_CPUFUNC bool calcPnt3dRANSAC(Vec3 &pos, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const double thresh = 5.0) {
+        SP_ASSERT(poses.size() == cams.size() && poses.size() == pixs.size());
+
+        const int unit = 2;
+        if (pixs.size() < unit * SP_RANSAC_NUM) {
+            return calcPnt3d(pos, poses, cams, pixs);
+        }
+
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Pose> sposes, rposes;
+        Mem1<CamParam> scams, rcams;
+        Mem1<Vec2> spixs, rpixs;
+
+        double maxv = 0.0;
+        for (int it = 0; it < maxit; it++) {
+            const int p = it % (pixs.size() - unit);
+            if (p == 0) {
+                sposes = shuffle(poses, it);
+                scams = shuffle(cams, it);
+                spixs = shuffle(pixs, it);
+            }
+            
+            rposes.resize(unit, &sposes[p]);
+            rcams.resize(unit, &scams[p]);
+            rpixs.resize(unit, &spixs[p]);
+
+            Vec3 test;
+            if (calcPnt3d(test, rposes, rcams, rpixs) == false) continue;
+
+            const Mem1<double> errs = errPrj(poses, cams, pixs, test);
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxv) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxv = eval;
+                maxit = adaptiveStop(eval, unit);
+
+                pos = test;
+            }
+        }
+        if (maxv < SP_RANSAC_RATE) return false;
+
+        // refine
+        {
+            const Mem1<double> errs = errPrj(poses, cams, pixs, pos);
+            const Mem1<Pose> dposes = denoise(poses, errs, thresh);
+            const Mem1<CamParam> dcams = denoise(cams, errs, thresh);
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
+
+            if (refinePnt3d(pos, dposes, dcams, dpixs) == false) return false;
+        }
+        return true;
+    }
 
     SP_CPUFUNC bool calcPnt3d(Vec3 &pnt, const Pose &pose0, const Vec2 &npx0, const Pose &pose1, const Vec2 &npx1) {
         const Pose _poses[2] = { pose0, pose1 };
@@ -243,30 +330,9 @@ namespace sp{
     // pose 
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec3 &obj) {
-        return normVec(pix - mulCamD(cam, prjVec(pose * obj)));
-    }
-
-    SP_CPUFUNC double errPose(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
-        return errPose(pose, cam, pix, getVec(obj, 0.0));
-    }
-
-    SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
-        SP_ASSERT(pixs.size() == objs.size());
-
-        Mem1<double> errs(pixs.size());
-        for (int i = 0; i < pixs.size(); i++) {
-            errs[i] = errPose(pose, cam, pixs[i], objs[i]);
-        }
-        return errs;
-    }
-
-    SP_CPUFUNC Mem1<double> errPose(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs) {
-        return errPose(pose, cam, pixs, getVec(objs, 0.0));
-    }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
-        if (maxit <= 0.0) return false;
+        if (maxit <= 0.0) return true;
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -301,7 +367,7 @@ namespace sp{
     }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
-        if (maxit <= 0.0) return false;
+        if (maxit <= 0.0) return true;
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
@@ -456,7 +522,7 @@ namespace sp{
         double mine = SP_INFINITY;
         for (int i = 0; i < poses.size(); i++) {
             const Pose test = poses[i];
-            const double err = sumVal(errPose(test, cam, pixs, objs));
+            const double err = sumVal(errPrj(test, cam, pixs, objs));
             if (err < mine) {
                 mine = err;
                 pose = test;
@@ -579,18 +645,15 @@ namespace sp{
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
-        Mem1<Vec2> upixs0(pixs0.size());
-        Mem1<Vec2> upixs1(pixs1.size());
+        const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
+        const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
-        for (int i = 0; i < pixs0.size(); i++) {
-            upixs0[i] = pixUndist(cam0, pixs0[i]);
-            upixs1[i] = pixUndist(cam1, pixs1[i]);
-        }
+        const double thresh = 5.0 / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
 
-        Mat F;
-        if (calcFMatRANSAC(F, upixs0, upixs1) == false) return false;
+        Mat E;
+        if (calcEMatRANSAC(E, npxs0, npxs1, thresh) == false) return false;
 
-        if (dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1) == false) return false;
+        if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
 
         if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
         
@@ -599,8 +662,8 @@ namespace sp{
 
     SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
-
-        const int unit = 6;
+      
+        const int unit = 4;
         if (pixs.size() < unit * SP_RANSAC_NUM) {
             return calcPose(pose, cam, pixs, objs);
         }
@@ -623,7 +686,7 @@ namespace sp{
             Pose test;
             if (calcPose(test, cam, rpixs, robjs, 0) == false) continue;
 
-            const Mem1<double> errs = errPose(test, cam, pixs, objs);
+            const Mem1<double> errs = errPrj(test, cam, pixs, objs);
             const double eval = evalErr(errs, thresh);
 
             if (eval > maxv) {
@@ -638,7 +701,7 @@ namespace sp{
 
         // refine
         {
-            const Mem1<double> errs = errPose(pose, cam, pixs, objs);
+            const Mem1<double> errs = errPrj(pose, cam, pixs, objs);
             const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
             const Mem1<Vec3> dobjs = denoise(objs, errs, thresh);
 

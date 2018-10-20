@@ -48,6 +48,7 @@ int main() {
             print(getFMat(stereo, cam, cam));
         }
         {
+            printf("\n\n");
             printf("5 points algorithm\n");
             Mat F;
             calcFMat5p(F, pixs0.slice(0, 0, 5), pixs1.slice(0, 0, 5));
@@ -61,6 +62,7 @@ int main() {
 
         }
         {
+            printf("\n\n");
             printf("8 points algorithm\n");
             Mat F;
             calcFMat8p(F, pixs0.slice(0, 0, 8), pixs1.slice(0, 0, 8));
@@ -136,7 +138,7 @@ int main() {
                 Vec3 pnt;
                 if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
 
-                const double err = errPose(zeroPose(), cam0, pixs0[i], pnt);
+                const double err = errPrj(zeroPose(), cam0, pixs0[i], pnt);
                 if (evalErr(err) == 0.0) continue;
 
                 pnts.push(pnt);

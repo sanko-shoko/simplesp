@@ -294,7 +294,7 @@ namespace sp {
 #if SP_USE_LOGGER
 
 #define SP_LOGGER_INSTANCE sp::Logger logger;
-#define SP_LOGGER_SET(STR) sp::LoggerUnit loggerUnit(&logger,STR);
+#define SP_LOGGER_SET(STR) sp::LoggerUnit lunit(&logger,STR);
 #else
 
 #define SP_LOGGER_INSTANCE

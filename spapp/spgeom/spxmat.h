@@ -733,11 +733,60 @@ namespace sp{
         return F;
     }
 
+
+    // calc essential matrix
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
+        SP_ASSERT(npxs0.size() == npxs1.size());
+
+        const int unit = 5;
+        if (npxs0.size() < unit * SP_RANSAC_NUM) {
+            return calcEMat(E, npxs0, npxs1);
+        }
+
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Vec2> snpxs0, rnpxs0;
+        Mem1<Vec2> snpxs1, rnpxs1;
+
+        double maxv = 0.0;
+        for (int it = 0; it < maxit; it++) {
+            const int p = it % (npxs0.size() - unit);
+            if (p == 0) {
+                snpxs0 = shuffle(npxs0, it);
+                snpxs1 = shuffle(npxs1, it);
+            }
+            rnpxs0.resize(unit, &snpxs0[p]);
+            rnpxs1.resize(unit, &snpxs1[p]);
+
+            Mat test;
+            if (calcFMat(test, rnpxs0, rnpxs1, 1) == false) continue;
+
+            const Mem1<double> errs = errMatType2(test, npxs0, npxs1);
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxv) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxv = eval;
+                maxit = minVal(maxit, adaptiveStop(eval, unit));
+
+                E = test;
+            }
+        }
+        if (maxv < SP_RANSAC_RATE) return false;
+
+        // refine
+        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh);
+
+        return calcEMat(E, dnpxs0, dnpxs1, 10);
+    }
+
     // calc fundamental matrix
     SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
-        const int unit = 8;
+        const int unit = 5;
         if (pixs0.size() < unit * SP_RANSAC_NUM) {
             return calcFMat(F, pixs0, pixs1);
         }
