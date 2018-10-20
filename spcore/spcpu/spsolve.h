@@ -92,7 +92,7 @@ namespace sp{
     // ransac sampling max
 #define SP_RANSAC_ITMAX 1000
 #define SP_RANSAC_NUM 2
-#define SP_RANSAC_RATE 0.1
+#define SP_RANSAC_RATE 0.2
 
     // ransac adaptive stop
     SP_CPUFUNC int adaptiveStop(const double rate, const int num, const double n = 0.99){

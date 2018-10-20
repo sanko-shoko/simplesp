@@ -75,13 +75,15 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC void getMatchPixs(Mem1<Vec2> &mpixs0, Mem1<Vec2> &mpixs1, const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mem1<int> &matches) {
+    SP_CPUFUNC Mem1<Vec2> getMatchPixs(const Mem1<Feature> &fts, const Mem1<int> &matches, const bool flag = true) {
+        Mem1<Vec2> pixs;
         for (int i = 0; i < matches.size(); i++) {
             const int j = matches[i];
             if (j < 0) continue;
-            mpixs0.push(fts0[i].pix);
-            mpixs1.push(fts1[j].pix);
+            const int f = (flag == true) ? i : j;
+            pixs.push(fts[f].pix);
         }
+        return pixs;
     }
 
     SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts, const Mem1<bool> mask = Mem1<bool>()) {

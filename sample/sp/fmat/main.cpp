@@ -148,30 +148,30 @@ int main() {
             savePLY("pnts.ply", pnts, cols);
         }
 
-        //{
-        //    pixs0.clear();
-        //    pixs1.clear();
+        {
+            pixs0.clear();
+            pixs1.clear();
 
-        //    const Mem1<int> matches = findMatchFMat(fts0, fts1, F);
-        //    for (int i = 0; i < matches.size(); i++) {
-        //        const int j = matches[i];
-        //        if (j < 0) continue;
+            const Mem1<int> matches = findMatchFMat(fts0, fts1, F);
+            for (int i = 0; i < matches.size(); i++) {
+                const int j = matches[i];
+                if (j < 0) continue;
 
-        //        pixs0.push(fts0[i].pix);
-        //        pixs1.push(fts1[j].pix);
-        //    }
+                pixs0.push(fts0[i].pix);
+                pixs1.push(fts1[j].pix);
+            }
 
-        //    SP_ASSERT(calcFMatRANSAC(F, pixs0, pixs1));
+            SP_ASSERT(calcFMatRANSAC(F, pixs0, pixs1));
 
-        //    printf("refine matrix\n");
-        //    print(F);
+            printf("refine matrix\n");
+            print(F);
 
 
-        //    SP_ASSERT(dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1));
+            SP_ASSERT(dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1));
 
-        //    printf("stereo pose\n");
-        //    print(pose);
-        //}
+            printf("stereo pose\n");
+            print(pose);
+        }
     }
 
     return 0;
