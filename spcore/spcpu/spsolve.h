@@ -90,7 +90,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // ransac sampling max
-#define SP_RANSAC_ITMAX 1000
+#define SP_RANSAC_ITMAX 2000
 #define SP_RANSAC_NUM 2
 #define SP_RANSAC_RATE 0.2
 
