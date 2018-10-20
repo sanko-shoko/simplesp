@@ -79,19 +79,19 @@ private:
 
     virtual void display() {
         // test window
-        if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
+        //if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
 
-            ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-            ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
+        //    ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
+        //    ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
 
-            if (ImGui::Button("Button")) {
-                printf("Button\n");
-            }
+        //    if (ImGui::Button("Button")) {
+        //        printf("Button\n");
+        //    }
 
-            ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
+        //    ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
 
-            ImGui::End();
-        }
+        //    ImGui::End();
+        //}
 
         {
             capture();
