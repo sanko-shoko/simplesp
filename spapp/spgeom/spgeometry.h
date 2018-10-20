@@ -666,8 +666,11 @@ namespace sp {
     SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
       
+        const int num = pixs.size();
         const int unit = 4;
-        if (pixs.size() < unit * SP_RANSAC_NUM) {
+
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_NUM) {
             return calcPose(pose, cam, pixs, objs);
         }
 
@@ -676,9 +679,9 @@ namespace sp {
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec3> sobjs, robjs;
 
-        double maxv = 0.0;
+        double maxe = 0.0;
         for (int it = 0; it < maxit; it++) {
-            const int p = it % (pixs.size() - unit);
+            const int p = it % (num - unit);
             if (p == 0) {
                 spixs = shuffle(pixs, it);
                 sobjs = shuffle(objs, it);
@@ -692,15 +695,15 @@ namespace sp {
             const Mem1<double> errs = errPrj(test, cam, pixs, objs);
             const double eval = evalErr(errs, thresh);
 
-            if (eval > maxv) {
+            if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
-                maxv = eval;
+                maxe = eval;
                 maxit = adaptiveStop(eval, unit);
 
                 pose = test;
             }
         }
-        if (maxv < SP_RANSAC_RATE) return false;
+        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine
         {
