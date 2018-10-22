@@ -688,8 +688,11 @@ namespace sp {
         if (calcHMat(hom, udpixs, objs) == false) return false;
 
         if (calcPose(pose, cam, hom) == false) return false;
-        if (refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit) == false) return false;
-     
+
+        if (maxit - 1 > 0) {
+            if (refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit) == false) return false;
+        }
+
         return true;
     }
 
@@ -705,7 +708,9 @@ namespace sp {
 
         if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
 
-        if (refinePose(pose, cam0, pixs0, cam1, pixs1) == false) return false;
+        if (maxit - 1 > 0) {
+            if (refinePose(pose, cam0, pixs0, cam1, pixs1) == false) return false;
+        }
 
         return true;
     }
@@ -835,6 +840,63 @@ namespace sp {
         return true;
     }
 
+    // 2D-2D pose (planar object)
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 5.0) {
+        SP_ASSERT(pixs.size() == objs.size());
+
+        const int num = pixs.size();
+        const int unit = 4;
+
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_NUM) {
+            return calcPose(pose, cam, pixs, objs);
+        }
+
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Vec2> spixs, rpixs;
+        Mem1<Vec2> sobjs, robjs;
+
+        double maxe = 0.0;
+        int it = 0;
+        for (it = 0; it < maxit; it++) {
+            const int p = it % (num - unit);
+            if (p == 0) {
+                spixs = shuffle(pixs, it);
+                sobjs = shuffle(objs, it);
+            }
+            rpixs.resize(unit, &spixs[p]);
+            robjs.resize(unit, &sobjs[p]);
+
+            Pose test;
+            if (calcPose(test, cam, rpixs, robjs, 1) == false) continue;
+
+            const Mem1<double> errs = errPrj(test, cam, pixs, getVec(objs, 0.0));
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxe) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxe = eval;
+                maxit = adaptiveStop(eval, unit);
+
+                pose = test;
+            }
+        }
+        //SP_PRINTD("RANSAC iteration %d\n", it);
+        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
+
+        // refine
+        {
+            const Mem1<double> errs = errPrj(pose, cam, pixs, getVec(objs, 0.0));
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
+            const Mem1<Vec2> dobjs = denoise(objs, errs, thresh);
+
+            if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
+        }
+
+        return true;
+    }
+
     // 2D-2D pose (stereo camera)
     SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
@@ -859,6 +921,7 @@ namespace sp {
 
         return true;
     }
+
 
     //--------------------------------------------------------------------------------
     // stereo
