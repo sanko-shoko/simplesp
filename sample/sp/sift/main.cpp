@@ -29,8 +29,10 @@ int main(){
             warp<Col3, Byte>(imgs[1], imgs[0], hom);
         }
         else {
-            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", imgs[0]));
+            SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", imgs[0]));
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", imgs[1]));
+            //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", imgs[0]));
+            //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", imgs[1]));
         }
 
         merge(imgM, imgs[0], imgs[1]);
@@ -39,28 +41,45 @@ int main(){
 
 
     Mem1<Feature> fts[2];
- 
-    // get features
-    {
-        for (int i = 0; i < 2; i++) {
-            fts[i] = SIFT::getFeatures(imgs[i]);
 
-            for (int j = 0; j < fts[i].size(); j++) {
-                renderCircle(imgs[i], fts[i][j].pix, fts[i][j].scl, getCol(100, 255, 100), 1);
+    // get features
+    fts[0] = SIFT::getFeatures(imgs[0]);
+    fts[1] = SIFT::getFeatures(imgs[1]);
+
+    // matching
+    const Mem1<int> matches = findMatch(fts[0], fts[1]);
+
+    const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);
+    const Mem1<Vec2> pixs1 = getMatchPixs(fts[1], matches, false);
+    
+    // print info
+    printf("fts[0]: %d\n", fts[0].size());
+    printf("fts[1]: %d\n", fts[1].size());
+
+    printf("match [0->1]: cnt %d, rate %.2lf\n", getMatchCnt(matches), getMatchRate(matches));
+
+    // render
+    {
+        if (0) {
+            for (int i = 0; i < 2; i++) {
+                for (int f = 0; f < fts[i].size(); f++) {
+                    renderCircle(imgs[i], fts[i][f].pix, fts[i][f].scl, getCol(100, 255, 100), 1);
+                }
+            }
+        }
+        else {
+            for (int f = 0, c = 0; f < fts[0].size(); f++) {
+                const int g = matches[f];
+                if (g < 0) continue;
+                renderCircle(imgs[0], fts[0][f].pix, fts[0][f].scl, getCol(c), 1);
+                renderCircle(imgs[1], fts[1][g].pix, fts[1][g].scl, getCol(c), 1);
+                c++;
             }
         }
 
         merge(imgM, imgs[0], imgs[1]);
         saveBMP("sift.bmp", imgM);
-    }
-
-    // matching
-    {
-        const Mem1<int> matches = findMatch(fts[0], fts[1]);
-
-        const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);
-        const Mem1<Vec2> pixs1 = getMatchPixs(fts[1], matches, false);
-
+   
         const int w = imgs[0].dsize[0];
         const int h = imgs[0].dsize[1];
 
@@ -76,7 +95,7 @@ int main(){
                 const Vec2 p1 = pix[(i + 1) % 4] - getVec(0.5, 0.5);
                 renderLine(imgM, hom * p0 + getVec(w, 0), hom * p1 + getVec(w, 0), getCol(100, 200, 100), 2);
             }
-            print(hom);
+            //print(hom);
         }
 
         saveBMP("match.bmp", imgM);
