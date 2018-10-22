@@ -17,11 +17,13 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");
         printf("ground truth\n");
         printf("--------------------------------------------------------------------------------\n");
+        
+        srand(0);
 
         cam = getCamParam(640, 480);
 
         // pose (camera <- object)
-        const Pose pose = getPose(randRotGauss(5.0 * SP_PI / 180), getVec(0.0, 0.0, 400));
+        const Pose pose = getPose(randRotGauss(10.0 * SP_PI / 180), getVec(0.0, 0.0, 400));
 
         // object coordinate
         for (int i = 0; i < 100; i++) {
@@ -53,7 +55,39 @@ int main(){
     {
         printf("\n\n");
         printf("--------------------------------------------------------------------------------\n");
-        printf("P3P\n");
+        printf("3D-3D\n");
+        printf("--------------------------------------------------------------------------------\n");
+
+        Pose pose = getPose(getVec(0.0, 0.0, 400));
+        calcPose(pose, pnts, objs);
+
+        print(pose);
+    }
+
+    {
+        printf("\n\n");
+        printf("--------------------------------------------------------------------------------\n");
+        printf("3D-3D RANSAC\n");
+        printf("--------------------------------------------------------------------------------\n");
+
+        Mem1<Vec3> pnts_n = pnts;
+        const double rate = 0.5;
+        for (int i = 0; i < pixs.size(); i++) {
+            if (::fabs(randValUnif()) < rate) {
+                pnts_n[i] += randVecUnif(100, 100, 100);
+            }
+        }
+
+        Pose pose;
+        calcPoseRANSAC(pose, pnts_n, objs);
+
+        print(pose);
+    }
+
+    {
+        printf("\n\n");
+        printf("--------------------------------------------------------------------------------\n");
+        printf("2D-3D P3P\n");
         printf("--------------------------------------------------------------------------------\n");  
 
         Mem1<Pose> poses;
@@ -67,7 +101,7 @@ int main(){
     {
         printf("\n\n");
         printf("--------------------------------------------------------------------------------\n");
-        printf("P4P\n");
+        printf("2D-3D P4P\n");
         printf("--------------------------------------------------------------------------------\n");
 
         Pose pose;
@@ -79,18 +113,19 @@ int main(){
     {
         printf("\n\n");
         printf("--------------------------------------------------------------------------------\n");
-        printf("RANSAC\n");
+        printf("2D-3D RANSAC\n");
         printf("--------------------------------------------------------------------------------\n");
 
-        const double noise = 0.5;
+        Mem1<Vec2> pixs_n = pixs;
+        const double rate = 0.5;
         for (int i = 0; i < pixs.size(); i++) {
-            if ((randValUnif() + 1.0) / 2.0 < noise) {
-                pixs[i] += randVecUnif(100, 100);
+            if (::fabs(randValUnif()) < rate) {
+                pixs_n[i] += randVecUnif(100, 100);
             }
         }
 
         Pose pose;
-        calcPoseRANSAC(pose, cam, pixs, objs);
+        calcPoseRANSAC(pose, cam, pixs_n, objs);
 
         print(pose);
     }

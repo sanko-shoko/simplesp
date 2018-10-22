@@ -1,4 +1,4 @@
-﻿set(target "sp_pnp")
+﻿set(target "sp_pose")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)
