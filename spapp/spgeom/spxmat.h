@@ -635,7 +635,7 @@ namespace sp{
         if (normalize(T0, data0, npxs0) == false) return false;
         if (normalize(T1, data1, npxs1) == false) return false;
 
-        Mat A(n, 9);
+        Mat A(num, 9);
         for (int i = 0; i < num; i++) {
             jacobFMat(&A(i, 0), data0[i], data1[i]);
         }
