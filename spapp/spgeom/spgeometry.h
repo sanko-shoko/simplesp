@@ -340,9 +340,8 @@ namespace sp {
     // pose 
     //--------------------------------------------------------------------------------
 
-
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
-        if (maxit <= 0.0) return true;
+        if (maxit <= 0) return true;
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -597,7 +596,9 @@ namespace sp {
             if (calcPoseDLT(pose, cam, pixs, objs) == false) return false;
         }
 
-        if (refinePose(pose, cam, pixs, objs, maxit) == false) return false;
+        if (maxit - 1 > 0) {
+            if (refinePose(pose, cam, pixs, objs, maxit - 1) == false) return false;
+        }
 
         return true;
     }
@@ -645,20 +646,31 @@ namespace sp {
         return true;
     }
 
-    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
+    
+    //--------------------------------------------------------------------------------
+    // pose (RANSAC + refine)
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
-        const double thresh = 5.0 / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
+        const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
 
         Mat E;
-        if (calcEMatRANSAC(E, npxs0, npxs1, thresh) == false) return false;
+        if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
 
-        if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
+        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
-        if (refinePose(pose, cam0, pixs0, cam1, pixs1, maxit) == false) return false;
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth);
+        if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
+
+        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth);
+        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth);
+        if (refinePose(pose, cam0, pixs0, cam1, pixs1) == false) return false;
         
         return true;
     }
@@ -680,7 +692,8 @@ namespace sp {
         Mem1<Vec3> sobjs, robjs;
 
         double maxe = 0.0;
-        for (int it = 0; it < maxit; it++) {
+        int it = 0;
+        for (it = 0; it < maxit; it++) {
             const int p = it % (num - unit);
             if (p == 0) {
                 spixs = shuffle(pixs, it);
@@ -690,7 +703,7 @@ namespace sp {
             robjs.resize(unit, &sobjs[p]);
 
             Pose test;
-            if (calcPose(test, cam, rpixs, robjs, 0) == false) continue;
+            if (calcPose(test, cam, rpixs, robjs, 1) == false) continue;
 
             const Mem1<double> errs = errPrj(test, cam, pixs, objs);
             const double eval = evalErr(errs, thresh);
@@ -703,6 +716,7 @@ namespace sp {
                 pose = test;
             }
         }
+        //SP_PRINTD("RANSAC iteration %d\n", it);
         if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine

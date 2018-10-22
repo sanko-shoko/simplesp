@@ -16,7 +16,7 @@
 
 namespace sp{
 
-    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
+    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         SP_LOGGER_INSTANCE;
         SP_LOGGER_SET("opticalFlowLK");
 
@@ -28,10 +28,10 @@ namespace sp{
             flows.zero();
         }
 
-        masks.resize(pixs.size());
-        setElm(masks, true);
+        mask.resize(pixs.size());
+        setElm(mask, true);
 
-        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 10.0));
+        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 20.0));
 
         Mem1<Mem2<Byte> > pyimgs0(pynum);
         Mem1<Mem2<Byte> > pyimgs1(pynum);
@@ -64,7 +64,7 @@ namespace sp{
             const double wscale = (p + 1) * (WIN_SIZE / 2);
 
             for (int i = 0; i < pixs.size(); i++) {
-                if (masks[i] == false) continue;
+                if (mask[i] == false) continue;
                 if (p != pynum - 1 && scalecheck == true && scls[i] > wscale) continue;
 
                 // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
@@ -109,7 +109,7 @@ namespace sp{
                     const double mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
 
                     if (mineig / (WIN_SIZE * WIN_SIZE) < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
-                        if (p == 0) masks[i] = false;
+                        if (p == 0) mask[i] = false;
                         continue;
                     }
                 }
@@ -143,7 +143,7 @@ namespace sp{
 
                     const Mat result = invAtA * AtB;
                     if (result.size() == 0) {
-                        if(p == 0) masks[i] = false;
+                        if(p == 0) mask[i] = false;
                         break;
                     }
 
@@ -156,13 +156,17 @@ namespace sp{
 
                     const Vec2 test = pixs[i] + flows[i];
                     if (isInRect2(rect, test.x, test.y) == false) {
-                        masks[i] = false;
+                        mask[i] = false;
                         break;
                     }
                 }
             }
         }
-    }
+ 
+        for (int i = 0; i < flows.size(); i++) {
+            if (mask[i] == false) flows[i] = getVec(0.0, 0.0);
+        }
+   }
 
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         Mem2<Byte> gry0, gry1;

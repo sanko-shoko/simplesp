@@ -68,15 +68,14 @@ void sample(cv::Mat &cvimg, const int key){
 
     if (pixs.size() == 0) return;
 
-    // optical flow
-    Mem1<Vec2> flows;
-    Mem1<bool> masks;
+    static Mem1<Vec2> flows;
+    Mem1<bool> mask;
     {
-        opticalFlowLK(flows, masks, crnt, prev, pixs, scls);
+        opticalFlowLK(flows, mask, crnt, prev, pixs, scls);
     }
 
     for (int i = 0; i < flows.size(); i++) {
-        if (masks[i] == false) continue;
+        if (mask[i] == false) continue;
 
         const Vec2 pix = pixs[i];
         const Vec2 flow = flows[i];

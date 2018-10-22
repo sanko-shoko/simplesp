@@ -250,7 +250,7 @@ namespace sp {
         for (int i = 0; i < size; i++) {
             for (int j = mem.dim - 1; j >= 0; j--) {
                 if ((i + 0) % unit[j] == 0) {
-                    SP_PRINTF((j == 0) ? " [ " : "[\n");
+                    SP_PRINTF((j != 0) ? "[\n" : "[ ");
                 }
             }
 
