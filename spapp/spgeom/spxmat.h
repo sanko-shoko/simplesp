@@ -774,7 +774,7 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 0) {
+    SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
         SP_ASSERT(pixs0.size() == pixs1.size());
        
         if(calcEMat(F, pixs0, pixs1, maxit) == false) return false;
@@ -824,7 +824,7 @@ namespace sp{
                 F = test;
             }
         }
-        //SP_PRINTD("RANSAC iteration %d\n", it);
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
         if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine

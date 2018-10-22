@@ -83,6 +83,8 @@ int main() {
         printf("--------------------------------------------------------------------------------\n");
 
         Mem2<Col3> img0, img1;
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", img0));
+        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", img1));
 
@@ -91,19 +93,10 @@ int main() {
         const Mem1<Feature> fts1 = SIFT::getFeatures(img1);
 
         // get match pix
-        Mem1<Vec2> pixs0, pixs1;
-        {
-            const Mem1<int> matches = findMatch(fts0, fts1);
-
-            for (int i = 0; i < matches.size(); i++) {
-                const int j = matches[i];
-                if (j < 0) continue;
-
-                pixs0.push(fts0[i].pix);
-                pixs1.push(fts1[j].pix);
-            }
-        }
-
+        const Mem1<int> matches = findMatch(fts0, fts1);
+        const Mem1<Vec2> pixs0 = getMatchPixs(fts0, matches, true);
+        const Mem1<Vec2> pixs1 = getMatchPixs(fts1, matches, false);
+    
         // calc fundamental matrix
         Mat F;
         {
@@ -148,30 +141,6 @@ int main() {
             savePLY("pnts.ply", pnts, cols);
         }
 
-        {
-            pixs0.clear();
-            pixs1.clear();
-
-            const Mem1<int> matches = findMatchFMat(fts0, fts1, F);
-            for (int i = 0; i < matches.size(); i++) {
-                const int j = matches[i];
-                if (j < 0) continue;
-
-                pixs0.push(fts0[i].pix);
-                pixs1.push(fts1[j].pix);
-            }
-
-            SP_ASSERT(calcFMatRANSAC(F, pixs0, pixs1));
-
-            printf("refine matrix\n");
-            print(F);
-
-
-            SP_ASSERT(dcmpFMat(pose, F, cam0, pixs0, cam1, pixs1));
-
-            printf("stereo pose\n");
-            print(pose);
-        }
     }
 
     return 0;

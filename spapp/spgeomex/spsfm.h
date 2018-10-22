@@ -236,8 +236,8 @@ namespace sp {
 
     private:
 
-        double MIN_MATCHRATE = 0.1;
-        double MIN_MATCHEVAL = 0.1;
+        double MIN_MATCHRATE = 0.2;
+        double MIN_MATCHEVAL = 0.2;
         
         int MIN_POSEPNT = 10;
         
@@ -376,7 +376,7 @@ namespace sp {
 
             Pose pose;
             if (stereo == NULL) {
-                if (calcPose(pose, views[a].cam, pixs0, views[b].cam, pixs1) == false) return 0.0;
+                if (calcPoseRANSAC(pose, views[a].cam, pixs0, views[b].cam, pixs1) == false) return 0.0;
             }
             else {
                 pose = *stereo;
@@ -393,7 +393,7 @@ namespace sp {
             }
             if (zlist.size() == 0) return -1.0;
 
-            const double pnum = 0.1 * minVal(100, zlist.size());
+            const double pnum = minVal(10.0, log2(zlist.size()));
             const double zval = maxVal(10.0, medianVal(zlist));
             const double eval = pnum / zval;
             return eval;
@@ -491,7 +491,7 @@ namespace sp {
                 const Mem1<Vec2> pixs1 = getMatchPixs(views[b].fts, pairs(a, b).matches, false);
 
                 Pose pose = zeroPose();
-                if (calcPose(pose, views[a].cam, pixs0, views[b].cam, pixs1) == false) return false;
+                if (calcPoseRANSAC(pose, views[a].cam, pixs0, views[b].cam, pixs1) == false) return false;
 
                 setView(views, a, zeroPose());
                 setView(views, b, pose);
@@ -626,6 +626,7 @@ namespace sp {
 
                     index.push(Int2(f, m));
                 }
+                //printf("%d %d %d\n", a, b, index.size());
                 if (index.size() < MIN_POSEPNT) return false;
 
                 Mem1<Vec2> pixs;
