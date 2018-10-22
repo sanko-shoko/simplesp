@@ -339,9 +339,40 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // pose 
     //--------------------------------------------------------------------------------
+  
+    SP_CPUFUNC bool refinePose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const int maxit = 10) {
+        SP_ASSERT(objs0.size() == objs1.size());
+
+        const int num = objs0.size();
+
+        const int unit = 3;
+        if (num < unit) return false;
+        
+        Mat J(3 * num, 6);
+        Mat E(3 * num, 1);
+        Mem1<double> errs(num);
+
+        for (int it = 0; it < maxit; it++) {
+            for (int i = 0; i < num; i++) {
+                jacobPoseToPos(&J(i * 3, 0), pose, objs1[i]);
+
+                const Vec3 err = objs0[i] - pose * objs1[i];
+                E(i * 2 + 0, 0) = err.x;
+                E(i * 2 + 1, 0) = err.y;
+                E(i * 2 + 2, 0) = err.z;
+
+                errs[i] = normVec(err);
+            }
+            Mat delta;
+            if (solveEq(delta, J, E, errs) == false) return false;
+
+            pose = updatePose(pose, delta.ptr);
+        }
+
+        return true;
+    }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
-        if (maxit <= 0) return true;
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -376,7 +407,6 @@ namespace sp {
     }
 
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
-        if (maxit <= 0.0) return true;
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
@@ -732,5 +762,35 @@ namespace sp {
     }
 
 
+    //--------------------------------------------------------------------------------
+    // stereo
+    //--------------------------------------------------------------------------------
+
+    double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
+
+        Pose pose;
+        if (stereo == NULL) {
+            if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+        }
+        else {
+            pose = *stereo;
+        }
+        pose.trn /= normVec(pose.trn);
+
+        Mem1<double> zlist;
+        for (int i = 0; i < pixs0.size(); i++) {
+
+            Vec3 pnt;
+            if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+
+            zlist.push(pnt.z);
+        }
+        if (zlist.size() == 0) return -1.0;
+
+        const double pnum = minVal(10.0, log2(zlist.size()));
+        const double zval = maxVal(10.0, medianVal(zlist));
+        const double eval = pnum / zval;
+        return eval;
+    }
 }
 #endif
