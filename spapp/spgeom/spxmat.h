@@ -292,7 +292,7 @@ namespace sp{
 
         const int num = npxs0.size();
 
-        Mat Q = zeroMat(n, 9);
+        Mat Q = zeroMat(num, 9);
         for (int i = 0; i < num; i++) {
             jacobEMat(&Q(i, 0), npxs0[i], npxs1[i]);
         }
