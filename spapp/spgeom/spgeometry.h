@@ -337,11 +337,44 @@ namespace sp {
     }
 
     //--------------------------------------------------------------------------------
-    // pose 
+    // pose (refine)
     //--------------------------------------------------------------------------------
+  
+    // 3D-3D pose
+    SP_CPUFUNC bool refinePose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const int maxit = 10) {
+        SP_ASSERT(objs0.size() == objs1.size());
 
+        const int num = objs0.size();
+
+        const int unit = 3;
+        if (num < unit) return false;
+        
+        Mat J(3 * num, 6);
+        Mat E(3 * num, 1);
+        Mem1<double> errs(num);
+
+        for (int it = 0; it < maxit; it++) {
+            for (int i = 0; i < num; i++) {
+                jacobPoseToPos(&J(i * 3, 0), pose, objs1[i]);
+
+                const Vec3 err = objs0[i] - pose * objs1[i];
+                E(i * 3 + 0, 0) = err.x;
+                E(i * 3 + 1, 0) = err.y;
+                E(i * 3 + 2, 0) = err.z;
+
+                errs[i] = normVec(err);
+            }
+            Mat delta;
+            if (solveEq(delta, J, E, errs) == false) return false;
+
+            pose = updatePose(pose, delta.ptr);
+        }
+
+        return true;
+    }
+
+    // 2D-3D pose
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
-        if (maxit <= 0) return true;
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -371,12 +404,13 @@ namespace sp {
         return true;
     }
 
+    // 2D-2D pose (planar object)
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
         return refinePose(pose, cam, pixs, getVec(objs, 0.0), maxit);
     }
 
+    // 2D-2D pose (stereo camera)
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
-        if (maxit <= 0.0) return true;
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
@@ -404,12 +438,19 @@ namespace sp {
         return true;
     }
 
-    // objs0 <- objs1 pose
-    SP_CPUFUNC bool calcPose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1) {
+
+    //--------------------------------------------------------------------------------
+    // pose (basic)
+    //--------------------------------------------------------------------------------
+
+    // 3D-3D pose
+    SP_CPUFUNC bool calcPose(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const int maxit = 10) {
         SP_ASSERT(objs0.size() == objs1.size());
 
+        const int num = objs0.size();
+
         const int unit = 3;
-        if (objs0.size() < unit) return false;
+        if (num < unit) return false;
 
         const Vec3 cent0 = meanVec(objs0);
         const Vec3 cent1 = meanVec(objs1);
@@ -419,7 +460,7 @@ namespace sp {
 
         {
             Mat mat = zeroMat(3, 3);
-            for (int i = 0; i < mobjs0.size(); i++) {
+            for (int i = 0; i < num; i++) {
                 const double *y = reinterpret_cast<const double*>(&mobjs0[i]);
                 const double *x = reinterpret_cast<const double*>(&mobjs1[i]);
 
@@ -439,10 +480,15 @@ namespace sp {
 
             pose.trn = cent0 - pose.rot * cent1;
         }
+
+        if (maxit - 1 > 0) {
+            if (refinePose(pose, objs0, objs1, maxit - 1) == false) return false;
+        }
+
         return true;
     }
 
-    // P3P
+    // 2D-3D pose P3P
     SP_CPUFUNC bool calcPoseP3P(Mem1<Pose> &poses, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 
         SP_ASSERT(pixs.size() >= 3 && pixs.size() == objs.size());
@@ -513,7 +559,7 @@ namespace sp {
         return true;
     }
 
-    // P4P
+    // 2D-3D pose P4P
     SP_CPUFUNC bool calcPoseP4P(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
 
         SP_ASSERT(pixs.size() >= 4 && pixs.size() == objs.size());
@@ -533,7 +579,7 @@ namespace sp {
         return true;
     }
 
-    // DLT
+    // 2D-3D pose DLT
     SP_CPUFUNC bool calcPoseDLT(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
         SP_ASSERT(pixs.size() == objs.size());
 
@@ -582,7 +628,7 @@ namespace sp {
         return true;
     }
    
-    // PNP
+    // 2D-3D pose PNP
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const int maxit = 10) {
         SP_ASSERT(pixs.size() == objs.size());
 
@@ -603,7 +649,7 @@ namespace sp {
         return true;
     }
 
-    //
+    // 2D-2D pose (planar object)
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mat &hom) {
         SP_ASSERT(hom.rows() == 3 && hom.cols() == 3);
 
@@ -629,6 +675,7 @@ namespace sp {
         return true;
     }
 
+    // 2D-2D pose (planar object)
     SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
         SP_ASSERT(pixs.size() == objs.size());
 
@@ -646,35 +693,92 @@ namespace sp {
         return true;
     }
 
-    
-    //--------------------------------------------------------------------------------
-    // pose (RANSAC + refine)
-    //--------------------------------------------------------------------------------
-
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
+    // 2D-2D pose (stereo camera)
+    SP_CPUFUNC bool calcPose(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const int maxit = 10) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
-        const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
-
         Mat E;
-        if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
+        if (calcEMat(E, npxs0, npxs1) == false) return false;
 
-        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
+        if (dcmpEMat(pose, E, npxs0, npxs1) == false) return false;
 
-        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth);
-        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth);
-        if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
-
-        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth);
-        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth);
         if (refinePose(pose, cam0, pixs0, cam1, pixs1) == false) return false;
-        
+
         return true;
     }
 
+
+    //--------------------------------------------------------------------------------
+    // pose (RANSAC + refine)
+    //--------------------------------------------------------------------------------
+
+    // 3D-3D pose
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const Mem1<Vec3> &objs0, const Mem1<Vec3> &objs1, const double thresh = 10.0) {
+        SP_ASSERT(objs0.size() == objs1.size());
+      
+        const int num = objs0.size();
+        const int unit = 3;
+
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_NUM) {
+            return calcPose(pose, objs0, objs1);
+        }
+
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Vec3> sobjs0, robjs0;
+        Mem1<Vec3> sobjs1, robjs1;
+
+        double maxe = 0.0;
+        int it = 0;
+        for (it = 0; it < maxit; it++) {
+            const int p = it % (num - unit);
+            if (p == 0) {
+                sobjs0 = shuffle(objs0, it);
+                sobjs1 = shuffle(objs1, it);
+            }
+            robjs0.resize(unit, &sobjs0[p]);
+            robjs1.resize(unit, &sobjs1[p]);
+
+            Pose test;
+            if (calcPose(test, robjs0, robjs1, 1) == false) continue;
+
+            Mem1<double> errs;
+            for (int i = 0; i < num; i++) {
+                errs.push(normVec(objs0[i] - test * objs1[i]));
+            }
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxe) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxe = eval;
+                maxit = adaptiveStop(eval, unit);
+
+                pose = test;
+            }
+        }
+        //SP_PRINTD("RANSAC iteration %d\n", it);
+        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
+
+        // refine
+        {
+            Mem1<double> errs;
+            for (int i = 0; i < num; i++) {
+                errs.push(normVec(objs0[i] - pose * objs1[i]));
+            }
+            const Mem1<Vec3> dobjs0 = denoise(objs0, errs, thresh);
+            const Mem1<Vec3> dobjs1 = denoise(objs1, errs, thresh);
+
+            if (refinePose(pose, dobjs0, dobjs1) == false) return false;
+        }
+
+        return true;
+    }
+
+    // 2D-3D pose
     SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
       
@@ -731,6 +835,60 @@ namespace sp {
         return true;
     }
 
+    // 2D-2D pose (stereo camera)
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
+        SP_ASSERT(pixs0.size() == pixs1.size());
 
+        const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
+        const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
+
+        const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
+
+        Mat E;
+        if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
+
+        const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
+
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth);
+        if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
+
+        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth);
+        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth);
+        if (refinePose(pose, cam0, dpixs0, cam1, dpixs1) == false) return false;
+
+        return true;
+    }
+
+    //--------------------------------------------------------------------------------
+    // stereo
+    //--------------------------------------------------------------------------------
+
+    double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
+
+        Pose pose;
+        if (stereo == NULL) {
+            if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+        }
+        else {
+            pose = *stereo;
+        }
+        pose.trn /= normVec(pose.trn);
+
+        Mem1<double> zlist;
+        for (int i = 0; i < pixs0.size(); i++) {
+
+            Vec3 pnt;
+            if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+
+            zlist.push(pnt.z);
+        }
+        if (zlist.size() == 0) return -1.0;
+
+        const double pnum = minVal(10.0, log2(zlist.size()));
+        const double zval = maxVal(10.0, medianVal(zlist));
+        const double eval = pnum / zval;
+        return eval;
+    }
 }
 #endif
