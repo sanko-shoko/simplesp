@@ -153,7 +153,7 @@ namespace sp {
         return calcPnt3d(pnt, poses, npxs);
     }
 
-    SP_CPUFUNC bool calcPnt3dRANSAC(Vec3 &pos, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPnt3dRANSAC(Vec3 &pos, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const double thresh = 3.0) {
         SP_ASSERT(poses.size() == cams.size() && poses.size() == pixs.size());
 
         const int unit = 2;
@@ -765,7 +765,7 @@ namespace sp {
                 pose = test;
             }
         }
-        //SP_PRINTD("RANSAC iteration %d\n", it);
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
         if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine
@@ -784,7 +784,7 @@ namespace sp {
     }
 
     // 2D-3D pose
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 3.0) {
         SP_ASSERT(pixs.size() == objs.size());
       
         const int num = pixs.size();
@@ -825,7 +825,7 @@ namespace sp {
                 pose = test;
             }
         }
-        //SP_PRINTD("RANSAC iteration %d\n", it);
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
         if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine
@@ -841,7 +841,7 @@ namespace sp {
     }
 
     // 2D-2D pose (planar object)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 3.0) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -882,7 +882,7 @@ namespace sp {
                 pose = test;
             }
         }
-        //SP_PRINTD("RANSAC iteration %d\n", it);
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
         if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
 
         // refine
@@ -898,7 +898,7 @@ namespace sp {
     }
 
     // 2D-2D pose (stereo camera)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 3.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
@@ -936,7 +936,10 @@ namespace sp {
         else {
             pose = *stereo;
         }
-        pose.trn /= normVec(pose.trn);
+        const double dist = normVec(pose.trn);
+        if (dist < SP_SMALL) return 0.0;
+
+        pose.trn /= dist;
 
         Mem1<double> zlist;
         for (int i = 0; i < pixs0.size(); i++) {
@@ -946,7 +949,7 @@ namespace sp {
 
             zlist.push(pnt.z);
         }
-        if (zlist.size() == 0) return -1.0;
+        if (zlist.size() == 0) return 0.0;
 
         const double pnum = minVal(10.0, log2(zlist.size()));
         const double zval = maxVal(10.0, medianVal(zlist));

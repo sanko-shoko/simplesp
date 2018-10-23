@@ -83,8 +83,6 @@ int main() {
         printf("--------------------------------------------------------------------------------\n");
 
         Mem2<Col3> img0, img1;
-        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", img0));
-        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", img1));
 

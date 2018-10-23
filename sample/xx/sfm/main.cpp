@@ -55,6 +55,11 @@ private:
     }
 
     void addView() {
+        static int cnt = 0;
+        char path[256];
+        sprintf(path, "img%03d.bmp", cnt++);
+        saveBMP(path, m_img);
+
         m_sfm.addView(m_img, &m_cam);
     }
 
