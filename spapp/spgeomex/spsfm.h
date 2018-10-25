@@ -7,8 +7,12 @@
 
 #include "spcore/spcore.h"
 
+#include "spapp/spdata/spmap.h"
+#include "spapp/spgeom/spgeometry.h"
+
 namespace sp {
 
+ 
 #define SP_SFM_MAXVIEW 1000
 
     class SfM {
@@ -17,25 +21,7 @@ namespace sp {
 
         typedef MemA<int, 2> Int2;
 
-        struct ViewData {
-
-            // camera pose is valid
-            bool valid;
-
-            // camera parameter
-            CamParam cam;
-
-            // captured image
-            Mem2<Col3> img;
-
-            // features
-            Mem1<Feature> fts;
-
-            // camera pose
-            Pose pose;
-
-            // pair links
-            Mem1<int> links;
+        struct ViewDataEx : public ViewData {
 
             // init pair count
             int icnt;
@@ -43,102 +29,24 @@ namespace sp {
             // map points count
             int mcnt;
 
-            ViewData() {
-                cam = getCamParam(0, 0);
-
-                valid = false;
-                pose = zeroPose();
-
+            ViewDataEx() : ViewData(){
                 icnt = 0;
                 mcnt = 0;
             }
 
-            ViewData(const ViewData &view) {
+            ViewDataEx(const ViewDataEx &view) {
                 *this = view;
             }
 
-            ViewData& operator = (const ViewData &view) {
-                cam = view.cam;
-                img = view.img;
-                fts = view.fts;
-
-                links = view.links;
-
-                valid = view.valid;
-                pose = view.pose;
+            ViewDataEx& operator = (const ViewDataEx &view) {
+                static_cast<ViewData>(*this) = static_cast<ViewData>(view);
 
                 icnt = view.icnt;
                 mcnt = view.mcnt;
                 return *this;
             }
         };
-        
-        struct PairData {
-            bool valid;
 
-            // pair view id
-            int a, b;
-
-            Mem1<int> matches;
-
-            // match features rate
-            double rate;
-
-            // stereo eval
-            double eval;
-
-            PairData() {
-                valid = false;
-                a = -1; 
-                b = -1;
-                rate = -1.0;
-                eval = -1.0;
-            }
-
-            PairData(const PairData &pd) {
-                *this = pd;
-            }
-
-            PairData& operator = (const PairData &pd) {
-                valid = pd.valid;
-                matches = pd.matches;
-                a = pd.a;
-                b = pd.b;
-                rate = pd.rate;
-                eval = pd.eval;
-                return *this;
-            }
-        };
-
-        struct MapData {
-
-            Vec3 pos;
-
-            Col3 col;
-
-            double err;
-
-            // index -> [view, feature]
-            Mem1<Int2> index;
-
-            MapData() {
-                pos = getVec(0.0, 0.0, 0.0);
-                col = getCol(0, 0, 0);
-                err = SP_INFINITY;
-            }
-
-            MapData(const MapData &md) {
-                *this = md;
-            }
-
-            MapData& operator = (const MapData &md) {
-                pos = md.pos;
-                col = md.col;
-                err = md.err;
-                index = md.index;
-                return *this;
-            }
-        };
 
     public:
         SP_LOGGER_INSTANCE;
@@ -152,7 +60,7 @@ namespace sp {
 
         int m_maxview;
         
-        Mem1<ViewData> m_views;
+        Mem1<ViewDataEx> m_views;
 
         // pair data matrix
         Mem2<PairData> m_pairs;
@@ -193,8 +101,8 @@ namespace sp {
             return m_views.size();
         }
 
-        const Mem1<ViewData>* getViews() const {
-            return (m_views.size() > 0) ? &m_views : NULL;
+        const ViewData* getView(const int i) const {
+            return (i < m_views.size()) ? &m_views[i] : NULL;
         }
 
         const Mem1<MapData>* getMPnts() const {
@@ -236,8 +144,8 @@ namespace sp {
 
     private:
 
-        double MIN_MATCHRATE = 0.2;
         double MIN_MATCHEVAL = 0.2;
+        double MIN_STEREOEVAL = 0.4;
         
         int MIN_POSEPNT = 10;
         
@@ -312,7 +220,7 @@ namespace sp {
         // view (v: view id)
         //--------------------------------------------------------------------------------
 
-        void setView(Mem1<ViewData> &views, const int v, const Mem2<Col3> &img, const CamParam &cam) {
+        void setView(Mem1<ViewDataEx> &views, const int v, const Mem2<Col3> &img, const CamParam &cam) {
             if (v + 1 > views.size()) views.extend(v + 1 - views.size());
 
             views[v].img = img;
@@ -321,7 +229,7 @@ namespace sp {
             views[v].fts = SIFT::getFeatures(img);
         }
 
-        void setView(Mem1<ViewData> &views, const int v, const Pose &pose) {
+        void setView(Mem1<ViewDataEx> &views, const int v, const Pose &pose) {
             views[v].valid = true;
             views[v].pose = pose;
         }
@@ -331,7 +239,7 @@ namespace sp {
         // pair (a, b: view id)
         //--------------------------------------------------------------------------------
         
-        void initPair(Mem1<ViewData> &views, Mem2<PairData> &pairs, const int a, const int b) {
+        void initPair(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, const int a, const int b) {
 
             PairData &pair = pairs(a, b);
 
@@ -340,18 +248,18 @@ namespace sp {
             pair.b = b;
 
             pair.matches = findMatch(views[a].fts, views[b].fts);
-            pair.rate = getMatchRate(pair.matches);
-            pair.eval = evalPair(views, pairs, a, b);
+            pair.eval = getMatchEval(pair.matches);
 
-            if (pair.rate > MIN_MATCHRATE) {
+            if(pair.eval > MIN_MATCHEVAL){
                 views[a].links.push(b);
             }
+
             views[a].icnt++;
 
-            //printf("[%d %d]: rate %.2lf, eval %.2lf\n", pair.a, pair.b, pair.rate, pair.eval);
+            //printf("[%d %d]: size %d, cnt %d, eval %.2lf\n", pair.a, pair.b, pair.matches.size(), getMatchCnt(pair.matches), pair.eval);
         }
 
-        Mem1<PairData*> getPairs(Mem1<ViewData> &views, Mem2<PairData> &pairs, const bool avalid, const bool bvalid) {
+        Mem1<PairData*> getPairs(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, const bool avalid, const bool bvalid) {
             Mem1<PairData*> ptrs;
 
             for (int a = 0; a < views.size(); a++) {
@@ -366,44 +274,11 @@ namespace sp {
             return ptrs;
         }
 
-        double evalPair(Mem1<ViewData> &views, Mem2<PairData> &pairs, const int a, const int b, const Pose *stereo = NULL) {
-            if (pairs(a, b).rate <= MIN_MATCHRATE) return -1.0;
-
-            const Mem1<int> &matches = pairs(a, b).matches;
-
-            const Mem1<Vec2> pixs0 = getMatchPixs(views[a].fts, matches, true);
-            const Mem1<Vec2> pixs1 = getMatchPixs(views[b].fts, matches, false);
-
-            Pose pose;
-            if (stereo == NULL) {
-                if (calcPoseRANSAC(pose, views[a].cam, pixs0, views[b].cam, pixs1) == false) return 0.0;
-            }
-            else {
-                pose = *stereo;
-            }
-            pose.trn /= normVec(pose.trn);
-
-            Mem1<double> zlist;
-            for (int i = 0; i < pixs0.size(); i++) {
-
-                Vec3 pnt;
-                if (calcPnt3d(pnt, zeroPose(), views[a].cam, pixs0[i], pose, views[b].cam, pixs1[i]) == false) continue;
-
-                zlist.push(pnt.z);
-            }
-            if (zlist.size() == 0) return -1.0;
-
-            const double pnum = minVal(10.0, log2(zlist.size()));
-            const double zval = maxVal(10.0, medianVal(zlist));
-            const double eval = pnum / zval;
-            return eval;
-        }
-
         //--------------------------------------------------------------------------------
         // map point (m: mpnts id, v: views id, f: features id)
         //--------------------------------------------------------------------------------
 
-        double errMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m) {
+        double errMPnt(Mem1<ViewDataEx> &views, Mem1<MapData> &mpnts, const int m) {
 
             Mem1<double> errs;
 
@@ -424,7 +299,7 @@ namespace sp {
             return (errs.size() > 0) ? medianVal(errs) : SP_INFINITY;
         }
 
-        Col3 colMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m) {
+        Col3 colMPnt(Mem1<ViewDataEx> &views, Mem1<MapData> &mpnts, const int m) {
 
             Vec3 vec = getVec(0.0, 0.0, 0.0);
 
@@ -440,7 +315,7 @@ namespace sp {
             return getCol(vec);
         }
 
-        void setMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m, const Vec3 &pos) {
+        void setMPnt(Mem1<ViewDataEx> &views, Mem1<MapData> &mpnts, const int m, const Vec3 &pos) {
             if (m + 1 > mpnts.size()) mpnts.extend(m + 1 - mpnts.size());
            
             mpnts[m].pos = pos;
@@ -448,7 +323,7 @@ namespace sp {
             mpnts[m].err = errMPnt(views, mpnts, m);
         }
 
-        void setMPnt(Mem1<ViewData> &views, Mem1<MapData> &mpnts, const int m, const int v, const int f) {
+        void setMPnt(Mem1<ViewDataEx> &views, Mem1<MapData> &mpnts, const int m, const int v, const int f) {
             if (views[v].fts[f].mid >= 0) return;
 
             mpnts[m].index.push(Int2(v, f));
@@ -463,7 +338,7 @@ namespace sp {
         // initialize
         //--------------------------------------------------------------------------------
 
-        bool initStereo(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts) {
+        bool initStereo(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts) {
 
             // select pair
             PairData *pair = NULL;
@@ -472,14 +347,19 @@ namespace sp {
 
                 double maxv = 0.0;
                 for (int i = 0; i < list.size(); i++) {
+                    const int a = list[i]->a;
+                    const int b = list[i]->b;
 
-                    const double eval = list[i]->eval;
+                    const Mem1<Vec2> pixs0 = getMatchPixs(views[a].fts, pairs(a, b).matches, true);
+                    const Mem1<Vec2> pixs1 = getMatchPixs(views[b].fts, pairs(a, b).matches, false);
+                    const double eval = evalStereo(views[a].cam, pixs0, views[b].cam, pixs1);
+
                     if (eval < maxv) continue;
 
                     maxv = eval;
                     pair = list[i];
                 }
-                if (maxv < MIN_MATCHEVAL) return false;
+                if (maxv < MIN_STEREOEVAL) return false;
             }
 
             // initialize pair
@@ -502,7 +382,7 @@ namespace sp {
             return true;
         }
 
-        void addNewMPnt(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int a, const int b) {
+        void addNewMPnt(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int a, const int b) {
 
             const bool init = (mpnts.size() == 0) ? true : false;
 
@@ -563,7 +443,7 @@ namespace sp {
         // update
         //--------------------------------------------------------------------------------
     
-        bool updatePair(Mem1<ViewData> &views, Mem2<PairData> &pairs, const int itmax) {
+        bool updatePair(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, const int itmax) {
             SP_LOGGER_SET("updatePair");
 
             for (int it = 0; it < itmax; it++) {
@@ -598,66 +478,62 @@ namespace sp {
             return true;
         }
 
-        bool updateView(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+        bool updateView(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
             SP_LOGGER_SET("updateView");
 
-            // select pair
-            PairData *pair = NULL;
+            // select candidate pairs
+            Mem1<PairData*> cand;
             {
                 // [invalid, valid] pair
-                const Mem1<PairData*> list = shuffle(getPairs(views, pairs, false, true));
+                Mem1<PairData*> list = shuffle(getPairs(views, pairs, false, true));
                 if (list.size() == 0) return false;
 
-                pair = list[update % list.size()];
+                //pair = list[update % list.size()];
+
+                auto compare_max = [](const void *a, const void *b) -> int{
+                    return ((*static_cast<const PairData* const*>(a))->eval > (*static_cast<const PairData* const*>(b))->eval) ? -1 : +1;
+                };
+
+                sort(list, compare_max);
+                for (int i = 0; i < minVal(3, list.size()); i++) {
+                    cand.push(list[i]);
+                }
             }
 
             // calc pose & add pnts
             {
-                const int a = pair->a;
-                const int b = pair->b;
+                const int a = cand[0]->a;
+                const int b = cand[0]->b;
 
                 const Mem1<int> &matches = pairs(b, a).matches;
 
+                Mem1<Vec2> pixs;
+                Mem1<Vec3> objs;
                 Mem1<Int2> index;
                 for (int g = 0; g < matches.size(); g++) {
                     const int f = matches[g];
                     const int m = views[b].fts[g].mid;
                     if (f < 0 || m < 0) continue;
 
-                    index.push(Int2(f, m));
-                }
-                //printf("%d %d %d\n", a, b, index.size());
-                if (index.size() < MIN_POSEPNT) return false;
-
-                Mem1<Vec2> pixs;
-                Mem1<Vec3> objs;
-                for (int i = 0; i < index.size(); i++) {
-                    const int f = index[i][0];
-                    const int m = index[i][1];
                     pixs.push(views[a].fts[f].pix);
                     objs.push(mpnts[m].pos);
+                    index.push(Int2(f, m));
                 }
+                if (index.size() < MIN_POSEPNT) return false;
 
                 Pose pose = zeroPose();
                 if (calcPoseRANSAC(pose, views[a].cam, pixs, objs) == false) return false;
 
-                int cnt = 0;
-                for (int i = 0; i < index.size(); i++) {
-                    const int f = index[i][0];
-                    const int m = index[i][1];
-
-                    const double err = errPrj(pose, views[a].cam, views[a].fts[f].pix, mpnts[m].pos);
-                    if (err >= MAX_PIXERR) continue;
-                    cnt++;
-                }
-                if (cnt < 0.5 * index.size()) return false;
+                const Mem1<double> errs = errPrj(pose, views[a].cam, pixs, objs);
+                const double eval = evalErr(errs, MAX_PIXERR);
+                if (eval < 0.5) return false;
 
                 // add index
                 for (int i = 0; i < index.size(); i++) {
                     const int f = index[i][0];
                     const int m = index[i][1];
 
-                    const double err = errPrj(pose, views[a].cam, views[a].fts[f].pix, mpnts[m].pos);
+                    const double err = errPrj(pose, views[a].cam, pixs[i], objs[i]);
                     if (evalErr(err) == 0.0) continue;
 
                     setMPnt(views, mpnts, m, a, f);
@@ -670,7 +546,7 @@ namespace sp {
             return true;
         }
 
-        bool updateMPnt1(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+        bool updateMPnt1(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
             SP_LOGGER_SET("updateMPnt1");
 
             // select pair
@@ -688,7 +564,7 @@ namespace sp {
             return true;
         }
 
-        bool updateMPnt2(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+        bool updateMPnt2(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
             SP_LOGGER_SET("updateMPnt2");
 
             srand(update);
@@ -741,7 +617,7 @@ namespace sp {
             return true;
         }
 
-        bool updatePose(Mem1<ViewData> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
+        bool updatePose(Mem1<ViewDataEx> &views, Mem2<PairData> &pairs, Mem1<MapData> &mpnts, const int update) {
             SP_LOGGER_SET("updatePose");
 
             Mem1<int> list;
@@ -768,13 +644,19 @@ namespace sp {
                 }
 
                 Pose pose = views[v].pose;
-                if (refinePose(pose, views[v].cam, pixs, objs) == false) return false;
+                if (calcPoseRANSAC(pose, views[v].cam, pixs, objs) == false) return false;
+                //if (refinePose(pose, views[v].cam, pixs, objs) == false) return false;
 
                 setView(views, v, pose);
             }
             return true;
         }
        
+        
+        //--------------------------------------------------------------------------------
+        // modules
+        //--------------------------------------------------------------------------------
+
     };
 
 }

@@ -58,11 +58,11 @@ namespace sp {
             return (m_track == true) ? &m_pose : NULL;
         }
 
-        const Mem1<SfM::ViewData>* getViews() const {
-            return m_sfm.getViews();
+        const ViewData* getViews(const int i) const {
+            return m_sfm.getView(i);
         }
 
-        const Mem1<SfM::MapData>* getMPnts() const {
+        const Mem1<MapData>* getMPnts() const {
             return m_sfm.getMPnts();
         }
 

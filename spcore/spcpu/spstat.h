@@ -26,12 +26,22 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC void sort(TYPE *mem, const int size, const bool minOrder = true){
-        ::qsort(mem, size, sizeof(TYPE), (minOrder) ? compare_min<TYPE> : compare_max<TYPE>);
+        qsort(mem, size, sizeof(TYPE), (minOrder) ? compare_min<TYPE> : compare_max<TYPE>);
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC void sort(TYPE *mem, const int size, int compare(const void *a, const void *b)) {
+        qsort(mem, size, sizeof(TYPE), compare);
     }
 
     template<typename TYPE>
     SP_CPUFUNC void sort(Mem<TYPE> &mem, const bool minOrder = true){
         sort(mem.ptr, mem.size(), minOrder);
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC void sort(Mem<TYPE> &mem, int compare(const void *a, const void *b)) {
+        sort(mem.ptr, mem.size(), compare);
     }
 
 
