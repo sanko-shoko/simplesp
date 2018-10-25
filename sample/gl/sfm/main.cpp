@@ -90,7 +90,7 @@ private:
 
         // render points
         if (m_sfm.getMPnts() != NULL) {
-            const Mem1<MapData> &pnts = *m_sfm.getMPnts();
+            const Mem1<MapPoint> &pnts = *m_sfm.getMPnts();
 
             glPointSize(4.f);
 
@@ -113,9 +113,9 @@ private:
             glColor3d(0.5, 0.5, 0.8);
 
             for (int i = 0; i < m_sfm.size(); i++) {
-                const ViewData *view = m_sfm.getView(i);
+                const View *view = m_sfm.getView(i);
 
-                if (view == NULL || view->valid == false) continue;
+                if (view == NULL || view->state != View::POSE_VALID) continue;
                 glLoadMatrix(m_pose * invPose(view->pose));
 
                 glBegin(GL_LINES);

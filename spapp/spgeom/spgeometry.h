@@ -939,7 +939,7 @@ namespace sp {
     // stereo
     //--------------------------------------------------------------------------------
 
-    double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
+    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
 
         Pose pose;
         if (stereo == NULL) {

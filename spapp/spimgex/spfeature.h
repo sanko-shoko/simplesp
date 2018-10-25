@@ -10,8 +10,7 @@
 
 namespace sp{
 
-    class Feature{
-    public:
+    struct Feature{
 
         // feature point
         Vec2 pix;
@@ -58,20 +57,43 @@ namespace sp{
 
     };
 
+    struct PairData {
+
+        // pair id
+        int a, b;
+
+        // match data
+        Mem1<int> matches;
+
+        // match features eval
+        double eval;
+
+        PairData() {
+            a = -1;
+            b = -1;
+            eval = -1.0;
+        }
+
+        PairData(const PairData &pair) {
+            *this = pair;
+        }
+
+        PairData& operator = (const PairData &pair) {
+            a = pair.a;
+            b = pair.b;
+            matches = pair.matches;
+            eval = pair.eval;
+            return *this;
+        }
+    };
+
+
     SP_CPUFUNC int getMatchCnt(const Mem1<int> &matches) {
         int cnt = 0;
         for (int i = 0; i < matches.size(); i++) {
             if (matches[i] >= 0) cnt++;
         }
         return cnt;
-    };
-
-    SP_CPUFUNC double getMatchRate(const Mem1<int> &matches) {
-        const int thresh = 10;
-        if (matches.size() <= thresh) return 0.0;
-
-        const double scale = 1.0 - 1.0 / (matches.size() - thresh);
-        return getMatchCnt(matches) * scale / matches.size();
     };
 
     SP_CPUFUNC double getMatchEval(const Mem1<int> &matches) {
@@ -156,45 +178,7 @@ namespace sp{
 
         return matches;
     }
-
-    SP_CPUFUNC Mem1<int> findMatchFMat(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const Mat &F, const bool crossCheck = true) {
-        Mem1<int> matches(fts0.size());
-
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
-        for (int i = 0; i < fts0.size(); i++){
-            matches[i] = -1;
-
-            int j, k;
-            {
-                Mem1<bool> mask;
-                for (int j = 0; j < fts1.size(); j++) {
-                    const double err = errFMat(F, fts0[i].pix, fts1[j].pix);
-                    mask.push(evalErr(err) > 0.0);
-                }
-                j = findMatch(fts0[i], fts1, mask);
-                if (j < 0) continue;
-            }
-
-            // cross check
-            if (crossCheck == true) {
-                Mem1<bool> mask;
-                for (int k = 0; k < fts0.size(); k++){
-                    const double err = errFMat(F, fts0[k].pix, fts1[j].pix);
-                    mask.push(evalErr(err) > 0.0);
-                }
-
-                k = findMatch(fts1[j], fts0, mask);
-                if (k != i) continue;
-            }
-
-            matches[i] = j;
-        }
-
-        return matches;
-    }
-
+ 
 }
 
 #endif

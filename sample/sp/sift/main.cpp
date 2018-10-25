@@ -56,7 +56,7 @@ int main(){
     printf("fts[0]: %d\n", fts[0].size());
     printf("fts[1]: %d\n", fts[1].size());
 
-    printf("match [0->1]: cnt %d, rate %.2lf\n", getMatchCnt(matches), getMatchRate(matches));
+    printf("match [0->1]: cnt %d, eval %.2lf\n", getMatchCnt(matches), getMatchEval(matches));
 
     // render
     {
