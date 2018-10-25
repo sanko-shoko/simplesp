@@ -55,6 +55,11 @@ private:
     }
 
     void addView() {
+        static int cnt = 0;
+        char path[256];
+        sprintf(path, "img%03d.bmp", cnt++);
+        saveBMP(path, m_img);
+
         m_sfm.addView(m_img, &m_cam);
     }
 
@@ -112,7 +117,7 @@ private:
 
             // render points
             if (m_sfm.getMPnts() != NULL) {
-                const Mem1<SfM::MapData> &mpnts = *m_sfm.getMPnts();
+                const Mem1<MapData> &mpnts = *m_sfm.getMPnts();
 
                 glPointSize(4.f);
 
@@ -128,19 +133,20 @@ private:
             }
 
             // render cam
-            if (m_sfm.getViews() != NULL) {
-                const Mem1<SfM::ViewData> &views = *m_sfm.getViews();
+            if (m_sfm.size() > 0) {
 
                 glLineWidth(2.f);
 
                 glColor3d(0.5, 0.5, 0.8);
 
-                for (int i = 0; i < views.size(); i++) {
-                    if (views[i].valid == false) continue;
-                    glLoadMatrix(m_pose * invPose(views[i].pose));
+                for (int i = 0; i < m_sfm.size(); i++) {
+                    const ViewData *view = m_sfm.getView(i);
+
+                    if (view == NULL || view->valid == false) continue;
+                    glLoadMatrix(m_pose * invPose(view->pose));
 
                     glBegin(GL_LINES);
-                    glCam(views[i].cam, 0.03 * m_pose.trn.z);
+                    glCam(view->cam, 0.03 * m_pose.trn.z);
                     glEnd();
                 }
             }

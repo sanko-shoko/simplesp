@@ -19,59 +19,54 @@ int main() {
         Mem1<Vec2> pixs0, pixs1;
         Mem1<Vec2> npxs0, npxs1;
 
-        Pose stereo = getPose(getRotAngleY(-0.0 * SP_PI / 180.0), getVec(-10, 0, 0.0) + randVecGauss(0.1, 0.1, 0.1));
+        sp::srand(1);
+        Pose stereo = getPose(randRotUnif(5.0 * SP_PI / 180.0), getVec(-10.0, 0.0, 0.0) + randVecGauss(0.1, 0.1, 0.1));
 
         // generate test data
         {
             Mem1<Vec3> objs;
 
             // generate test parameter
-            const Pose pose = getPose(getVec(0.0, 0.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0);
+            const Pose pose = getPose(getVec(0.0, 0.0, 400));
 
-            sp::srand(0);
             for (int i = 0; i < 10; i++){
-                objs.push(randVecGauss(50.0, 50.0, 50.0));
+                objs.push(randVecGauss(20.0, 20.0, 20.0));
             }
 
             for (int i = 0; i < objs.size(); i++) {
                 const Vec3 pos = pose * objs[i];
 
+                const Vec2 npx0 = prjVec(pos);
+                const Vec2 npx1 = prjVec(stereo * pos);
                 const Vec2 pix0 = mulCam(cam, prjVec(pos));
                 const Vec2 pix1 = mulCam(cam, prjVec(stereo * pos));
                 pixs0.push(pix0);
                 pixs1.push(pix1);
+                npxs0.push(npx0);
+                npxs1.push(npx1);
             }
         }
 
         {
             printf("ground truth\n");
-            print(getFMat(stereo, cam, cam));
+            const Mat F = getFMat(stereo, cam, cam);
+            print(F);
+            print(stereo);
+
+            output("gt", F, cam, pixs0, cam, pixs1);
         }
+
         {
             printf("\n\n");
-            printf("5 points algorithm\n");
             Mat F;
-            calcFMat5p(F, pixs0.slice(0, 0, 5), pixs1.slice(0, 0, 5));
+            calcFMat(F, pixs0.slice(0, 0, 8), pixs1.slice(0, 0, 8));
             print(F);
-
+           
             Pose pose;
             dcmpFMat(pose, F, cam, pixs0, cam, pixs1);
             print(pose);
 
-            output("5point", F, cam, pixs0, cam, pixs1);
-
-        }
-        {
-            printf("\n\n");
-            printf("8 points algorithm\n");
-            Mat F;
-            calcFMat8p(F, pixs0.slice(0, 0, 8), pixs1.slice(0, 0, 8));
-            print(F);
-            Pose pose;
-            dcmpFMat(pose, F, cam, pixs0, cam, pixs1);
-            print(pose);
-
-            output("8point", F, cam, pixs0, cam, pixs1);
+            output("est", F, cam, pixs0, cam, pixs1);
         }
     }
 
@@ -83,8 +78,6 @@ int main() {
         printf("--------------------------------------------------------------------------------\n");
 
         Mem2<Col3> img0, img1;
-        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", img0));
-        SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", img1));
 

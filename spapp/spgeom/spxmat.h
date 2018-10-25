@@ -140,7 +140,7 @@ namespace sp{
     }
 
     // calc homography
-    SP_CPUFUNC bool calcHMat(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const int maxit = 0){
+    SP_CPUFUNC bool calcHMat(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const int maxit = 1){
         SP_ASSERT(pixs.size() == objs.size());
 
         const int unit = 4;
@@ -157,7 +157,7 @@ namespace sp{
         }
 
         Mem1<double> errs;
-        for (int it = 0; it < maxit + 1; it++){
+        for (int it = 0; it < maxit; it++){
             if (H.rows() == 3 && H.cols() == 3) {
                 errs = errHMat(H, pixs, objs);
             }
@@ -179,58 +179,7 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 5.0){
-        SP_ASSERT(pixs.size() == objs.size());
-        
-        const int num = pixs.size();
-        const int unit = 4;
-
-        if (num < unit) return false;
-        if (num < unit * SP_RANSAC_NUM) {
-            return calcHMat(H, pixs, objs);
-        }
-
-        srand(0);
-        int maxit = SP_RANSAC_ITMAX;
-
-        Mem1<Vec2> spixs, rpixs;
-        Mem1<Vec2> sobjs, robjs;
-
-        double maxe = 0.0;
-        for (int it = 0; it < maxit; it++) {
-            const int p = it % (pixs.size() - unit);
-            if (p == 0) {
-                spixs = shuffle(pixs, it);
-                sobjs = shuffle(objs, it);
-            }
-            rpixs.resize(unit, &spixs[p]);
-            robjs.resize(unit, &sobjs[p]);
-
-            Mat test;
-            if (calcHMat(test, rpixs, robjs, 0) == false) continue;
-
-            const Mem1<double> errs = errHMat(test, pixs, objs);
-            const double eval = evalErr(errs, thresh);
-
-            if (eval > maxe){
-                //SP_PRINTD("eval %lf\n", eval);
-                maxe = eval;
-                maxit = adaptiveStop(eval, unit);
-
-                H = test;
-            }
-        }
-        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
-
-        // refine
-        const Mem1<double> errs = errHMat(H, pixs, objs);
-        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
-        const Mem1<Vec2> dobjs = denoise(objs, errs, thresh);
-
-        return calcHMat(H, dpixs, dobjs, 10);
-    }
-
-
+ 
     //--------------------------------------------------------------------------------
     // essential matrix & fundamental matrix
     //--------------------------------------------------------------------------------
@@ -284,7 +233,7 @@ namespace sp{
     }
 
     // calc essential matrix using 5 points algorithm
-    SP_CPUFUNC bool calcEMat5p(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
+    SP_CPUFUNC bool calcEMat5p(Mem1<Mat> &Es, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int unit = 5;
@@ -572,8 +521,7 @@ namespace sp{
             minv = minVal(minv, fabs(roots[i].im));
         }
 
-        E.clear();
-        double maxe = SP_INFINITY;
+        Es.clear();
         for (int i = 0; i < roots.size(); i++) {
             if (fabs(roots[i].im) > 0.1) continue;
 
@@ -604,21 +552,32 @@ namespace sp{
             Mat test = Mat(3, 3, vec.ptr);
             test /= normMat(test);
 
-            const Mem1<double> errs = errMatType2(test, npxs0, npxs1);
-            const double sum = sumVal(errs);
-            
-            if (sum < maxe) {
-                E = test;
-                maxe = sum;
-            }
 
-            //print(test);
-            //print(errs);
-            //printf("err %e\n", sum);
-            //printf("det %lf\n", detMat(test));
+            Es.push(test);
         }
 
-        return (E.size() > 0) ? true : false;
+        return (Es.size() > 0) ? true : false;
+    }
+  
+    // calc essential matrix
+    SP_CPUFUNC bool calcEMat5p(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
+        SP_ASSERT(npxs0.size() == npxs1.size());
+
+        Mem1<Mat> Es;
+        if (calcEMat5p(Es, npxs0, npxs1) == false) return false;
+
+        double maxv = SP_INFINITY;
+        for (int i = 0; i < Es.size(); i++) {
+            const Mem1<double> errs = errMatType2(Es[i], npxs0, npxs1);
+            const double sum = sumVal(errs);
+
+            if (sum < maxv) {
+                maxv = sum;
+                E = Es[i];
+            }
+        }
+
+        return true;
     }
 
     // calc essential matrix using 8 points algorithm
@@ -685,18 +644,107 @@ namespace sp{
         return ret;
     }
     
+
+    //--------------------------------------------------------------------------------
+    // fundamental matrix
+    //--------------------------------------------------------------------------------
+    
+    SP_CPUFUNC double errFMat(const Mat &F, const Vec2 &vec0, const Vec2 &vec1) {
+        return errMatType2(F, vec0, vec1);
+    }
+
+    SP_CPUFUNC Mem1<double> errFMat(const Mat &F, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
+        return errMatType2(F, vecs0, vecs1);
+    }
+
+    // calc fundamental matrix using 8 points algorithm
+    SP_CPUFUNC bool calcFMat8p(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
+        SP_ASSERT(pixs0.size() == pixs1.size());
+     
+        if (calcEMat8p(F, pixs0, pixs1, maxit) == false) return false;
+
+        return true;
+    }
+
+    // calc fundamental matrix
+    SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
+        SP_ASSERT(pixs0.size() == pixs1.size());
+       
+        if (calcFMat8p(F, pixs0, pixs1, maxit) == false) return false;
+        
+        return true;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // RANSAC + refine
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 3.0) {
+        SP_ASSERT(pixs.size() == objs.size());
+
+        const int num = pixs.size();
+        const int unit = 4;
+
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcHMat(H, pixs, objs);
+        }
+
+        srand(0);
+        int maxit = SP_RANSAC_ITMAX;
+
+        Mem1<Vec2> spixs, rpixs;
+        Mem1<Vec2> sobjs, robjs;
+
+        double maxe = 0.0;
+        for (int it = 0; it < maxit; it++) {
+            const int p = it % (pixs.size() - unit);
+            if (p == 0) {
+                spixs = shuffle(pixs, it);
+                sobjs = shuffle(objs, it);
+            }
+            rpixs.resize(unit, &spixs[p]);
+            robjs.resize(unit, &sobjs[p]);
+
+            Mat test;
+            if (calcHMat(test, rpixs, robjs, 1) == false) continue;
+
+            const Mem1<double> errs = errHMat(test, pixs, objs);
+            const double eval = evalErr(errs, thresh);
+
+            if (eval > maxe) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxe = eval;
+                maxit = adaptiveStop(eval, unit);
+
+                H = test;
+            }
+        }
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+
+        // refine
+        const Mem1<double> errs = errHMat(H, pixs, objs);
+        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
+        const Mem1<Vec2> dobjs = denoise(objs, errs, thresh);
+
+        return calcHMat(H, dpixs, dobjs, 10);
+    }
+
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 3.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
         const int unit = 5;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_NUM) {
+        if (num < unit * SP_RANSAC_MINRATE) {
             return calcEMat(E, npxs0, npxs1);
         }
 
+        const int tnum = 20;
         int maxit = SP_RANSAC_ITMAX;
 
         Mem1<Vec2> snpxs0, rnpxs0;
@@ -713,22 +761,24 @@ namespace sp{
             rnpxs0.resize(unit, &snpxs0[p]);
             rnpxs1.resize(unit, &snpxs1[p]);
 
-            Mat test;
-            if (calcEMat(test, rnpxs0, rnpxs1, 1) == false) continue;
+            Mem1<Mat> tests;
+            if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
 
-            const Mem1<double> errs = errMatType2(test, npxs0, npxs1);
-            const double eval = evalErr(errs, thresh);
+            for (int i = 0; i < tests.size(); i++) {
+                const Mem1<double> errs = errMatType2(tests[i], npxs0, npxs1);
+                const double eval = evalErr(errs, thresh);
 
-            if (eval > maxe) {
-                //SP_PRINTD("eval %lf\n", eval);
-                maxe = eval;
-                maxit = minVal(maxit, adaptiveStop(eval, unit));
+                if (eval > maxe) {
+                    //SP_PRINTD("eval %lf\n", eval);
+                    maxe = eval;
+                    maxit = minVal(maxit, adaptiveStop(eval, unit));
 
-                E = test;
+                    E = tests[i];
+                }
             }
         }
-        //SP_PRINTD("RANSAC iteration %d\n", it);
-        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
+        //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -742,58 +792,19 @@ namespace sp{
         return true;
     }
 
-
-    //--------------------------------------------------------------------------------
-    // fundamental matrix
-    //--------------------------------------------------------------------------------
-    
-    SP_CPUFUNC double errFMat(const Mat &F, const Vec2 &vec0, const Vec2 &vec1) {
-        return errMatType2(F, vec0, vec1);
-    }
-
-    SP_CPUFUNC Mem1<double> errFMat(const Mat &F, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
-        return errMatType2(F, vecs0, vecs1);
-    }
-
-    // calc fundamental matrix using 5 points algorithm
-    SP_CPUFUNC bool calcFMat5p(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1) {
-        SP_ASSERT(pixs0.size() == pixs1.size());
-      
-        if (calcEMat5p(F, pixs0, pixs1) == false) return false;
-
-        return true;
-    }
-
-    // calc fundamental matrix using 8 points algorithm
-    SP_CPUFUNC bool calcFMat8p(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
-        SP_ASSERT(pixs0.size() == pixs1.size());
-     
-        if (calcEMat8p(F, pixs0, pixs1, maxit) == false) return false;
-
-        return true;
-    }
-
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
-        SP_ASSERT(pixs0.size() == pixs1.size());
-       
-        if(calcEMat(F, pixs0, pixs1, maxit) == false) return false;
-
-        return true;
-    }
-
-    // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 3.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
-        const int unit = 5;
+        const int unit = 8;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_NUM) {
+        if (num < unit * SP_RANSAC_MINRATE) {
             return calcFMat(F, pixs0, pixs1);
         }
 
+        const int tnum = 20;
         int maxit = SP_RANSAC_ITMAX;
 
         Mem1<Vec2> spixs0, rpixs0;
@@ -801,7 +812,7 @@ namespace sp{
 
         double maxe = 0.0;
         int it = 0;
-        for (it = 0; it < maxit; it++){
+        for (it = 0; it < maxit; it++) {
             const int p = it % (num - unit);
             if (p == 0) {
                 spixs0 = shuffle(pixs0, it);
@@ -810,22 +821,24 @@ namespace sp{
             rpixs0.resize(unit, &spixs0[p]);
             rpixs1.resize(unit, &spixs1[p]);
 
-            Mat test;
-            if (calcFMat(test, rpixs0, rpixs1, 1) == false) continue;
+            Mem1<Mat> tests;
+            if (calcEMat5p(tests, rpixs0, rpixs1) == false) continue;
 
-            const Mem1<double> errs = errMatType2(test, pixs0, pixs1);
-            const double eval = evalErr(errs, thresh);
+            for (int i = 0; i < tests.size(); i++) {
+                const Mem1<double> errs = errMatType2(tests[i], pixs0, pixs1);
+                const double eval = evalErr(errs, thresh);
 
-            if (eval > maxe){
-                //SP_PRINTD("eval %lf\n", eval);
-                maxe = eval;
-                maxit = minVal(maxit, adaptiveStop(eval, unit));
+                if (eval > maxe) {
+                    //SP_PRINTD("eval %lf\n", eval);
+                    maxe = eval;
+                    maxit = minVal(maxit, adaptiveStop(eval, unit));
 
-                F = test;
+                    F = tests[i];
+                }
             }
         }
-        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_RATE || maxe * num < unit * SP_RANSAC_NUM) return false;
+        //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {

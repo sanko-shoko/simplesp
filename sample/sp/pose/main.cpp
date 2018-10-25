@@ -4,26 +4,31 @@ using namespace sp;
 
 int main(){
     
-    // object coordinate
+    // camera parameter
+    const CamParam cam = getCamParam(640, 480);
+
+    // object coordinate pnts
     Mem1<Vec3> objs;
 
-    // camera coordinate
-    CamParam cam;
+    // camera coordinate pnts
     Mem1<Vec3> pnts;
+    
+    // image coorinate pnts
     Mem1<Vec2> pixs;
+
 
     // generate test parameter
     {
         printf("--------------------------------------------------------------------------------\n");
         printf("ground truth\n");
         printf("--------------------------------------------------------------------------------\n");
-        
-        srand(0);
-
-        cam = getCamParam(640, 480);
 
         // pose (camera <- object)
         const Pose pose = getPose(randRotGauss(10.0 * SP_PI / 180), getVec(0.0, 0.0, 400));
+        print(pose);
+
+
+        srand(0);
 
         // object coordinate
         for (int i = 0; i < 100; i++) {
@@ -48,8 +53,6 @@ int main(){
             }
             saveBMP("test.bmp", img);
         }
-
-        print(pose);
     }
 
     {

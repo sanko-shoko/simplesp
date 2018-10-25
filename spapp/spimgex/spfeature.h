@@ -74,6 +74,21 @@ namespace sp{
         return getMatchCnt(matches) * scale / matches.size();
     };
 
+    SP_CPUFUNC double getMatchEval(const Mem1<int> &matches) {
+        const int minv = 10;
+        const int maxv = 100;
+
+        const int n = minVal(maxv, matches.size());
+        const int c = minVal(maxv, getMatchCnt(matches));
+
+        const int v = c - minv;
+        const int m = maxv - minv;
+        if (v <= 0) return 0.0;
+
+        // c: minn..maxv, scale: 0..1
+        const double scale = 1.0 - 1.0 / v + v / (m * m);
+        return scale * c / n;
+    };
 
     SP_CPUFUNC Mem1<Vec2> getMatchPixs(const Mem1<Feature> &fts, const Mem1<int> &matches, const bool flag = true) {
         Mem1<Vec2> pixs;
