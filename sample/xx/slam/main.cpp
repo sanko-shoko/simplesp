@@ -86,54 +86,7 @@ private:
 
             glRenderImg(m_img);
         }
-        {
-            // view 3D
-            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
-
-            // render points
-            if (m_slam.getMPnts() != NULL) {
-                const Mem1<SfM::MapData> &pnts = *m_slam.getMPnts();
-
-                glPointSize(4.f);
-
-                glLoadMatrix(m_pose);
-
-                glBegin(GL_POINTS);
-                for (int i = 0; i < pnts.size(); i++) {
-                    glColor(pnts[i].col);
-                    glVertex(pnts[i].pos);
-                }
-                glEnd();
-            }
-
-            // render cam
-            if (m_slam.getViews() != NULL) {
-                const Mem1<SfM::ViewData> &views = *m_slam.getViews();
-
-                glLineWidth(2.f);
-
-                glColor3d(0.5, 0.5, 0.8);
-
-                for (int i = 0; i < views.size(); i++) {
-                    if (views[i].valid == false) continue;
-                    glLoadMatrix(m_pose * invPose(views[i].pose));
-
-                    glBegin(GL_LINES);
-                    glCam(views[i].cam, 0.03 * m_pose.trn.z);
-                    glEnd();
-                }
-            }
-
-            // render axis
-            {
-                glLoadMatrix(invPose(m_axis) * m_pose.rot);
-
-                glLineWidth(2.f);
-                glBegin(GL_LINES);
-                glAxis(0.05 * m_pose.trn.z);
-                glEnd();
-            }
-        }
+ 
     }
 
     virtual void mousePos(double x, double y) {

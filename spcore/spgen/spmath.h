@@ -1336,7 +1336,7 @@ namespace sp{
                 if (err > maxe) {
                     maxe = err;
                 }
-                const double dif = fabs(pre[i] - xs[i]);
+                const double dif = fabs(xs[i] - pre[i]);
                 if (dif > maxd) {
                     maxd = dif;
                 }
