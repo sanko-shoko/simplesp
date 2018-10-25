@@ -10,7 +10,7 @@
 
 namespace sp{
 
-    struct ViewData {
+    struct View {
 
         // camera parameter
         CamParam cam;
@@ -21,32 +21,36 @@ namespace sp{
         // features
         Mem1<Feature> fts;
 
-        // camera pose is valid
-        bool valid;
+        // pose state
+        enum State {
+            POSE_NULL = 0,
+            POSE_VALID = 1
+        };
+        State state;
 
         // camera pose
         Pose pose;
 
-        // pair links
+        // view links
         Mem1<int> links;
 
-        ViewData() {
+        View() {
             cam = getCamParam(0, 0);
 
-            valid = false;
+            state = POSE_NULL;
             pose = zeroPose();
         }
 
-        ViewData(const ViewData &view) {
+        View(const View &view) {
             *this = view;
         }
 
-        ViewData& operator = (const ViewData &view) {
+        View& operator = (const View &view) {
             cam = view.cam;
             img = view.img;
             fts = view.fts;
 
-            valid = view.valid;
+            state = view.state;
             pose = view.pose;
 
             links = view.links;
@@ -55,40 +59,7 @@ namespace sp{
 
     };
 
-    struct PairData {
-        bool valid;
-
-        // pair id
-        int a, b;
-
-        // match data
-        Mem1<int> matches;
-
-        // match features eval
-        double eval;
-
-        PairData() {
-            valid = false;
-            a = -1;
-            b = -1;
-            eval = -1.0;
-        }
-
-        PairData(const PairData &pair) {
-            *this = pair;
-        }
-
-        PairData& operator = (const PairData &pair) {
-            valid = pair.valid;
-            matches = pair.matches;
-            a = pair.a;
-            b = pair.b;
-            eval = pair.eval;
-            return *this;
-        }
-    };
-
-    struct MapData {
+    struct MapPoint {
 
         Vec3 pos;
 
@@ -99,21 +70,21 @@ namespace sp{
         // index -> [view, feature]
         Mem1<MemA<int, 2> > index;
 
-        MapData() {
+        MapPoint() {
             pos = getVec(0.0, 0.0, 0.0);
             col = getCol(0, 0, 0);
             err = SP_INFINITY;
         }
 
-        MapData(const MapData &map) {
-            *this = map;
+        MapPoint(const MapPoint &mpnt) {
+            *this = mpnt;
         }
 
-        MapData& operator = (const MapData &map) {
-            pos = map.pos;
-            col = map.col;
-            err = map.err;
-            index = map.index;
+        MapPoint& operator = (const MapPoint &mpnt) {
+            pos = mpnt.pos;
+            col = mpnt.col;
+            err = mpnt.err;
+            index = mpnt.index;
             return *this;
         }
     };

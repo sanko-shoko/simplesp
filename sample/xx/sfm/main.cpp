@@ -26,6 +26,9 @@ class SfMGUI : public BaseWindow {
     // 
     float m_err;
 
+    // 
+    int m_addcnt;
+
 private:
 
     void help() {
@@ -43,11 +46,14 @@ private:
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
         m_err = 1.0f;
+
+        m_addcnt = 0;
     }
 
     void reset() {
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
         m_sfm.init();
+        m_addcnt = 0;
     }
 
     void update(){
@@ -55,10 +61,6 @@ private:
     }
 
     void addView() {
-        static int cnt = 0;
-        char path[256];
-        sprintf(path, "img%03d.bmp", cnt++);
-        saveBMP(path, m_img);
 
         m_sfm.addView(m_img, &m_cam);
     }
@@ -104,6 +106,7 @@ private:
         {
             m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
         }
+
         {
             const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
             const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
@@ -117,7 +120,7 @@ private:
 
             // render points
             if (m_sfm.getMPnts() != NULL) {
-                const Mem1<MapData> &mpnts = *m_sfm.getMPnts();
+                const Mem1<MapPoint> &mpnts = *m_sfm.getMPnts();
 
                 glPointSize(4.f);
 
@@ -140,9 +143,9 @@ private:
                 glColor3d(0.5, 0.5, 0.8);
 
                 for (int i = 0; i < m_sfm.size(); i++) {
-                    const ViewData *view = m_sfm.getView(i);
+                    const View *view = m_sfm.getView(i);
 
-                    if (view == NULL || view->valid == false) continue;
+                    if (view == NULL || view->state != View::POSE_VALID) continue;
                     glLoadMatrix(m_pose * invPose(view->pose));
 
                     glBegin(GL_LINES);
