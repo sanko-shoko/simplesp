@@ -11,7 +11,7 @@
 #include "spapp/spimg/splabeling.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spgeom/spgeometry.h"
-#include "spapp/spgeomex/sptrack.h"
+#include "spapp/spgeomex/spfit.h"
 #include "spapp/spdata/spsvg.h"
 
 namespace sp{
@@ -518,7 +518,7 @@ namespace sp{
                     Pose pose;
                     if (calcPose(pose, m_cam, corners[i], unit) == false) continue;
 
-                    if (track2D(pose, img, m_cam, objs, drcs) == false) continue;
+                    if (fit2D(pose, img, m_cam, objs, drcs) == false) continue;
 
                     bool check = true;
                     for (int c = 0; c < unit.size(); c++){

@@ -89,33 +89,31 @@ private:
         glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
         // render points
-        if (m_sfm.getMPnts() != NULL) {
-            const Mem1<MapPoint> &pnts = *m_sfm.getMPnts();
-
+        {
             glPointSize(4.f);
 
             glLoadMatrix(m_pose);
 
             glBegin(GL_POINTS);
-            for (int i = 0; i < pnts.size(); i++) {
-                if (pnts[i].err > m_err) continue;
-                glColor(pnts[i].col);
-                glVertex(pnts[i].pos);
+            for (int i = 0; i < m_sfm.msize(); i++) {
+                const MapPnt *pnt = m_sfm.getMPnt(i);
+                if (pnt->err > m_err) continue;
+                glColor(pnt->col);
+                glVertex(pnt->pos);
             }
             glEnd();
         }
 
         // render cam
-        if (m_sfm.size() > 0) {
-
+        {
             glLineWidth(2.f);
 
             glColor3d(0.5, 0.5, 0.8);
 
-            for (int i = 0; i < m_sfm.size(); i++) {
+            for (int i = 0; i < m_sfm.vsize(); i++) {
                 const View *view = m_sfm.getView(i);
 
-                if (view == NULL || view->state != View::POSE_VALID) continue;
+                if (view == NULL || view->valid == false) continue;
                 glLoadMatrix(m_pose * invPose(view->pose));
 
                 glBegin(GL_LINES);

@@ -14,6 +14,7 @@
 #include "spapp/spdata/spsvg.h"
 #include "spapp/spdata/spmodel.h"
 #include "spapp/spdata/spvoxel.h"
+#include "spapp/spdata/spscene.h"
 #include "spapp/spdata/spdataset.h"
 
 // algorithm
@@ -53,7 +54,7 @@
 
 #include "spapp/spgeomex/spsfm.h"
 #include "spapp/spgeomex/spslam.h"
-#include "spapp/spgeomex/sptrack.h"
+#include "spapp/spgeomex/spfit.h"
 #include "spapp/spgeomex/sptrackrf.h"
 #include "spapp/spgeomex/spdotmarker.h"
 #include "spapp/spgeomex/spbitmarker.h"

@@ -62,9 +62,6 @@ namespace sp {
             return m_sfm.getView(i);
         }
 
-        const Mem1<MapPoint>* getMPnts() const {
-            return m_sfm.getMPnts();
-        }
 
 
         //--------------------------------------------------------------------------------
