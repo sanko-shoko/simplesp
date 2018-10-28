@@ -57,10 +57,6 @@ void sample(cv::Mat &cvimg, const int key){
 
         if (key == 'a') {
             ctool.addImg(mrk, img);
-
-            //char str[256];
-            //sprintf(str, "calib%03d.bmp", ctool.size());
-            //saveBMP(img, str);
         }
 
         if (key == 'c') {
