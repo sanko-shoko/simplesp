@@ -939,15 +939,11 @@ namespace sp {
     // stereo
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const Pose *stereo = NULL) {
+    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
 
-        Pose pose;
-        if (stereo == NULL) {
-            if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
-        }
-        else {
-            pose = *stereo;
-        }
+        Pose pose = zeroPose();
+        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+
         const double dist = normVec(pose.trn);
         if (dist < SP_SMALL) return 0.0;
 
@@ -955,17 +951,23 @@ namespace sp {
 
         Mem1<double> zlist;
         for (int i = 0; i < pixs0.size(); i++) {
+            const Pose base = zeroPose();
 
-            Vec3 pnt;
-            if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+            Vec3 pos;
+            if (calcPnt3d(pos, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
 
-            zlist.push(pnt.z);
+            const Vec3 vec0 = unitVec(base.trn - pos);
+            const Vec3 vec1 = unitVec(pose.trn - pos);
+            const double angle = acos(dotVec(vec0, vec1));
+
+            if (angle > minAngle) {
+                zlist.push(pos.z);
+            }
         }
         if (zlist.size() == 0) return 0.0;
 
         const double pnum = minVal(10.0, log2(zlist.size()));
-        const double zval = maxVal(10.0, medianVal(zlist));
-        const double eval = pnum / zval;
+        const double eval = pnum / 10.0;
         return eval;
     }
 }
