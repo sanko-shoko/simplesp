@@ -280,7 +280,7 @@ namespace sp {
                 m_pairs.zero();
 
                 for (int y = 0; y < tmp.dsize[1]; y++) {
-                    for (int x = 0; x < tmp.dsize[1]; x++) {
+                    for (int x = 0; x < tmp.dsize[0]; x++) {
                         m_pairs(x, y) = tmp(x, y);
                     }
                 }
