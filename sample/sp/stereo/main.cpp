@@ -38,7 +38,9 @@ int main() {
             mpixs1.push(fts1[j].pix);
         }
 
-        calcPose(stereo, cam0, mpixs0, cam1, mpixs1);
+        calcPoseRANSAC(stereo, cam1, mpixs1, cam0, mpixs0);
+
+        print(stereo);
     }
 
 

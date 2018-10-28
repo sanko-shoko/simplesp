@@ -36,10 +36,10 @@ int main() {
             for (int i = 0; i < objs.size(); i++) {
                 const Vec3 pos = pose * objs[i];
 
-                const Vec2 npx0 = prjVec(pos);
-                const Vec2 npx1 = prjVec(stereo * pos);
-                const Vec2 pix0 = mulCam(cam, prjVec(pos));
-                const Vec2 pix1 = mulCam(cam, prjVec(stereo * pos));
+                const Vec2 npx0 = prjVec(stereo * pos);
+                const Vec2 npx1 = prjVec(pos);
+                const Vec2 pix0 = mulCam(cam, prjVec(stereo * pos));
+                const Vec2 pix1 = mulCam(cam, prjVec(pos));
                 pixs0.push(pix0);
                 pixs1.push(pix1);
                 npxs0.push(npx0);
@@ -149,10 +149,10 @@ void output(char *name, const Mat &F, const Mem2<Col3> &img0, const Mem1<Vec2> &
     const Mem1<Vec2> dpixs0 = denoise(pixs0, errs);
     const Mem1<Vec2> dpixs1 = denoise(pixs1, errs);
 
-    renderEpipolar(_img0, trnMat(F), dpixs1, getCol(0, 200, 100), 2);
+    renderEpipolar(_img0, (F), dpixs1, getCol(0, 200, 100), 2);
     renderPoint(_img0, dpixs0, getCol(255, 255, 255), 4);
 
-    renderEpipolar(_img1, (F), dpixs0, getCol(0, 200, 100), 2);
+    renderEpipolar(_img1, trnMat(F), dpixs0, getCol(0, 200, 100), 2);
     renderPoint(_img1, dpixs1, getCol(255, 255, 255), 4);
 
     char str[256];

@@ -421,7 +421,7 @@ namespace sp {
                 const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, pairs(a, b)->matches, false);
 
                 Pose pose = zeroPose();
-                if (calcPoseRANSAC(pose, views[a]->cam, pixs0, views[b]->cam, pixs1) == false) return false;
+                if (calcPoseRANSAC(pose, views[b]->cam, pixs1, views[a]->cam, pixs0) == false) return false;
 
                 setView(*views[a], zeroPose());
                 setView(*views[b], pose);

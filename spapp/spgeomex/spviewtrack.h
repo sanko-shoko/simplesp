@@ -209,7 +209,7 @@ namespace sp{
 
             {
                 Pose delta = zeroPose();
-                calcPoseRANSAC(delta, view.cam, pixs0, cam, pixs1);
+                calcPoseRANSAC(delta, cam, pixs1, view.cam, pixs0);
                 pose = delta * view.pose;
             }
 

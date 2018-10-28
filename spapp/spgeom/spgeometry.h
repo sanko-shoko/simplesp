@@ -259,7 +259,7 @@ namespace sp {
 
             int cnt = 0;
             for (int i = 0; i < npxs0.size(); i++) {
-                if (calcPnt3d(pnts[i], zeroPose(), npxs0[i], test, npxs1[i]) == false) continue;
+                if (calcPnt3d(pnts[i], test, npxs0[i], zeroPose(), npxs1[i]) == false) continue;
                 cnt++;
             }
 
@@ -275,7 +275,7 @@ namespace sp {
     SP_CPUFUNC bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
-        const Mat E = trnMat(getMat(cam1)) * F * getMat(cam0);
+        const Mat E = trnMat(getMat(cam0)) * F * getMat(cam1);
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
@@ -373,13 +373,13 @@ namespace sp {
 
             for (int i = 0; i < num; i++) {
                 Vec3 obj;
-                if (calcPnt3d(obj, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+                if (calcPnt3d(obj, pose, cam0, pixs0[i], zeroPose(), cam1, pixs1[i]) == false) continue;
               
-                pixs.push(pixs1[i]);
+                pixs.push(pixs0[i]);
                 objs.push(obj);
             }
 
-            if (refinePose(pose, cam1, pixs, objs, 1) == false) return false;
+            if (refinePose(pose, cam0, pixs, objs, 1) == false) return false;
             
             pose.trn /= normVec(pose.trn);
         }
@@ -942,7 +942,7 @@ namespace sp {
     SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
 
         Pose pose = zeroPose();
-        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+        if (calcPoseRANSAC(pose, cam1, pixs1, cam0, pixs0) == false) return 0.0;
 
         const double dist = normVec(pose.trn);
         if (dist < SP_SMALL) return 0.0;

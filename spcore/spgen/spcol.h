@@ -115,14 +115,19 @@ namespace sp{
     // blend
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate){
+    SP_GENFUNC Byte blendCol(const Byte &val0, const Byte &val1, const double rate){
+        Byte val;
+        cnvVal(val, val0 * rate + val1 * (1.0 - rate));
+        return val;
+    }
+
+    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate) {
         Col3 col;
         cnvVal(col.r, col0.r * rate + col1.r * (1.0 - rate));
         cnvVal(col.g, col0.g * rate + col1.g * (1.0 - rate));
         cnvVal(col.b, col0.b * rate + col1.b * (1.0 - rate));
         return col;
     }
-
 
     //--------------------------------------------------------------------------------
     // color space
