@@ -44,7 +44,7 @@ void sample(cv::Mat &cvimg, const int key){
 
     static ViewTrack tracker;
 
-    if (key == 'a') {
+    if (key == 's') {
         tracker.setView(cam, img, zeroPose());
         return;
     }

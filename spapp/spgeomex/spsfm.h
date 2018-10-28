@@ -351,7 +351,7 @@ namespace sp {
 
 
         //--------------------------------------------------------------------------------
-        // map point (m: mpnts id, v: views id, f: features id)
+        // map point
         //--------------------------------------------------------------------------------
 
         void addMPnt(Mem1<MapPnt*> &mpnts, const Vec3 &pos) {
@@ -478,7 +478,7 @@ namespace sp {
             Mem1<MatchPair*> hypo;
             {
                 // [invalid, valid] pair
-                Mem1<MatchPair*> list = shuffle(getPairs(views, pairs, ViewEx::POSE_NULL, ViewEx::POSE_VALID));
+                Mem1<MatchPair*> list = getPairs(views, pairs, ViewEx::POSE_NULL, ViewEx::POSE_VALID);
                 if (list.size() == 0) return false;
 
                 //pair = list[seed % list.size()];
@@ -486,10 +486,16 @@ namespace sp {
                 auto compare_max = [](const void *a, const void *b) -> int{
                     return ((*static_cast<const MatchPair* const*>(a))->eval > (*static_cast<const MatchPair* const*>(b))->eval) ? -1 : +1;
                 };
-
                 sort(list, compare_max);
-                for (int i = 0; i < minVal(3, list.size()); i++) {
-                    hypo.push(list[i]);
+
+                const int select = 3;
+                {
+                    hypo.push(list.slice(0, 0, select));
+                }
+
+                if (list.size() > select) {
+                    list = shuffle(list.slice(0, 3, list.size()));
+                    hypo.push(list.slice(0, 0, select));
                 }
             }
 
