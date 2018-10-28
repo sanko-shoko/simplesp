@@ -93,7 +93,7 @@ namespace sp {
             const int mini = 3;
 
             if (m_imgs.size() < mini) {
-                SP_PRINTF("minimal image num >= 3\n");
+                SP_PRINTF("minimal image num >= %d\n", mini);
                 return false;
             }
 
