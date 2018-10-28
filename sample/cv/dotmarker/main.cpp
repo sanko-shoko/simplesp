@@ -51,6 +51,28 @@ void sample(cv::Mat &cvimg, const int key){
     // estimate marker pose
     dotMarker.execute(img);
 
+    // calibration
+    {
+        static CalibTool ctool;
+
+        if (key == 'a') {
+            ctool.addImg(mrk, img);
+
+            //char str[256];
+            //sprintf(str, "calib%03d.bmp", ctool.size());
+            //saveBMP(img, str);
+        }
+
+        if (key == 'c') {
+            if (ctool.execute() == true) {
+                ctool.save("cam.txt");
+
+                const CamParam cam = *ctool.getCam();
+                dotMarker.setCam(cam);
+            }
+        }
+    }
+
     // diminish marker
     {
         static bool flag = false;
@@ -71,32 +93,6 @@ void sample(cv::Mat &cvimg, const int key){
         }
     }
 
-    // calibration
-    {
-        static int cnt = 0;
-        static Mem1<Mem1<Vec2> > pixsList, objsList;
-
-        if (dotMarker.getPose() != NULL && key == 'a'){
-            printf("add detected points (i = %d)\n", cnt++);
-            pixsList.push(*dotMarker.getCrspPixs());
-            objsList.push(*dotMarker.getCrspObjs());
-
-            //char str[256];
-            //sprintf(str, "calib%03d.bmp", pixsList.size());
-            //saveBMP(img, str);
-        }
-
-        if (key == 'c'){
-            CamParam cam;
-            const double rms = calibCam(cam, img.dsize[0], img.dsize[1], pixsList, objsList);
-            if (rms >= 0.0){
-                printf("rms %lf\n", rms);
-                saveText("cam.txt", cam);
-                dotMarker.setCam(cam);
-            }
-        }
-    }
-
     // undistort image
     {
         Mem2<Vec2> table;
@@ -107,8 +103,9 @@ void sample(cv::Mat &cvimg, const int key){
 
     // render
     if (dotMarker.getPose() != NULL){
-        const Vec2 size = getVec(dotMarker.getMrk().map.dsize[0] + 1, dotMarker.getMrk().map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
-        renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), size * -1.0, size * +1.0, getCol(0, 100, 200), 2);
+        const Vec2 size = getVec(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
+
+        renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), -size, +size, getCol(0, 100, 200), 2);
         renderAxis(img, dotMarker.getCam(), *dotMarker.getPose(), minVal(size.x, size.y), 2);
     }
 
