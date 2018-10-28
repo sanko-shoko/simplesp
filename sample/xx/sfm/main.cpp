@@ -19,6 +19,8 @@ class SfMGUI : public BaseWindow {
 
     CamParam m_cam;
     Mem2<Col3> m_img;
+
+    MemP<Mem2<Col3>> m_pool;
  
     // thread;
     Thread m_thread;
@@ -48,6 +50,7 @@ private:
         m_err = 1.0f;
 
         m_addcnt = 0;
+        reset();
     }
 
     void reset() {
@@ -61,17 +64,26 @@ private:
     }
 
     void addView() {
-        //char path[256];
+        char path[256];
         //if (1) {
-        //    for (int i = 0; i < 4; i++) {
-        //        sprintf(path, "img%03d.bmp", m_addcnt++);
+        //    for (int i = 0; i < 1; i++) {
+        //        sprintf(path, "test%03d.bmp", m_addcnt++);
         //        Mem2<Col3> img;
         //        loadBMP(path, img);
-        //        m_sfm.addView(img, &m_cam);
+        //        m_sfm.addView(m_cam, img);
         //    }
         //    //m_img = img;
         //}
-        m_sfm.addView(m_img, &m_cam);
+        //else {
+        //    sprintf(path, "test%03d.bmp", m_addcnt++);
+        //    Mem2<Col3> img = m_backup;
+        //    saveBMP(path, img);
+        //    m_sfm.addView(m_cam, img);
+        //}
+
+        Mem2<Col3> &img = m_pool[0];
+        m_sfm.addView(m_cam, img);
+        m_pool.free(&img);
     }
 
     void capture() {
@@ -84,7 +96,8 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] >= 1) {
+        if (m_keyAction[GLFW_KEY_A] == 1) {
+            *m_pool.malloc() = m_img;
             m_thread.run<SfMGUI, &SfMGUI::addView>(this);
         }
 
@@ -112,10 +125,10 @@ private:
         {
             capture();
         }
+
         {
             m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
         }
-
         {
             const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
             const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);

@@ -48,17 +48,22 @@ namespace sp{
 
             return *this;
         }
+
     };
 
     class MapPnt : public VecPN3{
     public:
-
+        // point color
         Col3 col;
 
+        // projection err
         double err;
 
-        // index -> [view, feature]
-        Mem1<MemA<int, 2> > index;
+        // view index
+        Mem1<View*> views;
+
+        // feature index
+        Mem1<Feature*> fts;
 
         MapPnt() {
             pos = getVec(0.0, 0.0, 0.0);
@@ -78,8 +83,41 @@ namespace sp{
             col = mpnt.col;
             err = mpnt.err;
 
-            index = mpnt.index;
+            views = mpnt.views;
+            fts = mpnt.fts;
+
             return *this;
+        }
+
+    public:
+
+        void updatePrjErr() {
+
+            Mem1<double> errs;
+
+            const int num = views.size();
+            for (int i = 0; i < num; i++) {
+                const Pose &pose = views[i]->pose;
+                const CamParam &cam = views[i]->cam;
+                const Vec2 &pix = fts[i]->pix;
+
+                errs.push(calcPrjErr(pose, cam, pix, pos));
+            }
+
+            err = (errs.size() > 0) ? medianVal(errs) : SP_INFINITY;
+        }
+
+        void updateCol() {
+
+            Vec3 vec = getVec(0.0, 0.0, 0.0);
+
+            const int num = views.size();
+            for (int i = 0; i < num; i++) {
+                const Vec2 &pix = fts[i]->pix;
+                vec += getVec(acsc(views[i]->img, pix.x, pix.y)) / num;
+            }
+
+            col = getCol(vec);
         }
     };
 
