@@ -26,18 +26,19 @@ namespace sp {
         SP_LOGGER_INSTANCE;
 
         SLAM() {
+            clear();
         }
 
-        void init(const CamParam &cam, const int maxview = SP_SFM_MAXVIEW) {
-            clear();
+        void init(const CamParam &cam) {
             m_cam = cam;
-            m_sfm.init(maxview);
+            clear();
         }
 
         void clear() {
             m_track = false;
             m_cam = getCamParam(0, 0);
             m_pose = zeroPose();
+            m_sfm.clear();
         }
 
 
@@ -62,9 +63,6 @@ namespace sp {
             return m_sfm.getView(i);
         }
 
-        const Mem1<MapPoint>* getMPnts() const {
-            return m_sfm.getMPnts();
-        }
 
 
         //--------------------------------------------------------------------------------
@@ -108,7 +106,7 @@ namespace sp {
                 if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
 
                 if (force == true) {
-                    m_sfm.addView(img, &m_cam);
+                    m_sfm.addView(m_cam, img);
                 }
 
                 m_sfm.update();

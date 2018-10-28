@@ -457,6 +457,8 @@ namespace sp{
                     fts[i].scl = key.scale;
 
                     fts[i].dsc.resize(dsc.size() * sizeof(float));
+                    fts[i].type = Feature::DSC_SIFT;
+                    fts[i].mpnt = NULL;
 
                     float *ptr = reinterpret_cast<float*>(fts[i].dsc.ptr);
                     for (int k = 0; k < dsc.size(); k++){

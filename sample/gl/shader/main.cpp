@@ -79,7 +79,6 @@ private:
         }
 
         {
-            glLoadView2D(m_wcam, m_viewPos, m_viewScale);
             shader.enable();
             shader.setUniform("nearPlane", 1.0);
             shader.setUniform("farPlane", 10000.0);

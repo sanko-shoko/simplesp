@@ -11,7 +11,7 @@
 #include "spapp/spimg/splabeling.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spgeom/spgeometry.h"
-#include "spapp/spgeomex/sptrack.h"
+#include "spapp/spgeomex/spfit.h"
 #include "spapp/spdata/spsvg.h"
 
 namespace sp{
@@ -518,7 +518,7 @@ namespace sp{
                     Pose pose;
                     if (calcPose(pose, m_cam, corners[i], unit) == false) continue;
 
-                    if (track2D(pose, img, m_cam, objs, drcs) == false) continue;
+                    if (fit2D(pose, img, m_cam, objs, drcs) == false) continue;
 
                     bool check = true;
                     for (int c = 0; c < unit.size(); c++){
@@ -759,7 +759,7 @@ namespace sp{
                         Pose &tmp = tposes[j];
                         if (refinePose(tmp, m_cam, tcpixs, tcobjs) == false) continue;
 
-                        const double err = medianVal(errPrj(tmp, m_cam, tcpixs, tcobjs));
+                        const double err = medianVal(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
 
                         if (err < minv) {
                             minv = err;
@@ -768,7 +768,7 @@ namespace sp{
                     }
                     if (minv == SP_INFINITY) continue;
 
-                    const Mem1<double> errs = errPrj(pose, m_cam, tcpixs, tcobjs);
+                    const Mem1<double> errs = calcPrjErr(pose, m_cam, tcpixs, tcobjs);
                     poses[i] = pose;
                     cpixs[i] = denoise(tcpixs, errs, minv * 3.0);
                     cobjs[i] = denoise(tcobjs, errs, minv * 3.0);

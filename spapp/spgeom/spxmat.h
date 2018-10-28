@@ -680,7 +680,7 @@ namespace sp{
     // RANSAC + refine
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 3.0) {
+    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -692,7 +692,7 @@ namespace sp{
         }
 
         srand(0);
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec2> sobjs, robjs;
@@ -733,7 +733,7 @@ namespace sp{
     }
 
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 3.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
@@ -745,7 +745,7 @@ namespace sp{
         }
 
         const int tnum = 20;
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> snpxs0, rnpxs0;
         Mem1<Vec2> snpxs1, rnpxs1;
@@ -793,7 +793,7 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 3.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
@@ -805,7 +805,7 @@ namespace sp{
         }
 
         const int tnum = 20;
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs0, rpixs0;
         Mem1<Vec2> spixs1, rpixs1;

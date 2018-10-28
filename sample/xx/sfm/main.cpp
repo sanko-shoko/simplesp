@@ -48,11 +48,12 @@ private:
         m_err = 1.0f;
 
         m_addcnt = 0;
+        reset();
     }
 
     void reset() {
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
-        m_sfm.init();
+        m_sfm.clear();
         m_addcnt = 0;
     }
 
@@ -61,8 +62,23 @@ private:
     }
 
     void addView() {
-
-        m_sfm.addView(m_img, &m_cam);
+        //char path[256];
+        //if (1) {
+        //    for (int i = 0; i < 1; i++) {
+        //        sprintf(path, "test%03d.bmp", m_addcnt++);
+        //        Mem2<Col3> img;
+        //        loadBMP(path, img);
+        //        m_sfm.addView(m_cam, img);
+        //    }
+        //    //m_img = img;
+        //}
+        //else {
+        //    sprintf(path, "test%03d.bmp", m_addcnt++);
+        //    Mem2<Col3> img = m_backup;
+        //    saveBMP(path, img);
+        //    m_sfm.addView(m_cam, img);
+        //}
+        m_sfm.addView(m_cam, m_img);
     }
 
     void capture() {
@@ -75,7 +91,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] >= 1) {
+        if (m_keyAction[GLFW_KEY_A] == 1) {
             m_thread.run<SfMGUI, &SfMGUI::addView>(this);
         }
 
@@ -103,10 +119,10 @@ private:
         {
             capture();
         }
+
         {
             m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
         }
-
         {
             const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
             const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
@@ -119,33 +135,31 @@ private:
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
             // render points
-            if (m_sfm.getMPnts() != NULL) {
-                const Mem1<MapPoint> &mpnts = *m_sfm.getMPnts();
-
+            {
                 glPointSize(4.f);
 
                 glLoadMatrix(m_pose);
 
                 glBegin(GL_POINTS);
-                for (int i = 0; i < mpnts.size(); i++) {
-                    if (mpnts[i].err > static_cast<double>(m_err)) continue;
-                    glColor(mpnts[i].col);
-                    glVertex(mpnts[i].pos);
+                for (int i = 0; i < m_sfm.msize(); i++) {
+                    const MapPnt *pnt = m_sfm.getMPnt(i);
+                    if (pnt->err > m_err) continue;
+                    glColor(pnt->col);
+                    glVertex(pnt->pos);
                 }
                 glEnd();
             }
 
             // render cam
-            if (m_sfm.size() > 0) {
-
+            {
                 glLineWidth(2.f);
 
                 glColor3d(0.5, 0.5, 0.8);
 
-                for (int i = 0; i < m_sfm.size(); i++) {
+                for (int i = 0; i < m_sfm.vsize(); i++) {
                     const View *view = m_sfm.getView(i);
 
-                    if (view == NULL || view->state != View::POSE_VALID) continue;
+                    if (view == NULL || view->valid == false) continue;
                     glLoadMatrix(m_pose * invPose(view->pose));
 
                     glBegin(GL_LINES);

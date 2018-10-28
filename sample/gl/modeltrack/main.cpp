@@ -78,14 +78,14 @@ private:
         if (m_keyAction[GLFW_KEY_D] >= 1) {
             if (m_mode < 0) m_est = m_pose;
             m_mode = 0;
-            track2D(m_est, m_gry, m_cam, m_pmodels, 50, 1);
+            fit2D(m_est, m_gry, m_cam, m_pmodels, 50, 1);
         }
         if (m_keyAction[GLFW_KEY_F] >= 1) {
             if (m_mode < 0) m_est = m_pose;
             m_mode = 1;
             Mem2<Vec3> map;
             cnvDepthToVec(map, m_cam, m_depth);
-            track3D(m_est, map, m_cam, m_pmodels, 1);
+            fit3D(m_est, map, m_cam, m_pmodels, 1);
         }
 
     }
@@ -126,12 +126,12 @@ private:
         // tracking
         if (m_start == true) {
             if (m_mode == 0) {
-                track2D(m_est, m_gry, m_cam, m_pmodels, 50, 3);
+                fit2D(m_est, m_gry, m_cam, m_pmodels, 50, 3);
             }
             if (m_mode == 1) {
                 Mem2<Vec3> map;
                 cnvDepthToVec(map, m_cam, m_depth);
-                track3D(m_est, map, m_cam, m_pmodels, 3);
+                fit3D(m_est, map, m_cam, m_pmodels, 3);
             }
         }
 
