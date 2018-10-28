@@ -43,7 +43,7 @@ private:
 
         m_cam = getCamParam(320, 240);
         m_viewScale *= 1.5;
-        //m_cam = getCamParam(640, 480);
+        m_cam = getCamParam(640, 480);
 
         m_img.resize(m_cam.dsize);
         m_img.zero();
@@ -73,8 +73,15 @@ private:
         {
 
             if (m_kfusion.valid() == false) {
-                const double radius = getModelRadius(m_model);
-                m_kfusion.init(200, radius / 100.0, m_cam, m_pose);
+                const double radius = getModelRadius(m_model) * 1.1;
+
+                // voxel size
+                const int vsize = 200;
+
+                // voxel unit length [mm]
+                const double unit = (2 * radius) / vsize;
+
+                m_kfusion.init(vsize, unit, m_cam, m_pose);
             }
 
             m_kfusion.execute(depth);
