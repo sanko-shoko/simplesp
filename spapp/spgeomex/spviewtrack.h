@@ -13,21 +13,29 @@
 namespace sp{
 
     class ViewTrack {
-    public:
+    private:
 
-        SP_LOGGER_INSTANCE;
-        SP_HOLDER_INSTANCE;
+        //--------------------------------------------------------------------------------
+        // input parameter
+        //--------------------------------------------------------------------------------
 
         const View *m_view;
         View m_inst;
 
+        //--------------------------------------------------------------------------------
+        // output parameter
+        //--------------------------------------------------------------------------------
+
+        // success flag
         bool m_track;
 
+        // estimated parameter
         Pose m_pose;
 
+        // image points
+        Mem1<Vec2> m_bases;
         Mem1<Vec2> m_crsps;
         Mem1<bool> m_mask;
-
 
         //--------------------------------------------------------------------------------
         // memory pool
@@ -36,6 +44,8 @@ namespace sp{
         MemP<MapPnt> _mpnts;
 
     public:
+        SP_LOGGER_INSTANCE;
+        SP_HOLDER_INSTANCE;
 
         ViewTrack() {
             clear();
@@ -46,6 +56,7 @@ namespace sp{
             m_pose = zeroPose();
             m_view = NULL;
 
+            m_bases.clear();
             m_crsps.clear();
             m_mask.clear();
         }
@@ -75,6 +86,17 @@ namespace sp{
             return (m_track == true) ? &m_pose : NULL;
         }
 
+        const Mem1<Vec2>* getBases() const {
+            return (m_bases.size() > 0) ? &m_bases : NULL;
+        }
+
+        const Mem1<Vec2>* getCrsps() const {
+            return (m_crsps.size() > 0) ? &m_crsps : NULL;
+        }
+
+        const Mem1<bool>* getMask() const {
+            return (m_mask.size() > 0) ? &m_mask : NULL;
+        }
 
         //--------------------------------------------------------------------------------
         // execute
@@ -113,10 +135,10 @@ namespace sp{
                 if (img.size() == 0) throw "input size";
 
                 if (m_view == &m_inst && check(*m_view) == false) {
-                    if (initMap(m_pose, m_crsps, m_mask, m_inst, cam, img) == false) throw "initMap";
+                    if (initMap(m_pose, m_crsps, m_bases, m_mask, m_inst, cam, img) == false) throw "initMap";
                 }
                 else {
-                    if (track(m_pose, m_crsps, m_mask, *m_view, cam, img, m_track) == false) throw "track";
+                    if (track(m_pose, m_crsps, m_bases, m_mask, *m_view, cam, img, m_track) == false) throw "track";
                     m_track = true;
                 }
             }
@@ -154,13 +176,15 @@ namespace sp{
 
         }
 
-        bool initMap(Pose &pose, Mem1<Vec2> &crsps, Mem1<bool> &mask, View &view, const CamParam &cam, const Mem2<Col3> &img) {
+        bool initMap(Pose &pose, Mem1<Vec2> &crsps, Mem1<Vec2> &bases, Mem1<bool> &mask, View &view, const CamParam &cam, const Mem2<Col3> &img) {
 
             static Mem1<Vec2> flows;
             calcFlow(flows, mask, view, cam, img);
 
             crsps.resize(flows.size());
+            bases.resize(flows.size());
             crsps.zero();
+            bases.zero();
 
             Mem1<Vec2> pixs0;
             Mem1<Vec2> pixs1;
@@ -170,6 +194,7 @@ namespace sp{
                 const Vec2 pix0 = view.fts[i].pix;
                 const Vec2 pix1 = view.fts[i].pix + flows[i];
 
+                bases[i] = pix0;
                 crsps[i] = pix1;
               
                 pixs0.push(pix0);
@@ -205,7 +230,7 @@ namespace sp{
             return true;
         }
 
-        bool track(Pose &pose, Mem1<Vec2> &crsps, Mem1<bool> &mask, const View &view, const CamParam &cam, const Mem2<Col3> &img, const bool track = false) {
+        bool track(Pose &pose, Mem1<Vec2> &crsps, Mem1<Vec2> &bases, Mem1<bool> &mask, const View &view, const CamParam &cam, const Mem2<Col3> &img, const bool track = false) {
 
             Mem1<Vec2> flows(view.fts.size());
             flows.zero();
@@ -228,20 +253,25 @@ namespace sp{
             calcFlow(flows, mask, view, cam, img);
 
             crsps.resize(flows.size());
+            bases.resize(flows.size());
             crsps.zero();
+            bases.zero();
+
             {
                 Mem1<Vec2> pixs;
                 Mem1<Vec3> objs;
                 for (int i = 0; i < view.fts.size(); i++) {
                     if (mask[i] == false) continue;
 
-                    const Vec2 pix = view.fts[i].pix + flows[i];
-                    crsps[i] = pix;
+                    const Vec2 pix0 = view.fts[i].pix;
+                    const Vec2 pix1 = view.fts[i].pix + flows[i];
+                    bases[i] = pix0;
+                    crsps[i] = pix1;
 
                     if (view.fts[i].mpnt == NULL) continue;
                     const Vec3 obj = view.fts[i].mpnt->pos;
 
-                    pixs.push(pix);
+                    pixs.push(pix1);
                     objs.push(obj);
                 }
 

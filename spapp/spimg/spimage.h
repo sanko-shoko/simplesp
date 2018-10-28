@@ -298,6 +298,11 @@ namespace sp{
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
+        Mat _mat = mat;
+        if (mat.rows() == 2 && (mat.cols() == 2 || mat.cols() == 3)) {
+            _mat = extMat(3, 3, mat);
+        }
+
         if (mat.rows() != 3 || mat.cols() != 3) return;
         const Mat imat = invMat(mat);
 

@@ -72,20 +72,26 @@ void sample(cv::Mat &cvimg, const int key){
     tracker.execute(cam, img, zeroPose());
 
     if (tracker.getPose() == NULL) {
-        for (int i = 0; i < tracker.m_crsps.size(); i++) {
-            if (tracker.m_mask[i] == false) continue;
+        if (tracker.getMask() != NULL) {
+            const Mem1<bool> &mask = *tracker.getMask();
+            const Mem1<Vec2> &bases = *tracker.getBases();
+            const Mem1<Vec2> &crsps = *tracker.getCrsps();
 
-            const Vec2 pix0 = tracker.getView()->fts[i].pix;
-            const Vec2 pix1 = tracker.m_crsps[i];
-            const Vec2 flow = pix1 - pix0;
+            for (int i = 0; i < mask.size(); i++) {
+                if (mask[i] == false) continue;
 
-            const double angle = (flow.x != 0.0 || flow.y != 0.0) ? ::atan2(flow.x, flow.y) : 0.0;
-            const double norm = normVec(flow) / 50.0;
+                const Vec2 pix0 = bases[i];
+                const Vec2 pix1 = crsps[i];
+                const Vec2 flow = pix1 - pix0;
 
-            Col3 col;
-            cnvHSVToCol(col, getVec(angle + SP_PI, minVal(1.0, norm), 1.0));
+                const double angle = (flow.x != 0.0 || flow.y != 0.0) ? ::atan2(flow.x, flow.y) : 0.0;
+                const double norm = normVec(flow) / 50.0;
 
-            renderLine(img, pix0, pix1, col, 2);
+                Col3 col;
+                cnvHSVToCol(col, getVec(angle + SP_PI, minVal(1.0, norm), 1.0));
+
+                renderLine(img, pix0, pix1, col, 2);
+            }
         }
     }
     else{
