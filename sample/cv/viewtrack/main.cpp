@@ -3,6 +3,8 @@
 
 using namespace sp;
 
+const DotMarkerParam mrk(5, 5, 30.0);
+
 void sample(cv::Mat &cvimg, const int key);
 
 int main(){
@@ -12,9 +14,13 @@ int main(){
         printf("could not find USB camera\n");
         exit(0);
     }
+    printf("'s' key : start viewtrack \n");
+    printf("'ESC' key : exit \n");
+    printf("\n");
 
-    printf("'s' key : start viewtrack\n");
-    printf("'ESC' key : exit\n");
+    printf("option \n");
+    printf("'a' key : add detected points for calibration \n");
+    printf("'c' key : execute calibration (i >= 3) \n");
 
     int key = 0;
 
@@ -40,10 +46,22 @@ void sample(cv::Mat &cvimg, const int key){
     // convert data type
     cvCnvImg(img, cvimg);
 
-    const CamParam cam = getCamParam(img.dsize);
+    // calibration
+    static CalibTool ctool;
+    {
+        if (key == 'a') {
+            ctool.addImg(mrk, img);
+        }
+        if (key == 'c') {
+            if (ctool.execute() == true) {
+                ctool.save("cam.txt");
+            }
+        }
+    }
+
+    const CamParam cam = (ctool.getCam() != NULL) ? *ctool.getCam() : getCamParam(img.dsize);
 
     static ViewTrack tracker;
-
     if (key == 's') {
         tracker.setView(cam, img, zeroPose());
         return;

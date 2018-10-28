@@ -14,11 +14,11 @@ int main(){
         exit(0);
     }
 
-    printf("'p' key : render detected points\n");
-    printf("'a' key : add detected points for calibration\n");
+    printf("'p' key : render detected points \n");
+    printf("'a' key : add detected points for calibration \n");
     printf("'c' key : execute calibration (i >= 3) \n");
-    printf("'d' key : diminish marker\n");
-    printf("'ESC' key : exit\n");
+    printf("'d' key : diminish marker \n");
+    printf("'ESC' key : exit \n");
 
     int key = 0;
 
@@ -52,17 +52,14 @@ void sample(cv::Mat &cvimg, const int key){
     dotMarker.execute(img);
 
     // calibration
+    static CalibTool ctool;
     {
-        static CalibTool ctool;
-
         if (key == 'a') {
             ctool.addImg(mrk, img);
         }
-
         if (key == 'c') {
             if (ctool.execute() == true) {
                 ctool.save("cam.txt");
-
                 const CamParam cam = *ctool.getCam();
                 dotMarker.setCam(cam);
             }

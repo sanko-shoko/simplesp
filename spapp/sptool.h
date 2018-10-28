@@ -83,6 +83,8 @@ namespace sp {
             m_pixs.push(*dotMarker.getCrspPixs());
             m_objs.push(*dotMarker.getCrspObjs());
             m_imgs.push(img);
+
+            return true;
         }
 
         //--------------------------------------------------------------------------------
