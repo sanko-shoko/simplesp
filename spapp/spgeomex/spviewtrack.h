@@ -178,7 +178,7 @@ namespace sp{
 
             {
                 const double eval = evalStereo(view.cam, pixs0, cam, pixs1);
-                printf("eval %lf\n", eval);
+                SP_PRINTD("eval %lf\n", eval);
                 if (eval < 0.4) return false;
             }
 

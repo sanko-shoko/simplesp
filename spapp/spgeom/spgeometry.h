@@ -793,7 +793,7 @@ namespace sp {
     }
 
     // 2D-3D pose
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 3.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
       
         const int num = pixs.size();
@@ -853,7 +853,7 @@ namespace sp {
     }
 
     // 2D-2D pose (planar object)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 3.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -910,7 +910,7 @@ namespace sp {
     }
 
     // 2D-2D pose (stereo camera)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 3.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);

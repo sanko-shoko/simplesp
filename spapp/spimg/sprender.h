@@ -198,9 +198,26 @@ namespace sp{
         SP_ASSERT(isValid(2, dst));
 
         for (int i = 0; i < num; i++){
-            const double p = i * 2 * length / (num - 1);
-            renderLine(dst, cam, pose, getVec(-length, -length + p, 0.0), getVec(+length, -length + p, 0.0), val, thick);
-            renderLine(dst, cam, pose, getVec(-length + p, -length, 0.0), getVec(-length + p, +length, 0.0), val, thick);
+            const double half = length / 2.0;
+            const double p = i * length / (num - 1);
+            renderLine(dst, cam, pose, getVec(-half, -half + p, 0.0), getVec(+half, -half + p, 0.0), val, thick);
+            renderLine(dst, cam, pose, getVec(-half + p, -half, 0.0), getVec(-half + p, +half, 0.0), val, thick);
+        }
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC void renderGrid3d(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int num, const TYPE &val, const double thick = 1.0) {
+        SP_ASSERT(isValid(2, dst));
+
+        for (int i = 0; i < num; i++) {
+            for (int j = 0; j < num; j++) {
+                const double half = length / 2.0;
+                const double p = i * length / (num - 1);
+                const double q = j * length / (num - 1);
+                renderLine(dst, cam, pose, getVec(-half, -half + p, -half + q), getVec(+half, -half + p, -half + q), val, thick);
+                renderLine(dst, cam, pose, getVec(-half + p, -half, -half + q), getVec(-half + p, +half, -half + q), val, thick);
+                renderLine(dst, cam, pose, getVec(-half + p, -half + q, -half), getVec(-half + p, -half + q, +half), val, thick);
+            }
         }
     }
 

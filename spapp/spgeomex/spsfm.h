@@ -11,10 +11,7 @@
 #include "spapp/spgeom/spgeometry.h"
 
 namespace sp {
-
  
-#define SP_SFM_MAXVIEW 1000
-
     class SfM {
 
     public:
@@ -95,6 +92,8 @@ namespace sp {
         SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
+    private:
+
         // update counter
         int m_update;
 
@@ -113,6 +112,7 @@ namespace sp {
         Mem1<MapPnt*> m_mpnts;
         
 
+    private:
         //--------------------------------------------------------------------------------
         // memory pool & stack
         //--------------------------------------------------------------------------------
@@ -129,16 +129,7 @@ namespace sp {
     public:
 
         SfM() {
-            init();
-        }
-
-        void init(const int maxview = SP_SFM_MAXVIEW) {
             clear();
-
-            m_maxview = maxview;
-
-            m_pairs.resize(maxview, maxview);
-            m_pairs.zero();
         }
 
         void clear() {
@@ -243,12 +234,7 @@ namespace sp {
         bool _update() {
 
             try {
-
-                // set new view
-                {
-                    m_views.push(_viewsStack);
-                    _viewsStack.clear();
-                }
+                initMem();
 
                 const int seed = m_update;
 
@@ -290,6 +276,23 @@ namespace sp {
             return true;
         }
 
+        void initMem() {
+            m_views.push(_viewsStack);
+            _viewsStack.clear();
+
+            if (m_views.size() > m_pairs.dsize[0]) {
+                const Mem2<MatchPair*> tmp = m_pairs;
+
+                m_pairs.resize(2 * m_views.size(), 2 * m_views.size());
+                m_pairs.zero();
+
+                for (int y = 0; y < tmp.dsize[1]; y++) {
+                    for (int x = 0; x < tmp.dsize[1]; x++) {
+                        m_pairs(x, y) = tmp(x, y);
+                    }
+                }
+            }
+        }
 
         //--------------------------------------------------------------------------------
         // view (v: view id)
@@ -300,8 +303,6 @@ namespace sp {
             view.img = img;
             view.cam = cam;
             view.fts = SIFT::getFeatures(img);
-            view.valid = false;
-            view.state = ViewEx::POSE_NULL;
 
             _viewsStack.push(&view);
         }
@@ -331,7 +332,6 @@ namespace sp {
             }
 
             views[a]->icnt++;
-
             pairs(a, b) = &pair;
 
             //printf("[%d %d]: size %d, cnt %d, eval %.2lf\n", pair.a, pair.b, pair.matches.size(), getMatchCnt(pair.matches), pair.eval);

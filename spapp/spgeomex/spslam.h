@@ -26,18 +26,19 @@ namespace sp {
         SP_LOGGER_INSTANCE;
 
         SLAM() {
+            clear();
         }
 
-        void init(const CamParam &cam, const int maxview = SP_SFM_MAXVIEW) {
-            clear();
+        void init(const CamParam &cam) {
             m_cam = cam;
-            m_sfm.init(maxview);
+            clear();
         }
 
         void clear() {
             m_track = false;
             m_cam = getCamParam(0, 0);
             m_pose = zeroPose();
+            m_sfm.clear();
         }
 
 

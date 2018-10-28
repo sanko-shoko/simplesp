@@ -40,7 +40,7 @@ private:
     }
 
     void reset(){
-        m_sfm.init();
+        m_sfm.clear();
 
         CamParam cam;
         loadText(SP_DATA_DIR "/image/shiba.txt", cam);
