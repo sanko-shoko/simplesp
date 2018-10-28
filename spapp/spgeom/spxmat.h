@@ -692,7 +692,7 @@ namespace sp{
         }
 
         srand(0);
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec2> sobjs, robjs;
@@ -745,7 +745,7 @@ namespace sp{
         }
 
         const int tnum = 20;
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> snpxs0, rnpxs0;
         Mem1<Vec2> snpxs1, rnpxs1;
@@ -805,7 +805,7 @@ namespace sp{
         }
 
         const int tnum = 20;
-        int maxit = SP_RANSAC_ITMAX;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs0, rpixs0;
         Mem1<Vec2> spixs1, rpixs1;

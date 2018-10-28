@@ -194,7 +194,7 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void renderGrid(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int num, const TYPE &val, const double thick = 1.0){
+    SP_CPUFUNC void renderGrid2d(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const int num, const TYPE &val, const double thick = 1.0){
         SP_ASSERT(isValid(2, dst));
 
         for (int i = 0; i < num; i++){

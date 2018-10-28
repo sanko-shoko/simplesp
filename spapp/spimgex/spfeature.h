@@ -9,8 +9,10 @@
 #include "spapp/spgeom/spgeometry.h"
 
 namespace sp{
+    class MapPnt;
 
-    struct Feature{
+    class Feature{
+    public:
 
         // feature point
         Vec2 pix;
@@ -26,19 +28,20 @@ namespace sp{
 
         // descripter type
         enum Type{
-            DSC_32F = 0
+            DSC_NULL = 0,
+            DSC_SIFT = 1
         };
         Type type;
 
-        // map id;
-        int mid;
+        // map point;
+        MapPnt *mpnt;
 
         Feature() {
             pix = getVec(0.0, 0.0);
             drc = getVec(0.0, 0.0);
             scl = 0.0;
-            mid = -1;
-            type = DSC_32F;
+            mpnt = NULL;
+            type = DSC_SIFT;
         }
 
         Feature(const Feature &ft) {
@@ -50,39 +53,8 @@ namespace sp{
             drc = ft.drc;
             scl = ft.scl;
             dsc = ft.dsc;
-            mid = ft.mid;
+            mpnt = ft.mpnt;
             type = ft.type;
-            return *this;
-        }
-
-    };
-
-    struct PairData {
-
-        // pair id
-        int a, b;
-
-        // match data
-        Mem1<int> matches;
-
-        // match features eval
-        double eval;
-
-        PairData() {
-            a = -1;
-            b = -1;
-            eval = -1.0;
-        }
-
-        PairData(const PairData &pair) {
-            *this = pair;
-        }
-
-        PairData& operator = (const PairData &pair) {
-            a = pair.a;
-            b = pair.b;
-            matches = pair.matches;
-            eval = pair.eval;
             return *this;
         }
     };
@@ -127,7 +99,7 @@ namespace sp{
 
         int id = -1;
 
-        if (ft.type == Feature::Type::DSC_32F) {
+        if (ft.type == Feature::Type::DSC_SIFT) {
             const double NCC_MIN = 0.9;
             double maxv = NCC_MIN;
 

@@ -105,7 +105,7 @@ namespace sp {
                 if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
 
                 if (force == true) {
-                    m_sfm.addView(img, &m_cam);
+                    m_sfm.addView(m_cam, img);
                 }
 
                 m_sfm.update();

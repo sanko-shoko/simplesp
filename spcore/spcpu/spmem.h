@@ -663,7 +663,7 @@ namespace sp{
 
     template<typename TYPE> class MemP {
 
-        // data unit size
+        // data unit size (ex TYPE[2] -> 2)
         int m_unit;
 
         // pool block size
@@ -775,7 +775,11 @@ namespace sp{
 
             m_size++;
 
-            return &m_ptrs[m][n * m_unit];
+            TYPE *ret = &m_ptrs[m][n * m_unit];
+            for (int i = 0; i < m_unit; i++) {
+                ret[i] = TYPE();
+            }
+            return ret;
         }
 
         void free(TYPE *ptr){

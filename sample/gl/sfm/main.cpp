@@ -52,7 +52,7 @@ private:
             Mem2<Col3> img;
             loadBMP(path, img);
 
-            m_sfm.addView(img, &cam);
+            m_sfm.addView(cam, img);
         }
         m_sfm.update();
     }

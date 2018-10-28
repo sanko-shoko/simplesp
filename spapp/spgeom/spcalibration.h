@@ -167,8 +167,8 @@ namespace sp{
                 if (calcPose(pose0, cam0, pixs0[i], objs[i]) == false) continue;
                 if (calcPose(pose1, cam1, pixs1[i], objs[i]) == false) continue;
 
-                const Mem1<double> errs0 = errPrj(pose0, cam0, pixs0[i], getVec(objs[i], 0.0));
-                const Mem1<double> errs1 = errPrj(pose1, cam1, pixs1[i], getVec(objs[i], 0.0));
+                const Mem1<double> errs0 = calcPrjErr(pose0, cam0, pixs0[i], getVec(objs[i], 0.0));
+                const Mem1<double> errs1 = calcPrjErr(pose1, cam1, pixs1[i], getVec(objs[i], 0.0));
 
                 const double err = medianVal(errs0) + medianVal(errs1);
                 if (err < minv){
@@ -289,8 +289,8 @@ namespace sp{
 
                 Mem1<double> errs;
                 for (int i = 0; i < vposes.size(); i++){
-                    errs.push(errPrj(vposes[i], cam0, vpixs0[i], getVec(vobjs[i], 0.0)));
-                    errs.push(errPrj(stereo * vposes[i], cam1, vpixs1[i], getVec(vobjs[i], 0.0)));
+                    errs.push(calcPrjErr(vposes[i], cam0, vpixs0[i], getVec(vobjs[i], 0.0)));
+                    errs.push(calcPrjErr(stereo * vposes[i], cam1, vpixs1[i], getVec(vobjs[i], 0.0)));
                 }
 
                 const double mean = meanVal(errs);
@@ -338,7 +338,7 @@ namespace sp{
                         Pose pose;
                         if (calcPose(pose, cam, pixs[i][j], objs[i][j]) == true) {
                             mem(i, j) = pose;
-                            eval(i, j) = evalErr(errPrj(pose, cam, pixs[i][j], getVec(objs[i][j], 0.0)));
+                            eval(i, j) = evalErr(calcPrjErr(pose, cam, pixs[i][j], getVec(objs[i][j], 0.0)));
                         }
                     }
                 }
@@ -399,7 +399,7 @@ namespace sp{
                     Pose tmp;
                     if (calcPose(tmp, cams[j], pixs[j][i], objs[j][i]) == false) continue;
 
-                    const double e = evalErr(errPrj(tmp, cams[j], pixs[j][i], getVec(objs[j][i], 0.0)));
+                    const double e = evalErr(calcPrjErr(tmp, cams[j], pixs[j][i], getVec(objs[j][i], 0.0)));
                     if (e > maxe) {
                         maxe = e;
                         pose = invPose(poses[j]) * tmp;
@@ -562,7 +562,7 @@ namespace sp{
                     Mem1<double> errs;
                     for (int i = 0; i < vposes.size(); i++) {
                         for (int j = 0; j < cnum; j++) {
-                            errs.push(errPrj(poses[j] * vposes[i], cams[j], vpixs[i][j], getVec(vobjs[i][j], 0.0)));
+                            errs.push(calcPrjErr(poses[j] * vposes[i], cams[j], vpixs[i][j], getVec(vobjs[i][j], 0.0)));
                         }
                     }
 

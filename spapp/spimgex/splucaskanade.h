@@ -64,8 +64,18 @@ namespace sp{
             const double wscale = (p + 1) * (WIN_SIZE / 2);
 
             for (int i = 0; i < pixs.size(); i++) {
-                if (mask[i] == false) continue;
-                if (p != pynum - 1 && scalecheck == true && scls[i] > wscale) continue;
+                // check status
+                {
+                    if (mask[i] == false) continue;
+
+                    if (p != pynum - 1 && scalecheck == true && scls[i] > wscale) continue;
+
+                    const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
+                    if (isInRect2(rect, pix0.x, pix0.y) == false) {
+                        mask[i] = false;
+                        continue;
+                    }
+                }
 
                 // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
                 Mat A(WIN_SIZE * WIN_SIZE, 2);
@@ -76,23 +86,23 @@ namespace sp{
                 {
                     AtA.zero();
                     
-                    const Vec2 pix0 = pixs[i] * scale;
+                    const Vec2 pix1 = pixs[i] * scale;
 
                     for (int y = 0; y < WIN_SIZE; y++) {
                         for (int x = 0; x < WIN_SIZE; x++) {
                             const int i = y * WIN_SIZE + x;
                             const Vec2 v = getVec(x - offset, y - offset);
 
-                            const Vec2 p0 = pix0 + v;
-                            if (isInRect2(rect, p0.x, p0.y) == false) continue;
+                            const Vec2 p1 = pix1 + v;
+                            if (isInRect2(rect, p1.x, p1.y) == false) continue;
 
-                            const double gx = acs2(scharrX, p0.x, p0.y) / SP_BYTEMAX;
-                            const double gy = acs2(scharrY, p0.x, p0.y) / SP_BYTEMAX;
+                            const double gx = acs2(scharrX, p1.x, p1.y) / SP_BYTEMAX;
+                            const double gy = acs2(scharrY, p1.x, p1.y) / SP_BYTEMAX;
                             
                             A(i, 0) = gx;
                             A(i, 1) = gy;
 
-                            I(i, 0) = acs2(pyimg1, p0.x, p0.y);
+                            I(i, 0) = acs2(pyimg1, p1.x, p1.y);
 
                             AtA(0, 0) += gx * gx;
                             AtA(0, 1) += gx * gy;

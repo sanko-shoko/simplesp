@@ -124,7 +124,7 @@ int main() {
                 Vec3 pnt;
                 if (calcPnt3d(pnt, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
 
-                const double err = errPrj(zeroPose(), cam0, pixs0[i], pnt);
+                const double err = calcPrjErr(zeroPose(), cam0, pixs0[i], pnt);
                 if (evalErr(err) == 0.0) continue;
 
                 pnts.push(pnt);
