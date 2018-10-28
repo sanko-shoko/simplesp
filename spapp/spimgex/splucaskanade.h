@@ -16,6 +16,10 @@
 
 namespace sp{
 
+    SP_CPUFUNC bool opticalFlowLK(Vec2 &flow, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Vec2 &pix, const double &scl = 1.0) {
+
+    }
+
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         SP_LOGGER_INSTANCE;
         SP_LOGGER_SET("opticalFlowLK");

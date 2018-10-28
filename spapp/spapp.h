@@ -70,6 +70,7 @@
 #include "spapp/splearn/spneumodel.h"
 
 // util
+#include "spapp/sptool.h"
 #include "spapp/spthread.h"
 
 #endif
