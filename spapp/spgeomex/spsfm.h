@@ -14,7 +14,7 @@ namespace sp {
  
     class SfM {
 
-    public:
+    private:
 
         typedef MemA<int, 2> Int2;
 
@@ -93,6 +93,9 @@ namespace sp {
         SP_HOLDER_INSTANCE;
 
     private:
+        //--------------------------------------------------------------------------------
+        // sfm data
+        //--------------------------------------------------------------------------------
 
         // update counter
         int m_update;
@@ -100,8 +103,6 @@ namespace sp {
         // initial pair
         Int2 m_ipair;
 
-        int m_maxview;
-        
         // key views
         Mem1<ViewEx*> m_views;
 
@@ -173,10 +174,10 @@ namespace sp {
         // execute
         //--------------------------------------------------------------------------------
 
-        bool addView(const CamParam &cam, const Mem2<Col3> &img) {
+        void addView(const CamParam &cam, const Mem2<Col3> &img) {
             SP_LOGGER_SET("-addView");
 
-            return _addView(cam, img);
+            addView(m_views, cam, img);
         }
 
         bool update(const int itmax = 1) {
@@ -222,14 +223,6 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // execute main flow
         //--------------------------------------------------------------------------------
-        
-        bool _addView(const CamParam &cam, const Mem2<Col3> &img) {
-            if (m_views.size() == m_maxview) return false;
-
-            addView(m_views, cam, img);
-
-            return true;
-        }
 
         bool _update() {
 

@@ -19,8 +19,6 @@ class SfMGUI : public BaseWindow {
 
     CamParam m_cam;
     Mem2<Col3> m_img;
-
-    MemP<Mem2<Col3>> m_pool;
  
     // thread;
     Thread m_thread;
@@ -55,7 +53,7 @@ private:
 
     void reset() {
         loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
-        m_sfm.init();
+        m_sfm.clear();
         m_addcnt = 0;
     }
 
@@ -64,7 +62,7 @@ private:
     }
 
     void addView() {
-        char path[256];
+        //char path[256];
         //if (1) {
         //    for (int i = 0; i < 1; i++) {
         //        sprintf(path, "test%03d.bmp", m_addcnt++);
@@ -80,10 +78,7 @@ private:
         //    saveBMP(path, img);
         //    m_sfm.addView(m_cam, img);
         //}
-
-        Mem2<Col3> &img = m_pool[0];
-        m_sfm.addView(m_cam, img);
-        m_pool.free(&img);
+        m_sfm.addView(m_cam, m_img);
     }
 
     void capture() {
@@ -97,7 +92,6 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] == 1) {
-            *m_pool.malloc() = m_img;
             m_thread.run<SfMGUI, &SfMGUI::addView>(this);
         }
 
