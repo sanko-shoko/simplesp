@@ -69,9 +69,10 @@ void sample(cv::Mat &cvimg, const int key){
 
     if (tracker.getView() == NULL) return;
 
-    tracker.execute(cam, img, zeroPose());
+    tracker.execute(img);
 
-    if (tracker.getPose() == NULL) {
+    //if (tracker.getPose() == NULL) 
+    {
         if (tracker.getMask() != NULL) {
             const Mem1<bool> &mask = *tracker.getMask();
             const Mem1<Vec2> &bases = *tracker.getBases();
@@ -94,7 +95,8 @@ void sample(cv::Mat &cvimg, const int key){
             }
         }
     }
-    else{
+
+    if (tracker.getPose() != NULL) {
 
         const Pose base = getPose(getVec(0.0, 0.0, 20.0));
 
@@ -103,4 +105,5 @@ void sample(cv::Mat &cvimg, const int key){
     }
 
     cvCnvImg(cvimg, img);
+
 }
