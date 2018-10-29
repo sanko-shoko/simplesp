@@ -34,11 +34,15 @@ namespace sp {
             // map points count
             int mcnt;
 
+            // fix flag
+            bool fix;
+
             ViewEx() : View(){
                 state = POSE_NULL;
              
                 icnt = 0;
                 mcnt = 0;
+                fix = false;
             }
 
             ViewEx(const ViewEx &view) {
@@ -52,6 +56,9 @@ namespace sp {
                 links = view.links;
                 icnt = view.icnt;
                 mcnt = view.mcnt;
+
+                fix = view.fix;
+
                 return *this;
             }
         };
@@ -87,10 +94,6 @@ namespace sp {
             }
         };
 
-    public:
-        SP_LOGGER_INSTANCE;
-        SP_HOLDER_INSTANCE;
-
     private:
         //--------------------------------------------------------------------------------
         // sfm data
@@ -98,9 +101,6 @@ namespace sp {
 
         // update counter
         int m_update;
-
-        // initial pair
-        MemA<int, 2> m_ipair;
 
         // key views
         Mem1<ViewEx*> m_views;
@@ -127,6 +127,8 @@ namespace sp {
 
 
     public:
+        SP_LOGGER_INSTANCE;
+        SP_HOLDER_INSTANCE;
 
         SfM() {
             clear();
@@ -134,7 +136,6 @@ namespace sp {
 
         void clear() {
             m_update = 0;
-            m_ipair.set(-1, -1);
 
             m_views.clear();
             m_pairs.clear();
@@ -426,7 +427,7 @@ namespace sp {
                 setView(*views[a], zeroPose());
                 setView(*views[b], pose);
 
-                m_ipair.set(a, b);
+                views[a]->fix = true;
             }
 
             return true;
@@ -624,8 +625,8 @@ namespace sp {
             Mem1<ViewEx*> list;
             {
                 for (int v = 0; v < views.size(); v++) {
-                    if (v == m_ipair[0] || v == m_ipair[1]) continue;
                     ViewEx *view = views[v];
+                    if (view->fix == true) continue;
 
                     if (view->state == ViewEx::POSE_VALID) {
                         list.push(view);

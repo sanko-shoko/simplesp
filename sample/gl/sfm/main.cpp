@@ -1,7 +1,6 @@
-﻿#define SP_USE_IMGUI 1
-
-#include "simplesp.h"
+﻿#include "simplesp.h"
 #include "spex/spgl.h"
+//#include "spex/spcv.h"
 
 using namespace sp;
 
@@ -34,30 +33,35 @@ private:
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
-        m_err = 1.0f;
-        ImGui::GetIO().IniFilename = NULL;
+        m_err = 3.0f;
         reset();
     }
 
     void reset(){
         m_sfm.clear();
 
-        CamParam cam;
-        loadText(SP_DATA_DIR "/image/shiba.txt", cam);
-
         for (int i = 0; i < 7; i++) {
-            char path[512];
-            sprintf(path, SP_DATA_DIR "/image/shiba%02d.bmp", i);
-
+            CamParam cam;
             Mem2<Col3> img;
-            loadBMP(path, img);
+            if (loadShiba(cam, img, i) == false) break;
 
             m_sfm.addView(cam, img);
         }
         m_sfm.update();
     }
 
-    virtual void keyFun(int key, int scancode, int action, int mods) {
+    bool loadShiba(CamParam &cam, Mem2<Col3> &img, const int i) {
+        if (i >= 7) return false;
+        loadText(SP_DATA_DIR "/image/shiba.txt", cam);
+
+        char path[512];
+        sprintf(path, SP_DATA_DIR "/image/shiba%02d.bmp", i);
+        loadBMP(path, img);
+
+        return true;
+    }
+
+     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] >= 1) {
             m_sfm.update();
@@ -67,23 +71,12 @@ private:
             reset();
         }
 
+        //if (m_keyAction[GLFW_KEY_T] == 1) {
+        //    add();
+        //}
     }
 
     virtual void display() {
-        // test window
-        //if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
-
-        //    ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-        //    ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
-
-        //    if (ImGui::Button("Button")) {
-        //        printf("Button\n");
-        //    }
-
-        //    ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
-
-        //    ImGui::End();
-        //}
 
         // view 3D
         glLoadView3D(m_wcam, m_viewPos, m_viewScale);
@@ -144,6 +137,37 @@ private:
         controlPose(delta, m_mouse, m_wcam, m_viewScale, m_axis);
         m_pose.trn.z += delta.trn.z;
         m_axis.trn.z -= delta.trn.z;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // option
+    //--------------------------------------------------------------------------------
+
+    bool loadTsukuba(CamParam &cam, Mem2<Col3> &img, const int i) {
+        if (i >= 200) return false;
+
+        const double f = 615.0;
+        cam = getCamParam(640, 480, f, f);
+
+        char path[512];
+        sprintf(path, SP_DATA_DIR "/tsukuba/NTSD-200/illumination/daylight/left/frame_%d.png", i + 1);
+
+        bool ret = false;
+        //ret = cvLoadImg(img, path);
+
+        return ret;
+    }
+
+    void add() {
+        const int v = m_sfm.vsize();
+        CamParam cam;
+        Mem2<Col3> img;
+
+        if (loadTsukuba(cam, img, v * 10) == false) return;
+
+        m_sfm.addView(cam, img);
+        m_sfm.update();
     }
 
 };

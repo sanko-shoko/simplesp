@@ -21,6 +21,9 @@ class SfMGUI : public BaseWindow {
     Mem2<Col3> m_img;
  
     // thread;
+    CalibTool m_ctool;
+
+    // thread;
     Thread m_thread;
 
     // 
@@ -36,6 +39,10 @@ private:
         printf("'s' key : reset\n");
         printf("'ESC' key : exit\n");
         printf("\n");
+
+        printf("option \n");
+        printf("'x' key : add detected points for calibration \n");
+        printf("'c' key : execute calibration (i >= 3) \n");
     }
 
     virtual void init() {
@@ -52,9 +59,12 @@ private:
     }
 
     void reset() {
-        loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
+        //loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
+        m_cam = getCamParam(0, 0);
         m_sfm.clear();
         m_addcnt = 0;
+
+        m_ctool.clear();
     }
 
     void update(){
@@ -78,7 +88,16 @@ private:
         //    saveBMP(path, img);
         //    m_sfm.addView(m_cam, img);
         //}
-        m_sfm.addView(m_cam, m_img);
+
+        CamParam cam;
+        if (m_cam.dsize[0] * m_cam.dsize[1] > 0) {
+            cam = m_cam;
+        }
+        else {
+            cam = getCamParam(m_img.dsize);
+        }
+
+        m_sfm.addView(cam, m_img);
     }
 
     void capture() {
@@ -97,6 +116,19 @@ private:
 
         if (m_keyAction[GLFW_KEY_S] == 1) {
             m_thread.run<SfMGUI, &SfMGUI::reset>(this);
+        }
+
+        {
+            if (m_keyAction[GLFW_KEY_X] == 1) {
+                const DotMarkerParam mrk(5, 5, 30.0);
+                m_ctool.addImg(mrk, m_img);
+            }
+
+            if (m_keyAction[GLFW_KEY_C] == 1) {
+                if (m_ctool.execute() == true) {
+                    m_cam = *m_ctool.getCam();
+                }
+            }
         }
     }
 

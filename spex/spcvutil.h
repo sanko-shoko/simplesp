@@ -83,7 +83,11 @@ namespace sp{
     template<typename TYPE>
     SP_CPUFUNC bool cvLoadImg(Mem<TYPE> &dst, const char *path){
         const cv::Mat cvimg = cv::imread(path);
-        return cvCnvImg(dst, cvimg);
+
+        const bool ret = cvCnvImg(dst, cvimg);
+        printf("cv::imread [%s] \n", path);
+
+        return ret;
     }
 
     //--------------------------------------------------------------------------------
@@ -95,7 +99,10 @@ namespace sp{
         cv::Mat cvimg;
         cvCnvImg(cvimg, src);
                 
-        return cv::imwrite(path, cvimg);
+        const bool ret = cv::imwrite(path, cvimg);
+        printf("cv::imwrite [%s] \n", path);
+     
+        return ret;
     }
 
     //--------------------------------------------------------------------------------

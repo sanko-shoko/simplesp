@@ -28,3 +28,6 @@
 !/middlebury/stereo2006.txt
 !/middlebury/dino.txt
 
+# tsukuba
+/tsukuba/*
+!/tsukuba/tsukuba.txt
