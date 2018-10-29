@@ -10,7 +10,7 @@ int main(){
     const CamParam cam = getCamParam(640, 480);
 
     // detected marker pos[pixel], and world marker pos[mm]
-    Mem1<Mem1<Vec2> > pixsList, objsList;
+    Mem1<Mem1<Vec2> > pixs, objs;
 
     // robot pose
     Mem1<Pose> hand2basePoses;
@@ -53,7 +53,7 @@ int main(){
         const Mem2<Vec2> mrkMap = mrk.map * mrk.distance;
 
         for (int i = 0; i < mrk2camPoses.size(); i++) {
-            Mem1<Vec2> pixs, objs;
+            Mem1<Vec2> _pixs, _objs;
 
             if (1) {
                 // generate test points
@@ -63,8 +63,8 @@ int main(){
                     const Vec3 pos = mrk2camPoses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
                     const Vec2 pix = mulCamD(cam, prjVec(pos)) + randVecGauss(sigma, sigma);
 
-                    pixs.push(pix);
-                    objs.push(mrkMap[n]);
+                    _pixs.push(pix);
+                    _objs.push(mrkMap[n]);
                 }
             }
             else {
@@ -79,19 +79,19 @@ int main(){
                 detector.setMrk(mrk);
                 detector.execute(gry);
 
-                pixs = *detector.getCrspPixs();
-                objs = *detector.getCrspObjs();
+                _pixs = *detector.getCrspPixs();
+                _objs = *detector.getCrspObjs();
             }
 
-            pixsList.push(pixs);
-            objsList.push(objs);
+            pixs.push(_pixs);
+            objs.push(_objs);
         }
     }
 
     {
         Pose hand2camPose;
         Pose base2mrkPose;
-        calibRobotCam(hand2camPose, base2mrkPose, hand2basePoses, cam, pixsList, objsList);
+        calibRobotCam(hand2camPose, base2mrkPose, hand2basePoses, cam, pixs, objs);
 
         printf("--------------------------------------------------------------------------------\n");
         printf("estimate\n");
