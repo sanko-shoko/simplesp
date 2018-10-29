@@ -155,6 +155,18 @@ namespace sp{
         return ret;
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC Mem<TYPE> filter(const Mem<TYPE> &src, const Mem<bool> &mask, const bool flag = true) {
+        Mem1<TYPE> ret;
+
+        ret.reserve(src.size());
+        for (int i = 0; i < src.size(); i++) {
+            if (mask[i] == flag) {
+                ret.push(src[i]);
+            }
+        }
+        return ret;
+    }
 
     //--------------------------------------------------------------------------------
     // mem1 operator

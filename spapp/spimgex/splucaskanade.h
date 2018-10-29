@@ -16,9 +16,6 @@
 
 namespace sp{
 
-    SP_CPUFUNC bool opticalFlowLK(Vec2 &flow, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Vec2 &pix, const double &scl = 1.0) {
-
-    }
 
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
         SP_LOGGER_INSTANCE;
@@ -27,14 +24,23 @@ namespace sp{
         const int WIN_SIZE = 21;
         const double EIG_THRESH = 0.01;
 
+        Mem1<double> errs;
+
+        // clear
         if (flows.size() != pixs.size()) {
             flows.resize(pixs.size());
             flows.zero();
         }
+        {
+            mask.resize(pixs.size());
+            setElm(mask, true);
 
-        mask.resize(pixs.size());
-        setElm(mask, true);
+            errs.resize(pixs.size());
+            errs.zero();
+        }
 
+
+        // pyramid num
         const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 20.0));
 
         Mem1<Mem2<Byte> > pyimgs0(pynum);
@@ -51,9 +57,10 @@ namespace sp{
             }
         }
 
-        const bool scalecheck = (scls.size() == pixs.size()) ? true : false;
+        const bool useSclCheck = (scls.size() == pixs.size()) ? true : false;
 
         for(int p = pynum - 1; p >= 0; p--){
+
             const Mem2<Byte> &pyimg0 = pyimgs0[p];
             const Mem2<Byte> &pyimg1 = pyimgs1[p];
             const double scale = pow(0.5, p);
@@ -62,20 +69,22 @@ namespace sp{
             scharrFilterX(scharrX, pyimg1);
             scharrFilterY(scharrY, pyimg1);
 
-            const Rect rect = getRect2(img1.dsize);
-            const int offset = WIN_SIZE / 2;
+            const Rect rect0 = getRect2(pyimg0.dsize);
+            const Rect rect1 = getRect2(pyimg1.dsize);
+            const int half = WIN_SIZE / 2;
 
-            const double wscale = (p + 1) * (WIN_SIZE / 2);
+            const double wscl = (p + 1) * (WIN_SIZE / 2);
 
             for (int i = 0; i < pixs.size(); i++) {
+
                 // check status
                 {
                     if (mask[i] == false) continue;
 
-                    if (p != pynum - 1 && scalecheck == true && scls[i] > wscale) continue;
+                    if (p < pynum - 1 && useSclCheck == true && scls[i] > wscl) continue;
 
                     const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
-                    if (isInRect2(rect, pix0.x, pix0.y) == false) {
+                    if (isInRect2(rect0, pix0.x, pix0.y) == false) {
                         mask[i] = false;
                         continue;
                     }
@@ -95,10 +104,10 @@ namespace sp{
                     for (int y = 0; y < WIN_SIZE; y++) {
                         for (int x = 0; x < WIN_SIZE; x++) {
                             const int i = y * WIN_SIZE + x;
-                            const Vec2 v = getVec(x - offset, y - offset);
+                            const Vec2 v = getVec(x - half, y - half);
 
                             const Vec2 p1 = pix1 + v;
-                            if (isInRect2(rect, p1.x, p1.y) == false) continue;
+                            if (isInRect2(rect1, p1.x, p1.y) == false) continue;
 
                             const double gx = acs2(scharrX, p1.x, p1.y) / SP_BYTEMAX;
                             const double gy = acs2(scharrY, p1.x, p1.y) / SP_BYTEMAX;
@@ -134,25 +143,35 @@ namespace sp{
                 for (int it = 0; it < maxit; it++) {
                     AtB.zero();
 
-                    const Vec2 pix0 = (pixs[i] + flows[i]) * scale; 
-                    const Vec2 pix1 = pixs[i] * scale;
+                    {
+                        const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
+                        const Vec2 pix1 = pixs[i] * scale;
 
-                    for (int y = 0; y < WIN_SIZE; y++) {
-                        for (int x = 0; x < WIN_SIZE; x++) {
-                            const int i = y * WIN_SIZE + x;
-                            const Vec2 v = getVec(x - offset, y - offset);
+                        int cnt = 0;
+                        double esum = 0.0;
 
-                            const Vec2 p0 = pix0 + v;
-                            const Vec2 p1 = pix1 + v;
-                            if (isInRect2(rect, p0.x, p0.y) == false || isInRect2(rect, p1.x, p1.y) == false) continue;
+                        for (int y = 0; y < WIN_SIZE; y++) {
+                            for (int x = 0; x < WIN_SIZE; x++) {
+                                const int i = y * WIN_SIZE + x;
+                                const Vec2 v = getVec(x - half, y - half);
 
-                            const double gx = A(i, 0);
-                            const double gy = A(i, 1);
+                                const Vec2 p0 = pix0 + v;
+                                const Vec2 p1 = pix1 + v;
+                                if (isInRect2(rect0, p0.x, p0.y) == false || isInRect2(rect1, p1.x, p1.y) == false) continue;
 
-                            const double d = (I(i, 0) - acs2(pyimg0, p0.x, p0.y)) / SP_BYTEMAX;
-                            AtB(0, 0) += gx * d;
-                            AtB(1, 0) += gy * d;
+                                const double gx = A(i, 0);
+                                const double gy = A(i, 1);
+
+                                const double d = (I(i, 0) - acs2(pyimg0, p0.x, p0.y)) / SP_BYTEMAX;
+                                AtB(0, 0) += gx * d;
+                                AtB(1, 0) += gy * d;
+
+                                cnt++;
+                                esum += fabs(d);
+                            }
                         }
+
+                        errs[i] = esum / cnt;
                     }
 
                     const Mat result = invAtA * AtB;
@@ -162,14 +181,16 @@ namespace sp{
                     }
 
                     Vec2 delta = getVec(result[0], result[1]);
+                    const double norm = normVec(delta);
 
                     const double limit = 2.0;
-                    if (normVec(delta) > 2.0) delta *= limit / normVec(delta);
+                    if (norm > limit) delta *= limit / norm;
 
                     flows[i] += delta / scale;
 
-                    const Vec2 test = pixs[i] + flows[i];
-                    if (isInRect2(rect, test.x, test.y) == false) {
+                    const Vec2 test = (pixs[i] + flows[i]) * scale;
+
+                    if (isInRect2(rect0, test.x, test.y) == false) {
                         mask[i] = false;
                         break;
                     }
@@ -177,7 +198,16 @@ namespace sp{
             }
         }
  
-        for (int i = 0; i < flows.size(); i++) {
+        if (cntVal(mask, true) > 0) {
+            const double sigma = 1.4826 * medianVal(filter(errs, mask));
+
+            for (int i = 0; i < mask.size(); i++) {
+                if (errs[i] > 3.0 * sigma) mask[i] = false;
+            }
+        }
+
+
+        for (int i = 0; i < mask.size(); i++) {
             if (mask[i] == false) flows[i] = getVec(0.0, 0.0);
         }
    }
