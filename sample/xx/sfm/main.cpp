@@ -20,7 +20,7 @@ class SfMGUI : public BaseWindow {
     CamParam m_cam;
     Mem2<Col3> m_img;
  
-    // thread;
+    // calibration tool;
     CalibTool m_ctool;
 
     // thread;
@@ -35,7 +35,7 @@ class SfMGUI : public BaseWindow {
 private:
 
     void help() {
-        printf("'a' key : update\n");
+        printf("'a' key : add image\n");
         printf("'s' key : reset\n");
         printf("'ESC' key : exit\n");
         printf("\n");
@@ -47,21 +47,21 @@ private:
 
     virtual void init() {
         help();
+        reset();
+    }
+
+    void reset() {
+        m_cam = getCamParam(0, 0);
+        //loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
+
+        m_sfm.clear();
 
         const double distance = 20.0;
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 
-        m_err = 1.0f;
+        m_err = 3.0f;
 
-        m_addcnt = 0;
-        reset();
-    }
-
-    void reset() {
-        //loadText(SP_DATA_DIR "/image/shiba.txt", m_cam);
-        m_cam = getCamParam(0, 0);
-        m_sfm.clear();
         m_addcnt = 0;
 
         m_ctool.clear();
@@ -72,23 +72,6 @@ private:
     }
 
     void addView() {
-        //char path[256];
-        //if (1) {
-        //    for (int i = 0; i < 1; i++) {
-        //        sprintf(path, "test%03d.bmp", m_addcnt++);
-        //        Mem2<Col3> img;
-        //        loadBMP(path, img);
-        //        m_sfm.addView(m_cam, img);
-        //    }
-        //    //m_img = img;
-        //}
-        //else {
-        //    sprintf(path, "test%03d.bmp", m_addcnt++);
-        //    Mem2<Col3> img = m_backup;
-        //    saveBMP(path, img);
-        //    m_sfm.addView(m_cam, img);
-        //}
-
         CamParam cam;
         if (m_cam.dsize[0] * m_cam.dsize[1] > 0) {
             cam = m_cam;
@@ -96,6 +79,22 @@ private:
         else {
             cam = getCamParam(m_img.dsize);
         }
+        
+        //char path[256];
+        //if (0) {
+        //    for (int i = 0; i < 1; i++) {
+        //        sprintf(path, "img%03d.bmp", m_addcnt++);
+        //        Mem2<Col3> img;
+        //        loadBMP(path, img);
+        //        m_sfm.addView(cam, img);
+        //        m_addcnt++;
+        //    }
+        //    return;
+        //}
+        //else {
+        //    sprintf(path, "img%03d.bmp", m_addcnt++);
+        //    saveBMP(path, m_img);
+        //}
 
         m_sfm.addView(cam, m_img);
     }
@@ -133,20 +132,6 @@ private:
     }
 
     virtual void display() {
-        // test window
-        //if (ImGui::Begin("param", NULL, ImGuiWindowFlags_NoResize)) {
-
-        //    ImGui::SetWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-        //    ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
-
-        //    if (ImGui::Button("Button")) {
-        //        printf("Button\n");
-        //    }
-
-        //    ImGui::InputFloat("m_err", &m_err, 0.01f, 0.1f);
-
-        //    ImGui::End();
-        //}
 
         {
             capture();

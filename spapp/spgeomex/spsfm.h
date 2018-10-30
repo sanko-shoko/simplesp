@@ -403,21 +403,21 @@ namespace sp {
 
                     const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, pairs(a, b)->matches, true);
                     const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, pairs(a, b)->matches, false);
-                    const double eval = evalStereo(views[a]->cam, pixs0, views[b]->cam, pixs1, MPNT_ANGLE);
+                    const double eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
 
-                    if (eval < maxv) continue;
-
-                    maxv = eval;
-                    pair = list[i];
+                    if (eval > maxv) {
+                        maxv = eval;
+                        pair = list[i];
+                    }
                 }
                 if (maxv < MIN_STEREOEVAL) return false;
-            }
 
+            }
+            
             // initialize pair
             {
                 const int a = pair->a;
                 const int b = pair->b;
-
                 const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, pairs(a, b)->matches, true);
                 const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, pairs(a, b)->matches, false);
 
