@@ -399,7 +399,10 @@ namespace sp {
 
             if (refinePose(pose, cam0, pixs, objs, 1) == false) return false;
             
-            pose.trn /= normVec(pose.trn);
+            const double d = normVec(pose.trn);
+            if (d < SP_SMALL) return false;
+
+            pose.trn /= d;
         }
 
         return true;
@@ -962,19 +965,15 @@ namespace sp {
         Pose pose = zeroPose();
         if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
 
-        const double dist = normVec(pose.trn);
-        if (dist < SP_SMALL) return 0.0;
-
-        pose.trn /= dist;
-
         Mem1<Vec3> pnts;
-        Mem1<bool> mask;
-        if (calcPnt3d(pnts, mask, pose, cam0, pixs0, zeroPose(), cam1, pixs1) == false) return 0.0;
+        {
+            Mem1<bool> mask;
+            if (calcPnt3d(pnts, mask, pose, cam0, pixs0, zeroPose(), cam1, pixs1) == false) return 0.0;
+            pnts = filter(pnts, mask);
+        }
 
         Mem1<double> zlist;
         for (int i = 0; i < pnts.size(); i++) {
-            if (mask[i] == false) continue;
-
             const Pose base = zeroPose();
 
             const Vec3 vec0 = unitVec(base.trn - pnts[i]);
