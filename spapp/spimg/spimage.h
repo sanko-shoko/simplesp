@@ -190,6 +190,24 @@ namespace sp{
         }
     }
 
+    template <typename TYPE>
+    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
+        SP_ASSERT(isValid(2, src0));
+        SP_ASSERT(isValid(2, src1));
+        SP_ASSERT(cmpSize(2, src0.dsize, src1.dsize));
+
+        const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
+        const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
+
+        dst.resize(2, src0.dsize);
+        dst.zero();
+
+        for (int v = 0; v < src0.dsize[1]; v++) {
+            for (int u = 0; u < src0.dsize[0]; u++) {
+                acs2(dst, u, v) = blendCol(acs2(tmp0, u, v), acs2(tmp1, u, v), rate);
+            }
+        }
+    }
 
     //--------------------------------------------------------------------------------
     // invert
@@ -297,6 +315,11 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+
+        Mat _mat = mat;
+        if (mat.rows() == 2 && (mat.cols() == 2 || mat.cols() == 3)) {
+            _mat = extMat(3, 3, mat);
+        }
 
         if (mat.rows() != 3 || mat.cols() != 3) return;
         const Mat imat = invMat(mat);

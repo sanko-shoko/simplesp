@@ -175,6 +175,24 @@ namespace sp {
         return calcPnt3d(pnt, poses, cams, pixs);
     }
 
+    SP_CPUFUNC bool calcPnt3d(Mem1<Vec3> &pnts, Mem1<bool> &mask, const Pose &pose0, const CamParam &cam0, const Mem1<Vec2> &pixs0, const Pose &pose1, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
+        SP_ASSERT(pixs0.size() == pixs1.size());
+
+        pnts.resize(pixs0.size());
+        mask.resize(pixs0.size());
+        pnts.zero();
+        mask.zero();
+
+        for (int i = 0; i < pixs0.size(); i++) {
+            Vec3 pnt;
+            if (calcPnt3d(pnt, pose0, cam0, pixs0[i], pose1, cam1, pixs1[i]) == false) continue;
+
+            pnts[i] = pnt;
+            mask[i] = true;
+        }
+        return true;
+    }
+
     SP_CPUFUNC bool calcPnt3dX(Vec3 &pnt, const Pose &pose0, const CamParam &cam0, const Vec2 &pix0, const Pose &pose1, const CamParam &cam1, const double pix1x) {
         const Vec2 &npx0 = invCamD(cam0, pix0);
 
@@ -259,7 +277,7 @@ namespace sp {
 
             int cnt = 0;
             for (int i = 0; i < npxs0.size(); i++) {
-                if (calcPnt3d(pnts[i], zeroPose(), npxs0[i], test, npxs1[i]) == false) continue;
+                if (calcPnt3d(pnts[i], test, npxs0[i], zeroPose(), npxs1[i]) == false) continue;
                 cnt++;
             }
 
@@ -275,7 +293,7 @@ namespace sp {
     SP_CPUFUNC bool dcmpFMat(Pose &pose, const Mat &F, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
-        const Mat E = trnMat(getMat(cam1)) * F * getMat(cam0);
+        const Mat E = trnMat(getMat(cam0)) * F * getMat(cam1);
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
@@ -373,13 +391,13 @@ namespace sp {
 
             for (int i = 0; i < num; i++) {
                 Vec3 obj;
-                if (calcPnt3d(obj, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
+                if (calcPnt3d(obj, pose, cam0, pixs0[i], zeroPose(), cam1, pixs1[i]) == false) continue;
               
-                pixs.push(pixs1[i]);
+                pixs.push(pixs0[i]);
                 objs.push(obj);
             }
 
-            if (refinePose(pose, cam1, pixs, objs, 1) == false) return false;
+            if (refinePose(pose, cam0, pixs, objs, 1) == false) return false;
             
             pose.trn /= normVec(pose.trn);
         }
@@ -938,7 +956,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // stereo
     //--------------------------------------------------------------------------------
-
+ 
     SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
 
         Pose pose = zeroPose();
@@ -949,19 +967,22 @@ namespace sp {
 
         pose.trn /= dist;
 
+        Mem1<Vec3> pnts;
+        Mem1<bool> mask;
+        if (calcPnt3d(pnts, mask, pose, cam0, pixs0, zeroPose(), cam1, pixs1) == false) return 0.0;
+
         Mem1<double> zlist;
-        for (int i = 0; i < pixs0.size(); i++) {
+        for (int i = 0; i < pnts.size(); i++) {
+            if (mask[i] == false) continue;
+
             const Pose base = zeroPose();
 
-            Vec3 pos;
-            if (calcPnt3d(pos, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
-
-            const Vec3 vec0 = unitVec(base.trn - pos);
-            const Vec3 vec1 = unitVec(pose.trn - pos);
+            const Vec3 vec0 = unitVec(base.trn - pnts[i]);
+            const Vec3 vec1 = unitVec(pose.trn - pnts[i]);
             const double angle = acos(dotVec(vec0, vec1));
 
             if (angle > minAngle) {
-                zlist.push(pos.z);
+                zlist.push(pnts[i].z);
             }
         }
         if (zlist.size() == 0) return 0.0;

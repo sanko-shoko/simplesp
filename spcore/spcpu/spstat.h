@@ -99,6 +99,20 @@ namespace sp{
     }
 
     //--------------------------------------------------------------------------------
+    // count up
+    //--------------------------------------------------------------------------------
+    
+    template<typename TYPE>
+    SP_CPUFUNC int cntVal(const Mem<TYPE> &mem, const TYPE val) {
+        int cnt = 0;
+        for (int i = 0; i < mem.size(); i++) {
+            if (mem[i] == val) cnt++;
+        }
+        return cnt;
+    }
+
+
+    //--------------------------------------------------------------------------------
     // base
     //--------------------------------------------------------------------------------
 
@@ -193,12 +207,18 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC TYPE medianVal(const Mem<TYPE> &mem){
-        SP_ASSERT(mem.size() > 0);
+        TYPE val;
 
-        Mem<TYPE> tmp = mem;
-        sort(tmp);
+        if (mem.size() > 0) {
+            Mem<TYPE> tmp = mem;
+            sort(tmp);
+            val = tmp[tmp.size() / 2];
+        }
+        else {
+            cnvVal(val, 0);
+        }
 
-        return tmp[tmp.size() / 2];
+        return val;
     }
 
 

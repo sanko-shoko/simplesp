@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_DEBUG 0
+
+#include "simplesp.h"
 #include "spex/spcv.h"
 
 using namespace sp;
@@ -205,10 +207,12 @@ int main(){
         // generate test points
         for (int i = 0; i < poses.size(); i++){
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
+
+            const double sigma = 0.1;
             for (int n = 0; n < mrkMap.size(); n++){
                 const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
-                const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
-                const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randVecGauss(0.1, 0.1);
+                const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randVecGauss(sigma, sigma);
+                const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randVecGauss(sigma, sigma);
 
                 tpixs0.push(pix0);
                 tpixs1.push(pix1);
@@ -226,12 +230,12 @@ int main(){
             printf("simplesp\n");
 
             // calibration
-            Pose dst;
-            const double rms = calibStereo(dst, cam, pixs0, objs0, cam, pixs1, objs1);
+            Pose pose;
+            const double rms = calibStereo(pose, cam, pixs1, objs1, cam, pixs0, objs0);
             printf("simplesp rms error: %g\n", rms);
 
-            print(dst);
-            saveText("pose.txt", dst);
+            print(pose);
+            saveText("pose.txt", pose);
         }
 
         // opencv calibration 

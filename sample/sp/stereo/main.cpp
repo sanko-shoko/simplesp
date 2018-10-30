@@ -10,16 +10,13 @@ int main() {
     {
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", imgs[0]));
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", imgs[1]));
-
-        saveBMP("src0.bmp", imgs[0]);
-        saveBMP("src1.bmp", imgs[1]);
     }
 
     // get camera parameter
-    CamParam cam0, cam1;
+    CamParam cam[2];
     {
-        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam0));
-        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam1));
+        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam[0]));
+        SP_ASSERT(loadText(SP_DATA_DIR  "/image/shiba.txt", cam[1]));
     }
 
     // estimate camera pose
@@ -30,15 +27,13 @@ int main() {
         const Mem1<Feature> fts1 = SIFT::getFeatures(imgs[1]);
         const Mem1<int> matches = findMatch(fts0, fts1);
 
-        Mem1<Vec2> mpixs0, mpixs1;
-        for (int i = 0; i < matches.size(); i++) {
-            const int j = matches[i];
-            if (j < 0) continue;
-            mpixs0.push(fts0[i].pix);
-            mpixs1.push(fts1[j].pix);
-        }
+        const Mem1<Vec2> pixs0 = getMatchPixs(fts0, matches, true);
+        const Mem1<Vec2> pixs1 = getMatchPixs(fts1, matches, false);
 
-        calcPose(stereo, cam0, mpixs0, cam1, mpixs1);
+        //                     [stereo pose]   [zero pose] 
+        calcPoseRANSAC(stereo, cam[1], pixs1, cam[0], pixs0);
+
+        print(stereo);
     }
 
 
@@ -47,13 +42,12 @@ int main() {
     
     // make remap table
     {
-        rectify(rects[0], rects[1], cam0, cam1, stereo);
+        rectify(rects[1], rects[0], cam[1], stereo, cam[0], zeroPose());
 
         for (int i = 0; i < 2; i++) {
             makeRemapTable(tables[i], rects[i]);
         }
     }
-
 
     // pre filter
     if(0){

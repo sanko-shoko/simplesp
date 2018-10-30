@@ -76,10 +76,10 @@ namespace sp{
         const int header = getLittleEndian(static_cast<int>(40));
         memcpy(&buf[14], &header, sizeof(int));
 
-        const int sizeW = getLittleEndian(static_cast<int>(src.dsize[0]));
-        const int sizeH = getLittleEndian(static_cast<int>(src.dsize[1]));
-        memcpy(&buf[18], &sizeW, sizeof(int));
-        memcpy(&buf[22], &sizeH, sizeof(int));
+        const int w = getLittleEndian(static_cast<int>(src.dsize[0]));
+        const int h = getLittleEndian(static_cast<int>(src.dsize[1]));
+        memcpy(&buf[18], &w, sizeof(int));
+        memcpy(&buf[22], &h, sizeof(int));
 
         const short plane = getLittleEndian(static_cast<short>(2));
         memcpy(&buf[26], &plane, sizeof(short));
@@ -92,14 +92,15 @@ namespace sp{
 
         file.write(buf, 54);
 
-        Mem1<Byte> line(sizeW * 3 + (sizeW * 3) % 4);
-        for (int v = 0; v < sizeH; v++){
-            for (int u = 0; u < sizeW; u++){
-                line[u * 3 + 0] = acs2(src, u, sizeH - 1 - v).b;
-                line[u * 3 + 1] = acs2(src, u, sizeH - 1 - v).g;
-                line[u * 3 + 2] = acs2(src, u, sizeH - 1 - v).r;
+        Mem1<Byte> line(w * 3 + w % 4);
+        for (int v = 0; v < h; v++){
+            line.zero();
+            for (int u = 0; u < w; u++){
+                line[u * 3 + 0] = acs2(src, u, h - 1 - v).b;
+                line[u * 3 + 1] = acs2(src, u, h - 1 - v).g;
+                line[u * 3 + 2] = acs2(src, u, h - 1 - v).r;
             }
-            file.write(&line[0], line.size());
+            file.write(line.ptr, line.size());
         }
 
         return true;

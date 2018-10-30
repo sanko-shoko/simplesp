@@ -65,17 +65,17 @@ namespace sp{
         jacob[1 * 12 + 11] = -vec0[1] * 1.0;
     }
 
-    // (vec1_3)^T * (M_3x3) * (vec0_3) = 0 -> (J_1x9) * (M_9) = 0
+    // (vec0_3)^T * (M_3x3) * (vec1_3) = 0 -> (J_1x9) * (M_9) = 0
     SP_GENFUNC void jacobMatType2(double *jacob, const double *vec0, const double *vec1) {
-        jacob[0] = vec0[0] * vec1[0];
-        jacob[1] = vec0[1] * vec1[0];
-        jacob[2] = vec0[2] * vec1[0];
-        jacob[3] = vec0[0] * vec1[1];
-        jacob[4] = vec0[1] * vec1[1];
-        jacob[5] = vec0[2] * vec1[1];
-        jacob[6] = vec0[0] * vec1[2];
-        jacob[7] = vec0[1] * vec1[2];
-        jacob[8] = vec0[2] * vec1[2];
+        jacob[0] = vec1[0] * vec0[0];
+        jacob[1] = vec1[1] * vec0[0];
+        jacob[2] = vec1[2] * vec0[0];
+        jacob[3] = vec1[0] * vec0[1];
+        jacob[4] = vec1[1] * vec0[1];
+        jacob[5] = vec1[2] * vec0[1];
+        jacob[6] = vec1[0] * vec0[2];
+        jacob[7] = vec1[1] * vec0[2];
+        jacob[8] = vec1[2] * vec0[2];
     }
 
     SP_GENFUNC void jacobHMat(double *jacob, const double *pix, const double *obj) {
@@ -179,7 +179,7 @@ namespace sp{
         return true;
     }
 
- 
+
     //--------------------------------------------------------------------------------
     // essential matrix & fundamental matrix
     //--------------------------------------------------------------------------------
@@ -188,12 +188,12 @@ namespace sp{
         const Vec3 n0 = getVec(vec0, 1.0);
         const Vec3 n1 = getVec(vec1, 1.0);
 
-        const Vec3 M0 = M * n0;
-        //const Vec3 M1 = trnMat(M) * n1;
+        const Vec3 M0 = M * n1;
+        //const Vec3 M1 = trnMat(M) * n0;
 
         // |a*x + b*y + c| / sqrt(a*a + b*b)
-        const double err0 = fabs(dotVec(n1, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
-        //const double err1 = fabs(dotVec(n0, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
+        const double err0 = fabs(dotVec(n0, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
+        //const double err1 = fabs(dotVec(n1, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
         return err0;
     }
 
@@ -214,7 +214,7 @@ namespace sp{
     }
 
     SP_CPUFUNC Mat getFMat(const Pose &pose, const CamParam &cam0, const CamParam &cam1) {
-        Mat F = invMat(trnMat(getMat(cam1))) * getEMat(pose) * invMat(getMat(cam0));
+        Mat F = invMat(trnMat(getMat(cam0))) * getEMat(pose) * invMat(getMat(cam1));
         F /= normMat(F);
         return F;
     }
@@ -232,7 +232,7 @@ namespace sp{
         return errMatType2(E, vecs0, vecs1);
     }
 
-    // calc essential matrix using 5 points algorithm
+    // calc essential matrix [x0^T * E * x1] using 5 points algorithm
     SP_CPUFUNC bool calcEMat5p(Mem1<Mat> &Es, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
@@ -559,7 +559,7 @@ namespace sp{
         return (Es.size() > 0) ? true : false;
     }
   
-    // calc essential matrix
+    // calc essential matrix [x0^T * E * x1] using 5 points algorithm
     SP_CPUFUNC bool calcEMat5p(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
@@ -580,7 +580,7 @@ namespace sp{
         return true;
     }
 
-    // calc essential matrix using 8 points algorithm
+    // calc essential matrix [x0^T * E * x1] using 8 points algorithm
     SP_CPUFUNC bool calcEMat8p(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const int maxit = 1) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
@@ -596,13 +596,13 @@ namespace sp{
 
         Mat A(num, 9);
         for (int i = 0; i < num; i++) {
-            jacobFMat(&A(i, 0), data0[i], data1[i]);
+            jacobEMat(&A(i, 0), data0[i], data1[i]);
         }
 
         Mem1<double> errs;
         for (int it = 0; it < maxit; it++) {
             if (E.rows() == 3 && E.cols() == 3) {
-                errs = errMatType2(E, npxs0, npxs1);
+                errs = errEMat(E, npxs0, npxs1);
             }
 
             Mat result;
@@ -621,14 +621,14 @@ namespace sp{
             S(2, 2) = 0.0;
 
             E = U * S * trnMat(V);
-            E = trnMat(T1) * E * T0;
+            E = trnMat(T0) * E * T1;
         }
         E /= normMat(E);
 
         return true;
     }
 
-    // calc essential matrix
+    // calc essential matrix [x0^T * E * x1]
     SP_CPUFUNC bool calcEMat(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const int maxit = 1) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
@@ -657,7 +657,7 @@ namespace sp{
         return errMatType2(F, vecs0, vecs1);
     }
 
-    // calc fundamental matrix using 8 points algorithm
+    // calc fundamental matrix [x0^T * F * x1] using 8 points algorithm
     SP_CPUFUNC bool calcFMat8p(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
         SP_ASSERT(pixs0.size() == pixs1.size());
      
@@ -666,7 +666,7 @@ namespace sp{
         return true;
     }
 
-    // calc fundamental matrix
+    // calc fundamental matrix [x0^T * F * x1]
     SP_CPUFUNC bool calcFMat(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const int maxit = 1) {
         SP_ASSERT(pixs0.size() == pixs1.size());
        
@@ -765,7 +765,7 @@ namespace sp{
             if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
 
             for (int i = 0; i < tests.size(); i++) {
-                const Mem1<double> errs = errMatType2(tests[i], npxs0, npxs1);
+                const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
                 const double eval = evalErr(errs, thresh);
 
                 if (eval > maxe) {
@@ -821,20 +821,18 @@ namespace sp{
             rpixs0.resize(unit, &spixs0[p]);
             rpixs1.resize(unit, &spixs1[p]);
 
-            Mem1<Mat> tests;
-            if (calcEMat5p(tests, rpixs0, rpixs1) == false) continue;
+            Mat test;
+            if (calcEMat8p(test, rpixs0, rpixs1) == false) continue;
 
-            for (int i = 0; i < tests.size(); i++) {
-                const Mem1<double> errs = errMatType2(tests[i], pixs0, pixs1);
-                const double eval = evalErr(errs, thresh);
+            const Mem1<double> errs = errFMat(test, pixs0, pixs1);
+            const double eval = evalErr(errs, thresh);
 
-                if (eval > maxe) {
-                    //SP_PRINTD("eval %lf\n", eval);
-                    maxe = eval;
-                    maxit = minVal(maxit, adaptiveStop(eval, unit));
+            if (eval > maxe) {
+                //SP_PRINTD("eval %lf\n", eval);
+                maxe = eval;
+                maxit = minVal(maxit, adaptiveStop(eval, unit));
 
-                    F = tests[i];
-                }
+                F = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);

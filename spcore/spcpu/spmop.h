@@ -155,6 +155,18 @@ namespace sp{
         return ret;
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC Mem<TYPE> filter(const Mem<TYPE> &src, const Mem<bool> &mask, const bool flag = true) {
+        Mem1<TYPE> ret;
+
+        ret.reserve(src.size());
+        for (int i = 0; i < src.size(); i++) {
+            if (mask[i] == flag) {
+                ret.push(src[i]);
+            }
+        }
+        return ret;
+    }
 
     //--------------------------------------------------------------------------------
     // mem1 operator
@@ -605,7 +617,7 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    //vectors operator
+    // vectors operator
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC Mem1<Vec2> operator * (const Mat &mat, const Mem1<Vec2> &vecs) {
@@ -672,6 +684,27 @@ namespace sp{
         }
 
         return map;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // rect
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Rect getRect2(const Mem1<Vec2> &vecs) {
+        Rect rect = getRect2(vecs[0]);
+        for (int i = 1; i < vecs.size(); i++) {
+            rect = orRect(rect, getRect2(vecs[i]));
+        }
+        return rect;
+    }
+
+    SP_GENFUNC Rect getRect3(const Mem1<Vec3> &vecs) {
+        Rect rect = getRect3(vecs[0]);
+        for (int i = 1; i < vecs.size(); i++) {
+            rect = orRect(rect, getRect3(vecs[i]));
+        }
+        return rect;
     }
 
 

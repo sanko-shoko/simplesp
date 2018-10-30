@@ -118,7 +118,7 @@ private:
         // rectification
         Mem2<Vec2> tables[2];
         {
-            rectify(m_rects[0], m_rects[1], cams[0], cams[1], m_cam2prj, (cams[0].fx + cams[0].fy) / 2.0);
+            rectify(m_rects[1], m_rects[0], cams[1], m_cam2prj, cams[0], zeroPose(), (cams[0].fx + cams[0].fy) / 2.0);
 
             for (int i = 0; i < 2; i++) {
                 makeRemapTable(tables[i], m_rects[i]);
