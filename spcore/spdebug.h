@@ -8,6 +8,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
+#include "spcore/sptimer.h"
 
 #if SP_USE_DEBUG
 #define SP_USE_HOLDER 1
@@ -20,15 +21,8 @@
 //--------------------------------------------------------------------------------
 
 #if SP_USE_DEBUG
-
 #include <string>
 #include <vector>
-#include <chrono>
-
-#if WIN32
-#include <Windows.h>
-#endif
-
 #endif
 
 
@@ -378,65 +372,35 @@ namespace sp {
 #endif
 
 
-#if SP_USE_LOGGER
 
 namespace sp {
     using namespace std;
 
     class Logger{
 
-    private:
-
-#if WIN32
-        typedef LARGE_INTEGER sptime;
-        sptime freq;
-
-        LARGE_INTEGER getNow(){
-            LARGE_INTEGER v;
-            QueryPerformanceCounter(&v);
-            return v;
-        }
-
-        double getTime(const sptime start, const sptime end){
-            return static_cast<double>(end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
-        }
-
     public:
 
-        Logger(){
-            QueryPerformanceFrequency(&freq);
-        }
-#else
-        typedef chrono::system_clock::time_point sptime;
-
-        sptime getNow(){
-            return chrono::system_clock::now();
-        }
-
-        double getTime(const sptime start, const sptime end){
-            return static_cast<double>(chrono::duration_cast<chrono::microseconds>(end - start).count() / 1000.0);
-        }
-    public:
-
-        Logger(){
-        }
-#endif
-
-        vector<sptime> cnts;
+#if SP_USE_LOGGER
+        vector<Timer::tpoint> cnts;
         vector<string> strs;
 
         vector<double> times;
         vector<string> disps;
+#endif
 
-        void reset(){
-            cnts.clear();
-            strs.clear();
+     public:
 
-            times.clear();
-            disps.clear();
-        }
+#if SP_USE_LOGGER
 
-        void start(const char* str){
+         void reset() {
+             cnts.clear();
+             strs.clear();
+
+             times.clear();
+             disps.clear();
+         }
+
+         void start(const char* str){
             for (int i = 0; i < strs.size(); i++){
                 if (strs[i] == str){
                     reset();
@@ -444,14 +408,14 @@ namespace sp {
                 }
             }
             
-            cnts.push_back(getNow());
+            cnts.push_back(Timer::now());
             strs.push_back(str);
         }
 
         void stop(){
             const int stack = static_cast<int>(cnts.size());
             if (stack > 0){
-                times.push_back(getTime(cnts[stack - 1], getNow()));
+                times.push_back(Timer::dif(cnts[stack - 1], Timer::now()));
                 disps.push_back(strs[stack - 1]);
                 cnts.pop_back();
                 strs.pop_back();
@@ -468,9 +432,25 @@ namespace sp {
                 SP_PRINTF("%s : %.3lf [ms]\n", disps[i].c_str(), times[i]);
             }
             SP_PRINTF("\n");
-
             reset();
         }
+
+#else
+
+         void reset() {
+             disps.clear();
+         }
+
+         void start(const char* str) {
+         }
+
+         void stop() {
+         }
+
+         void print() {
+         }
+#endif
+
     };
 
     class LoggerUnit{
@@ -488,7 +468,6 @@ namespace sp {
         }
     };
 }
-#endif
 
 
 #endif
