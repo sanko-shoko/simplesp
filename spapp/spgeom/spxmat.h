@@ -733,18 +733,17 @@ namespace sp{
     }
 
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 2.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
-        const int unit = 5;
+        const int unit = 8;
 
         if (num < unit) return false;
         if (num < unit * SP_RANSAC_MINRATE) {
             return calcEMat(E, npxs0, npxs1);
         }
 
-        const int tnum = 20;
         int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> snpxs0, rnpxs0;
@@ -762,8 +761,14 @@ namespace sp{
             rnpxs1.resize(unit, &snpxs1[p]);
 
             Mem1<Mat> tests;
-            if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
-
+            if(unit < 8){
+                if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
+            }
+            else {
+                tests.resize(1);
+                if (calcEMat8p(tests[0], rnpxs0, rnpxs1) == false) continue;
+            }
+            
             for (int i = 0; i < tests.size(); i++) {
                 const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
                 const double eval = evalErr(errs, thresh);
@@ -793,7 +798,7 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 2.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();

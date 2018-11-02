@@ -687,7 +687,7 @@ namespace sp {
 
 
     //--------------------------------------------------------------------------------
-    // pose (RANSAC + refine)
+    // RANSAC
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC bool calcPnt3dRANSAC(Vec3 &pos, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const double thresh = 3.0) {
@@ -931,7 +931,7 @@ namespace sp {
     }
 
     // 2D-2D pose (stereo camera)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 2.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
@@ -954,7 +954,6 @@ namespace sp {
 
         return true;
     }
-
 
     //--------------------------------------------------------------------------------
     // stereo
