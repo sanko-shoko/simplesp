@@ -75,6 +75,23 @@ namespace sp {
         }
 
 
+    private:
+
+        tpoint tp[2];
+
+    public:
+
+        void start() {
+            tp[0] = now();
+        }
+
+        void stop() {
+            tp[1] = now();
+        }
+
+        double getms() {
+            return dif(tp[0], tp[1]);
+        }
     };
 
 }

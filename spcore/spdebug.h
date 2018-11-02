@@ -10,6 +10,16 @@
 #include "spcore/spwrap.h"
 #include "spcore/sptimer.h"
 
+
+#ifndef SP_USE_DEBUG
+#define SP_USE_DEBUG 0
+#endif
+
+#ifndef SP_USE_CONSOLE
+#define SP_USE_CONSOLE 1
+#endif
+
+
 #if SP_USE_DEBUG
 #define SP_USE_HOLDER 1
 #define SP_USE_LOGGER 1
