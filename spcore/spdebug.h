@@ -438,7 +438,6 @@ namespace sp {
 #else
 
          void reset() {
-             disps.clear();
          }
 
          void start(const char* str) {
