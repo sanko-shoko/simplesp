@@ -4,6 +4,7 @@
 using namespace sp;
 
 int main(){
+    SP_LOGGER_INSTANCE;
 
     Mem2<Byte> src;
     {
@@ -15,11 +16,15 @@ int main(){
 
     // box filter
     {
+        SP_LOGGER_SET("boxfilter");
+
         boxFilter(dst0, src, 21);
     }
 
     // box filter integral
     {
+        SP_LOGGER_SET("boxfilter integral");
+    
         Mem2<int> sum;
         makeIntegral(sum, src);
         boxFilterIntegral(dst1, sum, 21);

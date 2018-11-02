@@ -23,6 +23,7 @@ namespace sp {
         Pose m_pose;
 
     public:
+        SP_LOGGER_INSTANCE;
 
         SLAM() {
             clear();
@@ -83,6 +84,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
       
         bool _updatePose(const Mem1<Col3> &img) {
+            SP_LOGGER_SET("-updatePose");
 
             try {
                 if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
@@ -98,6 +100,7 @@ namespace sp {
         }
 
         bool _updateMap(const Mem1<Col3> &img, const bool force = false) {
+            SP_LOGGER_SET("-updateMap");
 
             try {
                 if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";

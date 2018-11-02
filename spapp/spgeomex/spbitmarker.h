@@ -167,6 +167,7 @@ namespace sp{
         Mem1<Mem1<Vec3> > m_cobjs;
 
     public:
+        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         BitMarker(){
@@ -244,6 +245,7 @@ namespace sp{
 
     private:
         bool _execute(const Mem2<Byte> &img){
+            SP_LOGGER_SET("-execute");
 
             // set default camera parameter
             if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
@@ -299,6 +301,7 @@ namespace sp{
             Mem2<Byte> minImg;
 
             {
+                SP_LOGGER_SET("rescale + filter");
                 rescale(minImg, img, getMinScale(), getMinScale());
                 gaussianFilter3x3(minImg, minImg);
 
@@ -307,6 +310,7 @@ namespace sp{
 
             Mem2<int> labelMap;
             {
+                SP_LOGGER_SET("labeling");
                 Mem2<Byte> minBin;
                 binalizeBlock(minBin, minImg, round(BIN_BLOCKSIZE * MIN_IMGSIZE));
                 invert(minBin, minBin);
@@ -317,6 +321,7 @@ namespace sp{
 
             Mem1<Mem1<Vec2> > contours;
             {
+                SP_LOGGER_SET("contour");
                 contours = getContour(minImg, labelMap);
                 contours *= (1.0 / getMinScale());
 
@@ -326,6 +331,7 @@ namespace sp{
 
             Mem1<Mem1<Vec2> > corners;
             {
+                SP_LOGGER_SET("corner");
                 corners = getCorner(img, contours);
 
                 SP_HOLDER_SET("corners", corners);
@@ -340,15 +346,21 @@ namespace sp{
             Mem1<Pose> poses;
             Mem1<Mem1<Vec2> > dpixs;
             {
+                SP_LOGGER_SET("calcMrk");
+
                 if (calcMrk(poses, dpixs, img, corners) == false) throw "calcMrk";
             }
 
             Mem1<Mem1<int> > crsps;
             {
+                SP_LOGGER_SET("crspMrk");
+
                 if (crspMrk(crsps, poses, img, m_mrks) == false) throw "crspMrk";
             }
 
             {
+                SP_LOGGER_SET("postProc");
+
                 if (postProc(m_poses, m_cpixs, m_cobjs, m_mrks, crsps, dpixs, poses) == false) throw "postProc";
             }
         }

@@ -685,9 +685,14 @@ namespace sp{
 
         const int num = pixs.size();
         const int unit = 4;
-        if (num < unit * 2) return false;
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcHMat(H, pixs, objs);
+        }
+
+        srand(0);
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec2> sobjs, robjs;
@@ -711,13 +716,13 @@ namespace sp{
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = ransacAdaptiveStop(eval, unit);
+                maxit = adaptiveStop(eval, unit);
 
                 H = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         const Mem1<double> errs = errHMat(H, pixs, objs);
@@ -728,14 +733,19 @@ namespace sp{
     }
 
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 2.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
         const int unit = 5;
-        if (num < unit * 2) return false;
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcEMat(E, npxs0, npxs1);
+        }
+
+        const int tnum = 20;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> snpxs0, rnpxs0;
         Mem1<Vec2> snpxs1, rnpxs1;
@@ -752,32 +762,23 @@ namespace sp{
             rnpxs1.resize(unit, &snpxs1[p]);
 
             Mem1<Mat> tests;
-            if(unit < 8){
-                printf("a %d %d\n", rnpxs0.size(), rnpxs1.size());
-                if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
-            }
-            else {
-                printf("b");
-                tests.resize(1);
-                if (calcEMat8p(tests[0], rnpxs0, rnpxs1) == false) continue;
-            }
-            printf("c");
+            if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
 
             for (int i = 0; i < tests.size(); i++) {
                 const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
                 const double eval = evalErr(errs, thresh);
 
                 if (eval > maxe) {
-                    SP_PRINTD("eval %lf\n", eval);
+                    //SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
-                    maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
+                    maxit = minVal(maxit, adaptiveStop(eval, unit));
 
                     E = tests[i];
                 }
             }
         }
-        SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -792,14 +793,19 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 2.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
         const int unit = 8;
-        if (num < unit * 2) return false;
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcFMat(F, pixs0, pixs1);
+        }
+
+        const int tnum = 20;
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs0, rpixs0;
         Mem1<Vec2> spixs1, rpixs1;
@@ -824,13 +830,13 @@ namespace sp{
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
+                maxit = minVal(maxit, adaptiveStop(eval, unit));
 
                 F = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {

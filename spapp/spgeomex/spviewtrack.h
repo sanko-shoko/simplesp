@@ -46,6 +46,7 @@ namespace sp{
         MemP<MapPnt> _mpnts;
 
     public:
+        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         ViewTrack() {
@@ -106,6 +107,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         bool execute( const Mem2<Col3> &img) {
+            SP_LOGGER_SET("-execute");
 
             return _execute(img);
         }

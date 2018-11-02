@@ -5,19 +5,10 @@
 #ifndef __SP_DEBUG_H__
 #define __SP_DEBUG_H__
 
+
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
 #include "spcore/sptimer.h"
-
-
-#ifndef SP_USE_DEBUG
-#define SP_USE_DEBUG 1
-#endif
-
-#ifndef SP_USE_CONSOLE
-#define SP_USE_CONSOLE 1
-#endif
-
 
 #if SP_USE_DEBUG
 #define SP_USE_HOLDER 1
@@ -317,28 +308,28 @@ namespace sp {
 
     private:
 
-        vector<string> names;
+        vector<string> strs;
         vector<void *> ptrs;
 
     public:
 
-        ~Holder(){
-            reset();
-        }
-
-        void reset() {
-            names.clear();
+        void reset(){
+            strs.clear();
             for (int i = 0; i < ptrs.size(); i++) {
                 delete ptrs[i];
             }
             ptrs.clear();
         }
 
-        template <typename TYPE>
-        void set(const char *name, const TYPE &data){
+        ~Holder(){
+            reset();
+        }
 
-            for (int i = 0; i < names.size(); i++){
-                if (names[i] == name){
+        template <typename TYPE>
+        void set(const char *str, const TYPE &data){
+
+            for (int i = 0; i < strs.size(); i++){
+                if (str == strs[i]){
                     *((TYPE*)ptrs[i]) = data;
                     return;
                 }
@@ -347,15 +338,15 @@ namespace sp {
             {
                 TYPE *ptr = new TYPE();
                 *ptr = data;
-                names.push_back(name);
+                strs.push_back(str);
                 ptrs.push_back(ptr);
             }
         }
 
         const void* get(const char *str){
 
-            for (int i = 0; i < names.size(); i++){
-                if (str == names[i]){
+            for (int i = 0; i < strs.size(); i++){
+                if (str == strs[i]){
                     return ptrs[i];
                 }
             }
@@ -364,6 +355,118 @@ namespace sp {
     };
 }
 #endif
+
+
+//--------------------------------------------------------------------------------
+// time logger
+//--------------------------------------------------------------------------------
+
+#if SP_USE_LOGGER
+
+#define SP_LOGGER_INSTANCE sp::Logger logger;
+#define SP_LOGGER_SET(STR) sp::LoggerUnit lunit(&logger,STR);
+#else
+
+#define SP_LOGGER_INSTANCE
+#define SP_LOGGER_SET(STR)
+#endif
+
+
+
+namespace sp {
+    using namespace std;
+
+    class Logger{
+
+    public:
+
+#if SP_USE_LOGGER
+        vector<Timer::tpoint> cnts;
+        vector<string> strs;
+
+        vector<double> times;
+        vector<string> disps;
+#endif
+
+     public:
+
+#if SP_USE_LOGGER
+
+         void reset() {
+             cnts.clear();
+             strs.clear();
+
+             times.clear();
+             disps.clear();
+         }
+
+         void start(const char* str){
+            for (int i = 0; i < strs.size(); i++){
+                if (strs[i] == str){
+                    reset();
+                    break;
+                }
+            }
+            
+            cnts.push_back(Timer::now());
+            strs.push_back(str);
+        }
+
+        void stop(){
+            const int stack = static_cast<int>(cnts.size());
+            if (stack > 0){
+                times.push_back(Timer::dif(cnts[stack - 1], Timer::now()));
+                disps.push_back(strs[stack - 1]);
+                cnts.pop_back();
+                strs.pop_back();
+            }
+            print();
+        }
+
+        void print(){
+            const int stack = static_cast<int>(cnts.size());
+            if (stack > 0) return;
+
+            const int num = static_cast<int>(times.size());
+            for (int i = 0; i < num; i++){
+                SP_PRINTF("%s : %.3lf [ms]\n", disps[i].c_str(), times[i]);
+            }
+            SP_PRINTF("\n");
+            reset();
+        }
+
+#else
+
+         void reset() {
+         }
+
+         void start(const char* str) {
+         }
+
+         void stop() {
+         }
+
+         void print() {
+         }
+#endif
+
+    };
+
+    class LoggerUnit{
+        Logger *logger;
+    public:
+        LoggerUnit(Logger *logger, const char *str){
+            //SP_PRINTF("%s\n", str);
+
+            this->logger = logger;
+            logger->start(str);
+        }
+
+        ~LoggerUnit(){
+            logger->stop();    
+        }
+    };
+}
 
 
 #endif

@@ -125,6 +125,9 @@ namespace sp {
 
         void execute(const int itmax = 10) {
 
+            SP_LOGGER_INSTANCE;
+            SP_LOGGER_SET("-belief propagation");
+
             for (int it = 0; it < itmax; it++) {
                 const int s = it % 2;
                 const int d = 1 - s;

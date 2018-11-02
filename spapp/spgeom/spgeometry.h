@@ -687,7 +687,7 @@ namespace sp {
 
 
     //--------------------------------------------------------------------------------
-    // RANSAC
+    // pose (RANSAC + refine)
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC bool calcPnt3dRANSAC(Vec3 &pos, const Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Vec2> &pixs, const double thresh = 3.0) {
@@ -696,9 +696,12 @@ namespace sp {
         const int num = poses.size();
         const int unit = 2;
 
-        if (num < unit * 2) return false;
+        if (num < unit) return false;
+        if (pixs.size() < unit * SP_RANSAC_MINRATE) {
+            return calcPnt3d(pos, poses, cams, pixs);
+        }
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Pose> sposes, rposes;
         Mem1<CamParam> scams, rcams;
@@ -727,13 +730,13 @@ namespace sp {
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = ransacAdaptiveStop(eval, unit);
+                maxit = adaptiveStop(eval, unit);
 
                 pos = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -754,9 +757,12 @@ namespace sp {
         const int num = objs0.size();
         const int unit = 3;
 
-        if (num < unit * 2) return false;
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcPose(pose, objs0, objs1);
+        }
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec3> sobjs0, robjs0;
         Mem1<Vec3> sobjs1, robjs1;
@@ -784,13 +790,13 @@ namespace sp {
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = ransacAdaptiveStop(eval, unit);
+                maxit = adaptiveStop(eval, unit);
 
                 pose = test;
             }
         }
-        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);  
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -814,9 +820,12 @@ namespace sp {
         const int num = pixs.size();
         const int unit = 3;
 
-        if (num < unit * 2) return false;
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcPose(pose, cam, pixs, objs);
+        }
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec3> sobjs, robjs;
@@ -843,14 +852,14 @@ namespace sp {
                 if (eval > maxe) {
                     //SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
-                    maxit = ransacAdaptiveStop(eval, unit);
+                    maxit = adaptiveStop(eval, unit);
 
                     pose = tests[i];
                 }
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -871,9 +880,12 @@ namespace sp {
         const int num = pixs.size();
         const int unit = 4;
 
-        if (num < unit * 2) return false;
+        if (num < unit) return false;
+        if (num < unit * SP_RANSAC_MINRATE) {
+            return calcPose(pose, cam, pixs, objs);
+        }
 
-        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         Mem1<Vec2> spixs, rpixs;
         Mem1<Vec2> sobjs, robjs;
@@ -898,13 +910,13 @@ namespace sp {
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = ransacAdaptiveStop(eval, unit);
+                maxit = adaptiveStop(eval, unit);
 
                 pose = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (ransacCheckEval(maxe, num, unit) == false) return false;
+        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
 
         // refine
         {
@@ -919,17 +931,16 @@ namespace sp {
     }
 
     // 2D-2D pose (stereo camera)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 2.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 5.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
         const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
-        printf("A");
+
         Mat E;
         if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
-        printf("B");
 
         const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
@@ -944,6 +955,7 @@ namespace sp {
         return true;
     }
 
+
     //--------------------------------------------------------------------------------
     // stereo
     //--------------------------------------------------------------------------------
@@ -951,8 +963,8 @@ namespace sp {
     SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
 
         Pose pose = zeroPose();
-        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1, 5) == false) return 0.0;
-        printf("test");
+        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
+
         Mem1<Vec3> pnts;
         {
             Mem1<bool> mask;

@@ -124,10 +124,10 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // mem1 util
+    // mem util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem1<int> shuffle(const int size, const int seed = 0) {
+    SP_CPUFUNC Mem<int> shuffle(const int size, const int seed = 0) {
 
         Mem1<int> index(size);
         for (int i = 0; i < index.size(); i++) {
@@ -143,13 +143,12 @@ namespace sp{
         return index;
     }
 
- 
     template<typename TYPE>
-    SP_CPUFUNC Mem1<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
+    SP_CPUFUNC Mem<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
 
         const Mem1<int> index = shuffle(src.size(), seed);
 
-        Mem1<TYPE> ret(src.dim, src.dsize);
+        Mem<TYPE> ret(src.dim, src.dsize);
         for (int i = 0; i < ret.size(); i++) {
             ret[i] = src[index[i]];
         }
@@ -157,7 +156,7 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC Mem1<TYPE> filter(const Mem<TYPE> &src, const Mem<bool> &mask, const bool flag = true) {
+    SP_CPUFUNC Mem<TYPE> filter(const Mem<TYPE> &src, const Mem<bool> &mask, const bool flag = true) {
         Mem1<TYPE> ret;
 
         ret.reserve(src.size());

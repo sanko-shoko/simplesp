@@ -130,6 +130,7 @@ namespace sp{
         Mat m_hom;
 
     public:
+        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         DotPattern() {
@@ -180,6 +181,7 @@ namespace sp{
     private:
 
         bool _execute(const Mem2<Byte> &src) {
+            SP_LOGGER_SET("-execute");
 
             // clear data
             {
@@ -215,6 +217,8 @@ namespace sp{
         void detect(Mem1<Vec2> &pixs, Mem1<double> &scales, const Mem2<Byte> &img) {
             Mem2<int> labelMap;
             {
+                SP_LOGGER_SET("labeling");
+
                 Mem2<Byte> bin;
                 binalizeAdapt(bin, img);
 
@@ -225,6 +229,8 @@ namespace sp{
 
             // get label center (and refine center)
             {
+                SP_LOGGER_SET("getBlob");
+
                 getBlob(pixs, scales, labelMap);
 
                 SP_HOLDER_SET("pixs", pixs);
@@ -235,6 +241,7 @@ namespace sp{
 
             KdTree<double> kdtree(2);
             {
+                SP_LOGGER_SET("kdtree");
                 for (int i = 0; i < pixs.size(); i++) {
                     kdtree.addData(&pixs[i]);
                 }
@@ -243,6 +250,8 @@ namespace sp{
             double eval = 0.0;
             Mat hom;
             {
+                SP_LOGGER_SET("recog");
+
                 Mem1<Mem1<Vec2> > links;
                 getLink(links, pixs, kdtree);
                 SP_HOLDER_SET("links", links);
@@ -255,6 +264,8 @@ namespace sp{
             }
 
             {
+                SP_LOGGER_SET("eval");
+
                 if (eval < 0.3 * m_ptn.map.dsize[0] * m_ptn.map.dsize[1]) {
                     throw "eval";
                 }

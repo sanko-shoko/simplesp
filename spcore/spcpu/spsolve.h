@@ -91,21 +91,16 @@ namespace sp{
 
     // ransac sampling max
 #define SP_RANSAC_ITMAX 1000
+#define SP_RANSAC_MINRATE 2
 #define SP_RANSAC_MINEVAL 0.2
 
     // ransac adaptive stop
-    SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int num, const double n = 0.99){
+    SP_CPUFUNC int adaptiveStop(const double rate, const int num, const double n = 0.99){
         const double e = maxVal(rate, 0.1);
         const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, num)));
         return minVal(k, SP_RANSAC_ITMAX);
     }
 
-    SP_CPUFUNC bool ransacCheckEval(const double eval, const int num, const int unit) {
-        if (eval < SP_RANSAC_MINEVAL) return false;
-        if (eval * num - unit < unit) return false;
-
-        return true;
-    }
 
 
 
