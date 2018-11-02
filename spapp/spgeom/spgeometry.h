@@ -926,9 +926,10 @@ namespace sp {
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
         const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
-
+        printf("A");
         Mat E;
         if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
+        printf("B");
 
         const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
@@ -950,8 +951,8 @@ namespace sp {
     SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
 
         Pose pose = zeroPose();
-        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;
-
+        if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1, 5) == false) return 0.0;
+        printf("test");
         Mem1<Vec3> pnts;
         {
             Mem1<bool> mask;

@@ -1,10 +1,9 @@
-﻿#define SP_USE_DEBUG 1
-
-#include "simplesp.h"
+﻿#include "simplesp.h"
 
 using namespace sp;
 
 int main(){
+    Timer timer;
 
     //--------------------------------------------------------------------------------
     // kd tree
@@ -34,8 +33,7 @@ int main(){
         result.reserve(test.size());
         
         {
-            SP_LOGGER_INSTANCE;
-            SP_LOGGER_SET("kd tree");
+            timer.start();
         
             // create instance
             KdTree<double> kdtree(dim);
@@ -49,9 +47,11 @@ int main(){
                 const int crsp = kdtree.search(&test[i]);
                 result.push(targ[crsp]);
             }
+
+            timer.stop();
+            printf("kd tree %.3lf[ms]\n", timer.getms());
         }
 
-        printf("kd tree\n");
         {
             int step = (test.size() / 10);
             for (int i = 0; i < test.size(); i += step){
@@ -67,8 +67,7 @@ int main(){
         result.reserve(dim * test.size());
 
         {
-            SP_LOGGER_INSTANCE;
-            SP_LOGGER_SET("brute force search");
+            timer.start();
 
             for (int i = 0; i < test.size(); i++){
                 int crsp = -1;
@@ -84,9 +83,11 @@ int main(){
 
                 result.push(targ[crsp]);
             }
+
+            timer.stop();
+            printf("brute force search %.3lf[ms]\n", timer.getms());
         }
 
-        printf("brute force search\n");
         {
             int step = (test.size() / 10);
             for (int i = 0; i < test.size(); i += step){

@@ -75,7 +75,6 @@ namespace sp{
         Mem1<Vec2> m_cpixs, m_cobjs;
 
     public:
-        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         DotMarker(){
@@ -151,7 +150,6 @@ namespace sp{
     private:
 
         bool _execute(const Mem2<Byte> &img){
-            SP_LOGGER_SET("-execute");    
 
             // set default camera parameter
             if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
@@ -216,7 +214,6 @@ namespace sp{
         void detect(Mem1<Vec2> &pixs, const Mem2<Byte> &img){
             Mem2<Byte> minImg;
             {
-                SP_LOGGER_SET("rescale + filter");
                 rescale(minImg, img, getMinScale(), getMinScale());
                 gaussianFilter3x3(minImg, minImg);
 
@@ -225,8 +222,6 @@ namespace sp{
 
             Mem2<int> labelMap;
             {
-                SP_LOGGER_SET("labeling");
-
                 Mem2<Byte> minBin;
                 binalizeBlock(minBin, minImg, round(BIN_BLOCKSIZE * MIN_IMGSIZE));
                 invert(minBin, minBin);
@@ -238,8 +233,6 @@ namespace sp{
 
             // get label center (and refine center)
             {
-                SP_LOGGER_SET("getBlob");
-
                 getBlob(pixs, img, minImg, labelMap, getMinScale());
 
                 SP_HOLDER_SET("pixs", pixs);
@@ -254,8 +247,6 @@ namespace sp{
             // make kd tree
             KdTree<double> kdtree(2);
             {
-                SP_LOGGER_SET("kdtree");
-
                 for (int i = 0; i < pixs.size(); i++){
                     kdtree.addData(&pixs[i]);
                 }
@@ -264,16 +255,12 @@ namespace sp{
             Mat trkHom;
             double trkEval = 0.0;
             if (m_track == true){
-                SP_LOGGER_SET("track");
-
                 trkEval = track(trkHom, m_hom, m_mrk, pixs, kdtree);
             }
 
             Mat rcgHom;
             double rcgEval = 0.0;
             {
-                SP_LOGGER_SET("recog");
-                
                 Mem1<Mem1<Vec2> > links;
                 getLink(links, pixs, kdtree, m_direct);
                 
@@ -287,8 +274,6 @@ namespace sp{
             }
 
             {
-                SP_LOGGER_SET("eval");
-
                 if (maxVal(rcgEval, trkEval) < 0.6 * m_mrk.map.dsize[0] * m_mrk.map.dsize[1]){
                     throw "eval";
                 }
@@ -299,8 +284,6 @@ namespace sp{
             }
 
             {
-                SP_LOGGER_SET("calcPose");
-
                 getFineCrsp(m_cpixs, m_cobjs, m_hom, m_mrk.map, pixs, kdtree);
                 m_cobjs *= m_mrk.distance;
 

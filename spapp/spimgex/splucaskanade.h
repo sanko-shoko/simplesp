@@ -18,8 +18,6 @@ namespace sp{
 
 
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
-        SP_LOGGER_INSTANCE;
-        SP_LOGGER_SET("opticalFlowLK");
 
         const int WIN_SIZE = 21;
         const double EIG_THRESH = 0.01;

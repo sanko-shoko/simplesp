@@ -732,7 +732,7 @@ namespace sp{
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
-        const int unit = 8;
+        const int unit = 5;
         if (num < unit * 2) return false;
 
         int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
@@ -753,19 +753,22 @@ namespace sp{
 
             Mem1<Mat> tests;
             if(unit < 8){
+                printf("a %d %d\n", rnpxs0.size(), rnpxs1.size());
                 if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
             }
             else {
+                printf("b");
                 tests.resize(1);
                 if (calcEMat8p(tests[0], rnpxs0, rnpxs1) == false) continue;
             }
-            
+            printf("c");
+
             for (int i = 0; i < tests.size(); i++) {
                 const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
                 const double eval = evalErr(errs, thresh);
 
                 if (eval > maxe) {
-                    //SP_PRINTD("eval %lf\n", eval);
+                    SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
                     maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
 
@@ -773,7 +776,7 @@ namespace sp{
                 }
             }
         }
-        //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
+        SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
         if (ransacCheckEval(maxe, num, unit) == false) return false;
 
         // refine
