@@ -127,7 +127,6 @@ namespace sp {
 
 
     public:
-        SP_HOLDER_INSTANCE;
 
         SfM() {
             clear();

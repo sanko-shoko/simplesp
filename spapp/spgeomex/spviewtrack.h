@@ -46,7 +46,6 @@ namespace sp{
         MemP<MapPnt> _mpnts;
 
     public:
-        SP_HOLDER_INSTANCE;
 
         ViewTrack() {
             clear();

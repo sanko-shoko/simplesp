@@ -45,8 +45,6 @@ namespace sp{
 
     public:
 
-        SP_HOLDER_INSTANCE;
-
         StereoBase() {
             m_cam[0] = getCamParam(0, 0);
             m_cam[1] = getCamParam(0, 0);

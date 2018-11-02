@@ -298,8 +298,8 @@ namespace sp {
 
 #define SP_HOLDER_INSTANCE sp::Holder holder;
 #define SP_HOLDER_RESET() holder.reset();
-#define SP_HOLDER_SET(STR, DATA) { holder.set(STR, DATA); }
-#define SP_HOLDER_GET(STR, CLASS) (CLASS.holder.get(STR));
+#define SP_HOLDER_SET(NAME, DATA) { holder.set(NAME, DATA); }
+#define SP_HOLDER_GET(NAME, CLASS) (CLASS.holder.get(NAME));
 #else
 
 #define SP_HOLDER_INSTANCE
@@ -318,13 +318,13 @@ namespace sp {
 
     private:
 
-        vector<string> strs;
+        vector<string> names;
         vector<void *> ptrs;
 
     public:
 
         void reset(){
-            strs.clear();
+            names.clear();
             for (int i = 0; i < ptrs.size(); i++) {
                 delete ptrs[i];
             }
@@ -336,10 +336,10 @@ namespace sp {
         }
 
         template <typename TYPE>
-        void set(const char *str, const TYPE &data){
+        void set(const char *name, const TYPE &data){
 
-            for (int i = 0; i < strs.size(); i++){
-                if (str == strs[i]){
+            for (int i = 0; i < names.size(); i++){
+                if (names[i] == name){
                     *((TYPE*)ptrs[i]) = data;
                     return;
                 }
@@ -348,15 +348,15 @@ namespace sp {
             {
                 TYPE *ptr = new TYPE();
                 *ptr = data;
-                strs.push_back(str);
+                names.push_back(str);
                 ptrs.push_back(ptr);
             }
         }
 
-        const void* get(const char *str){
+        const void* get(const char *name){
 
-            for (int i = 0; i < strs.size(); i++){
-                if (str == strs[i]){
+            for (int i = 0; i < names.size(); i++){
+                if (names[i] == name){
                     return ptrs[i];
                 }
             }
