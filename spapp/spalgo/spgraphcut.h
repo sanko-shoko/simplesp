@@ -158,9 +158,6 @@ namespace sp{
 
         int execute(){
 
-            SP_LOGGER_INSTANCE;
-            SP_LOGGER_SET("-graphcut");
-
             Node *node = NULL;
 
             int maxflow = 0;

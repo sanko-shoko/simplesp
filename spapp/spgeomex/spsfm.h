@@ -127,7 +127,6 @@ namespace sp {
 
 
     public:
-        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         SfM() {
@@ -175,13 +174,11 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         void addView(const CamParam &cam, const Mem2<Col3> &img) {
-            SP_LOGGER_SET("-addView");
 
             addView(m_views, cam, img);
         }
 
         bool update(const int itmax = 1) {
-            SP_LOGGER_SET("-update");
 
             for (int it = 0; it < itmax; it++) {
                 if (_update() == false) return false;
@@ -438,7 +435,6 @@ namespace sp {
         //--------------------------------------------------------------------------------
     
         bool updatePair(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, const int itmax) {
-            SP_LOGGER_SET("updatePair");
 
             for (int it = 0; it < itmax; it++) {
                 int a = -1;
@@ -473,7 +469,6 @@ namespace sp {
         }
 
         bool updateView(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int seed) {
-            SP_LOGGER_SET("updateView");
 
             Mem1<MatchPair*> hypo;
             {
@@ -564,7 +559,6 @@ namespace sp {
         }
 
         bool updateMPnt(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int seed) {
-            SP_LOGGER_SET("updateMPnt");
 
             Mem1<MapPnt*> list;
             {
@@ -620,7 +614,6 @@ namespace sp {
         }
 
         bool updatePose(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int seed) {
-            SP_LOGGER_SET("updatePose");
 
             Mem1<ViewEx*> list;
             {
@@ -664,7 +657,6 @@ namespace sp {
         //--------------------------------------------------------------------------------
      
         void addNewMPnt(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int a, const int b) {
-            SP_LOGGER_SET("addNewMPnt");
 
             const Mem1<Feature> &fts0 = views[a]->fts;
             const Mem1<Feature> &fts1 = views[b]->fts;

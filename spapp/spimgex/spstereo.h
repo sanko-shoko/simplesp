@@ -45,7 +45,6 @@ namespace sp{
 
     public:
 
-        SP_LOGGER_INSTANCE;
         SP_HOLDER_INSTANCE;
 
         StereoBase() {
@@ -113,7 +112,6 @@ namespace sp{
     protected:
 
         virtual bool _execute(const Mem2<Byte> &srcL, const Mem2<Byte> &srcR) {
-            SP_LOGGER_SET("-execute");
 
             m_dsize[0] = srcL.dsize[0];
             m_dsize[1] = srcL.dsize[1];
