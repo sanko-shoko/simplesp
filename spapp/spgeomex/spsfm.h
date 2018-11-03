@@ -22,7 +22,9 @@ namespace sp {
 
             // pose state
             enum PoseState {
-                POSE_NULL = 0, POSE_HINT = 1, POSE_VALID = 2
+                POSE_NULL = 0,
+                POSE_HINT = 1, 
+                POSE_VALID = 2
             };
             PoseState state;
 
@@ -383,6 +385,7 @@ namespace sp {
             // select pair
             MatchPair *pair = NULL;
             {
+                printf("test");
                 // [invalid, invalid] pair
                 Mem1<MatchPair*> list = getPairs(views, pairs, ViewEx::POSE_NULL, ViewEx::POSE_NULL);
 
@@ -400,6 +403,7 @@ namespace sp {
                         pair = list[i];
                     }
                 }
+
                 if (maxv < MIN_STEREOEVAL) return false;
 
             }

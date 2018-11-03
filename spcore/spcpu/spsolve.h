@@ -114,7 +114,7 @@ namespace sp{
     class RandomSample {
 
         // data ptr
-        const Mem1<TYPE> *ptr;
+        const Mem<TYPE> *ptr;
 
         Mem1<TYPE> buf;
 
@@ -125,7 +125,7 @@ namespace sp{
         int prev;
 
     public:
-        RandomSample(const Mem1<TYPE> &src, const int unit) {
+        RandomSample(const Mem<TYPE> &src, const int unit) {
             this->ptr = &src;
             this->unit = unit;
             this->prev = -1;

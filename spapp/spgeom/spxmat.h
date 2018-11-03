@@ -691,7 +691,6 @@ namespace sp{
             return calcHMat(H, pixs, objs);
         }
 
-        srand(0);
         int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
         RandomSample<Vec2> _pixs(pixs, unit);
