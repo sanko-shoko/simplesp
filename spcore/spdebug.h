@@ -15,11 +15,6 @@
 #define SP_USE_DEBUG 0
 #endif
 
-#ifndef SP_USE_CONSOLE
-#define SP_USE_CONSOLE 1
-#endif
-
-
 #if SP_USE_DEBUG
 #define SP_USE_HOLDER 1
 #define SP_USE_LOGGER 1
@@ -42,22 +37,10 @@ namespace sp {
     // stdio 
     //--------------------------------------------------------------------------------
 
-#if SP_USE_CONSOLE
-#define SP_PRINTF(...) ::printf(__VA_ARGS__);
-#else
-#define SP_PRINTF(...) if(0){ ::printf(__VA_ARGS__); }
-#endif
-
 #if SP_USE_DEBUG
 #define SP_PRINTD(...) SP_PRINTF(__VA_ARGS__);
 #else
 #define SP_PRINTD(...) if(0){ SP_PRINTF(__VA_ARGS__); }
-#endif
-
-#if SP_USE_ASSERT
-#define SP_ASSERT(EXP) if(!(EXP)){ ::printf(" assert (%s)\n file: %s\n line: %d\n", #EXP, __FILE__, __LINE__); ::exit(0); }
-#else
-#define SP_ASSERT(EXP) (EXP);
 #endif
 
 

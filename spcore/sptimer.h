@@ -5,6 +5,8 @@
 #ifndef __SP_TIMER_H__
 #define __SP_TIMER_H__
 
+#include "spcore/spwrap.h"
+
 
 #ifndef SP_USE_TIMER
 #define SP_USE_TIMER 1
@@ -92,6 +94,11 @@ namespace sp {
         double getms() {
             return dif(tp[0], tp[1]);
         }
+
+        void print(const char *name) {
+            SP_PRINTF("%s: %.1lf[ms]\n", name, getms());
+        }
+
     };
 
 }

@@ -53,6 +53,8 @@ namespace sp{
 
     class MapPnt : public VecPN3{
     public:
+        bool valid;
+
         // point color
         Col3 col;
 
@@ -65,7 +67,11 @@ namespace sp{
         // feature index
         Mem1<Feature*> fts;
 
+        Mem1<double> errs;
+
         MapPnt() {
+            valid = false;
+            
             pos = getVec(0.0, 0.0, 0.0);
             nrm = getVec(0.0, 0.0, 0.0);
             col = getCol(0, 0, 0);
@@ -77,6 +83,8 @@ namespace sp{
         }
 
         MapPnt& operator = (const MapPnt &mpnt) {
+            valid = mpnt.valid;
+
             pos = mpnt.pos;
             nrm = mpnt.nrm;
 
@@ -92,26 +100,30 @@ namespace sp{
     public:
 
         void updatePrjErr() {
-
-            Mem1<double> errs;
+            if (valid == false) return;
 
             const int num = views.size();
+            
+            errs.resize(num);
+            
             for (int i = 0; i < num; i++) {
                 const Pose &pose = views[i]->pose;
                 const CamParam &cam = views[i]->cam;
                 const Vec2 &pix = fts[i]->pix;
 
-                errs.push(calcPrjErr(pose, cam, pix, pos));
+                errs[i] = calcPrjErr(pose, cam, pix, pos);
             }
 
             err = (errs.size() > 0) ? medianVal(errs) : SP_INFINITY;
         }
 
         void updateCol() {
+            if (valid == false) return;
 
             Vec3 vec = getVec(0.0, 0.0, 0.0);
 
             const int num = views.size();
+
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = fts[i]->pix;
                 vec += getVec(acsc(views[i]->img, pix.x, pix.y)) / num;

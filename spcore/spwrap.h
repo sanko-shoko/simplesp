@@ -6,6 +6,10 @@
 #define __SP_WRAP_H__
 
 
+#ifndef SP_USE_CONSOLE
+#define SP_USE_CONSOLE 1
+#endif
+
 #ifndef SP_USE_WRAPPER
 #define SP_USE_WRAPPER 1
 #endif
@@ -24,6 +28,22 @@
 
 
 namespace sp{
+
+    //--------------------------------------------------------------------------------
+    // stdio
+    //--------------------------------------------------------------------------------
+
+#if SP_USE_CONSOLE
+#define SP_PRINTF(...) ::printf(__VA_ARGS__);
+#else
+#define SP_PRINTF(...) if(0){ ::printf(__VA_ARGS__); }
+#endif
+
+#if SP_USE_ASSERT
+#define SP_ASSERT(EXP) if(!(EXP)){ ::printf(" assert (%s)\n file: %s\n line: %d\n", #EXP, __FILE__, __LINE__); ::exit(0); }
+#else
+#define SP_ASSERT(EXP) (EXP);
+#endif
 
 
 #if SP_USE_WRAPPER
