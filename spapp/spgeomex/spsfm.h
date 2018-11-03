@@ -250,9 +250,12 @@ namespace sp {
                     };
 
                     sort(uplist, compare_min);
+
+                    if (uplist[0]->upcnt == m_views.size()) uplist = shuffle(uplist, seed);
                     uplist = uplist.slice(0, 0, MAX_UPDATE);
                 }
 
+                printf("id ");
                 for(int i = 0; i < uplist.size(); i++){
                     ViewEx &view = *uplist[i];
 
@@ -263,8 +266,10 @@ namespace sp {
                     updatePose(m_views, m_mpnts, view);
 
                     view.upcnt = minVal(m_views.size(), view.upcnt + 1);
-                }
 
+                    printf("%d ", view.pairs[0]->a);
+                }
+                printf("\n");
                 m_update++;
             }
             catch (const char *str) {
