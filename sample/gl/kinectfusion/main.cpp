@@ -43,7 +43,7 @@ private:
 
         m_cam = getCamParam(320, 240);
         m_viewScale *= 1.5;
-        m_cam = getCamParam(640, 480);
+        //m_cam = getCamParam(640, 480);
 
         m_img.resize(m_cam.dsize);
         m_img.zero();
