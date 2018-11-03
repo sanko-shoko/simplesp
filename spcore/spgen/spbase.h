@@ -237,7 +237,7 @@ namespace sp{
         4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8,
     };
 
-    SP_GENFUNC int bitcnt(const int size, const Byte *bytes) {
+    SP_GENFUNC int cntBit(const int size, const Byte *bytes) {
         int num = 0;
         for (int i = 0; i < size; i++) {
             num += SP_BITS_TABLE[bytes[i]];

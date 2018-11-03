@@ -22,7 +22,9 @@ namespace sp {
 
             // pose state
             enum PoseState {
-                POSE_NULL = 0, POSE_HINT = 1, POSE_VALID = 2
+                POSE_NULL = 0x01,
+                POSE_HINT = 0x02, 
+                POSE_VALID = 0x04
             };
             PoseState state;
 
@@ -324,11 +326,11 @@ namespace sp {
             Mem1<MatchPair*> ptrs;
 
             for (int a = 0; a < views.size(); a++) {
-                if (views[a]->state != stateA) continue;
+                if (views[a]->state & stateA) continue;
 
                 for (int i = 0; i < views[a]->links.size(); i++) {
                     const int b = views[a]->links[i];
-                    if (views[b]->state != stateB) continue;
+                    if (views[b]->state & stateB) continue;
 
                     if (stateA == stateB && b < a) continue;
                     if (pairs(a, b) == NULL) continue;
