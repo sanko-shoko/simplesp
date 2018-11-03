@@ -230,13 +230,13 @@ namespace sp {
                     updatePair(m_views, m_pairs, m_views.size());
 
                     // calc first stere pose
-                    if (firstPose(m_views, m_mpnts) == false) throw "firstPose";
+                    if (firstPose(m_views) == false) throw "firstPose";
                 }
                 else {
                     updatePair(m_views, m_pairs, 1);
 
                     // update view [invalid -> valid]
-                    updateView(m_views, m_mpnts, seed);
+                    updateView(m_views);
                 }
                 
                 Mem1<ViewEx*> uplist;
@@ -255,7 +255,6 @@ namespace sp {
                     uplist = uplist.slice(0, 0, MAX_UPDATE);
                 }
 
-                printf("id ");
                 for(int i = 0; i < uplist.size(); i++){
                     ViewEx &view = *uplist[i];
 
@@ -266,10 +265,8 @@ namespace sp {
                     updatePose(m_views, m_mpnts, view);
 
                     view.upcnt = minVal(m_views.size(), view.upcnt + 1);
-
-                    printf("%d ", view.pairs[0]->a);
                 }
-                printf("\n");
+
                 m_update++;
             }
             catch (const char *str) {
@@ -451,7 +448,7 @@ namespace sp {
         // initialize
         //--------------------------------------------------------------------------------
 
-        bool firstPose(Mem1<ViewEx*> &views, Mem1<MapPnt*> &mpnts) {
+        bool firstPose(Mem1<ViewEx*> &views) {
 
             // select pair
             MatchPair *pair = NULL;
@@ -503,7 +500,7 @@ namespace sp {
         // update
         //--------------------------------------------------------------------------------
      
-        bool updateView(Mem1<ViewEx*> &views, Mem1<MapPnt*> &mpnts, const int seed) {
+        bool updateView(Mem1<ViewEx*> &views) {
 
             Mem1<MatchPair*> hypos;
             {
