@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_SMF_H__
-#define __SP_SMF_H__
+#ifndef __SP_SFM_H__
+#define __SP_SFM_H__
 
 #include "spcore/spcore.h"
 
@@ -11,7 +11,8 @@
 #include "spapp/spgeom/spgeometry.h"
 
 namespace sp {
- 
+
+
     class SfM {
 
     private:
@@ -27,7 +28,7 @@ namespace sp {
 
             // view links
             Mem1<int> links;
-            
+
             // init pair count
             int icnt;
 
@@ -37,9 +38,9 @@ namespace sp {
             // fix flag
             bool fix;
 
-            ViewEx() : View(){
+            ViewEx() : View() {
                 state = POSE_NULL;
-             
+
                 icnt = 0;
                 mcnt = 0;
                 fix = false;
@@ -110,13 +111,13 @@ namespace sp {
 
         // map points
         Mem1<MapPnt*> m_mpnts;
-        
+
 
     private:
         //--------------------------------------------------------------------------------
         // memory pool & stack
         //--------------------------------------------------------------------------------
-      
+
         MemP<ViewEx> _viewsPool;
 
         MemP<MatchPair> _pairsPool;
@@ -167,14 +168,14 @@ namespace sp {
             return (i >= 0 && i < m_mpnts.size()) ? m_mpnts[i] : NULL;
         }
 
- 
+
         //--------------------------------------------------------------------------------
         // execute
         //--------------------------------------------------------------------------------
 
-        void addView(const CamParam &cam, const Mem2<Col3> &img) {
+        void addView(const CamParam &cam, const Mem2<Col3> &img, const Pose *hint = NULL) {
 
-            addView(m_views, cam, img);
+            addView(m_views, cam, img, hint);
         }
 
         bool update(const int itmax = 1) {
@@ -186,33 +187,21 @@ namespace sp {
         }
 
 
-        //--------------------------------------------------------------------------------
-        // util
-        //--------------------------------------------------------------------------------
-
-        bool save(const char *path) {
-            Mem1<Vec3> pnts;
-            Mem1<Col3> cols;
-            for (int i = 0; i < m_mpnts.size(); i++) {
-                pnts.push(m_mpnts[i]->pos);
-                cols.push(m_mpnts[i]->col);
-            }
-
-            return savePLY(path, pnts, cols);
-        }
-
     private:
 
         double MIN_MATCHEVAL = 0.2;
         double MIN_STEREOEVAL = 0.4;
-        
+
         int MIN_POSEPNT = 10;
-        
+
         double MPNT_PRJERR = 5.0;
         double MPNT_ANGLE = 3.0 * SP_PI / 180.0;
 
         int MAX_POSEUPDATE = 20;
         int MAX_MPNTUPDATE = 1000;
+
+        double MAX_NEARPOSE = 30.0 * SP_PI / 180.0;
+
 
     private:
 
@@ -287,11 +276,16 @@ namespace sp {
         // view (v: view id)
         //--------------------------------------------------------------------------------
 
-        void addView(Mem1<ViewEx*> &views, const CamParam &cam, const Mem2<Col3> &img) {
+        void addView(Mem1<ViewEx*> &views, const CamParam &cam, const Mem2<Col3> &img, const Pose *hint) {
             ViewEx &view = *_viewsPool.malloc();
             view.img = img;
             view.cam = cam;
             view.fts = SIFT::getFeatures(img);
+
+            if (hint != NULL) {
+                view.state = ViewEx::POSE_HINT;
+                view.pose = *hint;
+            }
 
             _viewsStack.push(&view);
         }
@@ -306,7 +300,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // pair (a, b: view id)
         //--------------------------------------------------------------------------------
-        
+
         void initPair(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, const int a, const int b) {
             MatchPair &pair = *_pairsPool.malloc();
 
@@ -316,7 +310,7 @@ namespace sp {
             pair.matches = findMatch(views[a]->fts, views[b]->fts);
             pair.eval = getMatchEval(pair.matches);
 
-            if(pair.eval > MIN_MATCHEVAL){
+            if (pair.eval > MIN_MATCHEVAL) {
                 views[a]->links.push(b);
             }
 
@@ -352,7 +346,7 @@ namespace sp {
 
         void addMPnt(Mem1<MapPnt*> &mpnts, const Vec3 &pos) {
             MapPnt &mpnt = *_mpntsPool.malloc();
-           
+
             setMPnt(mpnt, pos);
             mpnts.push(&mpnt);
         }
@@ -409,21 +403,22 @@ namespace sp {
                 if (maxv < MIN_STEREOEVAL) return false;
 
             }
-            
+
             // initialize pair
             {
                 const int a = pair->a;
                 const int b = pair->b;
+
                 const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, pairs(a, b)->matches, true);
                 const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, pairs(a, b)->matches, false);
 
                 Pose pose = zeroPose();
                 if (calcPoseRANSAC(pose, views[b]->cam, pixs1, views[a]->cam, pixs0) == false) return false;
-
+                print(pose);
                 setView(*views[a], zeroPose());
                 setView(*views[b], pose);
 
-                views[a]->fix = true;
+                //views[a]->fix = true;
             }
 
             return true;
@@ -432,7 +427,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // update
         //--------------------------------------------------------------------------------
-    
+
         bool updatePair(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, const int itmax) {
 
             for (int it = 0; it < itmax; it++) {
@@ -457,41 +452,54 @@ namespace sp {
                 if (list.size() == 0) return false;
 
                 list = shuffle(list);
-
                 for (int i = 0; i < minVal(10, list.size()); i++) {
                     const int b = list[i];
                     initPair(views, pairs, a, b);
                     initPair(views, pairs, b, a);
                 }
+
+                if (views[a]->state == ViewEx::POSE_HINT) {
+                    const int v = searchNearViewId(views[a]->pose);
+                    if (pairs(a, v) != NULL) continue;
+
+                    initPair(views, pairs, a, v);
+                    initPair(views, pairs, v, a);
+                }
+
             }
             return true;
         }
 
         bool updateView(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int seed) {
 
-            Mem1<MatchPair*> hypo;
+            Mem1<MatchPair*> hypos;
             {
                 // [invalid, valid] pair
                 Mem1<MatchPair*> list = getPairs(views, pairs, ViewEx::POSE_NULL, ViewEx::POSE_VALID);
-                if (list.size() == 0) return false;
 
                 //pair = list[seed % list.size()];
 
-                auto compare_max = [](const void *a, const void *b) -> int{
+                auto compare_max = [](const void *a, const void *b) -> int {
                     return ((*static_cast<const MatchPair* const*>(a))->eval > (*static_cast<const MatchPair* const*>(b))->eval) ? -1 : +1;
                 };
                 sort(list, compare_max);
 
                 const int select = 3;
                 {
-                    hypo.push(list.slice(0, 0, select));
+                    hypos.push(list.slice(0, 0, select));
                 }
 
                 if (list.size() > select) {
-                    list = shuffle(list.slice(0, 3, list.size()));
-                    hypo.push(list.slice(0, 0, select));
+                    list = shuffle(list.slice(0, select, list.size()));
+                    hypos.push(list.slice(0, 0, select));
                 }
             }
+            {
+                // [invalid, valid] pair
+                Mem1<MatchPair*> list = getPairs(views, pairs, ViewEx::POSE_HINT, ViewEx::POSE_VALID);
+                hypos.push(list);
+            }
+            if (hypos.size() == 0) return false;
 
             // calc pose & add pnts
             {
@@ -499,16 +507,18 @@ namespace sp {
 
                 int bestid = -1;
                 double maxe = 0.0;
-                for (int i = 0; i < hypo.size(); i++) {
-                    const int a = hypo[i]->a;
-                    const int b = hypo[i]->b;
+                for (int i = 0; i < hypos.size(); i++) {
+                    const int a = hypos[i]->a;
+                    const int b = hypos[i]->b;
 
                     const Mem1<int> &matches = pairs(b, a)->matches;
 
                     Mem1<Vec2> pixs;
                     Mem1<Vec3> objs;
+                    int cnt = 0;
                     for (int g = 0; g < matches.size(); g++) {
                         const int f = matches[g];
+                        if (f >= 0) cnt++;
                         MapPnt *mpnt = views[b]->fts[g].mpnt;
                         if (f < 0 || mpnt == NULL) continue;
 
@@ -522,7 +532,7 @@ namespace sp {
 
                     const Mem1<double> errs = calcPrjErr(tmp, views[a]->cam, pixs, objs);
                     const double eval = evalErr(errs, MPNT_PRJERR);
-                    
+
                     if (eval > maxe) {
                         maxe = eval;
                         bestid = i;
@@ -530,11 +540,11 @@ namespace sp {
                         pose = tmp;
                     }
                 }
-                if(bestid < 0) return false;
+                if (bestid < 0) return false;
 
                 {
-                    const int a = hypo[bestid]->a;
-                    const int b = hypo[bestid]->b;
+                    const int a = hypos[bestid]->a;
+                    const int b = hypos[bestid]->b;
 
                     const Mem1<int> &matches = pairs(b, a)->matches;
 
@@ -568,7 +578,7 @@ namespace sp {
                 MapPnt *mpnt = list[i];
 
                 const Mem1<View*> &mviews = mpnt->views;
-                const Mem1<Feature*> &mfts= mpnt->fts;
+                const Mem1<Feature*> &mfts = mpnt->fts;
 
                 const int num = mviews.size();
                 if (num < 2) continue;
@@ -600,6 +610,7 @@ namespace sp {
                         const Vec3 vec0 = unitVec(poses[a].trn - pos);
                         const Vec3 vec1 = unitVec(poses[b].trn - pos);
                         const double angle = acos(dotVec(vec0, vec1));
+
                         angles.push(angle);
                     }
                 }
@@ -650,11 +661,11 @@ namespace sp {
             return true;
         }
 
-       
+
         //--------------------------------------------------------------------------------
         // modules
         //--------------------------------------------------------------------------------
-     
+
         void addNewMPnt(Mem1<ViewEx*> &views, Mem2<MatchPair*> &pairs, Mem1<MapPnt*> &mpnts, const int a, const int b) {
 
             const Mem1<Feature> &fts0 = views[a]->fts;
@@ -724,6 +735,50 @@ namespace sp {
             addNewMPnt(views, pairs, mpnts, pair->a, pair->b);
 
             return true;
+        }
+
+    public:
+        //--------------------------------------------------------------------------------
+        // util
+        //--------------------------------------------------------------------------------
+
+        int searchNearViewId(const Pose &pose) {
+            int id = -1;
+            double maxd = SP_INFINITY;
+            for (int i = 0; i < m_views.size(); i++) {
+                if (m_views[i]->state != ViewEx::POSE_VALID) continue;
+                const Pose hypo = m_views[i]->pose;
+
+                const double angle = difRot(pose.rot, hypo.rot, 2);
+                if (angle > MAX_NEARPOSE) continue;
+
+                const double d = normVec(pose.trn - hypo.trn);
+                if (d < maxd) {
+                    maxd = d;
+                    id = i;
+                }
+            }
+            return id;
+        }
+
+        const View* searchNearView(const Pose &pose) {
+            ViewEx *view = NULL;
+            const int id = searchNearViewId(pose);
+            if (id >= 0) {
+                view = m_views[id];
+            }
+            return view;
+        }
+
+        const Pose* getlatestPose() {
+            Pose *pose = NULL;
+            for (int i = m_views.size() - 1; i >= 0; i--) {
+                if (m_views[i]->valid == true) {
+                    pose = &m_views[i]->pose;
+                    break;
+                }
+            }
+            return pose;
         }
 
     };
