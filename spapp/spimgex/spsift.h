@@ -31,9 +31,23 @@ namespace sp{
             double contrast;
         };
 
-        SIFT(){
+    private:
+ 
+        Mem1<Feature> m_fts;
+
+        Mem1<Mem1<Mem2<float> > > m_dogs;
+        Mem1<Mem1<Mem2<float> > > m_imgs;
+
+    private:
+
+        double BLOB_CONTRAST = 0.01;
+        double EDGE_THRESH = 10.0;
+
+    public:
+
+        SIFT() {
         }
-        
+
         SIFT(const SIFT &sift) {
             *this = sift;
         }
@@ -42,11 +56,15 @@ namespace sp{
             return *this;
         }
 
-    private:
+        
+        //--------------------------------------------------------------------------------
+        // parameter
+        //--------------------------------------------------------------------------------
 
-        Mem1<Feature> m_fts;
+        void setParam(const double contrast = 0.01) {
+            BLOB_CONTRAST = contrast;
+        }
 
-    public:
 
         //--------------------------------------------------------------------------------
         // data
@@ -57,11 +75,13 @@ namespace sp{
         }
 
         template<typename T>
-        static Mem1<Feature> getFeatures(const Mem2<T> &img) {
+        static Mem1<Feature> getFeatures(const Mem2<T> &img, const double contrast = 0.01) {
             SIFT sift;
+            sift.setParam(contrast);
             sift.execute(img);
             return (sift.getFeatures() != NULL) ? *sift.getFeatures() : Mem1<Feature>();
         }
+
 
         //--------------------------------------------------------------------------------
         // execute detection and description
@@ -85,6 +105,7 @@ namespace sp{
 
             return _execute(img);
         }
+
 
     private:
 
@@ -120,29 +141,29 @@ namespace sp{
             return true;
         }
 
-    private:
-        double BLOB_CONTRAST = 0.01;
-        double EDGE_THRESH = 10.0;
+     private:
 
-        double INIT_SIGMA = 0.5;
-        double BASE_SIGMA = 1.6;
+         double INIT_SIGMA = 0.5;
+         double BASE_SIGMA = 1.6;
 
-        int LAYERS = 3;
-        double LAYER_STEP = pow(2.0, 1.0 / LAYERS);
+         int LAYERS = 3;
+         double LAYER_STEP = pow(2.0, 1.0 / LAYERS);
 
-        Mem1<Mem1<Mem2<float> > > m_dogsList;
-        Mem1<Mem1<Mem2<float> > > m_imgsList;
+
+        //--------------------------------------------------------------------------------
+        // modules
+        //--------------------------------------------------------------------------------
 
         void makeDoG(const Mem2<float> &img){
 
             const int octaves = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
 
-            m_dogsList.resize(octaves);
-            m_imgsList.resize(octaves);
+            m_dogs.resize(octaves);
+            m_imgs.resize(octaves);
 
             for (int o = 0; o < octaves; o++){
-                Mem1<Mem2<float>> &dogs = m_dogsList[o];
-                Mem1<Mem2<float>> &imgs = m_imgsList[o];
+                Mem1<Mem2<float> > &dogs = m_dogs[o];
+                Mem1<Mem2<float> > &imgs = m_imgs[o];
 
                 dogs.resize(LAYERS + 2);
                 imgs.resize(LAYERS + 3);
@@ -155,7 +176,7 @@ namespace sp{
                     gaussianFilter(imgs[0], img, dsig);
                 }
                 else{
-                    pyrdown(imgs[0], m_imgsList[o - 1][LAYERS]);
+                    pyrdown(imgs[0], m_imgs[o - 1][LAYERS]);
                 }
 
                 for (int s = 1; s < LAYERS + 3; s++){
@@ -175,8 +196,8 @@ namespace sp{
         Mem1<KeyPoint> detect(){
             Mem1<KeyPoint> keyPnts;
 
-            for (int o = 0; o < m_dogsList.size(); o++){
-                const Mem1<Mem2<float>> &dogs = m_dogsList[o];
+            for (int o = 0; o < m_dogs.size(); o++){
+                const Mem1<Mem2<float>> &dogs = m_dogs[o];
 
                 for (int s = 1; s < LAYERS + 1; s++){
                     const int margin = round(4.0 * BASE_SIGMA);
@@ -211,8 +232,8 @@ namespace sp{
 
         void addKeyPoint(Mem1<KeyPoint> &keyPnts, const int o, const int x, const int y, const int s){
 
-            const Mem1<Mem2<float>> &dogs = m_dogsList[o];
-            const Mem1<Mem2<float>> &imgs = m_imgsList[o];
+            const Mem1<Mem2<float>> &dogs = m_dogs[o];
+            const Mem1<Mem2<float>> &imgs = m_imgs[o];
 
             double fx = x;
             double fy = y;
@@ -357,7 +378,7 @@ namespace sp{
                 hist.zero();
 
                 const KeyPoint &key = keys[i];
-                const Mem2<float> &img = m_imgsList[key.octave][round(key.layer)];
+                const Mem2<float> &img = m_imgs[key.octave][round(key.layer)];
                 const Rect rect = getRect2(img.dsize) - 1;
 
                 const double kx = key.pix.x / (1 << key.octave);

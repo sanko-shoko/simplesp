@@ -189,12 +189,12 @@ namespace sp{
         const Vec3 n1 = getVec(vec1, 1.0);
 
         const Vec3 M0 = M * n1;
-        //const Vec3 M1 = trnMat(M) * n0;
+        const Vec3 M1 = trnMat(M) * n0;
 
         // |a*x + b*y + c| / sqrt(a*a + b*b)
         const double err0 = fabs(dotVec(n0, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
-        //const double err1 = fabs(dotVec(n1, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
-        return err0;
+        const double err1 = fabs(dotVec(n1, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
+        return maxVal(err0, err1);
     }
 
     SP_CPUFUNC Mem1<double> errMatType2(const Mat &M, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
@@ -643,7 +643,24 @@ namespace sp{
         }
         return ret;
     }
-    
+
+    // calc essential matrix [x0^T * E * x1]
+    SP_CPUFUNC bool calcEMat(Mem1<Mat> &Es, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const int maxit = 1) {
+        SP_ASSERT(npxs0.size() == npxs1.size());
+
+        const int num = npxs0.size();
+
+        bool ret = false;
+        if (num < 8) {
+            ret = calcEMat5p(Es, npxs0, npxs1);
+        }
+        else {
+            Es.resize(1);
+            ret = calcEMat8p(Es[0], npxs0, npxs1, maxit);
+        }
+        return ret;
+    }
+
 
     //--------------------------------------------------------------------------------
     // fundamental matrix
@@ -728,11 +745,11 @@ namespace sp{
     }
 
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 5.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 2.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
-        const int unit = 5;
+        const int unit = 8;
 
         if (num < unit) return false;
         if (num < unit * 2) {
@@ -752,7 +769,7 @@ namespace sp{
             const Mem1<Vec2> rnpxs1 = _npxs1.gen(it);
 
             Mem1<Mat> tests;
-            if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
+            if (calcEMat(tests, rnpxs0, rnpxs1) == false) continue;
 
             for (int i = 0; i < tests.size(); i++) {
                 const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
@@ -783,7 +800,7 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 5.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 2.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
