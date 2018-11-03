@@ -687,42 +687,38 @@ namespace sp{
         const int unit = 4;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcHMat(H, pixs, objs);
         }
 
         srand(0);
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec2> spixs, rpixs;
-        Mem1<Vec2> sobjs, robjs;
+        RandomSample<Vec2> _pixs(pixs, unit);
+        RandomSample<Vec2> _objs(objs, unit);
 
         double maxe = 0.0;
         for (int it = 0; it < maxit; it++) {
-            const int p = it % (pixs.size() - unit);
-            if (p == 0) {
-                spixs = shuffle(pixs, it);
-                sobjs = shuffle(objs, it);
-            }
-            rpixs.resize(unit, &spixs[p]);
-            robjs.resize(unit, &sobjs[p]);
+
+            const Mem1<Vec2> rpixs = _pixs.gen(it);
+            const Mem1<Vec2> robjs = _objs.gen(it);
 
             Mat test;
             if (calcHMat(test, rpixs, robjs, 1) == false) continue;
 
             const Mem1<double> errs = errHMat(test, pixs, objs);
-            const double eval = evalErr(errs, thresh);
+            const double eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = adaptiveStop(eval, unit);
+                maxit = ransacAdaptiveStop(eval, unit);
 
                 H = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         const Mem1<double> errs = errHMat(H, pixs, objs);
@@ -740,45 +736,40 @@ namespace sp{
         const int unit = 5;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcEMat(E, npxs0, npxs1);
         }
 
-        const int tnum = 20;
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec2> snpxs0, rnpxs0;
-        Mem1<Vec2> snpxs1, rnpxs1;
+        RandomSample<Vec2> _npxs0(npxs0, unit);
+        RandomSample<Vec2> _npxs1(npxs1, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (num - unit);
-            if (p == 0) {
-                snpxs0 = shuffle(npxs0, it);
-                snpxs1 = shuffle(npxs1, it);
-            }
-            rnpxs0.resize(unit, &snpxs0[p]);
-            rnpxs1.resize(unit, &snpxs1[p]);
+
+            const Mem1<Vec2> rnpxs0 = _npxs0.gen(it);
+            const Mem1<Vec2> rnpxs1 = _npxs1.gen(it);
 
             Mem1<Mat> tests;
             if (calcEMat5p(tests, rnpxs0, rnpxs1) == false) continue;
 
             for (int i = 0; i < tests.size(); i++) {
                 const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
-                const double eval = evalErr(errs, thresh);
+                const double eval = ransacEval(errs, unit, thresh);
 
                 if (eval > maxe) {
                     //SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
-                    maxit = minVal(maxit, adaptiveStop(eval, unit));
+                    maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
 
                     E = tests[i];
                 }
             }
         }
         //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {
@@ -800,43 +791,38 @@ namespace sp{
         const int unit = 8;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcFMat(F, pixs0, pixs1);
         }
 
-        const int tnum = 20;
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec2> spixs0, rpixs0;
-        Mem1<Vec2> spixs1, rpixs1;
+        RandomSample<Vec2> _pixs0(pixs0, unit);
+        RandomSample<Vec2> _pixs1(pixs1, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (num - unit);
-            if (p == 0) {
-                spixs0 = shuffle(pixs0, it);
-                spixs1 = shuffle(pixs1, it);
-            }
-            rpixs0.resize(unit, &spixs0[p]);
-            rpixs1.resize(unit, &spixs1[p]);
+
+            const Mem1<Vec2> rpixs0 = _pixs0.gen(it);
+            const Mem1<Vec2> rpixs1 = _pixs1.gen(it);
 
             Mat test;
             if (calcEMat8p(test, rpixs0, rpixs1) == false) continue;
 
             const Mem1<double> errs = errFMat(test, pixs0, pixs1);
-            const double eval = evalErr(errs, thresh);
+            const double eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = minVal(maxit, adaptiveStop(eval, unit));
+                maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
 
                 F = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d num %d rate %.2lf\n", it, num, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {

@@ -348,7 +348,7 @@ namespace sp {
             {
                 TYPE *ptr = new TYPE();
                 *ptr = data;
-                names.push_back(str);
+                names.push_back(name);
                 ptrs.push_back(ptr);
             }
         }

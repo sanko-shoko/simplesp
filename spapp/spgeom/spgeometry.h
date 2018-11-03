@@ -697,46 +697,40 @@ namespace sp {
         const int unit = 2;
 
         if (num < unit) return false;
-        if (pixs.size() < unit * SP_RANSAC_MINRATE) {
+        if (pixs.size() < unit * 2) {
             return calcPnt3d(pos, poses, cams, pixs);
         }
 
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Pose> sposes, rposes;
-        Mem1<CamParam> scams, rcams;
-        Mem1<Vec2> spixs, rpixs;
+        RandomSample<Pose> _poses(poses, unit);
+        RandomSample<CamParam> _cams(cams, unit);
+        RandomSample<Vec2> _pixs(pixs, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (pixs.size() - unit);
-            if (p == 0) {
-                sposes = shuffle(poses, it);
-                scams = shuffle(cams, it);
-                spixs = shuffle(pixs, it);
-            }
 
-            rposes.resize(unit, &sposes[p]);
-            rcams.resize(unit, &scams[p]);
-            rpixs.resize(unit, &spixs[p]);
+            const Mem1<Pose> rposes = _poses.gen(it);
+            const Mem1<CamParam> rcams = _cams.gen(it);
+            const Mem1<Vec2> rpixs = _pixs.gen(it);
 
             Vec3 test;
             if (calcPnt3d(test, rposes, rcams, rpixs) == false) continue;
 
             const Mem1<double> errs = calcPrjErr(poses, cams, pixs, test);
-            const double eval = evalErr(errs, thresh);
+            const double eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = adaptiveStop(eval, unit);
+                maxit = ransacAdaptiveStop(eval, unit);
 
                 pos = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {
@@ -758,25 +752,21 @@ namespace sp {
         const int unit = 3;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcPose(pose, objs0, objs1);
         }
 
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec3> sobjs0, robjs0;
-        Mem1<Vec3> sobjs1, robjs1;
+        RandomSample<Vec3> _objs0(objs0, unit);
+        RandomSample<Vec3> _objs1(objs1, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (num - unit);
-            if (p == 0) {
-                sobjs0 = shuffle(objs0, it);
-                sobjs1 = shuffle(objs1, it);
-            }
-            robjs0.resize(unit, &sobjs0[p]);
-            robjs1.resize(unit, &sobjs1[p]);
+
+            const Mem1<Vec3> robjs0 = _objs0.gen(it);
+            const Mem1<Vec3> robjs1 = _objs1.gen(it);
 
             Pose test;
             if (calcPose(test, robjs0, robjs1, 1) == false) continue;
@@ -785,18 +775,18 @@ namespace sp {
             for (int i = 0; i < num; i++) {
                 errs.push(normVec(objs0[i] - test * objs1[i]));
             }
-            const double eval = evalErr(errs, thresh);
+            const double eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = adaptiveStop(eval, unit);
+                maxit = ransacAdaptiveStop(eval, unit);
 
                 pose = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {
@@ -821,25 +811,20 @@ namespace sp {
         const int unit = 3;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcPose(pose, cam, pixs, objs);
         }
 
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec2> spixs, rpixs;
-        Mem1<Vec3> sobjs, robjs;
+        RandomSample<Vec2> _pixs(pixs, unit);
+        RandomSample<Vec3> _objs(objs, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (num - unit);
-            if (p == 0) {
-                spixs = shuffle(pixs, it);
-                sobjs = shuffle(objs, it);
-            }
-            rpixs.resize(unit, &spixs[p]);
-            robjs.resize(unit, &sobjs[p]);
+            const Mem1<Vec2> rpixs = _pixs.gen(it);
+            const Mem1<Vec3> robjs = _objs.gen(it);
 
             Mem1<Pose> tests;
             if (calcPoseP3P(tests, cam, rpixs, robjs) == false) continue;
@@ -847,19 +832,19 @@ namespace sp {
             for (int i = 0; i < tests.size(); i++) {
 
                 const Mem1<double> errs = calcPrjErr(tests[i], cam, pixs, objs);
-                const double eval = evalErr(errs, thresh);
+                const double eval = ransacEval(errs, unit, thresh);
 
                 if (eval > maxe) {
                     //SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
-                    maxit = adaptiveStop(eval, unit);
+                    maxit = ransacAdaptiveStop(eval, unit);
 
                     pose = tests[i];
                 }
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {
@@ -881,42 +866,38 @@ namespace sp {
         const int unit = 4;
 
         if (num < unit) return false;
-        if (num < unit * SP_RANSAC_MINRATE) {
+        if (num < unit * 2) {
             return calcPose(pose, cam, pixs, objs);
         }
 
-        int maxit = adaptiveStop(SP_RANSAC_MINEVAL, unit);
+        int maxit = ransacAdaptiveStop(SP_RANSAC_MINEVAL, unit);
 
-        Mem1<Vec2> spixs, rpixs;
-        Mem1<Vec2> sobjs, robjs;
+        RandomSample<Vec2> _pixs(pixs, unit);
+        RandomSample<Vec2> _objs(objs, unit);
 
         double maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
-            const int p = it % (num - unit);
-            if (p == 0) {
-                spixs = shuffle(pixs, it);
-                sobjs = shuffle(objs, it);
-            }
-            rpixs.resize(unit, &spixs[p]);
-            robjs.resize(unit, &sobjs[p]);
+
+            const Mem1<Vec2> rpixs = _pixs.gen(it);
+            const Mem1<Vec2> robjs = _objs.gen(it);
 
             Pose test;
             if (calcPose(test, cam, rpixs, robjs, 1) == false) continue;
 
             const Mem1<double> errs = calcPrjErr(test, cam, pixs, getVec(objs, 0.0));
-            const double eval = evalErr(errs, thresh);
+            const double eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = adaptiveStop(eval, unit);
+                maxit = ransacAdaptiveStop(eval, unit);
 
                 pose = test;
             }
         }
         //SP_PRINTD("RANSAC iteration %d rate %.2lf\n", it, maxe);
-        if (maxe < SP_RANSAC_MINEVAL || maxe * num < unit * SP_RANSAC_MINRATE) return false;
+        if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
         {
