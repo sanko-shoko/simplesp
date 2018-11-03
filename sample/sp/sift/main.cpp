@@ -47,6 +47,8 @@ int main(){
     fts[1] = SIFT::getFeatures(imgs[1]);
 
     // matching
+    //prepareMatch(fts[0]);
+    //prepareMatch(fts[1]);
     const Mem1<int> matches = findMatch(fts[0], fts[1]);
 
     const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);

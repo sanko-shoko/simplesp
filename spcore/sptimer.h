@@ -95,7 +95,7 @@ namespace sp {
             return dif(tp[0], tp[1]);
         }
 
-        void print(const char *name) {
+        void print(const char *name = "time") {
             SP_PRINTF("%s: %.1lf[ms]\n", name, getms());
         }
 
