@@ -134,12 +134,12 @@ private:
                 if (color != NULL){
                     char name[256];
                     sprintf(name, "color%03d.bmp", id);
-                    saveBMP(*color, name);
+                    saveBMP(name, *color);
                 }
                 if (depth != NULL){
                     char name[256];
                     sprintf(name, "depth%03d.bin", id);
-                    saveMem(*depth, name);
+                    saveMem(name, *depth);
                 }
                 id++;
                 cnt++;
