@@ -237,14 +237,41 @@ namespace sp{
         4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8,
     };
 
-    SP_GENFUNC int cntBit(const int size, const Byte *bytes) {
-        int num = 0;
-        for (int i = 0; i < size; i++) {
-            num += SP_BITS_TABLE[bytes[i]];
-        }
-        return num;
+    SP_GENFUNC int cntBit(const Byte byte) {
+        return SP_BITS_TABLE[byte];
     }
 
+    SP_GENFUNC int cntBit(const Byte byte0, const Byte byte1) {
+        return 8 - cntBit(byte0 ^ byte1);
+    }
+
+    SP_GENFUNC int cntBit(const Byte *bytes0, const Byte *bytes1, const int bsize) {
+        int cnt = 0;
+        for (int i = 0; i < bsize; i++) {
+            cnt += cntBit(bytes0[i], bytes1[i]);
+        }
+        return cnt;
+    }
+
+    SP_GENFUNC void setBit(Byte &byte, const int p, const Byte b) {
+        const Byte mask = 0x01 << p;
+        byte = (b != 0) ? byte | mask : byte & ~mask;
+    }
+
+    template<typename TYPE>
+    SP_GENFUNC void cnvBit(Byte *bytes, const int bsize, const TYPE *src, const int ssize, const TYPE thresh) {
+
+        for (int i = 0; i < bsize; i++) {
+            bytes[i] = 0;
+        }
+
+        for (int i = 0; i < ssize; i++) {
+            if (src[i] > thresh) {
+                setBit(bytes[i / 8], i % 8, 1);
+            }
+        }
+    }
+    
 }
 
 #endif

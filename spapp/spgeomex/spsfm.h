@@ -203,7 +203,7 @@ namespace sp {
         int MIN_POSEPNT = 10;
 
         double MPNT_PRJERR = 5.0;
-        double MPNT_ANGLE = 3.0 * SP_PI / 180.0;
+        double MPNT_ANGLE = 2.0 * SP_PI / 180.0;
 
         int MAX_UPDATE = 3;
 
@@ -303,6 +303,7 @@ namespace sp {
             view.img = img;
             view.cam = cam;
             view.fts = SIFT::getFeatures(img, 0.005);
+            prepareMatch(view.fts);
 
             if (hint != NULL) {
                 view.state = ViewEx::POSE_HINT;
