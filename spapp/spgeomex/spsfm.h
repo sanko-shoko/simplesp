@@ -6,12 +6,10 @@
 #define __SP_SFM_H__
 
 #include "spcore/spcore.h"
-
 #include "spapp/spdata/spscene.h"
 #include "spapp/spgeom/spgeometry.h"
 
 namespace sp {
-
 
     class SfM {
 
@@ -22,9 +20,9 @@ namespace sp {
 
             // pose state
             enum PoseState {
-                POSE_NULL = 0,
-                POSE_HINT = 1, 
-                POSE_VALID = 2
+                POSE_NULL = 0x01,
+                POSE_HINT = 0x02, 
+                POSE_VALID = 0x04
             };
             PoseState state;
 
@@ -326,11 +324,11 @@ namespace sp {
             Mem1<MatchPair*> ptrs;
 
             for (int a = 0; a < views.size(); a++) {
-                if (views[a]->state != stateA) continue;
+                if ((views[a]->state & stateA) == false) continue;
 
                 for (int i = 0; i < views[a]->links.size(); i++) {
                     const int b = views[a]->links[i];
-                    if (views[b]->state != stateB) continue;
+                    if ((views[b]->state & stateB) == false) continue;
 
                     if (stateA == stateB && b < a) continue;
                     if (pairs(a, b) == NULL) continue;
@@ -385,7 +383,6 @@ namespace sp {
             // select pair
             MatchPair *pair = NULL;
             {
-                printf("test");
                 // [invalid, invalid] pair
                 Mem1<MatchPair*> list = getPairs(views, pairs, ViewEx::POSE_NULL, ViewEx::POSE_NULL);
 
@@ -418,7 +415,7 @@ namespace sp {
 
                 Pose pose = zeroPose();
                 if (calcPoseRANSAC(pose, views[b]->cam, pixs1, views[a]->cam, pixs0) == false) return false;
-                print(pose);
+               
                 setView(*views[a], zeroPose());
                 setView(*views[b], pose);
 
@@ -750,7 +747,7 @@ namespace sp {
             int id = -1;
             double maxd = SP_INFINITY;
             for (int i = 0; i < m_views.size(); i++) {
-                if (m_views[i]->state != ViewEx::POSE_VALID) continue;
+                if ((m_views[i]->state & ViewEx::POSE_VALID) == false) continue;
                 const Pose hypo = m_views[i]->pose;
 
                 const double angle = difRot(pose.rot, hypo.rot, 2);
