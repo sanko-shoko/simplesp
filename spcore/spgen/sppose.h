@@ -269,6 +269,15 @@ namespace sp{
         return vec;
     }
 
+    SP_GENFUNC double getAngle(const Rot &rot, const int axis) {
+        SP_ASSERT(axis >= 0 && axis < 3);
+
+        const Vec3 v0 = getVec(axis == 0 ? 1.0 : 0.0, axis == 1 ? 1.0 : 0.0, axis == 2 ? 1.0 : 0.0);
+        const Vec3 v1 = rot * v0;
+        const double angle = acos(dotVec(v0, v1));
+        return angle;
+    }
+
     SP_GENFUNC Rot getRotDirection(const Vec3 &vec){
         const Vec3 nrm = unitVec(vec);
 
@@ -341,6 +350,11 @@ namespace sp{
     // dif
     SP_GENFUNC double difRot(const Rot &rot0, const Rot &rot1) {
         return normVec(getAngle(rot0 * invRot(rot1)));
+    }
+
+    // dif
+    SP_GENFUNC double difRot(const Rot &rot0, const Rot &rot1, const int axis) {
+        return getAngle(rot0 * invRot(rot1), axis);
     }
 
 

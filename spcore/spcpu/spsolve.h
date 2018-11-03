@@ -91,18 +91,59 @@ namespace sp{
 
     // ransac sampling max
 #define SP_RANSAC_ITMAX 1000
-#define SP_RANSAC_MINRATE 2
 #define SP_RANSAC_MINEVAL 0.2
 
     // ransac adaptive stop
-    SP_CPUFUNC int adaptiveStop(const double rate, const int num, const double n = 0.99){
+    SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int unit, const double n = 0.99){
         const double e = maxVal(rate, 0.1);
-        const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, num)));
+        const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, unit)));
         return minVal(k, SP_RANSAC_ITMAX);
     }
 
+    SP_CPUFUNC double ransacEval(const Mem<double> &errs, const int unit, const double thresh) {
+        int cnt = 0;
+        for (int i = 0; i < errs.size(); i++) {
+            if (errs[i] < thresh) cnt++;
+        }
+        const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
+     
+        return eval;
+    }
 
+    template<typename TYPE>
+    class RandomSample {
 
+        // data ptr
+        const Mem1<TYPE> *ptr;
 
+        Mem1<TYPE> buf;
+
+        // sampling unit num
+        int unit;
+
+        // prev shuffle seed
+        int prev;
+
+    public:
+        RandomSample(const Mem1<TYPE> &src, const int unit) {
+            this->ptr = &src;
+            this->unit = unit;
+            this->prev = -1;
+        }
+
+        Mem1<TYPE> gen(const int i) {
+
+            const int s = i / (ptr->size() - unit);
+            const int p = i % (ptr->size() - unit);
+
+            if (s != prev) {
+                prev = s;
+                buf = shuffle(*ptr, s);
+            }
+
+            Mem1<TYPE> next(unit, &buf[p]);
+            return next;
+        }
+    };
 }
 #endif

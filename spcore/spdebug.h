@@ -8,6 +8,17 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
+#include "spcore/sptimer.h"
+
+
+#ifndef SP_USE_DEBUG
+#define SP_USE_DEBUG 0
+#endif
+
+#ifndef SP_USE_CONSOLE
+#define SP_USE_CONSOLE 1
+#endif
+
 
 #if SP_USE_DEBUG
 #define SP_USE_HOLDER 1
@@ -20,15 +31,8 @@
 //--------------------------------------------------------------------------------
 
 #if SP_USE_DEBUG
-
 #include <string>
 #include <vector>
-#include <chrono>
-
-#if WIN32
-#include <Windows.h>
-#endif
-
 #endif
 
 
@@ -294,8 +298,8 @@ namespace sp {
 
 #define SP_HOLDER_INSTANCE sp::Holder holder;
 #define SP_HOLDER_RESET() holder.reset();
-#define SP_HOLDER_SET(STR, DATA) { holder.set(STR, DATA); }
-#define SP_HOLDER_GET(STR, CLASS) (CLASS.holder.get(STR));
+#define SP_HOLDER_SET(NAME, DATA) { holder.set(NAME, DATA); }
+#define SP_HOLDER_GET(NAME, CLASS) (CLASS.holder.get(NAME));
 #else
 
 #define SP_HOLDER_INSTANCE
@@ -314,13 +318,13 @@ namespace sp {
 
     private:
 
-        vector<string> strs;
+        vector<string> names;
         vector<void *> ptrs;
 
     public:
 
         void reset(){
-            strs.clear();
+            names.clear();
             for (int i = 0; i < ptrs.size(); i++) {
                 delete ptrs[i];
             }
@@ -332,10 +336,10 @@ namespace sp {
         }
 
         template <typename TYPE>
-        void set(const char *str, const TYPE &data){
+        void set(const char *name, const TYPE &data){
 
-            for (int i = 0; i < strs.size(); i++){
-                if (str == strs[i]){
+            for (int i = 0; i < names.size(); i++){
+                if (names[i] == name){
                     *((TYPE*)ptrs[i]) = data;
                     return;
                 }
@@ -344,15 +348,15 @@ namespace sp {
             {
                 TYPE *ptr = new TYPE();
                 *ptr = data;
-                strs.push_back(str);
+                names.push_back(name);
                 ptrs.push_back(ptr);
             }
         }
 
-        const void* get(const char *str){
+        const void* get(const char *name){
 
-            for (int i = 0; i < strs.size(); i++){
-                if (str == strs[i]){
+            for (int i = 0; i < names.size(); i++){
+                if (names[i] == name){
                     return ptrs[i];
                 }
             }
@@ -361,134 +365,5 @@ namespace sp {
     };
 }
 #endif
-
-
-//--------------------------------------------------------------------------------
-// time logger
-//--------------------------------------------------------------------------------
-
-#if SP_USE_LOGGER
-
-#define SP_LOGGER_INSTANCE sp::Logger logger;
-#define SP_LOGGER_SET(STR) sp::LoggerUnit lunit(&logger,STR);
-#else
-
-#define SP_LOGGER_INSTANCE
-#define SP_LOGGER_SET(STR)
-#endif
-
-
-#if SP_USE_LOGGER
-
-namespace sp {
-    using namespace std;
-
-    class Logger{
-
-    private:
-
-#if WIN32
-        typedef LARGE_INTEGER sptime;
-        sptime freq;
-
-        LARGE_INTEGER getNow(){
-            LARGE_INTEGER v;
-            QueryPerformanceCounter(&v);
-            return v;
-        }
-
-        double getTime(const sptime start, const sptime end){
-            return static_cast<double>(end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
-        }
-
-    public:
-
-        Logger(){
-            QueryPerformanceFrequency(&freq);
-        }
-#else
-        typedef chrono::system_clock::time_point sptime;
-
-        sptime getNow(){
-            return chrono::system_clock::now();
-        }
-
-        double getTime(const sptime start, const sptime end){
-            return static_cast<double>(chrono::duration_cast<chrono::microseconds>(end - start).count() / 1000.0);
-        }
-    public:
-
-        Logger(){
-        }
-#endif
-
-        vector<sptime> cnts;
-        vector<string> strs;
-
-        vector<double> times;
-        vector<string> disps;
-
-        void reset(){
-            cnts.clear();
-            strs.clear();
-
-            times.clear();
-            disps.clear();
-        }
-
-        void start(const char* str){
-            for (int i = 0; i < strs.size(); i++){
-                if (strs[i] == str){
-                    reset();
-                    break;
-                }
-            }
-            
-            cnts.push_back(getNow());
-            strs.push_back(str);
-        }
-
-        void stop(){
-            const int stack = static_cast<int>(cnts.size());
-            if (stack > 0){
-                times.push_back(getTime(cnts[stack - 1], getNow()));
-                disps.push_back(strs[stack - 1]);
-                cnts.pop_back();
-                strs.pop_back();
-            }
-            print();
-        }
-
-        void print(){
-            const int stack = static_cast<int>(cnts.size());
-            if (stack > 0) return;
-
-            const int num = static_cast<int>(times.size());
-            for (int i = 0; i < num; i++){
-                SP_PRINTF("%s : %.3lf [ms]\n", disps[i].c_str(), times[i]);
-            }
-            SP_PRINTF("\n");
-
-            reset();
-        }
-    };
-
-    class LoggerUnit{
-        Logger *logger;
-    public:
-        LoggerUnit(Logger *logger, const char *str){
-            //SP_PRINTF("%s\n", str);
-
-            this->logger = logger;
-            logger->start(str);
-        }
-
-        ~LoggerUnit(){
-            logger->stop();    
-        }
-    };
-}
-#endif
-
 
 #endif

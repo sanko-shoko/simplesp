@@ -21,7 +21,6 @@ namespace sp{
     class SIFT{
 
     public:
-        SP_LOGGER_INSTANCE;
 
         struct KeyPoint{
             Vec2 pix;
@@ -90,7 +89,6 @@ namespace sp{
     private:
 
         bool _execute(const Mem2<Byte> &img){
-            SP_LOGGER_SET("-execute");
 
             // clear data
             {

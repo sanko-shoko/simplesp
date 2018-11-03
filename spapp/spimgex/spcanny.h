@@ -17,8 +17,6 @@
 namespace sp{
 
     SP_CPUFUNC void canny(Mem<Byte> &dst, const Mem<Byte> &src, const int low, const int higth) {
-        SP_LOGGER_INSTANCE;
-        SP_LOGGER_SET("canny");
 
         dst.resize(2, src.dsize);
         dst.zero();

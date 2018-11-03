@@ -31,3 +31,7 @@
 # tsukuba
 /tsukuba/*
 !/tsukuba/tsukuba.txt
+
+# tum
+/tum/*
+!/tum/tum.txt
