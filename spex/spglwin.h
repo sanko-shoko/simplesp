@@ -179,9 +179,6 @@ namespace sp {
 
 #define SP_KEYMAX 400
 
-        // focused state
-        bool m_focused;
-
         // keybord state
         bool m_keyState[SP_KEYMAX];
 
@@ -209,8 +206,6 @@ namespace sp {
             m_win = NULL;
             m_parent = NULL;
 
-            m_focused = false;
-
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
 
@@ -221,7 +216,7 @@ namespace sp {
         }
 
         //--------------------------------------------------------------------------------
-        // execute
+        // function
         //--------------------------------------------------------------------------------
 
         bool create(const char *name, const int width, const int height, BaseWindow *parent = NULL) {
@@ -264,7 +259,7 @@ namespace sp {
 
             while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
 
-                if (mainloop() == false) break;
+                if (main() == false) break;
 
                 if (findFocused() == NULL) glfwPollEvents();
             }
@@ -280,12 +275,11 @@ namespace sp {
 
     protected:
 
-
         //--------------------------------------------------------------------------------
-        // mainloop
+        // main loop
         //--------------------------------------------------------------------------------
 
-        bool mainloop() {
+        bool main() {
 
             if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
                 glfwDestroyWindow(m_win);
@@ -299,6 +293,7 @@ namespace sp {
             // glfw set event callbacks
             setCallback(m_win);
 
+            // check events
             if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
                 glfwPollEvents();
             }
@@ -323,7 +318,7 @@ namespace sp {
             glfwSwapBuffers(m_win);
 
             for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i]->mainloop() == false) {
+                if (m_cwins[i]->main() == false) {
                     m_cwins.del(i);
                 }
             }
