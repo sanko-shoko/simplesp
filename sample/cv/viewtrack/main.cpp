@@ -67,8 +67,6 @@ void sample(cv::Mat &cvimg, const int key){
         return;
     }
 
-    if (tracker.getView() == NULL) return;
-
     tracker.execute(img);
 
     //if (tracker.getPose() == NULL) 
