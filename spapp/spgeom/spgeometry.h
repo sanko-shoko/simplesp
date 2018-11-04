@@ -912,7 +912,7 @@ namespace sp {
     }
 
     // 2D-2D pose (stereo camera)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 1.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double thresh = 2.0) {
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
@@ -941,7 +941,7 @@ namespace sp {
     // stereo
     //--------------------------------------------------------------------------------
  
-    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 3.0 * SP_PI / 180.0) {
+    SP_CPUFUNC double evalStereo(const CamParam &cam0, const Mem1<Vec2> &pixs0, const CamParam &cam1, const Mem1<Vec2> &pixs1, const double minAngle = 2.0 * SP_PI / 180.0) {
 
         Pose pose = zeroPose();
         if (calcPoseRANSAC(pose, cam0, pixs0, cam1, pixs1) == false) return 0.0;

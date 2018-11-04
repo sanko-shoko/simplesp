@@ -790,8 +790,8 @@ namespace sp{
         // refine
         {
             const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
-            const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh);
-            const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh);
+            const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh * 2);
+            const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh * 2);
 
             if (calcEMat(E, dnpxs0, dnpxs1, 10) == false) return false;
         }
