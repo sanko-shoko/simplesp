@@ -7,13 +7,17 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spgeomex/spsfm.h"
+#include "spapp/spgeomex/spviewtrack.h"
 
 namespace sp {
 
     class SLAM {
 
     private:
+        
         SfM m_sfm;
+
+        ViewTrack m_vtrack;
 
         CamParam m_cam;
         
@@ -29,8 +33,8 @@ namespace sp {
         }
 
         void init(const CamParam &cam) {
-            m_cam = cam;
             clear();
+            m_cam = cam;
         }
 
         void clear() {
@@ -68,6 +72,10 @@ namespace sp {
         // execute
         //--------------------------------------------------------------------------------
 
+        bool execute(const Mem1<Col3> &img) {
+            return _execute(img);
+        }
+
         bool updatePose(const Mem1<Col3> &img) {
             return _updatePose(img);
         }
@@ -82,6 +90,20 @@ namespace sp {
         // execute main flow
         //--------------------------------------------------------------------------------
       
+        bool _execute(const Mem1<Col3> &img) {
+
+            try {
+                if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
+
+                m_track = true;
+            }
+            catch (const char *str) {
+                SP_PRINTD("SLAM::updatePose [%s]\n", str);
+
+                m_track = false;
+                return false;
+            }
+        }
         bool _updatePose(const Mem1<Col3> &img) {
 
             try {

@@ -81,7 +81,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC bool cvLoadImg(Mem<TYPE> &dst, const char *path){
+    SP_CPUFUNC bool cvLoadImg(const char *path, Mem<TYPE> &dst) {
         const cv::Mat cvimg = cv::imread(path);
 
         const bool ret = cvCnvImg(dst, cvimg);
@@ -90,12 +90,24 @@ namespace sp{
         return ret;
     }
 
+    // plan to delete
+    template<typename TYPE>
+    SP_CPUFUNC bool cvLoadImg(Mem<TYPE> &dst, const char *path) {
+        const cv::Mat cvimg = cv::imread(path);
+
+        const bool ret = cvCnvImg(dst, cvimg);
+        printf("cv::imread [%s] \n", path);
+
+        return ret;
+    }
+
+
     //--------------------------------------------------------------------------------
     // save Mem2 image
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC bool cvSaveImg(const Mem<TYPE> &src, const char *path){
+    SP_CPUFUNC bool cvSaveImg(const char *path, const Mem<TYPE> &src){
         cv::Mat cvimg;
         cvCnvImg(cvimg, src);
                 
@@ -105,12 +117,23 @@ namespace sp{
         return ret;
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC bool cvSaveImg(const Mem<TYPE> &src, const char *path) {
+        cv::Mat cvimg;
+        cvCnvImg(cvimg, src);
+
+        const bool ret = cv::imwrite(path, cvimg);
+        printf("cv::imwrite [%s] \n", path);
+
+        return ret;
+    }
+
     //--------------------------------------------------------------------------------
     // show image
     //--------------------------------------------------------------------------------
     
     template<typename TYPE>
-    SP_CPUFUNC void cvShowImg(const Mem<TYPE> &src, const char *name){
+    SP_CPUFUNC void cvShowImg(const char *name, const Mem<TYPE> &src){
         cv::Mat cvimg;
         cvCnvImg(cvimg, src);
 

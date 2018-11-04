@@ -30,7 +30,7 @@ private:
         // add img and cam
         for (int i = 0; i < num; i++) {
             Mem2<Col3> img;
-            SP_ASSERT(cvLoadImg(img, paths[i]));
+            SP_ASSERT(cvLoadImg(paths[i], img));
 
             Mem2<Col3> tmp;
             const double scale = (600 * 2.0) / (img.dsize[0] + img.dsize[1]);
