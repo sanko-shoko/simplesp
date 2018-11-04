@@ -129,37 +129,41 @@ namespace sp {
     // base window
     //--------------------------------------------------------------------------------
 
-    class BaseWindow{
+    class BaseWindow {
 
     protected:
 
-        virtual void windowSize(int width, int height){
+        virtual void windowSize(int width, int height) {
         }
 
-        virtual void mouseButton(int button, int action, int mods){
+        virtual void mouseButton(int button, int action, int mods) {
         }
 
-        virtual void mousePos(double x, double y){
+        virtual void mousePos(double x, double y) {
         }
 
-        virtual void mouseScroll(double x, double y){
+        virtual void mouseScroll(double x, double y) {
         }
 
-        virtual void keyFun(int key, int scancode, int action, int mods){
+        virtual void keyFun(int key, int scancode, int action, int mods) {
         }
 
-        virtual void charFun(unsigned int charInfo){
-        }
-
-        virtual void init(){
-        }
-
-        virtual void display(){
+        virtual void charFun(unsigned int charInfo) {
         }
 
         virtual void drop(int num, const char **paths) {
         }
 
+        virtual void focus(int focused) {
+        }
+
+        virtual void init() {
+        }
+
+        virtual void display() {
+        }
+
+ 
     protected:
 
         // window ptr
@@ -175,6 +179,9 @@ namespace sp {
 
 #define SP_KEYMAX 400
 
+        // focused state
+        bool m_focused;
+
         // keybord state
         bool m_keyState[SP_KEYMAX];
 
@@ -186,7 +193,7 @@ namespace sp {
 
         // view scale
         double m_viewScale;
-        
+
         // mouse event class
         Mouse m_mouse;
 
@@ -194,19 +201,21 @@ namespace sp {
         CamParam m_wcam;
 
         // background color
-        Col4 m_bgCol;
+        Col4 m_bcol;
 
     public:
-        
-        BaseWindow(){
+
+        BaseWindow() {
             m_win = NULL;
             m_parent = NULL;
+
+            m_focused = false;
 
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
 
-            m_bgCol = getCol(24, 32, 32, 255);
-            
+            m_bcol = getCol(24, 32, 32, 255);
+
             memset(m_keyState, 0, SP_KEYMAX);
             memset(m_keyAction, -1, SP_KEYMAX);
         }
@@ -214,7 +223,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // execute
         //--------------------------------------------------------------------------------
-        
+
         bool create(const char *name, const int width, const int height, BaseWindow *parent = NULL) {
 
             if (m_win == NULL) {
@@ -236,8 +245,8 @@ namespace sp {
             return true;
         }
 
-         void execute(const char *name, const int width, const int height){
-            
+        void execute(const char *name, const int width, const int height) {
+
             // glfw init
             SP_ASSERT(glfwInit());
 
@@ -253,9 +262,11 @@ namespace sp {
             SP_ASSERT(glewInit() == GLEW_OK);
 #endif
 
-            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)){
+            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
 
                 if (mainloop() == false) break;
+
+                if (findFocused() == NULL) glfwPollEvents();
             }
 
             // glfw terminate
@@ -269,57 +280,58 @@ namespace sp {
 
     protected:
 
-         //--------------------------------------------------------------------------------
-         // mainloop
-         //--------------------------------------------------------------------------------
 
-         bool mainloop() {
+        //--------------------------------------------------------------------------------
+        // mainloop
+        //--------------------------------------------------------------------------------
 
-             if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
-                 glfwDestroyWindow(m_win);
-                 m_win = NULL;
-                 return false;
-             }
+        bool mainloop() {
 
-             // glfw set context
-             glfwMakeContextCurrent(m_win);
+            if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+                glfwDestroyWindow(m_win);
+                m_win = NULL;
+                return false;
+            }
 
-             // glfw set event callbacks
-             setCallback(m_win);
+            // glfw set context
+            glfwMakeContextCurrent(m_win);
 
-             if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
-                 glfwPollEvents();
-             }
+            // glfw set event callbacks
+            setCallback(m_win);
 
-#if SP_USE_IMGUI
-             // imgui init
-             ImGui_ImplGlfwGL2_Init(m_win, true);
-             ImGui_ImplGlfwGL2_NewFrame();
-#endif
-
-             glClearColor(m_bgCol.r / 255.f, m_bgCol.g / 255.f, m_bgCol.b / 255.f, m_bgCol.a / 255.f);
-             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-             display();
-
-             memset(m_keyAction, -1, SP_KEYMAX);
+            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
+                glfwPollEvents();
+            }
 
 #if SP_USE_IMGUI
-             ImGui::Render();
+            // imgui init
+            ImGui_ImplGlfwGL2_Init(m_win, true);
+            ImGui_ImplGlfwGL2_NewFrame();
 #endif
 
-             glfwSwapBuffers(m_win);
+            glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-             for (int i = 0; i < m_cwins.size(); i++) {
-                 if (m_cwins[i]->mainloop() == false) {
-                     m_cwins.del(i);
-                 }
-             }
+            display();
 
-             return true;
-         }
+            memset(m_keyAction, -1, SP_KEYMAX);
 
-         //--------------------------------------------------------------------------------
+#if SP_USE_IMGUI
+            ImGui::Render();
+#endif
+
+            glfwSwapBuffers(m_win);
+
+            for (int i = 0; i < m_cwins.size(); i++) {
+                if (m_cwins[i]->mainloop() == false) {
+                    m_cwins.del(i);
+                }
+            }
+
+            return true;
+        }
+
+        //--------------------------------------------------------------------------------
         // sub window
         //--------------------------------------------------------------------------------
 
@@ -341,14 +353,25 @@ namespace sp {
             }
         }
 
+        GLFWwindow* findFocused() {
+            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
+                return m_win;
+            }
+            for (int i = 0; i < m_cwins.size(); i++) {
+                GLFWwindow *w = m_cwins[i]->findFocused();
+                if (w != NULL) return w;
+            }
+            return NULL;
+        }
+
 
     protected:
 
         //--------------------------------------------------------------------------------
         // base event process
         //--------------------------------------------------------------------------------
-        
-        void _windowSize(int width, int height){
+
+        void _windowSize(int width, int height) {
             m_wcam = getCamParam(width, height);
 
             glViewport(0, 0, width, height);
@@ -356,7 +379,7 @@ namespace sp {
             windowSize(width, height);
         }
 
-        void _mouseButton(int button, int action, int mods){
+        void _mouseButton(int button, int action, int mods) {
 
             m_mouse.setButton(button, action, mods);
 
@@ -370,7 +393,7 @@ namespace sp {
             mouseButton(button, action, mods);
         }
 
-        void _mousePos(double x, double y){
+        void _mousePos(double x, double y) {
 
             m_mouse.setPos(x, y);
 
@@ -381,15 +404,15 @@ namespace sp {
 #endif
 
             // control view
-            if (m_keyState[GLFW_KEY_SPACE] == true){
-                  controlView(m_viewPos, m_viewScale, m_mouse);
+            if (m_keyState[GLFW_KEY_SPACE] == true) {
+                controlView(m_viewPos, m_viewScale, m_mouse);
                 return;
             }
 
             mousePos(x, y);
         }
 
-        void _mouseScroll(double x, double y){
+        void _mouseScroll(double x, double y) {
 
             m_mouse.setScroll(x, y);
 
@@ -402,7 +425,7 @@ namespace sp {
 #endif
 
             // control view
-            if (m_keyState[GLFW_KEY_SPACE] == true){
+            if (m_keyState[GLFW_KEY_SPACE] == true) {
                 controlView(m_viewPos, m_viewScale, m_mouse);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
@@ -412,7 +435,7 @@ namespace sp {
             m_mouse.setScroll(0.0, 0.0);
         }
 
-        void _keyFun(int key, int scancode, int action, int mods){
+        void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
 
             m_keyState[key] = (action > 0) ? true : false;
@@ -428,7 +451,7 @@ namespace sp {
             keyFun(key, scancode, action, mods);
         }
 
-        void _charFun(unsigned int charInfo){
+        void _charFun(unsigned int charInfo) {
 
 #if SP_USE_IMGUI
             if (ImGui::GetIO().WantCaptureKeyboard) {
@@ -440,8 +463,12 @@ namespace sp {
             charFun(charInfo);
         }
 
-        void _dropCB(int num, const char **paths) {
+        void _drop(int num, const char **paths) {
             drop(num, paths);
+        }
+
+        void _focus(int focused) {
+            focus(focused);
         }
 
     protected:
@@ -450,12 +477,12 @@ namespace sp {
         // callback function
         //--------------------------------------------------------------------------------
 
-        void setCallback(GLFWwindow *window){
+        void setCallback(GLFWwindow *window) {
             // set my ptr
             glfwSetWindowUserPointer(window, this);
 
             glfwSetWindowSizeCallback(window, windowSizeCB);
-            
+
             glfwSetMouseButtonCallback(window, mouseButtonCB);
             glfwSetCursorPosCallback(window, mousePosCB);
             glfwSetScrollCallback(window, mouseScrollCB);
@@ -464,32 +491,36 @@ namespace sp {
             glfwSetCharCallback(window, charFunCB);
 
             glfwSetDropCallback(window, dropCB);
+            glfwSetWindowFocusCallback(window, focusCB);
         }
 
-        static BaseWindow* getThisPtr(GLFWwindow *window){
+        static BaseWindow* getThisPtr(GLFWwindow *window) {
             return static_cast<BaseWindow*>(glfwGetWindowUserPointer(window));
         }
 
-        static void windowSizeCB(GLFWwindow *window, int width, int height){
+        static void windowSizeCB(GLFWwindow *window, int width, int height) {
             getThisPtr(window)->_windowSize(width, height);
         }
-        static void mouseButtonCB(GLFWwindow *window, int button, int action, int mods){
+        static void mouseButtonCB(GLFWwindow *window, int button, int action, int mods) {
             getThisPtr(window)->_mouseButton(button, action, mods);
         }
-        static void mousePosCB(GLFWwindow *window, double x, double y){
+        static void mousePosCB(GLFWwindow *window, double x, double y) {
             getThisPtr(window)->_mousePos(x, y);
         }
-        static void mouseScrollCB(GLFWwindow *window, double x, double y){
+        static void mouseScrollCB(GLFWwindow *window, double x, double y) {
             getThisPtr(window)->_mouseScroll(x, y);
         }
-        static void keyFunCB(GLFWwindow* window, int key, int scancode, int action, int mods){
+        static void keyFunCB(GLFWwindow* window, int key, int scancode, int action, int mods) {
             getThisPtr(window)->_keyFun(key, scancode, action, mods);
         }
-        static void charFunCB(GLFWwindow* window, unsigned int charInfo){
+        static void charFunCB(GLFWwindow* window, unsigned int charInfo) {
             getThisPtr(window)->_charFun(charInfo);
         }
         static void dropCB(GLFWwindow *window, int num, const char **paths) {
-            getThisPtr(window)->_dropCB(num, paths);
+            getThisPtr(window)->_drop(num, paths);
+        }
+        static void focusCB(GLFWwindow *window, int focused) {
+            getThisPtr(window)->_focus(focused);
         }
     };
 
