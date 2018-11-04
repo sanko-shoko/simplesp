@@ -77,7 +77,6 @@ namespace sp{
         const View* getView() const {
             return m_view;
         }
-        Mem2<Col3> m_test;
 
         //--------------------------------------------------------------------------------
         // output parameter
@@ -131,6 +130,7 @@ namespace sp{
         bool _execute(const Mem2<Col3> &img) {
 
             try {
+
                 if (m_view == NULL || img.size() == 0) throw "input invalid";
 
                 if (cntMPnt(*m_view) == 0) {
@@ -154,7 +154,9 @@ namespace sp{
                 
                 SP_PRINTD("ViewTrack::execute [%s]\n", str);
 
-                m_pose = m_view->pose;
+                if (m_view != NULL) {
+                    m_pose = m_view->pose;
+                }
                 m_meanZ = 0.0;
                 m_track = false;
             }

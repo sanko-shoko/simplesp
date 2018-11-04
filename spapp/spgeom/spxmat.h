@@ -738,8 +738,8 @@ namespace sp{
 
         // refine
         const Mem1<double> errs = errHMat(H, pixs, objs);
-        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
-        const Mem1<Vec2> dobjs = denoise(objs, errs, thresh);
+        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
+        const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
 
         return calcHMat(H, dpixs, dobjs, 10);
     }
@@ -843,8 +843,8 @@ namespace sp{
         // refine
         {
             const Mem1<double> errs = errMatType2(F, pixs0, pixs1);
-            const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, thresh);
-            const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, thresh);
+            const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, thresh * 2);
+            const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, thresh * 2);
 
             if (calcFMat(F, dpixs0, dpixs1, 10) == false) return false;
         }

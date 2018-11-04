@@ -735,9 +735,9 @@ namespace sp {
         // refine
         {
             const Mem1<double> errs = calcPrjErr(poses, cams, pixs, pos);
-            const Mem1<Pose> dposes = denoise(poses, errs, thresh);
-            const Mem1<CamParam> dcams = denoise(cams, errs, thresh);
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
+            const Mem1<Pose> dposes = denoise(poses, errs, thresh * 2);
+            const Mem1<CamParam> dcams = denoise(cams, errs, thresh * 2);
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
 
             if (refinePnt3d(pos, dposes, dcams, dpixs) == false) return false;
         }
@@ -794,8 +794,8 @@ namespace sp {
             for (int i = 0; i < num; i++) {
                 errs.push(normVec(objs0[i] - pose * objs1[i]));
             }
-            const Mem1<Vec3> dobjs0 = denoise(objs0, errs, thresh);
-            const Mem1<Vec3> dobjs1 = denoise(objs1, errs, thresh);
+            const Mem1<Vec3> dobjs0 = denoise(objs0, errs, thresh * 2);
+            const Mem1<Vec3> dobjs1 = denoise(objs1, errs, thresh * 2);
 
             if (refinePose(pose, dobjs0, dobjs1) == false) return false;
         }
@@ -804,7 +804,7 @@ namespace sp {
     }
 
     // 2D-3D pose
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs, const double thresh = 4.0) {
         SP_ASSERT(pixs.size() == objs.size());
       
         const int num = pixs.size();
@@ -849,8 +849,8 @@ namespace sp {
         // refine
         {
             const Mem1<double> errs = calcPrjErr(pose, cam, pixs, objs);
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
-            const Mem1<Vec3> dobjs = denoise(objs, errs, thresh);
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
+            const Mem1<Vec3> dobjs = denoise(objs, errs, thresh * 2);
 
             if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
         }
@@ -859,7 +859,7 @@ namespace sp {
     }
 
     // 2D-2D pose (planar object)
-    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcPoseRANSAC(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const double thresh = 4.0) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -902,8 +902,8 @@ namespace sp {
         // refine
         {
             const Mem1<double> errs = calcPrjErr(pose, cam, pixs, getVec(objs, 0.0));
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh);
-            const Mem1<Vec2> dobjs = denoise(objs, errs, thresh);
+            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
+            const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
 
             if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
         }
@@ -925,12 +925,12 @@ namespace sp {
 
         const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
-        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth);
-        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth);
+        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth * 2);
+        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth * 2);
         if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
 
-        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth);
-        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth);
+        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth * 2);
+        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth * 2);
         if (refinePose(pose, cam0, dpixs0, cam1, dpixs1) == false) return false;
 
         return true;
