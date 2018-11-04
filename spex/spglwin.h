@@ -130,7 +130,8 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     class BaseWindow{
-    public:
+
+    protected:
 
         virtual void windowSize(int width, int height){
         }
@@ -159,6 +160,17 @@ namespace sp {
         virtual void drop(int num, const char **paths) {
         }
 
+    protected:
+
+        // window ptr
+        GLFWwindow *m_win;
+
+        // parent window
+        BaseWindow *m_parent;
+
+        // child windows
+        Mem1<BaseWindow*> m_cwins;
+
     public:
 
 #define SP_KEYMAX 400
@@ -181,11 +193,19 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
+        // background color
+        Col4 m_bgCol;
+
     public:
         
         BaseWindow(){
+            m_win = NULL;
+            m_parent = NULL;
+
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
+
+            m_bgCol = getCol(24, 32, 32, 255);
             
             memset(m_keyState, 0, SP_KEYMAX);
             memset(m_keyAction, -1, SP_KEYMAX);
@@ -194,61 +214,48 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // execute
         //--------------------------------------------------------------------------------
+        
+        bool create(const char *name, const int width, const int height, BaseWindow *parent = NULL) {
 
-        void execute(const char *name, const int width, const int height){
-            
+            if (m_win == NULL) {
+                // glfw create window
+                m_win = glfwCreateWindow(width, height, name, NULL, NULL);
+            }
+            if (m_win == NULL) {
+                SP_PRINTF(" Can't create GLFW window.\n");
+                glfwTerminate();
+                return false;
+            }
+
             m_wcam = getCamParam(width, height);
 
+            m_parent = parent;
+
+            init();
+
+            return true;
+        }
+
+         void execute(const char *name, const int width, const int height){
+            
             // glfw init
             SP_ASSERT(glfwInit());
 
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-            // glfw create window
-            GLFWwindow *win = glfwCreateWindow(width, height, name, NULL, NULL);
-            if (!win){
-                SP_PRINTF(" Can't create GLFW window.\n");
-                glfwTerminate();
-                return;
-            }
+            if (create(name, width, height) == false) return;
 
             // glfw make context
-            glfwMakeContextCurrent(win);
+            glfwMakeContextCurrent(m_win);
 
 #if defined(_WIN32) && SP_USE_GLEW
             // glew init
             SP_ASSERT(glewInit() == GLEW_OK);
 #endif
 
-#if SP_USE_IMGUI
-            // imgui init
-            ImGui_ImplGlfwGL2_Init(win, true);
-#endif
+            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)){
 
-            // glfw set event callbacks
-            setCallback(win);
-
-            init();
-
-            while (!glfwWindowShouldClose(win) && !glfwGetKey(win, GLFW_KEY_ESCAPE)){
-                glfwPollEvents();
-
-#if SP_USE_IMGUI
-                ImGui_ImplGlfwGL2_NewFrame();
-#endif
-                
-                glClearColor(0.10f, 0.15f, 0.15f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-               
-                display();
-
-                memset(m_keyAction, -1, SP_KEYMAX);
-
-#if SP_USE_IMGUI
-                ImGui::Render();
-#endif
-
-                glfwSwapBuffers(win);
+                if (mainloop() == false) break;
             }
 
             // glfw terminate
@@ -258,6 +265,82 @@ namespace sp {
             ImGui_ImplGlfwGL2_Shutdown();
 #endif
         }
+
+
+    protected:
+
+         //--------------------------------------------------------------------------------
+         // mainloop
+         //--------------------------------------------------------------------------------
+
+         bool mainloop() {
+
+             if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+                 glfwDestroyWindow(m_win);
+                 m_win = NULL;
+                 return false;
+             }
+
+             // glfw set context
+             glfwMakeContextCurrent(m_win);
+
+             // glfw set event callbacks
+             setCallback(m_win);
+
+             if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
+                 glfwPollEvents();
+             }
+
+#if SP_USE_IMGUI
+             // imgui init
+             ImGui_ImplGlfwGL2_Init(m_win, true);
+             ImGui_ImplGlfwGL2_NewFrame();
+#endif
+
+             glClearColor(m_bgCol.r / 255.f, m_bgCol.g / 255.f, m_bgCol.b / 255.f, m_bgCol.a / 255.f);
+             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+             display();
+
+             memset(m_keyAction, -1, SP_KEYMAX);
+
+#if SP_USE_IMGUI
+             ImGui::Render();
+#endif
+
+             glfwSwapBuffers(m_win);
+
+             for (int i = 0; i < m_cwins.size(); i++) {
+                 if (m_cwins[i]->mainloop() == false) {
+                     m_cwins.del(i);
+                 }
+             }
+
+             return true;
+         }
+
+         //--------------------------------------------------------------------------------
+        // sub window
+        //--------------------------------------------------------------------------------
+
+        void addSubWindow(BaseWindow *bw) {
+            for (int i = 0; i < m_cwins.size(); i++) {
+                if (m_cwins[i] == bw) {
+                    return;
+                }
+            }
+            m_cwins.push(bw);
+        }
+
+        void delSubWindow(BaseWindow *bw) {
+            for (int i = 0; i < m_cwins.size(); i++) {
+                if (m_cwins[i] == bw) {
+                    m_cwins.del(i);
+                    break;
+                }
+            }
+        }
+
 
     protected:
 
@@ -331,7 +414,7 @@ namespace sp {
 
         void _keyFun(int key, int scancode, int action, int mods){
             if (key < 0) return;
-            
+
             m_keyState[key] = (action > 0) ? true : false;
             m_keyAction[key] = static_cast<char>(action);
 

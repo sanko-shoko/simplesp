@@ -7,7 +7,25 @@
 
 using namespace sp;
 
+class VideoGUI : public BaseWindow {
+
+private:
+
+    Mem2<Col3> *m_img;
+
+    virtual void init();
+    virtual void keyFun(int key, int scancode, int action, int mods);
+
+    virtual void display() {
+        glLoadView2D(m_img->dsize, m_viewPos, m_viewScale);
+        glRenderImg(*m_img);
+    }
+};
+
 class SfMGUI : public BaseWindow {
+    friend VideoGUI;
+
+private:
 
     SfM m_sfm;
 
@@ -48,6 +66,10 @@ private:
     virtual void init() {
         help();
         reset();
+
+        static VideoGUI video;
+        video.create("video", 640, 480, this);
+        addSubWindow(&video);
     }
 
     void reset() {
@@ -99,14 +121,6 @@ private:
         m_sfm.addView(cam, m_img);
     }
 
-    void capture() {
-        static cv::VideoCapture cap(0);
-        cv::Mat cvimg;
-        cap >> cvimg;
-
-        cvCnvImg(m_img, cvimg);
-    }
-
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] == 1) {
@@ -132,21 +146,21 @@ private:
     }
 
     virtual void display() {
-
         {
-            capture();
+            static cv::VideoCapture cap(0);
+            cvCaptureImg(m_img, cap);
         }
 
         {
             m_thread.run<SfMGUI, &SfMGUI::update>(this, false);
         }
-        {
-            const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
-            const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
-            glLoadView2D(m_wcam, offset, scale);
+        //{
+        //    const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
+        //    const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
+        //    glLoadView2D(m_wcam, offset, scale);
 
-            glRenderImg(m_img);
-        }
+        //    glRenderImg(m_img);
+        //}
         {
             // view 3D
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
@@ -212,6 +226,14 @@ private:
 
 };
 
+void VideoGUI::init() {
+    SfMGUI *p = static_cast<SfMGUI*>(m_parent);
+    m_img = &p->m_img;
+}
+void VideoGUI::keyFun(int key, int scancode, int action, int mods) {
+    SfMGUI *p = static_cast<SfMGUI*>(m_parent);
+    p->_keyFun(key, scancode, action, mods);
+}
 
 int main() {
 
