@@ -36,7 +36,7 @@ private:
     virtual void init() {
         help();
 
-        const double distance = 10.0;
+        const double distance = 20.0;
         m_pose = getPose(getVec(0.0, 0.0, +distance));
         m_axis = getPose(getVec(0.0, 0.0, -distance));
 

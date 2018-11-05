@@ -19,38 +19,35 @@ namespace sp {
 
         ViewTrack m_vtrack;
 
-        CamParam m_cam;
-        
-        // flag for tracking
-        bool m_track;
-
-        Pose m_pose;
-
     public:
 
         SLAM() {
             clear();
         }
 
-        void init(const CamParam &cam) {
-            clear();
-            m_cam = cam;
-        }
-
         void clear() {
-            m_track = false;
-            m_cam = getCamParam(0, 0);
-            m_pose = zeroPose();
             m_sfm.clear();
+            m_sfm.setMode(SfM::MODE_SERIAL);
+            m_vtrack.clear();
         }
-
 
         //--------------------------------------------------------------------------------
         // input parameter
         //--------------------------------------------------------------------------------
 
+        void setCam(const CamParam &cam) {
+            m_vtrack.setCam(cam);
+        }
         const CamParam& getCam() const {
-            return m_cam;
+            return m_vtrack.getCam();
+        }
+        
+        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
+            m_vtrack.setBase(img, pose, fts);
+        }
+
+        void setBase(const View &view) {
+            m_vtrack.setBase(view);
         }
 
 
@@ -59,90 +56,108 @@ namespace sp {
         //--------------------------------------------------------------------------------
         
         const Pose* getPose() const {
-            return (m_track == true) ? &m_pose : NULL;
+            return m_vtrack.getPose();
         }
 
-        const View* getViews(const int i) const {
+        const Mem1<Vec2>* getBases() const {
+            return m_vtrack.getBases();
+        }
+
+        const Mem1<Vec2>* getCrsps() const {
+            return m_vtrack.getCrsps();
+        }
+
+        const Mem1<bool>* getMask() const {
+            return m_vtrack.getMask();
+        }
+
+        int vsize() const {
+            return m_sfm.vsize();
+        }
+
+        const View* getView(const int i) const {
             return m_sfm.getView(i);
         }
 
+        int msize() const {
+            return m_sfm.msize();
+        }
+
+        const MapPnt* getMPnt(const int i) const {
+            return m_sfm.getMPnt(i);
+        }
 
 
         //--------------------------------------------------------------------------------
-        // execute
+        // tracking
         //--------------------------------------------------------------------------------
 
-        bool execute(const Mem1<Col3> &img) {
-            return _execute(img);
-        }
+        bool updatePose(const Mem2<Col3> &img) {
 
-        bool updatePose(const Mem1<Col3> &img) {
-            return _updatePose(img);
-        }
+            const Pose *pose = m_vtrack.getPose();
+            if (pose != NULL){
+                const View *view = m_sfm.searchNearView(*pose);
+                if (view != NULL) {
+                    m_vtrack.setBase(*view);
+                }
+            }
 
-        bool updateMap(const Mem1<Col3> &img, const bool force = false) {
-            return _updateMap(img, force);
+            return m_vtrack.execute(img);
         }
-
-    private:
 
         //--------------------------------------------------------------------------------
-        // execute main flow
+        // mapping
         //--------------------------------------------------------------------------------
-      
-        bool _execute(const Mem1<Col3> &img) {
 
-            try {
-                if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
+        void addView(const Mem2<Col3> &img, const Pose *hint = NULL) {
+            if (m_vtrack.getView() == NULL) return;
 
-                m_track = true;
-            }
-            catch (const char *str) {
-                SP_PRINTD("SLAM::updatePose [%s]\n", str);
-
-                m_track = false;
-                return false;
-            }
+            m_sfm.addView(m_vtrack.getCam(), img, hint);
         }
-        bool _updatePose(const Mem1<Col3> &img) {
+        
+        bool updateMap(const Mem2<Col3> &img) {
+            if (m_vtrack.getView() == NULL) return false;
 
-            try {
-                if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
-
-                m_track = true;
+            if (m_sfm.vsize() == 0) {
+                m_sfm.addView(m_vtrack.getCam(), m_vtrack.getView()->img, m_vtrack.getPose());
             }
-            catch (const char *str) {
-                SP_PRINTD("SLAM::updatePose [%s]\n", str);
+            else if (m_vtrack.getPose() != NULL) {
+                const int i = m_sfm.vsize() - 1;
+                const Pose prePose = m_sfm.getView(i)->pose;
 
-                m_track = false;
-                return false;
-            }
-        }
+                double move = SP_INFINITY;
+                double norm = SP_INFINITY;
+                double angle = SP_INFINITY;
 
-        bool _updateMap(const Mem1<Col3> &img, const bool force = false) {
+                if (m_sfm.msize() == 0) {
+                    const Pose nearPose = m_sfm.getView(i)->pose;
+                    const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
 
-            try {
-                if (img.size() == 0 || cmpSize(2, m_cam.dsize, img.dsize) == false) throw "input size";
-
-                if (force == true) {
-                    m_sfm.addView(m_cam, img);
+                    norm = minVal(norm, normVec(dif.trn));
+                    angle = minVal(angle, getAngle(dif.rot, 2));
                 }
 
-                m_sfm.update();
-            }
-            catch (const char *str) {
-                SP_PRINTD("SLAM::updateMap [%s]\n", str);
+                const View *view = m_sfm.searchNearView(*m_vtrack.getPose());
+                if(view != NULL){
+                    const Pose nearPose = view->pose;
+                    const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
 
-                return false;
+                    norm = minVal(norm, normVec(dif.trn));
+                    angle = minVal(angle, getAngle(dif.rot, 2));
+
+                }
+
+                const double nThresh = 1.0;
+                const double aThresh = 5.0 * SP_PI / 180.0;
+
+                const double t = norm / nThresh + angle / aThresh;
+
+                if (t > 1.0) {
+                    m_sfm.addView(m_vtrack.getCam(), img, m_vtrack.getPose());
+                }
             }
-            return true;
+            return m_sfm.update();
         }
-
-
-        //--------------------------------------------------------------------------------
-        // modules
-        //--------------------------------------------------------------------------------
-
 
     };
 

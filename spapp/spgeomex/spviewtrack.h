@@ -13,13 +13,18 @@
 namespace sp{
 
     class ViewTrack {
+
     private:
 
         //--------------------------------------------------------------------------------
         // input parameter
         //--------------------------------------------------------------------------------
 
+        // camera parameter
+        CamParam m_cam;
+        
         const View *m_view;
+
         View m_inst;
 
         //--------------------------------------------------------------------------------
@@ -53,9 +58,12 @@ namespace sp{
 
         void clear() {
             m_track = false;
-            m_pose = zeroPose();
-            m_meanZ = 0.0;
             m_view = NULL;
+
+            m_cam = getCamParam(0, 0);
+            m_pose = zeroPose();
+
+            m_meanZ = 0.0;
 
             m_bases.clear();
             m_crsps.clear();
@@ -66,21 +74,30 @@ namespace sp{
         // input parameter
         //--------------------------------------------------------------------------------
         
-        void setView(const CamParam &cam, const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
-            _setView(cam, img, pose, fts);
+        void setCam(const CamParam &cam) {
+            m_cam = cam;
         }
 
-        void setView(const View &view) {
-            _setView(view);
+        const CamParam& getCam() const {
+            return m_cam;
         }
+        
+        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
+            _setBase(img, pose, fts);
+        }
+
+        void setBase(const View &view) {
+            _setBase(view);
+        }
+
+  
+        //--------------------------------------------------------------------------------
+        // output parameter
+        //--------------------------------------------------------------------------------
 
         const View* getView() const {
             return m_view;
         }
-
-        //--------------------------------------------------------------------------------
-        // output parameter
-        //--------------------------------------------------------------------------------
 
         const Pose* getPose() const {
             return (m_track == true) ? &m_pose : NULL;
@@ -98,7 +115,6 @@ namespace sp{
             return (m_mask.size() > 0) ? &m_mask : NULL;
         }
 
-
         //--------------------------------------------------------------------------------
         // execute
         //--------------------------------------------------------------------------------
@@ -111,8 +127,14 @@ namespace sp{
 
     private:
 
-        void _setView(const CamParam &cam, const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
-            m_inst.cam = cam;
+        void _setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
+          
+            // set default camera parameter
+            if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
+                m_cam = getCamParam(img.dsize);
+            }
+
+            m_inst.cam = m_cam;
             m_inst.img = img;
             m_inst.pose = pose;
 
@@ -123,7 +145,7 @@ namespace sp{
             m_view = &m_inst;
         }
 
-        void _setView(const View &view) {
+        void _setBase(const View &view) {
             m_view = &view;
         }
 
@@ -142,9 +164,7 @@ namespace sp{
                     }
                 }
 
-                if (m_meanZ == 0.0) {
-                    m_meanZ = calcMeanZ(*m_view);
-                }
+                m_meanZ = calcMeanZ(*m_view);
 
                 if (track(m_pose, m_crsps, m_bases, m_mask, *m_view, img, m_meanZ) == false) throw "track";
 
@@ -157,6 +177,7 @@ namespace sp{
                 if (m_view != NULL) {
                     m_pose = m_view->pose;
                 }
+
                 m_meanZ = 0.0;
                 m_track = false;
             }
@@ -257,7 +278,7 @@ namespace sp{
 
                     if (view.fts[i].mpnt == NULL) continue;
 
-                    const Vec3 obj = stereo * fts[i].mpnt->pos;
+                    const Vec3 obj = pose * fts[i].mpnt->pos;
 
                     const Vec2 pix1 = mulCam(view.cam, prjVec(obj));
 
