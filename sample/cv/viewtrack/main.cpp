@@ -63,7 +63,8 @@ void sample(cv::Mat &cvimg, const int key){
 
     static ViewTrack tracker;
     if (key == 's') {
-        tracker.setView(cam, img, zeroPose());
+        tracker.setCam(cam);
+        tracker.setBase(img, zeroPose());
         return;
     }
 
