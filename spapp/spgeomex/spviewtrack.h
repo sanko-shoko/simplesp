@@ -164,9 +164,7 @@ namespace sp{
                     }
                 }
 
-                if (m_meanZ == 0.0) {
-                    m_meanZ = calcMeanZ(*m_view);
-                }
+                m_meanZ = calcMeanZ(*m_view);
 
                 if (track(m_pose, m_crsps, m_bases, m_mask, *m_view, img, m_meanZ) == false) throw "track";
 
@@ -280,7 +278,7 @@ namespace sp{
 
                     if (view.fts[i].mpnt == NULL) continue;
 
-                    const Vec3 obj = stereo * fts[i].mpnt->pos;
+                    const Vec3 obj = pose * fts[i].mpnt->pos;
 
                     const Vec2 pix1 = mulCam(view.cam, prjVec(obj));
 

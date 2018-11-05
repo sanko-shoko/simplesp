@@ -21,9 +21,9 @@ namespace sp {
 
             // pose state
             enum PoseState {
-                POSE_NULL = 0x01,
-                POSE_HINT = 0x02, 
-                POSE_VALID = 0x04
+                POSE_NULL = 0,
+                POSE_HINT = 1, 
+                POSE_VALID = 2
             };
             PoseState state;
 
@@ -101,6 +101,15 @@ namespace sp {
             }
         };
 
+
+    public:
+
+        enum MODE {
+            MODE_NULL = 0,
+            MODE_SERIAL = 1
+        };
+
+
     private:
 
         //--------------------------------------------------------------------------------
@@ -109,6 +118,8 @@ namespace sp {
 
         // update counter
         int m_update;
+
+        MODE m_mode;
 
         // key views
         Mem1<ViewEx*> m_views;
@@ -137,11 +148,14 @@ namespace sp {
 
     public:
 
+
         SfM() {
             clear();
         }
 
         void clear() {
+            m_mode = MODE_NULL;
+
             m_update = 0;
 
             m_views.clear();
@@ -153,6 +167,15 @@ namespace sp {
             _mpntsPool.clear();
 
             _viewsStack.clear();
+        }
+
+
+        //--------------------------------------------------------------------------------
+        // input parameter
+        //--------------------------------------------------------------------------------
+
+        void setMode(const MODE &mode) {
+            m_mode = mode;
         }
 
 
@@ -224,7 +247,7 @@ namespace sp {
                 const int seed = m_update;
 
                 if (m_views.size() < 2) throw "input size < 2";
-
+                
                 if (m_update == 0) {
                     // update match pair
                     updatePair(m_views, m_pairs, m_views.size());
@@ -238,7 +261,7 @@ namespace sp {
                     // update view [invalid -> valid]
                     updateView(m_views);
                 }
-                
+
                 Mem1<ViewEx*> uplist;
                 {
                     for (int v = 0; v < m_views.size(); v++) {
@@ -351,11 +374,11 @@ namespace sp {
             Mem1<MatchPair*> ptrs;
 
             for (int a = 0; a < views.size(); a++) {
-                if (!(views[a]->state & stateA)) continue;
+                if (views[a]->state != stateA) continue;
 
                 for (int i = 0; i < views[a]->pairs.size(); i++) {
                     const int b = views[a]->pairs[i]->b;
-                    if (!(views[a]->views[i]->state & stateB)) continue;
+                    if (views[b]->state != stateB) continue;
 
                     if (stateA == stateB && b < a) continue;
 
@@ -396,7 +419,7 @@ namespace sp {
                     initPair(views, pairs, b, a);
                 }
 
-                if (views[a]->state == ViewEx::POSE_HINT) {
+                if (msize() > 0 && views[a]->state == ViewEx::POSE_HINT) {
                     const int v = searchNearViewId(views[a]->pose);
                     if (pairs(a, v) != NULL) continue;
 
@@ -456,12 +479,19 @@ namespace sp {
             MatchPair *pair = NULL;
             {
                 // [invalid, invalid] pair
-                Mem1<MatchPair*> list = getPairs(views, ViewEx::POSE_NULL, ViewEx::POSE_NULL);
-
+                Mem1<MatchPair*> list;
+                list.push(getPairs(views, ViewEx::POSE_NULL, ViewEx::POSE_NULL));
+                list.push(getPairs(views, ViewEx::POSE_HINT, ViewEx::POSE_NULL));
+                list.push(getPairs(views, ViewEx::POSE_NULL, ViewEx::POSE_HINT));
+            
                 double maxv = 0.0;
                 for (int i = 0; i < list.size(); i++) {
                     const int a = list[i]->a;
                     const int b = list[i]->b;
+
+                    if ((m_mode & MODE_SERIAL)) {
+                        if (a != 0) continue;
+                    }
 
                     const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, list[i]->matches, true);
                     const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, list[i]->matches, false);
