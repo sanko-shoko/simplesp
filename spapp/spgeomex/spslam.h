@@ -27,6 +27,7 @@ namespace sp {
 
         void clear() {
             m_sfm.clear();
+            m_sfm.setMode(SfM::MODE_SERIAL);
             m_vtrack.clear();
         }
 
@@ -92,6 +93,15 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         bool updatePose(const Mem2<Col3> &img) {
+
+            const Pose *pose = m_vtrack.getPose();
+            if (pose != NULL){
+                const View *view = m_sfm.searchNearView(*pose);
+                if (view != NULL) {
+                    m_vtrack.setBase(*view);
+                }
+            }
+
             return m_vtrack.execute(img);
         }
 
@@ -100,10 +110,52 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         void addView(const Mem2<Col3> &img, const Pose *hint = NULL) {
+            if (m_vtrack.getView() == NULL) return;
+
             m_sfm.addView(m_vtrack.getCam(), img, hint);
         }
         
-        bool updateMap() {
+        bool updateMap(const Mem2<Col3> &img) {
+            if (m_vtrack.getView() == NULL) return false;
+
+            if (m_sfm.vsize() == 0) {
+                m_sfm.addView(m_vtrack.getCam(), m_vtrack.getView()->img, m_vtrack.getPose());
+            }
+            else if (m_vtrack.getPose() != NULL) {
+                const int i = m_sfm.vsize() - 1;
+                const Pose prePose = m_sfm.getView(i)->pose;
+
+                double move = SP_INFINITY;
+                double norm = SP_INFINITY;
+                double angle = SP_INFINITY;
+
+                if (m_sfm.msize() == 0) {
+                    const Pose nearPose = m_sfm.getView(i)->pose;
+                    const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
+
+                    norm = minVal(norm, normVec(dif.trn));
+                    angle = minVal(angle, getAngle(dif.rot, 2));
+                }
+
+                const View *view = m_sfm.searchNearView(*m_vtrack.getPose());
+                if(view != NULL){
+                    const Pose nearPose = view->pose;
+                    const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
+
+                    norm = minVal(norm, normVec(dif.trn));
+                    angle = minVal(angle, getAngle(dif.rot, 2));
+
+                }
+
+                const double nThresh = 1.0;
+                const double aThresh = 5.0 * SP_PI / 180.0;
+
+                const double t = norm / nThresh + angle / aThresh;
+
+                if (t > 1.0) {
+                    m_sfm.addView(m_vtrack.getCam(), img, m_vtrack.getPose());
+                }
+            }
             return m_sfm.update();
         }
 
