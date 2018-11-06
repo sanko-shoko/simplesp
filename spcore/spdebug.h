@@ -279,14 +279,12 @@ namespace sp {
 
 #if SP_USE_HOLDER
 
-#define SP_HOLDER_INSTANCE sp::Holder _holder;
-#define SP_HOLDER_SET(NAME, DATA) { _holder.set(NAME, DATA); }
-#define SP_HOLDER_GET(CLASS, NAME, TYPE) (CLASS._holder.get<TYPE>(NAME));
+#define SP_HOLDER_SET(NAME, DATA) Holder::root()->set(NAME, DATA);
+#define SP_HOLDER_GET(NAME, TYPE) Holder::root()->get<TYPE>(NAME);
 #else
 
-#define SP_HOLDER_INSTANCE
 #define SP_HOLDER_SET(NAME, DATA)
-#define SP_HOLDER_GET(CLASS, NAME, TYPE) NULL;
+#define SP_HOLDER_GET(NAME, TYPE) NULL;
 #endif
 
 
@@ -349,6 +347,11 @@ namespace sp {
                 }
             }
             return ptr;
+        }
+
+        static Holder *root() {
+            static Holder holder;
+            return &holder;
         }
     };
 }
