@@ -7,19 +7,15 @@
 
 
 #include "spcore/spcom.h"
-#include "spcore/spwrap.h"
-#include "spcore/sptimer.h"
 
 
 #ifndef SP_USE_DEBUG
 #define SP_USE_DEBUG 0
 #endif
 
-#if SP_USE_DEBUG
+#ifndef SP_USE_HOLDER
 #define SP_USE_HOLDER 1
-#define SP_USE_LOGGER 1
 #endif
-
 
 //--------------------------------------------------------------------------------
 // additional include
@@ -277,7 +273,7 @@ namespace sp {
 // data holder
 //--------------------------------------------------------------------------------
 
-#if SP_USE_HOLDER
+#if SP_USE_DEBUG && SP_USE_HOLDER
 
 #define SP_HOLDER_SET(NAME, DATA) Holder::root()->set(NAME, DATA);
 #define SP_HOLDER_GET(NAME, TYPE) Holder::root()->get<TYPE>(NAME);
@@ -288,7 +284,7 @@ namespace sp {
 #endif
 
 
-#if SP_USE_HOLDER
+#if SP_USE_DEBUG && SP_USE_HOLDER
 
 namespace sp {
     using namespace std;
