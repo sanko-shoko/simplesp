@@ -255,7 +255,7 @@ namespace sp{
 
             Mem2<Col3> &wimg = _wimg;
 
-            if (wimg.size() == view.img.size()) {
+            if (wimg.size() != view.img.size()) {
                 wimg.resize(view.img.dsize);
                 for (int i = 0; i < wimg.size(); i++) {
                     wimg[i] = getCol(rand() % 256, rand() % 256, rand() % 256);
@@ -263,6 +263,8 @@ namespace sp{
             }
             {
                 warp<Col3, Byte>(wimg, view.img, hom);
+
+                SP_HOLDER_SET("warp image", wimg);
             }
 
             flows.resize(view.fts.size());
