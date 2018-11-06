@@ -2,14 +2,15 @@
 #define __DOTMARKER_H__
 
 #define SP_USE_DEBUG 1
+#define SP_USE_IMGUI 1
 
 #include "simplesp.h"
-#include "spex/sptw.h"
+#include "spex/spgl.h"
 #include "spex/spcv.h"
 
 using namespace sp;
 
-class DotMarkerGUI : public TwWindow{
+class DotMarkerGUI : public BaseWindow{
 
     // object model
     Mem1<Mesh3> m_model;
@@ -41,46 +42,7 @@ class DotMarkerGUI : public TwWindow{
 private:
 
     virtual void init(){
-
-        //if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false){
-        //    exit(0);
-        //}
-
         m_ui.start = true;
-
-
-        TwBar *bar = TwNewBar("TweakBar");
-
-        TwAddButton(bar, "start", TwButtonCB(DotMarkerGUI, start), this, "");
-
-        TwAddSeparator(bar, NULL, "");
-        TwAddButton(bar, "addCrsp", TwButtonCB(DotMarkerGUI, addCrsp), this, "");
-        TwAddVarRO(bar, "num", TW_TYPE_INT32, &m_pixPntsList.dsize[0], "");
-        TwAddButton(bar, "calib", TwButtonCB(DotMarkerGUI, calib), this, "");
-
-        TwAddSeparator(bar, NULL, "");
-        TwAddVarRW(bar, "useDiminish", TW_TYPE_BOOL8, &m_ui.useDiminish, "");
-        TwAddVarRW(bar, "dispModel", TW_TYPE_BOOL8, &m_ui.dispModel, "");
-
-#if SP_USE_DEBUG
-        TwAddVarRW(bar, "dispSkip", TW_TYPE_BOOL8, &m_ui.dispSkip, "");
-        TwAddVarRW(bar, "dispMinGauss", TW_TYPE_BOOL8, &m_ui.dispMinGauss, "");
-        TwAddVarRW(bar, "dispMinLab", TW_TYPE_BOOL8, &m_ui.dispMinLab, "");
-        TwAddVarRW(bar, "dispDetectPix", TW_TYPE_BOOL8, &m_ui.dispDetectPix, "");
-        TwAddVarRW(bar, "dispLinkLine", TW_TYPE_BOOL8, &m_ui.dispLinkLine, "");
-
-        TwAddSeparator(bar, NULL, "");
-        TwAddButton(bar, "calcOne", TwButtonCB(DotMarkerGUI, calcOne), this, "");
-        TwAddButton(bar, "nextImg", TwButtonCB(DotMarkerGUI, nextImg), this, "");
-        TwAddSeparator(bar, NULL, "");
-        TwAddButton(bar, "loadImg", TwButtonCB(DotMarkerGUI, loadImg), this, "");
-        TwAddButton(bar, "saveImg", TwButtonCB(DotMarkerGUI, saveImg), this, "");
-#endif
-
-    }
-
-    void start(){
-        m_ui.start ^= true;
     }
 
     void saveImg(){
@@ -96,12 +58,6 @@ private:
 
     // estimate marker pose
     void calcOne();
-
-    // add detected marker for calibration
-    void addCrsp();
-
-    // execute camera calibration
-    void calib();
 
     virtual void display();
 };

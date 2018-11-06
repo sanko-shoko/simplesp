@@ -1,13 +1,14 @@
 ﻿#define SP_USE_DEBUG 1
 #define SP_USE_CONSOLE 1
+#define SP_USE_IMGUI 1
 
 #include "simplesp.h"
-#include "spex/sptw.h"
+#include "spex/spgl.h"
 #include "spex/spcv.h"
 
 using namespace sp;
 
-class BitMarkerGUI : public TwWindow {
+class BitMarkerGUI : public BaseWindow {
     Mem1<BitMarkerParam> m_mrks;
 
     BitMarker m_bitMarker;
@@ -50,24 +51,6 @@ private:
 
         m_ui.start = true;
 
-        TwBar *bar = TwNewBar("TweakBar");
-
-        TwAddButton(bar, "start", TwButtonCB(BitMarkerGUI, start), this, "");
-
-        TwAddSeparator(bar, NULL, "");
-
-#if SP_USE_DEBUG
-        TwAddVarRW(bar, "dispMinGauss", TW_TYPE_BOOL8, &m_ui.dispMinGauss, "");
-        TwAddVarRW(bar, "dispMinLab", TW_TYPE_BOOL8, &m_ui.dispMinLab, "");
-        TwAddVarRW(bar, "dispContour", TW_TYPE_BOOL8, &m_ui.dispContour, "");
-        TwAddVarRW(bar, "dispCorner", TW_TYPE_BOOL8, &m_ui.dispCorner, "");
-        TwAddVarRW(bar, "test", TW_TYPE_BOOL8, &m_ui.test, "");
-#endif
-
-    }
-
-    void start() {
-        m_ui.start ^= true;
     }
 
     // capture next image
@@ -84,6 +67,22 @@ private:
     }
 
     virtual void display() {
+
+        if (ImGui::Begin("gui", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+            if (ImGui::Button(m_ui.start ? "stop" : "start")) {
+                m_ui.start ^= true;
+            }
+
+            ImGui::Checkbox("dispMinGauss", &m_ui.dispMinGauss);
+            ImGui::Checkbox("dispMinLab", &m_ui.dispMinLab);
+            ImGui::Checkbox("dispContour", &m_ui.dispContour);
+            ImGui::Checkbox("dispCorner", &m_ui.dispCorner);
+            ImGui::Checkbox("test", &m_ui.test);
+
+            ImGui::End();
+        }
+
         if (m_ui.start) {
             nextImg();
         }

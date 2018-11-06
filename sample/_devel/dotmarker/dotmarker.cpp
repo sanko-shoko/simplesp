@@ -22,27 +22,31 @@ void DotMarkerGUI::calcOne(){
     remap<Col3, Byte>(m_crntImg, m_crntImg, table);
 }
 
-// add detected marker for calibration
-void DotMarkerGUI::addCrsp(){
-    if (m_dotMarker.getPose() != NULL){
-        m_pixPntsList.push(*m_dotMarker.getCrspPixs());
-        m_objPntsList.push(*m_dotMarker.getCrspObjs());
-    }
-}
-
-// execute camera calibration
-void DotMarkerGUI::calib(){
-    CamParam cam;
-
-    if (calibCam(cam, m_crntImg.dsize[0], m_crntImg.dsize[1], m_pixPntsList, m_objPntsList) >= 0.0){
-        m_dotMarker.setCam(cam);
-        print(cam);
-        calcOne();
-    }
-}
-
-
 void DotMarkerGUI::display(){
+
+    if (ImGui::Begin("gui", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        if (ImGui::Button(m_ui.start ? "stop" : "start")) {
+            m_ui.start ^= true;
+        }
+        ImGui::Checkbox("useDiminish", &m_ui.useDiminish);
+        ImGui::Checkbox("dispModel", &m_ui.dispModel);
+        ImGui::Checkbox("dispSkip", &m_ui.dispSkip);
+        ImGui::Checkbox("dispMinGauss", &m_ui.dispMinGauss);
+        ImGui::Checkbox("dispMinLab", &m_ui.dispMinLab);
+        ImGui::Checkbox("dispDetectPix", &m_ui.dispDetectPix);
+        ImGui::Checkbox("dispLinkLine", &m_ui.dispLinkLine);
+
+        if (ImGui::Button("loadImg")) {
+            loadImg();
+        }
+        if (ImGui::Button("saveImg")) {
+            saveImg();
+        }
+
+        ImGui::End();
+    }
+
     if (m_ui.start){
         nextImg();
         calcOne();
