@@ -9,7 +9,6 @@
 #include "spapp/spdata/spscene.h"
 #include "spapp/spimgex/splucaskanade.h"
 
-
 namespace sp{
 
     class ViewTrack {
@@ -54,7 +53,7 @@ namespace sp{
         // temporary data
         //--------------------------------------------------------------------------------
       
-        Mem2<Col3> _wimg;
+        Mem2<Col3> _nimg;
 
     public:
 
@@ -214,6 +213,9 @@ namespace sp{
                 zlist.push(fts[i].mpnt->pos.z);
             }
             
+            sort(zlist);
+            zlist = zlist.slice(0, round(0.1 * zlist.size()), round(0.9 * zlist.size()));
+
             const double meanZ = meanVal(zlist);
 
             return meanZ;
@@ -253,43 +255,48 @@ namespace sp{
                 hom = hom / hom(2, 2);
             }
 
-            Mem2<Col3> &wimg = _wimg;
 
-            if (wimg.size() != view.img.size()) {
-                wimg.resize(view.img.dsize);
-                for (int i = 0; i < wimg.size(); i++) {
-                    wimg[i] = getCol(rand() % 256, rand() % 256, rand() % 256);
+            if (_nimg.size() != view.img.size()) {
+                _nimg.resize(view.img.dsize);
+                for (int i = 0; i < _nimg.size(); i++) {
+                    _nimg[i] = getCol(rand() % 256, rand() % 256, rand() % 256);
                 }
             }
+
+            Mem2<Col3> wimg = _nimg;
             {
                 warp<Col3, Byte>(wimg, view.img, hom);
 
-                SP_HOLDER_SET("warp image", wimg);
             }
 
-            flows.resize(view.fts.size());
+            const int num = view.fts.size();
+            flows.resize(num);
             flows.zero();
 
-            Mem1<Vec2> pixs;
-            Mem1<Vec2> tmps;
-            Mem1<double> scls;
+            Mem1<Vec2> pixs(num);
+            Mem1<Vec2> tmps(num);
+            Mem1<double> scls(num);
+            pixs.zero();
+            tmps.zero();
+            scls.zero();
 
             {
                 const Vec3 h2 = getVec(hom(2, 0), hom(2, 1), hom(2, 2));
                 const Mem1<Feature> &fts = view.fts;
-                for (int i = 0; i < fts.size(); i++) {
+                for (int i = 0; i < num; i++) {
                     const Vec2 &p = fts[i].pix;
                     const double s = fts[i].scl;
 
                     const Vec2 pix0 = hom * p;
                     const double t = h2.x * p.x + h2.y * p.y + h2.z;
-                    if (fabs(t - 1.0) > 0.4) return false;
+                    if (fabs(t - 1.0) > 0.5) return false;
 
-                    pixs.push(pix0);
-                    tmps.push(p);
-                    scls.push(s * t);
+                    pixs[i] = pix0;
+                    tmps[i] = p;
+                    scls[i] = s * t;
 
-                    if (view.fts[i].mpnt == NULL) continue;
+                    const MapPnt *mpnt = view.fts[i].mpnt;
+                    if (mpnt == NULL || mpnt->valid == false) continue;
 
                     const Vec3 obj = pose * fts[i].mpnt->pos;
 
@@ -301,10 +308,15 @@ namespace sp{
 
             opticalFlowLK(flows, mask, img, wimg, pixs, scls);
         
-            for (int i = 0; i < mask.size(); i++) {
+            for (int i = 0; i < num; i++) {
+                const MapPnt *mpnt = view.fts[i].mpnt;
+                if (mpnt == NULL || mpnt->valid == false) mask[i] = false;
+
                 if (mask[i] == false) continue;
                 flows[i] += pixs[i] - tmps[i];
             }
+
+            SP_HOLDER_SET("warp image", wimg);
 
             return true;
         }
@@ -336,7 +348,7 @@ namespace sp{
 
             {
                 const double eval = evalStereo(view.cam, pixs0, view.cam, pixs1);
-                SP_PRINTD("eval %lf\n", eval);
+                //SP_PRINTD("eval %lf\n", eval);
                 if (eval < 0.4) return false;
             }
 
@@ -358,6 +370,7 @@ namespace sp{
 
                 MapPnt *m = _mpnts.malloc();
                 m->pos = pnt;
+                m->valid = true;
                 view.fts[i].mpnt = m;
             }
 
