@@ -63,9 +63,10 @@ private:
         help();
         reset();
 
-        static VideoGUI video;
-        video.create("video", 640, 480, this);
-        addSubWindow(&video);
+        //static VideoGUI video;
+        //video.create("video", 640, 480, this);
+        //addSubWindow(&video);
+
     }
 
     void reset() {
@@ -90,6 +91,7 @@ private:
         m_slam.updatePose(m_img);
         
         m_thread.run<SLAMGUI, &SLAMGUI::updateMap>(this, false);
+
     }
 
     void addView() {
@@ -143,6 +145,8 @@ private:
         {
             static cv::VideoCapture cap(0);
             cvCaptureImg(m_img, cap);
+
+            glShowImg(this, "test", m_img);
         }
 
         {
