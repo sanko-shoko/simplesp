@@ -7,6 +7,7 @@
 
 
 #include "spcore/spcom.h"
+#include "spcore/spwrap.h"
 
 
 #ifndef SP_USE_DEBUG
@@ -22,7 +23,6 @@
 //--------------------------------------------------------------------------------
 
 #if SP_USE_DEBUG
-#include <string>
 #include <vector>
 #endif
 
@@ -293,7 +293,7 @@ namespace sp {
 
     private:
 
-        vector<string> names;
+        vector<const char *> names;
         vector<void *> ptrs;
 
     public:
@@ -315,7 +315,7 @@ namespace sp {
 
             TYPE *ptr = NULL;
             for (int i = 0; i < names.size(); i++){
-                if (names[i] == name){
+                if (strcmp(names[i], name) == 0){
                     ptr = (TYPE*)ptrs[i];
                     break;
                 }
@@ -337,7 +337,7 @@ namespace sp {
 
             TYPE *ptr = NULL;
             for (int i = 0; i < names.size(); i++){
-                if (names[i] == name){
+                if (strcmp(names[i], name) == 0){
                     ptr = (TYPE*)ptrs[i];
                     break;
                 }

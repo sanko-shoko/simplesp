@@ -7,23 +7,7 @@
 
 using namespace sp;
 
-class VideoGUI : public BaseWindow {
-
-private:
-
-    Mem2<Col3> *m_img;
-
-    virtual void init();
-    virtual void keyFun(int key, int scancode, int action, int mods);
-
-    virtual void display() {
-        glLoadView2D(m_img->dsize, m_viewPos, m_viewScale);
-        glRenderImg(*m_img);
-    }
-};
-
 class SfMGUI : public BaseWindow {
-    friend VideoGUI;
 
 private:
 
@@ -66,10 +50,6 @@ private:
     virtual void init() {
         help();
         reset();
-
-        static VideoGUI video;
-        video.create("video", 640, 480, this);
-        addSubWindow(&video);
     }
 
     void reset() {
@@ -149,6 +129,8 @@ private:
         {
             static cv::VideoCapture cap(0);
             cvCaptureImg(m_img, cap);
+
+            glShowImg(this, "input image", m_img);
         }
 
         {
@@ -225,15 +207,6 @@ private:
     }
 
 };
-
-void VideoGUI::init() {
-    SfMGUI *p = static_cast<SfMGUI*>(m_parent);
-    m_img = &p->m_img;
-}
-void VideoGUI::keyFun(int key, int scancode, int action, int mods) {
-    SfMGUI *p = static_cast<SfMGUI*>(m_parent);
-    p->_keyFun(key, scancode, action, mods);
-}
 
 int main() {
 

@@ -41,7 +41,7 @@ private:
 
         help();
 
-        if (1) {
+        if (0) {
             m_cam = getCamParam(640, 480);
         }
         else {
@@ -107,13 +107,19 @@ private:
         }
 
         // render depth
-        {
+        if(0){
             const double scale = 0.3;
 
             const Vec2 offset = getVec(m_cam.dsize[0], m_cam.dsize[1]) * (0.5 - scale * 0.5);
             glLoadView2D(m_cam, m_viewPos - offset * m_viewScale, m_viewScale * scale);
 
             glRenderDepth(depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+        }
+        else {
+            Mem2<Col3> img;
+            cnvDepthToImg(img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+
+            glShowImg(this, "input depth map", img);
         }
 
     }
