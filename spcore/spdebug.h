@@ -279,16 +279,14 @@ namespace sp {
 
 #if SP_USE_HOLDER
 
-#define SP_HOLDER_INSTANCE sp::Holder holder;
-#define SP_HOLDER_RESET() holder.reset();
-#define SP_HOLDER_SET(NAME, DATA) { holder.set(NAME, DATA); }
-#define SP_HOLDER_GET(NAME, CLASS) (CLASS.holder.get(NAME));
+#define SP_HOLDER_INSTANCE sp::Holder _holder;
+#define SP_HOLDER_SET(NAME, DATA) { _holder.set(NAME, DATA); }
+#define SP_HOLDER_GET(CLASS, NAME, TYPE) (CLASS._holder.get<TYPE>(NAME));
 #else
 
 #define SP_HOLDER_INSTANCE
-#define SP_HOLDER_RESET()
-#define SP_HOLDER_SET(STR, DATA)
-#define SP_HOLDER_GET(STR, CLASS) NULL;
+#define SP_HOLDER_SET(NAME, DATA)
+#define SP_HOLDER_GET(CLASS, NAME, TYPE) NULL;
 #endif
 
 
@@ -306,6 +304,10 @@ namespace sp {
 
     public:
 
+        ~Holder(){
+            reset();
+        }
+   
         void reset(){
             names.clear();
             for (int i = 0; i < ptrs.size(); i++) {
@@ -314,36 +316,39 @@ namespace sp {
             ptrs.clear();
         }
 
-        ~Holder(){
-            reset();
-        }
-
         template <typename TYPE>
         void set(const char *name, const TYPE &data){
 
+            TYPE *ptr = NULL;
             for (int i = 0; i < names.size(); i++){
                 if (names[i] == name){
-                    *((TYPE*)ptrs[i]) = data;
-                    return;
+                    ptr = (TYPE*)ptrs[i];
+                    break;
                 }
             }
-
-            {
-                TYPE *ptr = new TYPE();
+            if (ptr != NULL) {
                 *ptr = data;
+            }
+            else {
+                ptr = new TYPE();
+                *ptr = data;
+
                 names.push_back(name);
                 ptrs.push_back(ptr);
             }
         }
 
-        const void* get(const char *name){
+        template <typename TYPE>
+        const TYPE* get(const char *name){
 
+            TYPE *ptr = NULL;
             for (int i = 0; i < names.size(); i++){
                 if (names[i] == name){
-                    return ptrs[i];
+                    ptr = (TYPE*)ptrs[i];
+                    break;
                 }
             }
-            return NULL;
+            return ptr;
         }
     };
 }

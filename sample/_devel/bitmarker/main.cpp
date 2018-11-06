@@ -146,7 +146,7 @@ private:
 #if SP_USE_DEBUG
 
         if (m_ui.dispMinGauss) {
-            const sp::Mem2<unsigned char> *minImg = (const sp::Mem2<unsigned char> *)SP_HOLDER_GET("minImg", m_bitMarker);
+            const sp::Mem2<unsigned char> *minImg = SP_HOLDER_GET(m_bitMarker, "minImg", const sp::Mem2<unsigned char>);
             if (minImg) {
                 const double scale = static_cast<double>(m_crntImg.dsize[0]) / minImg->dsize[0];
                 glLoadView2D(minImg->dsize, m_viewPos, scale * m_viewScale);
@@ -154,7 +154,7 @@ private:
             }
         }
         if (m_ui.dispMinLab) {
-            const sp::Mem2<int> *labelMap = (const sp::Mem2<int>*)SP_HOLDER_GET("labelMap", m_bitMarker);
+            const sp::Mem2<int> *labelMap = SP_HOLDER_GET(m_bitMarker, "labelMap", const sp::Mem2<int>);
             if (labelMap) {
                 glPointSize(static_cast<float>(1.2 * m_viewScale));
                 const double scale = static_cast<double>(m_crntImg.dsize[0]) / labelMap->dsize[0];
@@ -172,7 +172,7 @@ private:
             }
         }
         if (m_ui.dispContour) {
-            const sp::Mem1<sp::Mem1<sp::Vec2> > *contours = (const sp::Mem1<sp::Mem1<sp::Vec2> >*)SP_HOLDER_GET("contours", m_bitMarker);
+            const sp::Mem1<sp::Mem1<sp::Vec2> > *contours = SP_HOLDER_GET(m_bitMarker, "contours", const sp::Mem1<sp::Mem1<sp::Vec2> >);
             if (contours) {
                 glColor(sp::getCol(0, 255, 0));
                 glPointSize(static_cast<float>(2 * m_viewScale));
@@ -190,7 +190,7 @@ private:
         }
 
         if (m_ui.dispCorner) {
-            const sp::Mem1<sp::Mem1<sp::Vec2> > *corners = (const sp::Mem1<sp::Mem1<sp::Vec2> >*)SP_HOLDER_GET("corners", m_bitMarker);
+            const sp::Mem1<sp::Mem1<sp::Vec2> > *corners = SP_HOLDER_GET(m_bitMarker, "corners", const sp::Mem1<sp::Mem1<sp::Vec2> >);
             if (corners) {
                 glColor(sp::getCol(0, 255, 0));
                 glPointSize(static_cast<float>(2 * m_viewScale));
