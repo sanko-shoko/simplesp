@@ -372,11 +372,13 @@ namespace sp {
 
 #if SP_USE_LOGGER
 
-#define SP_LOGGER_SET(NAME) sp::LoggerUnit _lunit(sp::Logger::root(), NAME);
+#define SP_LOGGER_START(NAME) sp::LoggerUnit _lunit(sp::Logger::root(), NAME);
+#define SP_LOGGER_STOP(NAME) sp::Logger::root()->stop(NAME);
 #define SP_LOGGER_PRINT(NAME) sp::Logger::root()->print(NAME);
 #else
 
-#define SP_LOGGER_SET(NAME) 
+#define SP_LOGGER_START(NAME) 
+#define SP_LOGGER_STOP(NAME) 
 #define SP_LOGGER_PRINT(NAME)
 #endif
 
@@ -446,6 +448,8 @@ namespace sp {
         void stop(const char *name) {
 
 #if SP_USE_LOGGER
+            const Timer::tpoint tp = Timer::now();
+
             int id = -1;
             for (int i = 0; i < names.size(); i++) {
                 if (name == names[i]) {
@@ -454,8 +458,8 @@ namespace sp {
                 }
             }
 
-            if (id >= 0) {
-                times[id] = Timer::dif(tpnts[id], Timer::now());
+            if (id >= 0 && flags[id] == false) {
+                times[id] = Timer::dif(tpnts[id], tp);
                 flags[id] = true;
             }
 #endif
