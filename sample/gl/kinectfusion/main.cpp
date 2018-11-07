@@ -31,17 +31,11 @@ private:
         printf("\n");
     }
 
-    virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_R] == 1) {
-            m_kfusion.reset();
-        }
-    }
-
     virtual void init() {
 
         help();
 
-        if (1) {
+        if (0) {
             m_cam = getCamParam(640, 480);
         }
         else {
@@ -59,6 +53,12 @@ private:
         }
 
         m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+    }
+
+    virtual void keyFun(int key, int scancode, int action, int mods) {
+        if (m_keyAction[GLFW_KEY_R] == 1) {
+            m_kfusion.reset();
+        }
     }
 
     virtual void display() {
@@ -85,7 +85,10 @@ private:
                 // voxel unit length [mm]
                 const double unit = (2 * radius) / vsize;
 
-                m_kfusion.init(vsize, unit, m_cam, m_pose);
+                // voxel pose
+                const Pose pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+
+                m_kfusion.init(vsize, unit, m_cam, pose);
             }
 
             m_kfusion.execute(depth);
@@ -107,13 +110,19 @@ private:
         }
 
         // render depth
-        {
+        if(0){
             const double scale = 0.3;
 
             const Vec2 offset = getVec(m_cam.dsize[0], m_cam.dsize[1]) * (0.5 - scale * 0.5);
             glLoadView2D(m_cam, m_viewPos - offset * m_viewScale, m_viewScale * scale);
 
             glRenderDepth(depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+        }
+        else {
+            Mem2<Col3> img;
+            cnvDepthToImg(img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+
+            glShowImg(this, "input depth map", img);
         }
 
     }

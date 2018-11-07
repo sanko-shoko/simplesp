@@ -128,7 +128,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // base window
     //--------------------------------------------------------------------------------
-
+  
     class BaseWindow {
 
     protected:
@@ -215,8 +215,9 @@ namespace sp {
             memset(m_keyAction, -1, SP_KEYMAX);
         }
 
+
         //--------------------------------------------------------------------------------
-        // function
+        // main window
         //--------------------------------------------------------------------------------
 
         bool create(const char *name, const int width, const int height, BaseWindow *parent = NULL) {
@@ -236,6 +237,10 @@ namespace sp {
             m_parent = parent;
 
             init();
+
+            if (parent != NULL) {
+                parent->addSubWindow(this);
+            }
 
             return true;
         }
@@ -273,6 +278,29 @@ namespace sp {
         }
 
 
+        //--------------------------------------------------------------------------------
+        // sub window
+        //--------------------------------------------------------------------------------
+
+        void addSubWindow(BaseWindow *bw) {
+            for (int i = 0; i < m_cwins.size(); i++) {
+                if (m_cwins[i] == bw) {
+                    return;
+                }
+            }
+            m_cwins.push(bw);
+        }
+
+        void delSubWindow(BaseWindow *bw) {
+            for (int i = 0; i < m_cwins.size(); i++) {
+                if (m_cwins[i] == bw) {
+                    m_cwins.del(i);
+                    break;
+                }
+            }
+        }
+
+ 
     protected:
 
         //--------------------------------------------------------------------------------
@@ -326,28 +354,11 @@ namespace sp {
             return true;
         }
 
+
         //--------------------------------------------------------------------------------
-        // sub window
+        // util
         //--------------------------------------------------------------------------------
-
-        void addSubWindow(BaseWindow *bw) {
-            for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i] == bw) {
-                    return;
-                }
-            }
-            m_cwins.push(bw);
-        }
-
-        void delSubWindow(BaseWindow *bw) {
-            for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i] == bw) {
-                    m_cwins.del(i);
-                    break;
-                }
-            }
-        }
-
+        
         GLFWwindow* findFocused() {
             if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
                 return m_win;
@@ -359,11 +370,10 @@ namespace sp {
             return NULL;
         }
 
-
-    protected:
+    public:
 
         //--------------------------------------------------------------------------------
-        // base event process
+        // event process
         //--------------------------------------------------------------------------------
 
         void _windowSize(int width, int height) {
@@ -519,6 +529,61 @@ namespace sp {
         }
     };
 
+
+    template<typename TYPE>
+    class ImgWindow : public BaseWindow {
+
+
+    private:
+
+        Mem2<TYPE> m_img;
+
+        virtual void display() {
+            if (m_img.size() > 0) {
+                if (cmpSize(2, m_img.dsize, m_wcam.dsize) == false) {
+                    glfwSetWindowSize(m_win, m_img.dsize[0], m_img.dsize[1]);
+                }
+                glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);
+                glRenderImg(m_img);
+            }
+        };
+
+        virtual void keyFun(int key, int scancode, int action, int mods) {
+            BaseWindow *p = static_cast<BaseWindow*>(m_parent);
+            p->_keyFun(key, scancode, action, mods);
+        }
+
+    public:
+
+        ImgWindow() {
+        }
+
+        void set(const Mem2<TYPE> &img) {
+            m_img = img;
+        }
+
+    };
+
+    template<typename TYPE>
+    SP_CPUFUNC void glShowImg(BaseWindow *win, const char *name, const Mem2<TYPE> &img) {
+        static Mem1<const char*> names;
+        static MemP<ImgWindow<TYPE> > pool;
+
+        ImgWindow<TYPE> *ptr = NULL;
+        for (int i = 0; i < names.size(); i++) {
+            if (strcmp(names[i], name) == 0) {
+                ptr = &pool[i];
+                break;
+            }
+        }
+        if (ptr == NULL) {
+            ptr = pool.malloc();
+            ptr->create(name, img.dsize[0], img.dsize[1], win);
+            names.push(name);
+        }
+
+        ptr->set(img);
+    }
 }
 
 #endif

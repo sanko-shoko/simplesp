@@ -130,7 +130,6 @@ namespace sp{
         Mat m_hom;
 
     public:
-        SP_HOLDER_INSTANCE;
 
         DotPattern() {
         }

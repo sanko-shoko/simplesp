@@ -1,4 +1,5 @@
-﻿#define SP_USE_THREAD 1
+﻿#define SP_USE_DEBUG 1
+#define SP_USE_THREAD 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"
@@ -66,6 +67,7 @@ private:
         static VideoGUI video;
         video.create("video", 640, 480, this);
         addSubWindow(&video);
+
     }
 
     void reset() {
@@ -90,6 +92,7 @@ private:
         m_slam.updatePose(m_img);
         
         m_thread.run<SLAMGUI, &SLAMGUI::updateMap>(this, false);
+
     }
 
     void addView() {
@@ -143,6 +146,14 @@ private:
         {
             static cv::VideoCapture cap(0);
             cvCaptureImg(m_img, cap);
+
+            //glShowImg(this, "test", m_img);
+
+
+            const Mem2<Col3> *wimg = SP_HOLDER_GET("warp image", Mem2<Col3>);
+            if (wimg) {
+                glShowImg(this, "warped image", *wimg);
+            }
         }
 
         {

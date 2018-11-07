@@ -167,7 +167,6 @@ namespace sp{
         Mem1<Mem1<Vec3> > m_cobjs;
 
     public:
-        SP_HOLDER_INSTANCE;
 
         BitMarker(){
             m_cam = getCamParam(0, 0);

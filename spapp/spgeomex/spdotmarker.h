@@ -75,7 +75,6 @@ namespace sp{
         Mem1<Vec2> m_cpixs, m_cobjs;
 
     public:
-        SP_HOLDER_INSTANCE;
 
         DotMarker(){
             m_cam = getCamParam(0, 0);

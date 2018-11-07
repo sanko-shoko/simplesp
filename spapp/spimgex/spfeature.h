@@ -65,60 +65,6 @@ namespace sp {
 
         // binary
         Mem1<Byte> _bin;
-
-        void prepare() {
-
-            if (type == Type::DSC_SIFT) {
-
-                const int dim = dsc.size() / sizeof(float);
-                const float *data = reinterpret_cast<float*>(dsc.ptr);
-
-                const float thresh = static_cast<float>(1.0 / sqrt(dim));
-
-                Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&_bin);
-
-                tmp->resize((dim + 8 - 1) / 8);
-                cnvBit(tmp->ptr, tmp->size(), data, dim, thresh);
-            }
-        }
-
-        int find(const Mem1<Feature> &fts) const {
-
-            int id = -1;
-
-            if (type == Feature::Type::DSC_SIFT) {
-                const double MIN_NCC = 0.9;
-                const double MIN_BIN = 0.8;
-
-                double maxv = MIN_NCC;
-
-                const int dim = dsc.size() / sizeof(float);
-
-                for (int i = 0; i < fts.size(); i++) {
-                    const Feature &ft = fts[i];
-
-                    if (_bin.size() > 0 && ft._bin.size() > 0) {
-                        const double btest = static_cast<double>(cntBit(_bin.ptr, ft._bin.ptr, _bin.size())) / dim;
-                        if (btest < MIN_BIN) continue;
-                    }
-
-                    const float *data0 = reinterpret_cast<float*>(dsc.ptr);
-                    const float *data1 = reinterpret_cast<float*>(ft.dsc.ptr);
-
-                    double sum = 0.0;
-                    for (int d = 0; d < dim; d++) {
-                        sum += (*data0++) * (*data1++);
-                    }
-
-                    if (sum > maxv) {
-                        maxv = sum;
-                        id = i;
-                    }
-                }
-            }
-
-            return id;
-        }
     };
 
 
@@ -157,6 +103,44 @@ namespace sp {
         return pixs;
     }
 
+    SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts) {
+
+        int id = -1;
+
+        if (ft.type == Feature::Type::DSC_SIFT) {
+            const double MIN_NCC = 0.9;
+            const double MIN_BIN = 0.8;
+
+            double maxv = MIN_NCC;
+
+            // dim = 128
+            const int dim = ft.dsc.size() / sizeof(float);
+
+            for (int i = 0; i < fts.size(); i++) {
+
+                if (ft._bin.size() > 0 && fts[i]._bin.size() > 0) {
+                    const double btest = static_cast<double>(cntBit(ft._bin.ptr, fts[i]._bin.ptr, ft._bin.size())) / dim;
+                    if (btest < MIN_BIN) continue;
+                }
+
+                const float *data0 = reinterpret_cast<float*>(ft.dsc.ptr);
+                const float *data1 = reinterpret_cast<float*>(fts[i].dsc.ptr);
+
+                double sum = 0.0;
+                for (int d = 0; d < dim; d++) {
+                    sum += (*data0++) * (*data1++);
+                }
+
+                if (sum > maxv) {
+                    maxv = sum;
+                    id = i;
+                }
+            }
+        }
+
+        return id;
+    }
+
     SP_CPUFUNC Mem1<int> findMatch(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const bool crossCheck = true) {
         Mem1<int> matches(fts0.size());
 
@@ -168,13 +152,13 @@ namespace sp {
 
             int j, k;
             {
-                j = fts0[i].find(fts1);
+                j = findMatch(fts0[i], fts1);
                 if (j < 0) continue;
             }
 
             // cross check
             if (crossCheck == true) {
-                k = fts1[j].find(fts0);
+                k = findMatch(fts1[j], fts0);
                 if (k != i) continue;
             }
 
@@ -184,9 +168,26 @@ namespace sp {
         return matches;
     }
 
+    SP_CPUFUNC void prepareMatch(Feature &ft) {
+
+        if (ft.type == Feature::Type::DSC_SIFT) {
+
+            const int dim = ft.dsc.size() / sizeof(float);
+
+            const float *data = reinterpret_cast<float*>(ft.dsc.ptr);
+
+            const float thresh = static_cast<float>(1.0 / sqrt(dim));
+
+            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft._bin);
+
+            tmp->resize((dim + 8 - 1) / 8);
+            cnvBit(tmp->ptr, tmp->size(), data, dim, thresh);
+        }
+    }
+
     SP_CPUFUNC void prepareMatch(Mem1<Feature> &fts) {
         for (int i = 0; i < fts.size(); i++) {
-            fts[i].prepare();
+            prepareMatch(fts[i]);
         }
     }
 }

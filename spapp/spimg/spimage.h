@@ -48,30 +48,6 @@ namespace sp{
         rescale<TYPE, ELEM>(dst, src, dscale0, dscale1);
     }
 
-    SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
-        SP_ASSERT(isValid(2, src));
-
-        const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
-
-        const int dsize0 = round(tmp.dsize[0] * dscale0);
-        const int dsize1 = round(tmp.dsize[1] * dscale1);
-
-        const int dsize[2] = { dsize0, dsize1 };
-        dst.resize(2, dsize);
-
-        //const Byte *pSrc = tmp.ptr;
-        Byte *pDst = dst.ptr;
-
-        for (int v = 0; v < dst.dsize[1]; v++) {
-            for (int u = 0; u < dst.dsize[0]; u++) {
-                const double su = u / dscale0;
-                const double sv = v / dscale1;
-
-                *pDst++ = static_cast<Byte>(acs2<Byte>(tmp, su, sv) + 0.5);
-            }
-        }
-    }
-
     //--------------------------------------------------------------------------------
     // pyramid down 
     //--------------------------------------------------------------------------------
@@ -91,8 +67,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
-                const double su = 2 * u;
-                const double sv = 2 * v;
+                const int su = 2 * u;
+                const int sv = 2 * v;
 
                 for (int c = 0; c < ch; c++){
                     double sum = 0.0;

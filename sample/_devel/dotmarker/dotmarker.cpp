@@ -22,27 +22,31 @@ void DotMarkerGUI::calcOne(){
     remap<Col3, Byte>(m_crntImg, m_crntImg, table);
 }
 
-// add detected marker for calibration
-void DotMarkerGUI::addCrsp(){
-    if (m_dotMarker.getPose() != NULL){
-        m_pixPntsList.push(*m_dotMarker.getCrspPixs());
-        m_objPntsList.push(*m_dotMarker.getCrspObjs());
-    }
-}
-
-// execute camera calibration
-void DotMarkerGUI::calib(){
-    CamParam cam;
-
-    if (calibCam(cam, m_crntImg.dsize[0], m_crntImg.dsize[1], m_pixPntsList, m_objPntsList) >= 0.0){
-        m_dotMarker.setCam(cam);
-        print(cam);
-        calcOne();
-    }
-}
-
-
 void DotMarkerGUI::display(){
+
+    if (ImGui::Begin("gui", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        if (ImGui::Button(m_ui.start ? "stop" : "start")) {
+            m_ui.start ^= true;
+        }
+        ImGui::Checkbox("useDiminish", &m_ui.useDiminish);
+        ImGui::Checkbox("dispModel", &m_ui.dispModel);
+        ImGui::Checkbox("dispSkip", &m_ui.dispSkip);
+        ImGui::Checkbox("dispMinGauss", &m_ui.dispMinGauss);
+        ImGui::Checkbox("dispMinLab", &m_ui.dispMinLab);
+        ImGui::Checkbox("dispDetectPix", &m_ui.dispDetectPix);
+        ImGui::Checkbox("dispLinkLine", &m_ui.dispLinkLine);
+
+        if (ImGui::Button("loadImg")) {
+            loadImg();
+        }
+        if (ImGui::Button("saveImg")) {
+            saveImg();
+        }
+
+        ImGui::End();
+    }
+
     if (m_ui.start){
         nextImg();
         calcOne();
@@ -117,7 +121,7 @@ void DotMarkerGUI::display(){
 #if SP_USE_DEBUG
 
     if (m_ui.dispMinGauss){
-        const sp::Mem2<unsigned char> *minImg = (const sp::Mem2<Byte>*)SP_HOLDER_GET("minImg", m_dotMarker);
+        const sp::Mem2<unsigned char> *minImg = SP_HOLDER_GET("minImg", const sp::Mem2<Byte>);
         if (minImg){
             const double scale = static_cast<double>(m_crntImg.dsize[0]) / minImg->dsize[0];
             glLoadView2D(getCamParam(minImg->dsize), m_viewPos, scale * m_viewScale);
@@ -125,7 +129,7 @@ void DotMarkerGUI::display(){
         }
     }
     if (m_ui.dispMinLab){
-        const sp::Mem2<int> *labelMap = (const sp::Mem2<int>*)SP_HOLDER_GET("labelMap", m_dotMarker);
+        const sp::Mem2<int> *labelMap = SP_HOLDER_GET("labelMap", const sp::Mem2<int>);
         if (labelMap){
             glPointSize(static_cast<float>(2 * m_viewScale));
             const double scale = static_cast<double>(m_crntImg.dsize[0]) / labelMap->dsize[0];
@@ -144,7 +148,7 @@ void DotMarkerGUI::display(){
     }
 
     if (m_ui.dispDetectPix){
-        const sp::Mem1<Vec2> *pixs = (const sp::Mem1<Vec2>*)SP_HOLDER_GET("pixs", m_dotMarker);
+        const sp::Mem1<Vec2> *pixs = SP_HOLDER_GET("pixs", const sp::Mem1<Vec2>);
         if (pixs){
             glLoadView2D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
             glColor3ub(0, 255, 0);
@@ -158,7 +162,7 @@ void DotMarkerGUI::display(){
     }
 
     if (m_ui.dispLinkLine){
-        const sp::Mem1<Mem1<Vec2> > *links = (const Mem1<Mem1<Vec2> >*)SP_HOLDER_GET("links", m_dotMarker);
+        const sp::Mem1<Mem1<Vec2> > *links = SP_HOLDER_GET("links", const Mem1<Mem1<Vec2> >);
         if (links){
             glLoadView2D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
             glColor3ub(0, 255, 0);

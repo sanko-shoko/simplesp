@@ -1,8 +1,9 @@
-﻿set(target "sp_mat")
+﻿set(target "feature")
 message(STATUS "${target}")
 
+include(../../cmake_imgui.txt)
 include(../../cmake_base.txt)
 
 set_target_properties(${target} PROPERTIES
-    FOLDER "sp"
+    FOLDER "_devel"
 )
