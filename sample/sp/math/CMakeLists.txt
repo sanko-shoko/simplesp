@@ -1,4 +1,4 @@
-﻿set(target "sp_mat")
+﻿set(target "sp_math")
 message(STATUS "${target}")
 
 include(../../cmake_base.txt)
