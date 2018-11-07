@@ -8,6 +8,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
+#include "spcore/sptimer.h"
 
 
 #ifndef SP_USE_DEBUG
@@ -15,15 +16,20 @@
 #endif
 
 #ifndef SP_USE_HOLDER
-#define SP_USE_HOLDER 1
+#define SP_USE_HOLDER SP_USE_DEBUG
+#endif
+
+#ifndef SP_USE_LOGGER
+#define SP_USE_LOGGER SP_USE_DEBUG
 #endif
 
 //--------------------------------------------------------------------------------
 // additional include
 //--------------------------------------------------------------------------------
 
-#if SP_USE_DEBUG
+#if SP_USE_HOLDER || SP_USE_LOGGER
 #include <vector>
+#include <string>
 #endif
 
 
@@ -273,7 +279,7 @@ namespace sp {
 // data holder
 //--------------------------------------------------------------------------------
 
-#if SP_USE_DEBUG && SP_USE_HOLDER
+#if SP_USE_HOLDER
 
 #define SP_HOLDER_SET(NAME, DATA) Holder::root()->set(NAME, DATA);
 #define SP_HOLDER_GET(NAME, TYPE) Holder::root()->get<TYPE>(NAME);
@@ -283,9 +289,6 @@ namespace sp {
 #define SP_HOLDER_GET(NAME, TYPE) NULL;
 #endif
 
-
-#if SP_USE_DEBUG && SP_USE_HOLDER
-
 namespace sp {
     using namespace std;
 
@@ -293,8 +296,10 @@ namespace sp {
 
     private:
 
-        vector<const char *> names;
+#if SP_USE_HOLDER
+        vector<string> names;
         vector<void *> ptrs;
+#endif
 
     public:
 
@@ -303,19 +308,24 @@ namespace sp {
         }
    
         void reset(){
+
+#if SP_USE_HOLDER
             names.clear();
             for (int i = 0; i < ptrs.size(); i++) {
                 delete ptrs[i];
             }
             ptrs.clear();
+#endif
+
         }
 
         template <typename TYPE>
         void set(const char *name, const TYPE &data){
-
             TYPE *ptr = NULL;
+
+#if SP_USE_HOLDER
             for (int i = 0; i < names.size(); i++){
-                if (strcmp(names[i], name) == 0){
+                if (name == names[i]){
                     ptr = (TYPE*)ptrs[i];
                     break;
                 }
@@ -330,18 +340,21 @@ namespace sp {
                 names.push_back(name);
                 ptrs.push_back(ptr);
             }
+#endif
         }
 
         template <typename TYPE>
         const TYPE* get(const char *name){
-
             TYPE *ptr = NULL;
+
+#if SP_USE_HOLDER
             for (int i = 0; i < names.size(); i++){
-                if (strcmp(names[i], name) == 0){
+                if (name == names[i]) {
                     ptr = (TYPE*)ptrs[i];
                     break;
                 }
             }
+#endif
             return ptr;
         }
 
@@ -351,6 +364,143 @@ namespace sp {
         }
     };
 }
+
+
+//--------------------------------------------------------------------------------
+// time logger
+//--------------------------------------------------------------------------------
+
+#if SP_USE_LOGGER
+
+#define SP_LOGGER_SET(NAME) sp::LoggerUnit _lunit(sp::Logger::root(), NAME);
+#define SP_LOGGER_PRINT(NAME) sp::Logger::root()->print(NAME);
+#else
+
+#define SP_LOGGER_SET(NAME) 
+#define SP_LOGGER_PRINT(NAME)
 #endif
+
+
+namespace sp {
+    using namespace std;
+
+    class Logger {
+
+    public:
+
+#if SP_USE_LOGGER
+
+        vector<string> names;
+
+        vector<Timer::tpoint> tpnts;
+
+        vector<double> times;
+        vector<bool> flags;
+#endif
+
+    public:
+
+        void reset() {
+
+#if SP_USE_LOGGER
+            names.clear();
+
+            tpnts.clear();
+
+            times.clear();
+            flags.clear();
+#endif
+        }
+
+        void start(const char* name) {
+
+#if SP_USE_LOGGER
+
+            int id = -1;
+            for (int i = 0; i < names.size(); i++) {
+                if (name == names[i]) {
+                    id = i;
+                    break;
+                }
+            }
+
+            const Timer::tpoint tp = Timer::now();
+
+            if (id < 0) {
+                names.push_back(name);
+                tpnts.push_back(tp);
+
+                times.push_back(0.0);
+                flags.push_back(false);
+            }
+            else {
+                names[id] = name;
+                tpnts[id] = tp;
+
+                times[id] = 0.0;
+                flags[id] = false;
+            }
+#endif
+        }
+
+        void stop(const char *name) {
+
+#if SP_USE_LOGGER
+            int id = -1;
+            for (int i = 0; i < names.size(); i++) {
+                if (name == names[i]) {
+                    id = i;
+                    break;
+                }
+            }
+
+            if (id >= 0) {
+                times[id] = Timer::dif(tpnts[id], Timer::now());
+                flags[id] = true;
+            }
+#endif
+        }
+
+        void print(const char *name = NULL) {
+
+#if SP_USE_LOGGER
+            for (int i = 0; i < names.size(); i++) {
+                if (name == NULL || name == names[i]) {
+                    if (flags[i] == false) stop(name);
+                    SP_PRINTF("%s : %.3lf [ms]\n", names[i].c_str(), times[i]);
+                }
+            }
+            SP_PRINTF("\n");
+#endif
+        }
+
+        static Logger *root() {
+            static Logger logger;
+            return &logger;
+        }
+    };
+
+    class LoggerUnit {
+
+    private:
+        Logger *logger;
+        const char *name;
+
+    public:
+        LoggerUnit(Logger *logger, const char *name) {
+            //SP_PRINTF("%s\n", str);
+
+            this->logger = logger;
+            this->name = name;
+
+            logger->start(name);
+        }
+
+        ~LoggerUnit() {
+            logger->stop(name);
+        }
+    };
+}
+
 
 #endif

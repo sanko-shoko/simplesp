@@ -10,19 +10,16 @@ int main(){
     // kd tree
     //--------------------------------------------------------------------------------
 
-    const int dim = 2;
-    typedef Vec2 VEC;
-
     const int dataNum = 10000;
 
     // search target data
-    Mem1<VEC> targ;
+    Mem1<Vec2> targ;
     for (int i = 0; i < dataNum; i++) {
         targ.push(randVecUnif(100.0, 100.0));
     }
 
     // test data
-    Mem1<VEC> test;
+    Mem1<Vec2> test;
     for (int i = 0; i < 1000; i++) {
         test.push(randVecUnif(100.0, 100.0));
     }
@@ -30,15 +27,14 @@ int main(){
 
     // kd tree
     {
-        Mem1<VEC> result;
+        Mem1<Vec2> result;
         result.reserve(test.size());
         
         {
-            Timer timer;
-            timer.start();
+            SP_LOGGER_SET("kd tree");
 
             // create instance
-            KdTree<double> kdtree(dim);
+            KdTree<double> kdtree(2);
 
             // set data
             for (int i = 0; i < targ.size(); i++){
@@ -49,11 +45,9 @@ int main(){
                 const int crsp = kdtree.search(&test[i]);
                 result.push(targ[crsp]);
             }
-
-            timer.stop();
-            printf("kd tree %.3lf[ms]\n", timer.getms());
         }
 
+        SP_LOGGER_PRINT("kd tree");
         {
             int step = (test.size() / 10);
             for (int i = 0; i < test.size(); i += step){
@@ -65,12 +59,11 @@ int main(){
 
     // brute force search
     {
-        Mem1<VEC> result;
-        result.reserve(dim * test.size());
+        Mem1<Vec2> result;
+        result.reserve(test.size());
 
         {
-            Timer timer;
-            timer.start();
+            SP_LOGGER_SET("brute force search");
 
             for (int i = 0; i < test.size(); i++){
                 int crsp = -1;
@@ -86,11 +79,9 @@ int main(){
 
                 result.push(targ[crsp]);
             }
-
-            timer.stop();
-            printf("brute force search %.3lf[ms]\n", timer.getms());
         }
 
+        SP_LOGGER_PRINT("brute force search");
         {
             int step = (test.size() / 10);
             for (int i = 0; i < test.size(); i += step){
