@@ -244,7 +244,7 @@ namespace sp{
     // max/min filter 
     //--------------------------------------------------------------------------------
 
-    template <typename TYPE, typename ELEM = TYPE>
+    template <typename TYPE>
     SP_CPUFUNC void maxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
         SP_ASSERT(isValid(2, src));
 
@@ -252,32 +252,26 @@ namespace sp{
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int offset = winSize / 2;
-        const int ch = sizeof(TYPE) / sizeof(ELEM);
 
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
 
-                for (int c = 0; c < ch; c++) {
-                    ELEM maxv = acs2<TYPE, ELEM>(tmp, u, v, c);
+                TYPE maxv = acs2(tmp, u, v);
 
-                    for (int ky = 0; ky < winSize; ky++){
-                        for (int kx = 0; kx < winSize; kx++) {
+                for (int ky = 0; ky < winSize; ky++){
+                    for (int kx = 0; kx < winSize; kx++) {
 
-                            const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx - offset, v + ky - offset, c);
-                            maxv = maxVal(maxv, val);
-                        }
+                        const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
+                        maxv = maxVal(maxv, val);
                     }
-
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), maxv);
                 }
+
+                cnvVal(acs2(dst, u, v), maxv);
             }
         }
     }
 
-    template <typename TYPE, typename ELEM = TYPE>
+    template <typename TYPE>
     SP_CPUFUNC void minFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
         SP_ASSERT(isValid(2, src));
 
@@ -285,27 +279,21 @@ namespace sp{
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int offset = winSize / 2;
-        const int ch = sizeof(TYPE) / sizeof(ELEM);
 
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
 
-                for (int c = 0; c < ch; c++) {
-                    ELEM minv = acs2<TYPE, ELEM>(tmp, u, v, c);
+                TYPE minv = acs2(tmp, u, v);
 
-                    for (int ky = 0; ky < winSize; ky++) {
-                        for (int kx = 0; kx < winSize; kx++) {
+                for (int ky = 0; ky < winSize; ky++) {
+                    for (int kx = 0; kx < winSize; kx++) {
 
-                            const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx - offset, v + ky - offset, c);
-                            minv = minVal(minv, val);
-                        }
+                        const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
+                        minv = minVal(minv, val);
                     }
-
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), minv);
                 }
+
+                cnvVal(acs2(dst, u, v), minv);
             }
         }
     }
@@ -370,7 +358,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE0> &tmp = ((void*)&dst != (void*)&src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -397,7 +385,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE0> &tmp = ((void*)&dst != (void*)&src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -429,7 +417,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE0> &tmp = ((void*)&dst != (void*)&src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -456,7 +444,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE0> &tmp = ((void*)&dst != (void*)&src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -488,7 +476,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE> &tmp = ((void*)&dst != (void*)&src) ? src : clone(src);
+        const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int offset = winSize / 2;
         const int ch = sizeof(TYPE) / sizeof(ELEM);
