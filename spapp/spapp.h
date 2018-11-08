@@ -28,9 +28,10 @@
 // image
 #include "spapp/spimg/spimage.h"
 #include "spapp/spimg/spimagef.h"
+#include "spapp/spimg/spfilter.h"
+#include "spapp/spimg/spfilterf.h"
 #include "spapp/spimg/spbinalize.h"
 #include "spapp/spimg/splabeling.h"
-#include "spapp/spimg/spfilter.h"
 #include "spapp/spimg/sprender.h"
 
 #include "spapp/spimgex/spfeature.h"
