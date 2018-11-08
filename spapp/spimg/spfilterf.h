@@ -25,7 +25,8 @@ namespace sp{
     // laplacian filter 
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void laplacianFilter3x3Fast(Mem<float> &dst, const Mem<Byte> &src) {
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void laplacianFilter3x3Fast(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -33,24 +34,24 @@ namespace sp{
         const int w = src.dsize[0];
         const int h = src.dsize[1];
 
-        const Byte *psrc = src.ptr;
-        float *pdst = dst.ptr;
+        const TYPE0 *psrc = src.ptr;
+        TYPE *pdst = dst.ptr;
 
         for (int v = 0; v < h; v++) {
             const int vs = (v == 0) ? v + 1 : v;
             const int vc = v;
             const int ve = (v == dst.dsize[1] - 1) ? v - 1 : v;
             
-            short pre0 = 0;
-            short pre1 = 0;
+            double pre0 = 0.0;
+            double pre1 = 0.0;
 
-            const Byte *psrc0 = &psrc[(vs - 1) * w];
-            const Byte *psrc1 = &psrc[(vc + 0) * w];
-            const Byte *psrc2 = &psrc[(ve + 1) * w];
+            const TYPE0 *psrc0 = &psrc[(vs - 1) * w];
+            const TYPE0 *psrc1 = &psrc[(vc + 0) * w];
+            const TYPE0 *psrc2 = &psrc[(ve + 1) * w];
             {
-                const Byte a0 = *psrc0;
-                const Byte a1 = *psrc1;
-                const Byte a2 = *psrc2;
+                const TYPE0 a0 = *psrc0;
+                const TYPE0 a1 = *psrc1;
+                const TYPE0 a2 = *psrc2;
 
                 pre0 = a0 + a1 + a2;
                 pre1 = a0 + a1 + a2;
@@ -58,13 +59,13 @@ namespace sp{
 
             for (int u = 0; u < w - 1; u++) {
 
-                short sum = 9 * *psrc1;
+                double sum = 9 * *psrc1;
 
-                const Byte a0 = *(++psrc0);
-                const Byte a1 = *(++psrc1);
-                const Byte a2 = *(++psrc2);
+                const TYPE0 a0 = *(++psrc0);
+                const TYPE0 a1 = *(++psrc1);
+                const TYPE0 a2 = *(++psrc2);
 
-                const short tmp = a0 + a1 + a2;
+                const double tmp = a0 + a1 + a2;
                 sum -= pre0 + pre1 + tmp;
 
                 pre0 = pre1;
@@ -74,13 +75,13 @@ namespace sp{
             }
             {
                 const int u = w - 1;
-                short sum = 9 * *psrc1;
+                double sum = 9 * *psrc1;
 
-                const Byte a0 = *(psrc0);
-                const Byte a1 = *(psrc1);
-                const Byte a2 = *(psrc2);
+                const TYPE0 a0 = *(psrc0);
+                const TYPE0 a1 = *(psrc1);
+                const TYPE0 a2 = *(psrc2);
 
-                const short tmp = a0 + a1 + a2;
+                const double tmp = a0 + a1 + a2;
                 sum -= pre0 + pre1 + tmp;
 
                 cnvVal(*pdst++, sum / 16.0);
