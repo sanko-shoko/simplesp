@@ -315,43 +315,8 @@ namespace sp{
     // laplacian filter 
     //--------------------------------------------------------------------------------
 
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void laplacianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(isValid(2, src));
-
-        dst.resize(2, src.dsize);
-        const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
-
-        const int ch = sizeof(TYPE) / sizeof(ELEM);
-
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
-        for (int v = 0; v < dst.dsize[1]; v++) {
-            for (int u = 0; u < dst.dsize[0]; u++) {
-
-                for (int c = 0; c < ch; c++) {
-                    double sum = 0.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v - 1, c) * (-1.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v - 1, c) * (-1.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v - 1, c) * (-1.0);
-
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 0, c) * (-1.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 0, c) * (+8.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 0, c) * (-1.0);
-
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 1, c) * (-1.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 1, c) * (-1.0);
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 1, c) * (-1.0);
-
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / 16.0);
-                }
-            }
-        }
-    }
-
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
         const int size = static_cast<int>(3.0 * sigma);
@@ -364,7 +329,35 @@ namespace sp{
             }
         }
 
-        filter<TYPE, ELEM>(dst, src, kernel);
+        filter(dst, src, kernel);
+    }
+
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void laplacianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+        for (int v = 0; v < dst.dsize[1]; v++) {
+            for (int u = 0; u < dst.dsize[0]; u++) {
+
+                double sum = 0.0;
+                sum += acs2(tmp, u - 1, v - 1) * (-1.0);
+                sum += acs2(tmp, u + 0, v - 1) * (-1.0);
+                sum += acs2(tmp, u + 1, v - 1) * (-1.0);
+
+                sum += acs2(tmp, u - 1, v + 0) * (-1.0);
+                sum += acs2(tmp, u + 0, v + 0) * (+8.0);
+                sum += acs2(tmp, u + 1, v + 0) * (-1.0);
+
+                sum += acs2(tmp, u - 1, v + 1) * (-1.0);
+                sum += acs2(tmp, u + 0, v + 1) * (-1.0);
+                sum += acs2(tmp, u + 1, v + 1) * (-1.0);
+
+                cnvVal(acs2(dst, u, v), sum / 16.0);
+            }
+        }
     }
 
 

@@ -32,7 +32,7 @@ namespace sp{
                 const double su = u / dscale0;
                 const double sv = v / dscale1;
 
-                *pDst++ = static_cast<Byte>(acs2<Byte>(tmp, su, sv) + 0.5);
+                cnvVal(*pDst++, acs2<Byte>(tmp, su, sv));
             }
         }
     }
@@ -116,7 +116,7 @@ namespace sp{
                     const short b = pbuf[(v + 0) * dstep + u];
                     const short c = pbuf[(v + 1) * dstep + u];
 
-                    pdst[v * dstep + u] = static_cast<Byte>((a + 2 * b + c) / 16);
+                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
                 }
             }
 
@@ -128,7 +128,7 @@ namespace sp{
                     const short b = pbuf[(v + 0) * dstep + u];
                     const short c = pbuf[(v + 0) * dstep + u];
 
-                    pdst[v * dstep + u] = static_cast<Byte>((a + 2 * b + c) / 16);
+                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
                 }
             }
 
@@ -140,7 +140,7 @@ namespace sp{
                     const short b = pbuf[(v + 0) * dstep + u];
                     const short c = pbuf[(v + 1) * dstep + u];
 
-                    pdst[v * dstep + u] = static_cast<Byte>((a + 2 * b + c) / 16);
+                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
                 }
             }
         }

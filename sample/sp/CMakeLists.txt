@@ -10,6 +10,7 @@ add_subdirectory(beliefpropagation)
 
 ## image
 add_subdirectory(binarization)
+add_subdirectory(corner)
 add_subdirectory(filter)
 add_subdirectory(integral)
 add_subdirectory(slic)
