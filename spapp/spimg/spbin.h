@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_BINALIZATION_H__
-#define __SP_BINALIZATION_H__
+#ifndef __SP_BIN_H__
+#define __SP_BIN_H__
 
 #include "spcore/spcore.h"
 #include "spapp/spimg/spfilter.h"

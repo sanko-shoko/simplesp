@@ -6,11 +6,11 @@
 #define __SP_DOTMARKER_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
-#include "spapp/spimg/spbinalize.h"
-#include "spapp/spimg/splabeling.h"
+#include "spapp/spimg/spimg.h"
+#include "spapp/spimg/spbin.h"
+#include "spapp/spimg/splabel.h"
 #include "spapp/spimg/spfilter.h"
-#include "spapp/spgeom/spgeometry.h"
+#include "spapp/spgeom/spgeom.h"
 #include "spapp/spalgo/spkdtree.h"
 
 namespace sp{

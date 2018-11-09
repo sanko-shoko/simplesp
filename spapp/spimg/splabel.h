@@ -2,11 +2,11 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_LABELING_H__
-#define __SP_LABELING_H__
+#ifndef __SP_LABEL_H__
+#define __SP_LABEL_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spbinalize.h"
+#include "spapp/spimg/spbin.h"
 
 namespace sp{
 

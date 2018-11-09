@@ -6,11 +6,11 @@
 #define __SP_BITMARKER_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
-#include "spapp/spimg/spbinalize.h"
-#include "spapp/spimg/splabeling.h"
+#include "spapp/spimg/spimg.h"
+#include "spapp/spimg/spbin.h"
+#include "spapp/spimg/splabel.h"
 #include "spapp/spimg/spfilter.h"
-#include "spapp/spgeom/spgeometry.h"
+#include "spapp/spgeom/spgeom.h"
 #include "spapp/spgeomex/spfit.h"
 #include "spapp/spdata/spsvg.h"
 

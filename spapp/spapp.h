@@ -26,12 +26,10 @@
 #include "spapp/spalgo/spbeliefpropagation.h"
 
 // image
-#include "spapp/spimg/spimage.h"
-#include "spapp/spimg/spimagef.h"
+#include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spfilter.h"
-#include "spapp/spimg/spfilterf.h"
-#include "spapp/spimg/spbinalize.h"
-#include "spapp/spimg/splabeling.h"
+#include "spapp/spimg/spbin.h"
+#include "spapp/spimg/splabel.h"
 #include "spapp/spimg/sprender.h"
 
 #include "spapp/spimgex/spfeature.h"
@@ -48,9 +46,9 @@
 
 // geometry
 #include "spapp/spgeom/spxmat.h"
-#include "spapp/spgeom/spgeometry.h"
+#include "spapp/spgeom/spgeom.h"
 #include "spapp/spgeom/spdepth.h"
-#include "spapp/spgeom/spcalibration.h"
+#include "spapp/spgeom/spcalib.h"
 #include "spapp/spgeom/spicp.h"
 #include "spapp/spgeom/spvertex.h"
 

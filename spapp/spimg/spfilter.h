@@ -348,6 +348,71 @@ namespace sp{
         }
     }
 
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void laplacianFilter3x3Fast(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+
+        const int w = src.dsize[0];
+        const int h = src.dsize[1];
+
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+        const TYPE0 *psrc = tmp.ptr;
+        TYPE *pdst = dst.ptr;
+
+        for (int v = 0; v < h; v++) {
+            const int vs = (v == 0) ? v + 1 : v;
+            const int vc = v;
+            const int ve = (v == h - 1) ? v - 1 : v;
+
+            double pre0 = 0.0;
+            double pre1 = 0.0;
+
+            const TYPE0 *psrc0 = &psrc[(vs - 1) * w];
+            const TYPE0 *psrc1 = &psrc[(vc + 0) * w];
+            const TYPE0 *psrc2 = &psrc[(ve + 1) * w];
+            {
+                const TYPE0 a0 = *psrc0;
+                const TYPE0 a1 = *psrc1;
+                const TYPE0 a2 = *psrc2;
+
+                pre0 = a0 + a1 + a2;
+                pre1 = a0 + a1 + a2;
+            }
+
+            for (int u = 0; u < w - 1; u++) {
+
+                double s = 9 * *psrc1;
+
+                const TYPE0 a0 = *(++psrc0);
+                const TYPE0 a1 = *(++psrc1);
+                const TYPE0 a2 = *(++psrc2);
+
+                const double p = a0 + a1 + a2;
+                s -= pre0 + pre1 + tmp;
+
+                pre0 = pre1;
+                pre1 = p;
+
+                cnvVal(*pdst++, s / 16.0);
+            }
+            {
+                const int u = w - 1;
+                double s = 9 * *psrc1;
+
+                const TYPE0 a0 = *(psrc0);
+                const TYPE0 a1 = *(psrc1);
+                const TYPE0 a2 = *(psrc2);
+
+                const double p = a0 + a1 + a2;
+                s -= pre0 + pre1 + p;
+
+                cnvVal(*pdst++, s / 16.0);
+            }
+        }
+    }
 
     //--------------------------------------------------------------------------------
     // sobel filter 

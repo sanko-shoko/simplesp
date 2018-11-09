@@ -11,7 +11,7 @@
 #define __SP_LUCASKANADE_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spfilter.h"
 
 namespace sp{

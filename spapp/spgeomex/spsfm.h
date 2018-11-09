@@ -7,7 +7,7 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spdata/spscene.h"
-#include "spapp/spgeom/spgeometry.h"
+#include "spapp/spgeom/spgeom.h"
 
 namespace sp {
 
