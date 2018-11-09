@@ -3,8 +3,8 @@
 //--------------------------------------------------------------------------------
 
 
-#ifndef __SP_BELIEFPROPAGATION_H__
-#define __SP_BELIEFPROPAGATION_H__
+#ifndef __SP_BPROP_H__
+#define __SP_BPROP_H__
 
 #include "spcore/spcore.h"
 

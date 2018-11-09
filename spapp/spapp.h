@@ -21,9 +21,9 @@
 #include "spapp/spalgo/spkdtree.h"
 #include "spapp/spalgo/spgraphcut.h"
 #include "spapp/spalgo/spcluster.h"
-#include "spapp/spalgo/sprandomforest.h"
-#include "spapp/spalgo/spkalmanfilter.h"
-#include "spapp/spalgo/spbeliefpropagation.h"
+#include "spapp/spalgo/sprforest.h"
+#include "spapp/spalgo/spkfilter.h"
+#include "spapp/spalgo/spbprop.h"
 
 // image
 #include "spapp/spimg/spimg.h"
@@ -62,7 +62,7 @@
 #include "spapp/spgeomex/spdotpattern.h"
 #include "spapp/spgeomex/spprojector.h"
 
-#include "spapp/spgeomex/spkinectfusion.h"
+#include "spapp/spgeomex/spkfusion.h"
 
 // learning
 #include "spapp/splearn/spneubase.h"
