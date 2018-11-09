@@ -140,7 +140,7 @@ namespace sp{
         const int tstep = tmp.dsize[0];
         const int dstep = dst.dsize[0];
 
-        const Byte *ptmp = tmp.ptr;
+        const Byte *psrc = tmp.ptr;
         Byte *pdst = dst.ptr;
         short *pbuf = buf.ptr;
 
@@ -152,9 +152,9 @@ namespace sp{
                     const int u = 0;
                     const int su = 2 * u;
 
-                    const Byte a = ptmp[sv * tstep + su + 0];
-                    const Byte b = ptmp[sv * tstep + su + 0];
-                    const Byte c = ptmp[sv * tstep + su + 1];
+                    const Byte a = psrc[sv * tstep + su + 0];
+                    const Byte b = psrc[sv * tstep + su + 0];
+                    const Byte c = psrc[sv * tstep + su + 1];
 
                     pbuf[v * dstep + u] = a + 2 * b + c;
                 }
@@ -162,9 +162,9 @@ namespace sp{
                     const int u = dstep - 1;
                     const int su = 2 * u;
 
-                    const Byte a = ptmp[sv * tstep + su - 1];
-                    const Byte b = ptmp[sv * tstep + su + 0];
-                    const Byte c = ptmp[sv * tstep + su + 0];
+                    const Byte a = psrc[sv * tstep + su - 1];
+                    const Byte b = psrc[sv * tstep + su + 0];
+                    const Byte c = psrc[sv * tstep + su + 0];
 
                     pbuf[v * dstep + u] = a + 2 * b + c;
                 }
@@ -172,9 +172,9 @@ namespace sp{
                 for (int u = 1; u < dst.dsize[0] - 1; u++) {
                     const int su = 2 * u;
 
-                    const Byte a = ptmp[sv * tstep + su - 1];
-                    const Byte b = ptmp[sv * tstep + su + 0];
-                    const Byte c = ptmp[sv * tstep + su + 1];
+                    const Byte a = psrc[sv * tstep + su - 1];
+                    const Byte b = psrc[sv * tstep + su + 0];
+                    const Byte c = psrc[sv * tstep + su + 1];
 
                     pbuf[v * dstep + u] = a + 2 * b + c;
                 }

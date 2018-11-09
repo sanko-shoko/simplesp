@@ -38,6 +38,7 @@
 #include "spapp/spimgex/spcorner.h"
 #include "spapp/spimgex/spoptflow.h"
 #include "spapp/spimgex/sppmatch.h"
+#include "spapp/spimgex/spblob.h"
 #include "spapp/spimgex/spsift.h"
 #include "spapp/spimgex/spslic.h"
 #include "spapp/spimgex/spcanny.h"

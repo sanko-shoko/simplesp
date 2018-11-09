@@ -363,16 +363,20 @@ namespace sp{
         TYPE *pdst = dst.ptr;
 
         for (int v = 0; v < h; v++) {
-            const int vs = (v == 0) ? v + 1 : v;
-            const int vc = v;
-            const int ve = (v == h - 1) ? v - 1 : v;
+            const int ys = (v == 0) ? 0 : -1;
+            const int yc = 0;
+            const int ye = (v == h - 1) ? 0 : +1;
+
+            const int vs = v + ys;
+            const int vc = v + yc;
+            const int ve = v + ye;
 
             double pre0 = 0.0;
             double pre1 = 0.0;
 
-            const TYPE0 *psrc0 = &psrc[(vs - 1) * w];
-            const TYPE0 *psrc1 = &psrc[(vc + 0) * w];
-            const TYPE0 *psrc2 = &psrc[(ve + 1) * w];
+            const TYPE0 *psrc0 = &psrc[vs * w];
+            const TYPE0 *psrc1 = &psrc[vc * w];
+            const TYPE0 *psrc2 = &psrc[ve * w];
             {
                 const TYPE0 a0 = *psrc0;
                 const TYPE0 a1 = *psrc1;
@@ -392,11 +396,12 @@ namespace sp{
 
                 const double p = a0 + a1 + a2;
                 s -= pre0 + pre1 + tmp;
+                s /= 16.0;
 
                 pre0 = pre1;
                 pre1 = p;
 
-                cnvVal(*pdst++, s / 16.0);
+                cnvVal(*pdst++, s);
             }
             {
                 const int u = w - 1;
@@ -408,8 +413,9 @@ namespace sp{
 
                 const double p = a0 + a1 + a2;
                 s -= pre0 + pre1 + p;
+                s /= 16.0;
 
-                cnvVal(*pdst++, s / 16.0);
+                cnvVal(*pdst++, s);
             }
         }
     }
@@ -440,7 +446,7 @@ namespace sp{
                 sum += acs2(tmp, u + 1, v + 0) * (+2.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+1.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 8.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 4.0);
             }
         }
     }
@@ -467,7 +473,7 @@ namespace sp{
                 sum += acs2(tmp, u + 0, v + 1) * (+2.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+1.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 8.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 4.0);
             }
         }
     }
@@ -499,7 +505,7 @@ namespace sp{
                 sum += acs2(tmp, u + 1, v + 0) * (+10.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+3.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 32.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 16.0);
             }
         }
     }
@@ -526,7 +532,7 @@ namespace sp{
                 sum += acs2(tmp, u + 0, v + 1) * (+10.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+3.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 32.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 16.0);
             }
         }
     }
