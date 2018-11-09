@@ -7,7 +7,7 @@
 
 #include "spcore/spcore.h"
 #include "spapp/spdata/spscene.h"
-#include "spapp/spimgex/splucaskanade.h"
+#include "spapp/spimgex/spoptflow.h"
 
 namespace sp{
 

@@ -7,8 +7,8 @@
 // "An iterative image registration technique with an application to stereo vision",
 // Proceedings of Imaging Understanding Workshop, 1981
 
-#ifndef __SP_LUCASKANADE_H__
-#define __SP_LUCASKANADE_H__
+#ifndef __SP_OPTFLOW_H__
+#define __SP_OPTFLOW_H__
 
 #include "spcore/spcore.h"
 #include "spapp/spimg/spimg.h"
