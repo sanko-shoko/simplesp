@@ -217,9 +217,9 @@ namespace sp{
             double pre0 = 0.0;
             double pre1 = 0.0;
             {
-                const TYPE0 a0 = *psrc0;
-                const TYPE0 a1 = *psrc1;
-                const TYPE0 a2 = *psrc2;
+                const TYPE0 a0 = *psrc0++;
+                const TYPE0 a1 = *psrc1++;
+                const TYPE0 a2 = *psrc2++;
 
                 pre0 = a0 + 2 * a1 + a2;
                 pre1 = a0 + 2 * a1 + a2;
@@ -227,9 +227,9 @@ namespace sp{
 
             for (int u = 0; u < w - 1; u++) {
 
-                const TYPE0 a0 = *(++psrc0);
-                const TYPE0 a1 = *(++psrc1);
-                const TYPE0 a2 = *(++psrc2);
+                const TYPE0 a0 = *psrc0++;
+                const TYPE0 a1 = *psrc1++;
+                const TYPE0 a2 = *psrc2++;
 
                 const double p = a0 + 2 * a1 + a2;
                 double d = pre0 + 2 * pre1 + p;
@@ -241,14 +241,7 @@ namespace sp{
                 cnvVal(*pd++, d);
             }
             {
-                const int u = w - 1;
-
-                const TYPE0 a0 = *(psrc0);
-                const TYPE0 a1 = *(psrc1);
-                const TYPE0 a2 = *(psrc2);
-
-                const double p = a0 + 2 * a1 + a2;
-                double d = pre0 + 2 * pre1 + p;
+                double d = pre0 + 2 * pre1 + pre1;
                 d /= 16.0;
 
                 cnvVal(*pd++, d);
