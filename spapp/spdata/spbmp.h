@@ -6,7 +6,7 @@
 #define __SP_BMP_H__
 
 #include "spapp/spdata/spfile.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 
 namespace sp{
 

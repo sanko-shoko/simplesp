@@ -7,11 +7,11 @@
 // "An iterative image registration technique with an application to stereo vision",
 // Proceedings of Imaging Understanding Workshop, 1981
 
-#ifndef __SP_LUCASKANADE_H__
-#define __SP_LUCASKANADE_H__
+#ifndef __SP_OPTFLOW_H__
+#define __SP_OPTFLOW_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spfilter.h"
 
 namespace sp{
@@ -107,8 +107,8 @@ namespace sp{
                             const Vec2 p1 = pix1 + v;
                             if (isInRect2(rect1, p1.x, p1.y) == false) continue;
 
-                            const double gx = acs2(scharrX, p1.x, p1.y) / SP_BYTEMAX;
-                            const double gy = acs2(scharrY, p1.x, p1.y) / SP_BYTEMAX;
+                            const double gx = acs2(scharrX, p1.x, p1.y) / (2 * SP_BYTEMAX);
+                            const double gy = acs2(scharrY, p1.x, p1.y) / (2 * SP_BYTEMAX);
                             
                             A(i, 0) = gx;
                             A(i, 1) = gy;

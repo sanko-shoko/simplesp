@@ -57,7 +57,7 @@ int main(){
         sobelFilterY(dstY, gry);
         
         Mem2<Byte> tmpX, tmpY;
-        cnvMem(tmpX, dstX, 0.5, -255);
+        cnvMem(tmpX, dstX, 0.5, -255 );
         cnvMem(tmpY, dstY, 0.5, -255);
         saveBMP("sobelX.bmp", tmpX);
         saveBMP("sobelY.bmp", tmpY);

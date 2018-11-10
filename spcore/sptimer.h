@@ -36,7 +36,7 @@ namespace sp {
 #if WIN32
         typedef LARGE_INTEGER tpoint;
 #else
-        typedef chrono::system_clock::time_point tpoint;
+        typedef std::chrono::system_clock::time_point tpoint;
 #endif
 #else
         typedef double tpoint;
@@ -52,7 +52,7 @@ namespace sp {
 #if WIN32
             QueryPerformanceCounter(&n);
 #else
-            n = chrono::system_clock::now();
+            n = std::chrono::system_clock::now();
 #endif
 #else
             n = 0.0;
@@ -70,7 +70,7 @@ namespace sp {
 
             ms = static_cast<double>((tp1.QuadPart - tp0.QuadPart) * 1000.0 / freq.QuadPart);
 #else
-            ms = static_cast<double>(chrono::duration_cast<chrono::microseconds>(tp1 - tp0).count() / 1000.0);
+            ms = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(tp1 - tp0).count() / 1000.0);
 #endif
 #endif
             return (ms > 0) ? +ms : -ms;

@@ -6,7 +6,7 @@
 #define __SP_PROJECTOR_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 
 namespace sp{
 

@@ -7,11 +7,11 @@
 // "PatchMatch: A Randomized Correspondence Algorithm for Structural Image Editing"
 // ACM Transactions on Graphics, 2009
 
-#ifndef __SP_PATCHMATCH_H__
-#define __SP_PATCHMATCH_H__
+#ifndef __SP_PMATCH_H__
+#define __SP_PMATCH_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spblock.h"
 
 namespace sp{

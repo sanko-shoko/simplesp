@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_GEOMETRY_H__
-#define __SP_GEOMETRY_H__
+#ifndef __SP_GEOM_H__
+#define __SP_GEOM_H__
 
 #include "spcore/spcore.h"
 #include "spapp/spgeom/spxmat.h"

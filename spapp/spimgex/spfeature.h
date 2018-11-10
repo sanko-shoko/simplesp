@@ -6,7 +6,7 @@
 #define __SP_FEATURE_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spgeom/spgeometry.h"
+#include "spapp/spgeom/spgeom.h"
 
 namespace sp {
     class MapPnt;

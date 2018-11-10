@@ -6,7 +6,7 @@
 #define __SP_DOTPATTERN_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/spimage.h"
+#include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spfilter.h"
 #include "spapp/spimg/sprender.h"
 

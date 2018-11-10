@@ -8,7 +8,7 @@
 #include "spcore/spcore.h"
 #include "spapp/spdata/spmodel.h"
 #include "spapp/spdata/spbmp.h"
-#include "spapp/spalgo/sprandomforest.h"
+#include "spapp/spalgo/sprforest.h"
 
 #if SP_USE_OMP
 #include <omp.h>

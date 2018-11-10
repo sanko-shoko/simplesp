@@ -372,11 +372,13 @@ namespace sp {
 
 #if SP_USE_LOGGER
 
-#define SP_LOGGER_START(NAME) sp::LoggerUnit _lunit(sp::Logger::root(), NAME);
+#define SP_LOGGER_SET(NAME) sp::LoggerUnit _lunit(sp::Logger::root(), NAME);
+#define SP_LOGGER_START(NAME) sp::Logger::root()->start(NAME);
 #define SP_LOGGER_STOP(NAME) sp::Logger::root()->stop(NAME);
 #define SP_LOGGER_PRINT(NAME) sp::Logger::root()->print(NAME);
 #else
 
+#define SP_LOGGER_SET(NAME) 
 #define SP_LOGGER_START(NAME) 
 #define SP_LOGGER_STOP(NAME) 
 #define SP_LOGGER_PRINT(NAME)

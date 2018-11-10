@@ -71,7 +71,11 @@ namespace sp{
         // constructor / destructor
         //--------------------------------------------------------------------------------
         
-        Mem(const int dim = 1, const int *dsize = NULL, const void *cpy = NULL){
+        Mem() {
+            reset();
+        }
+
+        Mem(const int dim, const int *dsize = NULL, const void *cpy = NULL){
             reset();
             resize(dim, dsize, cpy);
         }
@@ -211,27 +215,27 @@ namespace sp{
         // constructor
         //--------------------------------------------------------------------------------
 
-        Mem1(const Mem1<TYPE> &mem){
+        Mem1(const Mem1<TYPE> &mem) : Mem<TYPE>(){
             resize(mem.dsize, mem.ptr);
         }
 
-        Mem1(const Mem<TYPE> &mem){
+        Mem1(const Mem<TYPE> &mem) : Mem<TYPE>() {
             resize(mem.dsize, mem.ptr);
         }
 
-        Mem1(Mem1<TYPE> &&mem){
+        Mem1(Mem1<TYPE> &&mem) : Mem<TYPE>() {
             Mem<TYPE>::move(mem);
         }
 
-        Mem1(Mem<TYPE> &&mem){
+        Mem1(Mem<TYPE> &&mem) : Mem<TYPE>() {
             Mem<TYPE>::move(mem);
         }
 
-        Mem1(const int *dsize = NULL, const void *cpy = NULL){
+        Mem1(const int *dsize = NULL, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize, cpy);
         }
 
-        Mem1(const int dsize0, const void *cpy = NULL){
+        Mem1(const int dsize0, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize0, cpy);
         }
 
@@ -354,27 +358,27 @@ namespace sp{
         // constructor
         //--------------------------------------------------------------------------------
 
-        Mem2(const Mem2<TYPE> &mem){
+        Mem2(const Mem2<TYPE> &mem) : Mem<TYPE>() {
             resize(mem.dsize, mem.ptr);
         }
         
-        Mem2(const Mem<TYPE> &mem){
+        Mem2(const Mem<TYPE> &mem) : Mem<TYPE>() {
             resize(mem.dsize, mem.ptr);
         }
 
-        Mem2(Mem2<TYPE> &&mem){
+        Mem2(Mem2<TYPE> &&mem) : Mem<TYPE>() {
+             Mem<TYPE>::move(mem);
+        }
+
+        Mem2(Mem<TYPE> &&mem) : Mem<TYPE>() {
             Mem<TYPE>::move(mem);
         }
 
-        Mem2(Mem<TYPE> &&mem){
-            Mem<TYPE>::move(mem);
-        }
-
-        Mem2(const int *dsize = NULL, const void *cpy = NULL){
+        Mem2(const int *dsize = NULL, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize, cpy);
         }
 
-        Mem2(const int dsize0, const int dsize1, const void *cpy = NULL){
+        Mem2(const int dsize0, const int dsize1, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize0, dsize1, cpy);
         }
 
@@ -431,26 +435,26 @@ namespace sp{
         // constructor
         //--------------------------------------------------------------------------------
         
-        Mem3(const Mem3<TYPE> &mem){
+        Mem3(const Mem3<TYPE> &mem) : Mem<TYPE>() {
             resize(mem.dsize, mem.ptr);
         }
 
-        Mem3(const Mem<TYPE> &mem){
+        Mem3(const Mem<TYPE> &mem) : Mem<TYPE>() {
             resize(mem.dsize, mem.ptr);
         }
 
-        Mem3(Mem3<TYPE> &&mem){
+        Mem3(Mem3<TYPE> &&mem) : Mem<TYPE>() {
             Mem<TYPE>::move(mem);
         }
-        Mem3(Mem<TYPE> &&mem){
+        Mem3(Mem<TYPE> &&mem) : Mem<TYPE>() {
             Mem<TYPE>::move(mem);
         }
 
-        Mem3(const int *dsize = NULL, const void *cpy = NULL){
+        Mem3(const int *dsize = NULL, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize, cpy);
         }
 
-        Mem3(const int dsize0, const int dsize1, const int dsize2, const void *cpy = NULL){
+        Mem3(const int dsize0, const int dsize1, const int dsize2, const void *cpy = NULL) : Mem<TYPE>() {
             resize(dsize0, dsize1, dsize2, cpy);
         }
 

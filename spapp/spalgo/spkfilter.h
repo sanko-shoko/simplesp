@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2018, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_KALMANFILTER_H__
-#define __SP_KALMANFILTER_H__
+#ifndef __SP_KFILTER_H__
+#define __SP_KFILTER_H__
 
 #include "spcore/spcore.h"
 
