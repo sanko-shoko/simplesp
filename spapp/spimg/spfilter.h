@@ -134,6 +134,23 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
+    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+        SP_ASSERT(isValid(2, src));
+
+        const int size = static_cast<int>(3.0 * sigma);
+
+        Mem1<double> kernel(2 * size + 1);
+        for (int k = -size; k <= size; k++){
+            const double r = k * k;
+            kernel(k + size) = exp(-r / (2.0 * square(sigma)));
+        }
+
+        Mem2<TYPE> tmp;
+        filterX<TYPE, ELEM>(tmp, src, kernel);
+        filterY<TYPE, ELEM>(dst, tmp, kernel);
+    }
+
+    template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void gaussianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
         SP_ASSERT(isValid(2, src));
 
@@ -157,7 +174,7 @@ namespace sp{
                     sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 0, c) * 2.0;
                     sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 0, c) * 4.0;
                     sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 0, c) * 2.0;
-                    
+
                     sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 1, c) * 1.0;
                     sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 1, c) * 2.0;
                     sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 1, c) * 1.0;
@@ -168,23 +185,76 @@ namespace sp{
         }
     }
 
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void gaussianFilter3x3Fast(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
-        const int size = static_cast<int>(3.0 * sigma);
+        dst.resize(2, src.dsize);
 
-        Mem1<double> kernel(2 * size + 1);
-        for (int k = -size; k <= size; k++){
-            const double r = k * k;
-            kernel(k + size) = exp(-r / (2.0 * square(sigma)));
+        const int w = src.dsize[0];
+        const int h = src.dsize[1];
+
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+        const TYPE0 *psrc = tmp.ptr;
+        TYPE *pdst = dst.ptr;
+
+        for (int v = 0; v < h; v++) {
+            const int ys = (v == 0) ? 0 : -1;
+            const int yc = 0;
+            const int ye = (v == h - 1) ? 0 : +1;
+
+            const int vs = v + ys;
+            const int vc = v + yc;
+            const int ve = v + ye;
+
+            const TYPE0 *psrc0 = &psrc[vs * w];
+            const TYPE0 *psrc1 = &psrc[vc * w];
+            const TYPE0 *psrc2 = &psrc[ve * w];
+
+            TYPE *pd = &dst[vc * w];
+
+            double pre0 = 0.0;
+            double pre1 = 0.0;
+            {
+                const TYPE0 a0 = *psrc0;
+                const TYPE0 a1 = *psrc1;
+                const TYPE0 a2 = *psrc2;
+
+                pre0 = a0 + 2 * a1 + a2;
+                pre1 = a0 + 2 * a1 + a2;
+            }
+
+            for (int u = 0; u < w - 1; u++) {
+
+                const TYPE0 a0 = *(++psrc0);
+                const TYPE0 a1 = *(++psrc1);
+                const TYPE0 a2 = *(++psrc2);
+
+                const double p = a0 + 2 * a1 + a2;
+                double d = pre0 + 2 * pre1 + p;
+                d /= 16.0;
+
+                pre0 = pre1;
+                pre1 = p;
+
+                cnvVal(*pd++, d);
+            }
+            {
+                const int u = w - 1;
+
+                const TYPE0 a0 = *(psrc0);
+                const TYPE0 a1 = *(psrc1);
+                const TYPE0 a2 = *(psrc2);
+
+                const double p = a0 + 2 * a1 + a2;
+                double d = pre0 + 2 * pre1 + p;
+                d /= 16.0;
+
+                cnvVal(*pd++, d);
+            }
         }
-
-        Mem2<TYPE> tmp;
-        filterX<TYPE, ELEM>(tmp, src, kernel);
-        filterY<TYPE, ELEM>(dst, tmp, kernel);
     }
-
 
     //--------------------------------------------------------------------------------
     // box filter 
@@ -371,12 +441,14 @@ namespace sp{
             const int vc = v + yc;
             const int ve = v + ye;
 
-            double pre0 = 0.0;
-            double pre1 = 0.0;
-
             const TYPE0 *psrc0 = &psrc[vs * w];
             const TYPE0 *psrc1 = &psrc[vc * w];
             const TYPE0 *psrc2 = &psrc[ve * w];
+
+            TYPE *pd = &dst[vc * w];
+
+            double pre0 = 0.0;
+            double pre1 = 0.0;
             {
                 const TYPE0 a0 = *psrc0;
                 const TYPE0 a1 = *psrc1;
@@ -388,34 +460,34 @@ namespace sp{
 
             for (int u = 0; u < w - 1; u++) {
 
-                double s = 9 * *psrc1;
+                double d = 9 * *psrc1;
 
                 const TYPE0 a0 = *(++psrc0);
                 const TYPE0 a1 = *(++psrc1);
                 const TYPE0 a2 = *(++psrc2);
 
                 const double p = a0 + a1 + a2;
-                s -= pre0 + pre1 + tmp;
-                s /= 16.0;
+                d -= pre0 + pre1 + p;
+                d /= 8.0;
 
                 pre0 = pre1;
                 pre1 = p;
 
-                cnvVal(*pdst++, s);
+                cnvVal(*pd++, d);
             }
             {
                 const int u = w - 1;
-                double s = 9 * *psrc1;
+                double d = 9 * *psrc1;
 
                 const TYPE0 a0 = *(psrc0);
                 const TYPE0 a1 = *(psrc1);
                 const TYPE0 a2 = *(psrc2);
 
                 const double p = a0 + a1 + a2;
-                s -= pre0 + pre1 + p;
-                s /= 16.0;
+                d -= pre0 + pre1 + p;
+                d /= 8.0;
 
-                cnvVal(*pdst++, s);
+                cnvVal(*pd++, d);
             }
         }
     }
