@@ -714,7 +714,8 @@ namespace sp{
         RandomSample<Vec2> _objs(objs, unit);
 
         double maxe = 0.0;
-        for (int it = 0; it < maxit; it++) {
+        int it = 0;
+        for (it = 0; it < maxit; it++) {
 
             const Mem1<Vec2> rpixs = _pixs.gen(it);
             const Mem1<Vec2> robjs = _objs.gen(it);
