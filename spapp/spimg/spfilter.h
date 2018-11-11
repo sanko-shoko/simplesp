@@ -536,7 +536,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void sobelFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void sobelFilterX3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -563,7 +563,7 @@ namespace sp{
     }
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void sobelFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void sobelFilterY3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -595,7 +595,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void scharrFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void scharrFilterX3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -622,7 +622,7 @@ namespace sp{
     }
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void scharrFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void scharrFilterY3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);

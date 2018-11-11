@@ -64,8 +64,8 @@ namespace sp{
             const double scale = pow(0.5, p);
 
             Mem2<float> scharrX, scharrY;
-            scharrFilterX(scharrX, pyimg1);
-            scharrFilterY(scharrY, pyimg1);
+            scharrFilterX3x3(scharrX, pyimg1);
+            scharrFilterY3x3(scharrY, pyimg1);
 
             const Rect rect0 = getRect2(pyimg0.dsize);
             const Rect rect1 = getRect2(pyimg1.dsize);
