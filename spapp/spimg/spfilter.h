@@ -144,8 +144,6 @@ namespace sp{
 
         const int size = maxVal(1, round((sigma - 0.8) / 0.3));
 
-        printf("%d %d\n", size, round(3 * sigma));
-
         Mem1<double> kernel(2 * size + 1);
         for (int k = -size; k <= size; k++){
             const double r = k * k;
