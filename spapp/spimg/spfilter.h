@@ -9,6 +9,11 @@
 
 namespace sp{
 
+    // filter size <-> gaussian sigma
+    // 
+    // sigma = 0.3 * (size / 2 - 1) + 0.8
+    // size = 2 * round((sigma - 0.8) / 0.3) + 1
+
     //--------------------------------------------------------------------------------
     // filter 
     //--------------------------------------------------------------------------------
@@ -137,7 +142,9 @@ namespace sp{
     SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
-        const int size = static_cast<int>(3.0 * sigma);
+        const int size = maxVal(1, round((sigma - 0.8) / 0.3));
+
+        printf("%d %d\n", size, round(3 * sigma));
 
         Mem1<double> kernel(2 * size + 1);
         for (int k = -size; k <= size; k++){
@@ -370,7 +377,7 @@ namespace sp{
     SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
-        const int size = static_cast<int>(3.0 * sigma);
+        const int size = maxVal(1, round((sigma - 0.8) / 0.3));
 
         Mem2<double> kernel(2 * size + 1, 2 * size + 1);
         for (int y = -size; y <= size; y++){
@@ -472,19 +479,19 @@ namespace sp{
         TYPE *pdst = dst.ptr;
 
         for (int v = 0; v < h; v++) {
-            const int ys = (v == 0) ? 0 : -1;
-            const int yc = 0;
-            const int ye = (v == h - 1) ? 0 : +1;
+            const int y0 = (v == 0) ? 0 : -1;
+            const int y1 = 0;
+            const int y2 = (v == h - 1) ? 0 : +1;
 
-            const int vs = v + ys;
-            const int vc = v + yc;
-            const int ve = v + ye;
+            const int v0 = v + y0;
+            const int v1 = v + y1;
+            const int v2 = v + y2;
 
-            const TYPE0 *psrc0 = &psrc[vs * w];
-            const TYPE0 *psrc1 = &psrc[vc * w];
-            const TYPE0 *psrc2 = &psrc[ve * w];
+            const TYPE0 *psrc0 = &psrc[v0 * w];
+            const TYPE0 *psrc1 = &psrc[v1 * w];
+            const TYPE0 *psrc2 = &psrc[v2 * w];
 
-            TYPE *pd = &dst[vc * w];
+            TYPE *pd = &dst[v1 * w];
 
             double pre0 = 0.0;
             double pre1 = 0.0;
@@ -728,7 +735,9 @@ namespace sp{
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
-        const int winSize = 2 * round(3.0 * sigma_s) + 1;
+        const int size = maxVal(1, round((sigma_s - 0.8) / 0.3));
+
+        const int winSize = 2 * size + 1;
         const int offset = winSize / 2;
 
         Mem2<double> kernel(winSize, winSize);
