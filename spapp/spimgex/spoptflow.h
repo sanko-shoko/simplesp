@@ -107,8 +107,8 @@ namespace sp{
                             const Vec2 p1 = pix1 + v;
                             if (isInRect2(rect1, p1.x, p1.y) == false) continue;
 
-                            const double gx = acs2(scharrX, p1.x, p1.y) / (2 * SP_BYTEMAX);
-                            const double gy = acs2(scharrY, p1.x, p1.y) / (2 * SP_BYTEMAX);
+                            const double gx = acs2(scharrX, p1.x, p1.y) / (SP_BYTEMAX);
+                            const double gy = acs2(scharrY, p1.x, p1.y) / (SP_BYTEMAX);
                             
                             A(i, 0) = gx;
                             A(i, 1) = gy;
