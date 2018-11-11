@@ -329,7 +329,7 @@ namespace sp {
             ViewEx &view = *_viewsPool.malloc();
             view.img = img;
             view.cam = cam;
-            view.fts = SIFT::getFeatures(img, 0.005);
+            view.fts = SIFT::getFeatures(img);
             prepareMatch(view.fts);
 
             if (hint != NULL) {
