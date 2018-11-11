@@ -64,8 +64,8 @@ namespace sp{
             const double scale = pow(0.5, p);
 
             Mem2<float> scharrX, scharrY;
-            scharrFilterX(scharrX, pyimg1);
-            scharrFilterY(scharrY, pyimg1);
+            scharrFilterX3x3(scharrX, pyimg1);
+            scharrFilterY3x3(scharrY, pyimg1);
 
             const Rect rect0 = getRect2(pyimg0.dsize);
             const Rect rect1 = getRect2(pyimg1.dsize);
@@ -107,8 +107,8 @@ namespace sp{
                             const Vec2 p1 = pix1 + v;
                             if (isInRect2(rect1, p1.x, p1.y) == false) continue;
 
-                            const double gx = acs2(scharrX, p1.x, p1.y) / (2 * SP_BYTEMAX);
-                            const double gy = acs2(scharrY, p1.x, p1.y) / (2 * SP_BYTEMAX);
+                            const double gx = acs2(scharrX, p1.x, p1.y) / (SP_BYTEMAX);
+                            const double gy = acs2(scharrY, p1.x, p1.y) / (SP_BYTEMAX);
                             
                             A(i, 0) = gx;
                             A(i, 1) = gy;

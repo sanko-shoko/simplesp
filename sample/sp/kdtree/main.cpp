@@ -31,7 +31,7 @@ int main(){
         result.reserve(test.size());
         
         {
-            SP_LOGGER_START("kd tree");
+            SP_LOGGER_SET("kd tree");
 
             // create instance
             KdTree<double> kdtree(2);
@@ -63,7 +63,7 @@ int main(){
         result.reserve(test.size());
 
         {
-            SP_LOGGER_START("brute force search");
+            SP_LOGGER_SET("brute force search");
 
             for (int i = 0; i < test.size(); i++){
                 int crsp = -1;

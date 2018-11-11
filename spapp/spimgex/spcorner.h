@@ -27,8 +27,8 @@ namespace sp{
         Mem2<float> rmap(src.dsize);
         {
             Mem2<float> sobelX, sobelY;
-            sobelFilterX(sobelX, src);
-            sobelFilterY(sobelY, src);
+            sobelFilterX3x3(sobelX, src);
+            sobelFilterY3x3(sobelY, src);
 
             struct Gnn{
                 float gxx, gxy, gyy;

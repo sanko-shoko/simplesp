@@ -217,9 +217,9 @@ namespace sp{
             double pre0 = 0.0;
             double pre1 = 0.0;
             {
-                const TYPE0 a0 = *psrc0;
-                const TYPE0 a1 = *psrc1;
-                const TYPE0 a2 = *psrc2;
+                const TYPE0 a0 = *psrc0++;
+                const TYPE0 a1 = *psrc1++;
+                const TYPE0 a2 = *psrc2++;
 
                 pre0 = a0 + 2 * a1 + a2;
                 pre1 = a0 + 2 * a1 + a2;
@@ -227,9 +227,9 @@ namespace sp{
 
             for (int u = 0; u < w - 1; u++) {
 
-                const TYPE0 a0 = *(++psrc0);
-                const TYPE0 a1 = *(++psrc1);
-                const TYPE0 a2 = *(++psrc2);
+                const TYPE0 a0 = *psrc0++;
+                const TYPE0 a1 = *psrc1++;
+                const TYPE0 a2 = *psrc2++;
 
                 const double p = a0 + 2 * a1 + a2;
                 double d = pre0 + 2 * pre1 + p;
@@ -241,14 +241,7 @@ namespace sp{
                 cnvVal(*pd++, d);
             }
             {
-                const int u = w - 1;
-
-                const TYPE0 a0 = *(psrc0);
-                const TYPE0 a1 = *(psrc1);
-                const TYPE0 a2 = *(psrc2);
-
-                const double p = a0 + 2 * a1 + a2;
-                double d = pre0 + 2 * pre1 + p;
+                double d = pre0 + 2 * pre1 + pre1;
                 d /= 16.0;
 
                 cnvVal(*pd++, d);
@@ -419,6 +412,52 @@ namespace sp{
     }
 
     template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void laplacianFilter5x5(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+        for (int v = 0; v < dst.dsize[1]; v++) {
+            for (int u = 0; u < dst.dsize[0]; u++) {
+
+                double sum = 0.0;
+                sum += acs2(tmp, u - 2, v - 2) * (-1.0);
+                sum += acs2(tmp, u - 1, v - 2) * (-3.0);
+                sum += acs2(tmp, u + 0, v - 2) * (-4.0);
+                sum += acs2(tmp, u + 1, v - 2) * (-3.0);
+                sum += acs2(tmp, u + 2, v - 2) * (-1.0);
+
+                sum += acs2(tmp, u - 2, v - 1) * (-3.0);
+                sum += acs2(tmp, u - 1, v - 1) * (+0.0);
+                sum += acs2(tmp, u + 0, v - 1) * (+6.0);
+                sum += acs2(tmp, u + 1, v - 1) * (+0.0);
+                sum += acs2(tmp, u + 2, v - 1) * (-3.0);
+
+                sum += acs2(tmp, u - 2, v + 0) * (-4.0);
+                sum += acs2(tmp, u - 1, v + 0) * (+6.0);
+                sum += acs2(tmp, u + 0, v + 0) * (+20.0);
+                sum += acs2(tmp, u + 1, v + 0) * (+6.0);
+                sum += acs2(tmp, u + 2, v + 0) * (-4.0);
+
+                sum += acs2(tmp, u - 2, v + 1) * (-3.0);
+                sum += acs2(tmp, u - 1, v + 1) * (+0.0);
+                sum += acs2(tmp, u + 0, v + 1) * (+6.0);
+                sum += acs2(tmp, u + 1, v + 1) * (+0.0);
+                sum += acs2(tmp, u + 2, v + 1) * (-3.0);
+
+                sum += acs2(tmp, u - 2, v + 2) * (-1.0);
+                sum += acs2(tmp, u - 1, v + 2) * (-3.0);
+                sum += acs2(tmp, u + 0, v + 2) * (-4.0);
+                sum += acs2(tmp, u + 1, v + 2) * (-3.0);
+                sum += acs2(tmp, u + 2, v + 2) * (-1.0);
+                
+                cnvVal(acs2(dst, u, v), sum / 88.0);
+            }
+        }
+    }
+
+    template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void laplacianFilter3x3Fast(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
@@ -468,7 +507,7 @@ namespace sp{
 
                 const double p = a0 + a1 + a2;
                 d -= pre0 + pre1 + p;
-                d /= 8.0;
+                d /= 16.0;
 
                 pre0 = pre1;
                 pre1 = p;
@@ -485,7 +524,7 @@ namespace sp{
 
                 const double p = a0 + a1 + a2;
                 d -= pre0 + pre1 + p;
-                d /= 8.0;
+                d /= 16.0;
 
                 cnvVal(*pd++, d);
             }
@@ -497,7 +536,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void sobelFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void sobelFilterX3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -518,13 +557,13 @@ namespace sp{
                 sum += acs2(tmp, u + 1, v + 0) * (+2.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+1.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 4.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 8.0);
             }
         }
     }
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void sobelFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void sobelFilterY3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -545,7 +584,7 @@ namespace sp{
                 sum += acs2(tmp, u + 0, v + 1) * (+2.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+1.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 4.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 8.0);
             }
         }
     }
@@ -556,7 +595,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void scharrFilterX(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void scharrFilterX3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -577,13 +616,13 @@ namespace sp{
                 sum += acs2(tmp, u + 1, v + 0) * (+10.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+3.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 16.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 32.0);
             }
         }
     }
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void scharrFilterY(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+    SP_CPUFUNC void scharrFilterY3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -604,7 +643,7 @@ namespace sp{
                 sum += acs2(tmp, u + 0, v + 1) * (+10.0);
                 sum += acs2(tmp, u + 1, v + 1) * (+3.0);
 
-                cnvVal(acs2<TYPE>(dst, u, v), sum / 16.0);
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 32.0);
             }
         }
     }

@@ -602,6 +602,16 @@ namespace sp{
         if (rows != cols) return false;
         const int size = rows;
 
+        if (size == 1) {
+            if (fabs(mat[0]) < SP_SMALL) {
+                return false;
+            }
+            else {
+                dst[0] = 1.0 / mat[0];
+                return true;
+            }
+        }
+
         for (int r = 0; r < size; r++){
             for (int c = 0; c < size; c++){
                 dst[r * size + c] = (r == c) ? 1.0 : 0.0;
