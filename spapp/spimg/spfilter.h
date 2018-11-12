@@ -11,8 +11,9 @@ namespace sp{
 
     // filter size <-> gaussian sigma
     // 
-    // sigma = 0.3 * (size / 2 - 1) + 0.8
-    // size = 2 * round((sigma - 0.8) / 0.3) + 1
+    // half = size / 2
+    // sigma = 0.3 * (half - 1) + 0.8
+    // half = round((sigma - 0.8) / 0.3 + 1)
 
     //--------------------------------------------------------------------------------
     // filter 
@@ -142,12 +143,12 @@ namespace sp{
     SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
-        const int size = maxVal(1, round((sigma - 0.8) / 0.3));
+        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
 
-        Mem1<double> kernel(2 * size + 1);
-        for (int k = -size; k <= size; k++){
+        Mem1<double> kernel(2 * half + 1);
+        for (int k = -half; k <= half; k++){
             const double r = k * k;
-            kernel(k + size) = exp(-r / (2.0 * square(sigma)));
+            kernel(k + half) = exp(-r / (2.0 * square(sigma)));
         }
 
         Mem2<TYPE> tmp;
@@ -375,13 +376,13 @@ namespace sp{
     SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
-        const int size = maxVal(1, round((sigma - 0.8) / 0.3));
+        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
 
-        Mem2<double> kernel(2 * size + 1, 2 * size + 1);
-        for (int y = -size; y <= size; y++){
-            for (int x = -size; x <= size; x++){
+        Mem2<double> kernel(2 * half + 1, 2 * half + 1);
+        for (int y = -half; y <= half; y++){
+            for (int x = -half; x <= half; x++){
                 const double r = x * x + y * y;
-                kernel(x + size, y + size) = (r - 2 * square(sigma)) * exp(-r / (2 * square(sigma)));
+                kernel(x + half, y + half) = (r - 2 * square(sigma)) * exp(-r / (2 * square(sigma)));
             }
         }
 
@@ -733,16 +734,13 @@ namespace sp{
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
-        const int size = maxVal(1, round((sigma_s - 0.8) / 0.3));
+        const int half = maxVal(1, round((sigma_s - 0.8) / 0.3 + 1));
 
-        const int winSize = 2 * size + 1;
-        const int offset = winSize / 2;
-
-        Mem2<double> kernel(winSize, winSize);
-        for (int y = 0; y < winSize; y++){
-            for (int x = 0; x < winSize; x++){
-                const double r2 = square(x - offset) + square(y - offset);
-                kernel(x, y) = exp(-r2 / (2.0 * square(sigma_s)));
+        Mem2<double> kernel(2 * half + 1, 2 * half + 1);
+        for (int y = -half; y <= +half; y++) {
+            for (int x = -half; x <= +half; x++) {
+                const double r2 = square(x) + square(y);
+                kernel(x + half, y + half) = exp(-r2 / (2.0 * square(sigma_s)));
             }
         }
 
@@ -768,13 +766,13 @@ namespace sp{
                     const ELEM base = acs2<TYPE, ELEM>(tmp, u, v, c);
 
                     double sum = 0.0, div = 0.0;
-                    for (int ky = 0; ky < winSize; ky++){
-                        for (int kx = 0; kx < winSize; kx++){
+                    for (int ky = -half; ky < +half; ky++){
+                        for (int kx = -half; kx < +half; kx++){
                             if (isInRect2(rect, u + kx, v + ky) == false) continue;
 
-                            const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx - offset, v + ky - offset, c);
+                            const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);
 
-                            const double a = kernel(kx, ky);
+                            const double a = kernel(kx + half, ky + half);
                             const double b = exptable(round(fabs(val - base) * expscale / sigma_c));
 
                             sum += a * b * val;
