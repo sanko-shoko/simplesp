@@ -9,12 +9,6 @@
 
 namespace sp{
 
-    // filter size <-> gaussian sigma
-    // 
-    // half = size / 2
-    // sigma = 0.3 * (half - 1) + 0.8
-    // half = round((sigma - 0.8) / 0.3 + 1)
-
     //--------------------------------------------------------------------------------
     // filter 
     //--------------------------------------------------------------------------------
@@ -27,8 +21,8 @@ namespace sp{
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
-        const int sizeX = kernel.dsize[0] / 2;
-        const int sizeY = kernel.dsize[1] / 2;
+        const int halfX = kernel.dsize[0] / 2;
+        const int halfY = kernel.dsize[1] / 2;
 
         const Rect rect = getRect2(dst.dsize);
 
@@ -41,12 +35,12 @@ namespace sp{
                 for (int c = 0; c < ch; c++){
                     double sum = 0.0, div = 0.0;
 
-                    for (int ky = -sizeY; ky <= sizeY; ky++){
-                        for (int kx = -sizeX; kx <= sizeX; kx++){
+                    for (int ky = -halfY; ky <= halfY; ky++){
+                        for (int kx = -halfX; kx <= halfX; kx++){
                             if (isInRect2(rect, u + kx, v + ky) == false) continue;
                             
                             const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);
-                            const double s = acs2(kernel, kx + sizeX, ky + sizeY);
+                            const double s = acs2(kernel, kx + halfX, ky + halfY);
 
                             sum += s * val;
                             div += fabs(s);
@@ -68,7 +62,7 @@ namespace sp{
         const Mem2<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
-        const int sizeX = kernel.dsize[0] / 2;
+        const int halfX = kernel.dsize[0] / 2;
 
         const Rect rect = getRect2(dst.dsize);
 
@@ -81,11 +75,11 @@ namespace sp{
                 for (int c = 0; c < ch; c++){
                     double sum = 0.0, div = 0.0;
 
-                    for (int kx = -sizeX; kx <= sizeX; kx++){
+                    for (int kx = -halfX; kx <= halfX; kx++){
                         if (isInRect2(rect, u + kx, v) == false) continue;
                         
                         const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v, c);
-                        const double s = acs1(kernel, kx + sizeX);
+                        const double s = acs1(kernel, kx + halfX);
 
                         sum += s * val;
                         div += fabs(s);
@@ -106,7 +100,7 @@ namespace sp{
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
-        const int sizeY = kernel.dsize[0] / 2;
+        const int halfY = kernel.dsize[0] / 2;
 
         const Rect rect = getRect2(dst.dsize);
 
@@ -119,11 +113,11 @@ namespace sp{
                 for (int c = 0; c < ch; c++){
                     double sum = 0.0, div = 0.0;
 
-                    for (int ky = -sizeY; ky <= sizeY; ky++){
+                    for (int ky = -halfY; ky <= halfY; ky++){
                         if (isInRect2(rect, u, v + ky) == false) continue;
                         
                         const ELEM &val = acs2<TYPE, ELEM>(tmp, u, v + ky, c);
-                        const double s = acs1(kernel, ky + sizeY);
+                        const double s = acs1(kernel, ky + halfY);
 
                         sum += s * val;
                         div += fabs(s);
@@ -138,6 +132,12 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // gaussian filter 
     //--------------------------------------------------------------------------------
+
+    // filter window size <-> gaussian sigma
+    // 
+    // half = (window size) / 2
+    // sigma = 0.3 * (half - 1) + 0.8
+    // half = round((sigma - 0.8) / 0.3 + 1)
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
@@ -569,6 +569,49 @@ namespace sp{
     }
 
     template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void sobelFilterX5x5(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+        for (int v = 0; v < dst.dsize[1]; v++) {
+            for (int u = 0; u < dst.dsize[0]; u++) {
+
+                double sum = 0.0;
+                sum += acs2(tmp, u - 2, v - 2) * (-1.0);
+                sum += acs2(tmp, u - 2, v - 1) * (-4.0);
+                sum += acs2(tmp, u - 2, v + 0) * (-6.0);
+                sum += acs2(tmp, u - 2, v + 1) * (-4.0);
+                sum += acs2(tmp, u - 2, v + 2) * (-1.0);
+                
+                sum += acs2(tmp, u - 1, v - 2) * (-2.0);
+                sum += acs2(tmp, u - 1, v - 1) * (-8.0);
+                sum += acs2(tmp, u - 1, v + 0) * (-12.0);
+                sum += acs2(tmp, u - 1, v + 1) * (-8.0);
+                sum += acs2(tmp, u - 1, v + 2) * (-2.0);
+
+                sum += acs2(tmp, u + 1, v - 2) * (+2.0);
+                sum += acs2(tmp, u + 1, v - 1) * (+8.0);
+                sum += acs2(tmp, u + 1, v + 0) * (+12.0);
+                sum += acs2(tmp, u + 1, v + 1) * (+8.0);
+                sum += acs2(tmp, u + 1, v + 2) * (+2.0);
+
+                sum += acs2(tmp, u + 2, v - 2) * (+1.0);
+                sum += acs2(tmp, u + 2, v - 1) * (+4.0);
+                sum += acs2(tmp, u + 2, v + 0) * (+6.0);
+                sum += acs2(tmp, u + 2, v + 1) * (+4.0);
+                sum += acs2(tmp, u + 2, v + 2) * (+1.0);
+
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 96.0);
+            }
+        }
+    }
+
+    template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void sobelFilterY3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
@@ -595,6 +638,48 @@ namespace sp{
         }
     }
 
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void sobelFilterY5x5(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
+        SP_ASSERT(isValid(2, src));
+
+        dst.resize(2, src.dsize);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+        for (int v = 0; v < dst.dsize[1]; v++) {
+            for (int u = 0; u < dst.dsize[0]; u++) {
+
+                double sum = 0.0;
+                sum += acs2(tmp, u - 2, v - 2) * (-1.0);
+                sum += acs2(tmp, u - 1, v - 2) * (-4.0);
+                sum += acs2(tmp, u + 0, v - 2) * (-6.0);
+                sum += acs2(tmp, u + 1, v - 2) * (-4.0);
+                sum += acs2(tmp, u + 2, v - 2) * (-1.0);
+
+                sum += acs2(tmp, u - 2, v - 1) * (-2.0);
+                sum += acs2(tmp, u - 1, v - 1) * (-8.0);
+                sum += acs2(tmp, u + 0, v - 1) * (-12.0);
+                sum += acs2(tmp, u + 1, v - 1) * (-8.0);
+                sum += acs2(tmp, u + 2, v - 1) * (-2.0);
+
+                sum += acs2(tmp, u - 2, v + 1) * (+2.0);
+                sum += acs2(tmp, u - 1, v + 1) * (+8.0);
+                sum += acs2(tmp, u + 0, v + 1) * (+12.0);
+                sum += acs2(tmp, u + 1, v + 1) * (+8.0);
+                sum += acs2(tmp, u + 2, v + 1) * (+2.0);
+
+                sum += acs2(tmp, u - 2, v + 2) * (+1.0);
+                sum += acs2(tmp, u - 1, v + 2) * (+4.0);
+                sum += acs2(tmp, u + 0, v + 2) * (+6.0);
+                sum += acs2(tmp, u + 1, v + 2) * (+4.0);
+                sum += acs2(tmp, u + 2, v + 2) * (+1.0);
+
+                cnvVal(acs2<TYPE>(dst, u, v), sum / 96.0);
+            }
+        }
+    }
 
     //--------------------------------------------------------------------------------
     // scharr filter 
