@@ -289,80 +289,21 @@ namespace sp{
             KeyPoint keyPnt;
 
             keyPnt.pix = getVec(fx, fy) * (1 << o);
-            // keyPnt.drc = next ->
 
             keyPnt.octave = o;
             keyPnt.layer = fs;
             keyPnt.scale = 2.0 * BASE_SIGMA * pow(LAYER_STEP, fs) * (1 << o);
             keyPnt.contrast = dogs[s](x, y);
 
+            const double SIG_FCTR = 1.5;
+            const double PEAK_THRESH = 0.8;
 
-            const int ORI_BINS = 36;
-            Mem1<double> hist(ORI_BINS);
+            const Mem1<Vec2> drcs = calcBlobDrc(imgs[s], getVec(x, y), SIG_FCTR * fs, PEAK_THRESH);
+            
+            for (int i = 0; i < drcs.size(); i++){
+                keyPnt.drc = drcs[i];
 
-            // calc orientation hist
-            {
-                hist.zero();
-
-                const Mem2<float> &img = imgs[s];
-                const Rect rect = getRect2(img.dsize) - 1;
-
-                const double ORI_SIG_FCTR = 1.5;
-                const double sigma = ORI_SIG_FCTR * fs;
-                const int radius = round(3.0 * sigma);
-
-                const double sdiv = 1.0 / (2.0 * sigma * sigma);
-
-
-                for (int ry = -radius; ry <= radius; ry++){
-                    for (int rx = -radius; rx <= radius; rx++)    {
-                        const int ix = x + rx;
-                        const int iy = y + ry;
-                        if (isInRect2(rect, ix, iy) == false) continue;
-
-                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
-
-                        const double angle = atan2(dy, dx);
-
-                        int bin = round(angle * ORI_BINS / (2 * SP_PI));
-                        if (bin < 0) bin += ORI_BINS;
-
-                        hist[bin] += pythag(dx, dy) * exp(-(rx * rx + ry * ry) * sdiv);
-                    }
-                }
-            }
-
-            Mem1<double> fhist(ORI_BINS);
-
-            // filtering
-            for (int i = 0; i < ORI_BINS; i++){
-                const double hi = hist(i);
-                const double hp1 = hist(i + ORI_BINS - 1, true);
-                const double hp2 = hist(i + ORI_BINS - 2, true);
-                const double hn1 = hist(i + ORI_BINS + 1, true);
-                const double hn2 = hist(i + ORI_BINS + 2, true);
-
-                fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
-            }
-
-            // detect peak
-            const double ORI_PEAK_THRESH = 0.8;
-            const double thresh = maxVal(fhist) * ORI_PEAK_THRESH;
-    
-            for (int i = 0; i < ORI_BINS; i++){
-                const double hi = fhist(i);
-                const double hp1 = fhist(i + ORI_BINS - 1, true);
-                const double hn1 = fhist(i + ORI_BINS + 1, true);
-
-                if (hi > thresh && hi > maxVal(hp1, hn1)){
-                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
-                    const double angle = finei * (2.0 * SP_PI / ORI_BINS);
-
-                    keyPnt.drc = getVec(cos(angle), sin(angle));
-
-                    keyPnts.push(keyPnt);
-                }
+                keyPnts.push(keyPnt);
             }
         }
 

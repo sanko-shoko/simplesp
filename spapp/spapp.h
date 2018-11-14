@@ -33,6 +33,7 @@
 #include "spapp/spimg/sprender.h"
 
 #include "spapp/spimgex/spfeature.h"
+#include "spapp/spimgex/spblob.h"
 #include "spapp/spimgex/spgfilter.h"
 #include "spapp/spimgex/spcontour.h"
 #include "spapp/spimgex/spcorner.h"
