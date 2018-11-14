@@ -356,7 +356,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC unsigned int getTextureId(const Mem<TYPE> &src) {
+    SP_CPUFUNC unsigned int glGetTexId(const Mem<TYPE> &src) {
         int format;
         switch (sizeof(TYPE)) {
         case 1: format = GL_LUMINANCE; break;
@@ -383,10 +383,10 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void glRenderImg(const Mem<TYPE> &src) {
+    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src) {
         if (src.size() == 0) return;
 
-        const GLuint texId = getTextureId(src);
+        const GLuint texId = glGetTexId(src);
         if (texId < 0) return;
 
         glPushAttrib(GL_ENABLE_BIT);
@@ -425,21 +425,21 @@ namespace sp{
     }
 
     template<typename TYPE0 = Col3, typename TYPE1>
-    SP_CPUFUNC void glRenderDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
+    SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
         if (src.size() == 0) return;
 
         Mem2<TYPE0> img;
         cnvDepthToImg(img, src, nearPlane, farPlane);
-        glRenderImg(img);
+        glTexImg(img);
     }
 
     template<typename TYPE0 = Col3, typename TYPE1>
-    SP_CPUFUNC void glRenderNormal(const Mem<TYPE1> &src) {
+    SP_CPUFUNC void glTexNormal(const Mem<TYPE1> &src) {
         if (src.size() == 0) return;
 
         Mem2<TYPE0> img;
         cnvNormalToImg(img, src);
-        glRenderImg(img);
+        glTexImg(img);
     }
 
     //--------------------------------------------------------------------------------

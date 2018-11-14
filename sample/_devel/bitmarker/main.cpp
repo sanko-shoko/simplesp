@@ -89,7 +89,7 @@ private:
 
         {
             glLoadView2D(m_crntImg.dsize, m_viewPos, m_viewScale);
-            glRenderImg(m_crntImg);
+            glTexImg(m_crntImg);
         }
 
         if (1 || m_ui.test) {
@@ -149,7 +149,7 @@ private:
             if (minImg) {
                 const double scale = static_cast<double>(m_crntImg.dsize[0]) / minImg->dsize[0];
                 glLoadView2D(minImg->dsize, m_viewPos, scale * m_viewScale);
-                glRenderImg(*minImg);
+                glTexImg(*minImg);
             }
         }
         if (m_ui.dispMinLab) {

@@ -95,7 +95,7 @@ private:
             }
 
             glLoadView2D(m_kfusion.getCam(), m_viewPos, m_viewScale * 2.0);
-            glRenderImg(view);
+            glTexImg(view);
 
             glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale * 2.0);
             glLoadMatrix(*m_kfusion.getPose());

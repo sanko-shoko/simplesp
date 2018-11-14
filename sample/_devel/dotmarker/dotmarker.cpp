@@ -54,7 +54,7 @@ void DotMarkerGUI::display(){
 
     {
         glLoadView2D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
-        glRenderImg(m_crntImg);
+        glTexImg(m_crntImg);
     }
 
     if (m_ui.dispSkip == true) return;
@@ -125,7 +125,7 @@ void DotMarkerGUI::display(){
         if (minImg){
             const double scale = static_cast<double>(m_crntImg.dsize[0]) / minImg->dsize[0];
             glLoadView2D(getCamParam(minImg->dsize), m_viewPos, scale * m_viewScale);
-            glRenderImg(*minImg);
+            glTexImg(*minImg);
         }
     }
     if (m_ui.dispMinLab){
