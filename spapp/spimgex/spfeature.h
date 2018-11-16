@@ -120,6 +120,7 @@ namespace sp {
             const int dim = ft.dsc.size() / sizeof(float);
 
             for (int i = 0; i < fts.size(); i++) {
+                if (ft.cst * fts[i].cst < 0) continue;
 
                 if (ft._bin.size() > 0 && fts[i]._bin.size() > 0) {
                     const double btest = static_cast<double>(cntBit(ft._bin.ptr, fts[i]._bin.ptr, ft._bin.size())) / dim;
