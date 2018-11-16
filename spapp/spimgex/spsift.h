@@ -118,6 +118,7 @@ namespace sp{
             // clear data
             {
                 m_fts.clear();
+                m_imgsets.clear();
             }
 
             try{
@@ -208,6 +209,7 @@ namespace sp{
 
             fts.clear();
             for (int o = 0; o < imgsets.size(); o++){
+                const Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
                 const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
 
                 for (int s = 1; s < LAYERS + 1; s++){
@@ -217,6 +219,9 @@ namespace sp{
                         for (int x = margin; x < dogs[s].dsize[0] - margin; x++){
 
                             const float base = dogs[s](x, y);
+
+                            // check contrast
+                            if (fabs(base) < BLOB_CONTRAST) continue;
 
                             bool npeak = true;
                             bool ppeak = true;
@@ -231,7 +236,27 @@ namespace sp{
                             }
 
                             if (npeak || ppeak){
-                                addKeyPoint(fts, imgsets, o, x, y, s);
+                                Vec3 vec = getVec(x, y, s);
+
+                                if (refinePos(vec, imgsets, o) == false) continue;
+
+                                const double SIG_FCTR = 1.5;
+                                const double PEAK_THRESH = 0.8;
+                                const Mem1<Vec2> drcs = calcBlobDrc(imgs[s], getVec(vec.x, vec.y), SIG_FCTR * vec.z, PEAK_THRESH);
+
+                                SIFT_Feature ft;
+
+                                ft.pix = getVec(vec.x, vec.y) * (1 << o);
+                                ft.scl = BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ft.cst = dogs[s](x, y);
+
+                                ft.octave = o;
+                                ft.layer = vec.z;
+
+                                for (int i = 0; i < drcs.size(); i++) {
+                                    ft.drc = drcs[i];
+                                    fts.push(ft);
+                                }
                             }
                         }
                     }
@@ -241,14 +266,14 @@ namespace sp{
             return (fts.size() != 0) ? true : false;
         }
 
-        void addKeyPoint(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets, const int o, const int x, const int y, const int s){
+        bool refinePos(Vec3 &vec, const Mem1<ImgSet> &imgsets, const int o){
 
             const Mem1<Mem2<float>> &imgs = imgsets[o].imgs;
             const Mem1<Mem2<float>> &dogs = imgsets[o].dogs;
 
-            double fx = x;
-            double fy = y;
-            double fs = s;
+            const int x = round(vec.x);
+            const int y = round(vec.y);
+            const int s = round(vec.z);
 
             // refine position
             {
@@ -257,9 +282,6 @@ namespace sp{
                 const Mem2<float> &dog2 = dogs[(s - 1) + 2];
 
                 const double val = dog1(x, y);
-
-                // check contrast
-                if (fabs(val) < BLOB_CONTRAST) return;
 
                 const double dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0);
                 const double dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0);
@@ -272,7 +294,7 @@ namespace sp{
                 const double dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
 
                 double dst[3 * 3];
-                if (invMat33(dst, dv2) == false) return;
+                if (invMat33(dst, dv2) == false) return false;
 
                 const double dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;
                 const double dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5;
@@ -283,38 +305,21 @@ namespace sp{
                 double delta[3] = { 0 };
                 mulMat(delta, 3, 1, dst, 3, 3, dv, 3, 1);
 
-                if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return;
+                if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return false;
 
                 const double det = dxx * dyy - dxy * dxy;
                 const double tr = dxx + dyy;
 
                 // check edge
-                if (det <= 0) return;
-                if (tr * tr / det > EDGE_THRESH) return;
+                if (det <= 0) return false;
+                if (tr * tr / det > EDGE_THRESH) return false;
 
-                fx = x - delta[0];
-                fy = y - delta[1];
-                fs = s - delta[2];
+                vec.x = x - delta[0];
+                vec.y = y - delta[1];
+                vec.z = s - delta[2];
             }
 
-            SIFT_Feature ft;
-
-            ft.pix = getVec(fx, fy) * (1 << o);
-            ft.scl = BASE_SIGMA * pow(LAYER_STEP, fs) * (1 << o);
-            ft.cst = dogs[s](x, y);
-
-            ft.octave = o;
-            ft.layer = fs;
-
-            const double SIG_FCTR = 1.5;
-            const double PEAK_THRESH = 0.8;
-
-            const Mem1<Vec2> drcs = calcBlobDrc(imgs[s], getVec(x, y), SIG_FCTR * fs, PEAK_THRESH);
-            
-            for (int i = 0; i < drcs.size(); i++){
-                ft.drc = drcs[i];
-                fts.push(ft);
-            }
+            return true;
         }
 
         void descript(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets){

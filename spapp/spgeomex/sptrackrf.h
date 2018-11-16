@@ -71,7 +71,7 @@ namespace sp{
                     printf("\rtrain [%s] ", progressBar(i, gnum / omp_get_num_threads()));
                 }
                 fflush(stdout);
-#elif
+#else
                 printf("\rtrain [%s] ", progressBar(i, gnum));
                 fflush(stdout);
 #endif

@@ -58,16 +58,19 @@ namespace sp {
             pix = ft.pix;
             drc = ft.drc;
             scl = ft.scl;
+            cst = ft.cst;
             dsc = ft.dsc;
             mpnt = ft.mpnt;
             type = ft.type;
+
+            bin = ft.bin;
             return *this;
         }
 
     public:
 
         // binary
-        Mem1<Byte> _bin;
+        Mem1<Byte> bin;
     };
 
 
@@ -120,10 +123,10 @@ namespace sp {
             const int dim = ft.dsc.size() / sizeof(float);
 
             for (int i = 0; i < fts.size(); i++) {
-                if (ft.cst * fts[i].cst < 0) continue;
+                if (ft.cst * fts[i].cst <= 0.0) continue;
 
-                if (ft._bin.size() > 0 && fts[i]._bin.size() > 0) {
-                    const double btest = static_cast<double>(cntBit(ft._bin.ptr, fts[i]._bin.ptr, ft._bin.size())) / dim;
+                if (ft.bin.size() > 0 && fts[i].bin.size() > 0) {
+                    const double btest = static_cast<double>(cntBit(ft.bin.ptr, fts[i].bin.ptr, ft.bin.size())) / dim;
                     if (btest < MIN_BIN) continue;
                 }
 
@@ -182,7 +185,7 @@ namespace sp {
 
             const float thresh = static_cast<float>(1.0 / sqrt(dim));
 
-            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft._bin);
+            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft.bin);
 
             tmp->resize((dim + 8 - 1) / 8);
             cnvBit(tmp->ptr, tmp->size(), data, dim, thresh);
