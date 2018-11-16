@@ -57,8 +57,6 @@ int main(){
         SP_LOGGER_SET("matching");
     
         // matching
-        //prepareMatch(fts[0]);
-        //prepareMatch(fts[1]);
         matches = findMatch(fts[0], fts[1]);
     }
 

@@ -141,6 +141,8 @@ namespace sp{
                 for (int i = 0; i < m_fts.size(); i++) {
                     m_fts[i] = fts[i];
                 }
+
+                prepareMatch(m_fts);
             }
             catch (const char *str){
                 SP_PRINTF("SIFT.execute [%s]\n", str);
