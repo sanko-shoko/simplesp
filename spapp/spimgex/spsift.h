@@ -22,21 +22,25 @@ namespace sp{
 
     public:
 
-        struct KeyPoint{
-            Vec2 pix;
-            Vec2 drc;
+        class SIFT_Feature : public Feature{
+
+        public:
             int octave;
             double layer;
-            double scale;
-            double contrast;
+        };
+
+        class ImgSet {
+
+        public:
+            Mem1<Mem2<float> > imgs;
+            Mem1<Mem2<float> > dogs;
         };
 
     private:
  
         Mem1<Feature> m_fts;
 
-        Mem1<Mem1<Mem2<float> > > m_dogs;
-        Mem1<Mem1<Mem2<float> > > m_imgs;
+        Mem1<ImgSet> m_imgsets;
 
     private:
 
@@ -122,15 +126,21 @@ namespace sp{
                 Mem2<float> imgf;
                 cnvMem(imgf, img, 1.0 / 255.0);
 
-                // make DoG
-                makeDoG(imgf);
+                // make Imgs & DoGs
+                makeImgSet(m_imgsets, imgf);
 
-                // detect key points
-                Mem1<KeyPoint> keys = detect();
-                if (keys.size() == 0) throw "no keys";
+                Mem1<SIFT_Feature> fts;
+
+                // detect features
+                if(detect(fts, m_imgsets) == false) throw "no featues";
 
                 // descript features
-                m_fts = descript(keys);
+                descript(fts, m_imgsets);
+
+                m_fts.resize(fts.size());
+                for (int i = 0; i < m_fts.size(); i++) {
+                    m_fts[i] = fts[i];
+                }
             }
             catch (const char *str){
                 SP_PRINTF("SIFT.execute [%s]\n", str);
@@ -154,19 +164,18 @@ namespace sp{
         // modules
         //--------------------------------------------------------------------------------
 
-        void makeDoG(const Mem2<float> &img){
+        void makeImgSet(Mem1<ImgSet> &imgsets, const Mem2<float> &img){
 
             const int octaves = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
 
-            m_dogs.resize(octaves);
-            m_imgs.resize(octaves);
+            imgsets.resize(octaves);
 
             for (int o = 0; o < octaves; o++){
-                Mem1<Mem2<float> > &dogs = m_dogs[o];
-                Mem1<Mem2<float> > &imgs = m_imgs[o];
+                Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
+                Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
 
-                dogs.resize(LAYERS + 2);
                 imgs.resize(LAYERS + 3);
+                dogs.resize(LAYERS + 2);
 
                 if (o == 0){
                     const double crnt = BASE_SIGMA;
@@ -176,7 +185,7 @@ namespace sp{
                     gaussianFilter(imgs[0], img, dsig);
                 }
                 else{
-                    pyrdown(imgs[0], m_imgs[o - 1][LAYERS]);
+                    pyrdown(imgs[0], imgsets[o - 1].imgs[LAYERS]);
                 }
 
                 for (int s = 1; s < LAYERS + 3; s++){
@@ -193,11 +202,11 @@ namespace sp{
             }
         }
 
-        Mem1<KeyPoint> detect(){
-            Mem1<KeyPoint> keyPnts;
+        bool detect(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets){
 
-            for (int o = 0; o < m_dogs.size(); o++){
-                const Mem1<Mem2<float>> &dogs = m_dogs[o];
+            fts.clear();
+            for (int o = 0; o < imgsets.size(); o++){
+                const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
 
                 for (int s = 1; s < LAYERS + 1; s++){
                     const int margin = round(4.0 * BASE_SIGMA);
@@ -220,20 +229,20 @@ namespace sp{
                             }
 
                             if (npeak || ppeak){
-                                addKeyPoint(keyPnts, o, x, y, s);
+                                addKeyPoint(fts, imgsets, o, x, y, s);
                             }
                         }
                     }
                 }
             }
 
-            return keyPnts;
+            return (fts.size() != 0) ? true : false;
         }
 
-        void addKeyPoint(Mem1<KeyPoint> &keyPnts, const int o, const int x, const int y, const int s){
+        void addKeyPoint(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets, const int o, const int x, const int y, const int s){
 
-            const Mem1<Mem2<float>> &dogs = m_dogs[o];
-            const Mem1<Mem2<float>> &imgs = m_imgs[o];
+            const Mem1<Mem2<float>> &imgs = imgsets[o].imgs;
+            const Mem1<Mem2<float>> &dogs = imgsets[o].dogs;
 
             double fx = x;
             double fy = y;
@@ -286,14 +295,14 @@ namespace sp{
                 fs = s - delta[2];
             }
 
-            KeyPoint keyPnt;
+            SIFT_Feature ft;
 
-            keyPnt.pix = getVec(fx, fy) * (1 << o);
+            ft.pix = getVec(fx, fy) * (1 << o);
+            ft.scl = BASE_SIGMA * pow(LAYER_STEP, fs) * (1 << o);
+            ft.cst = dogs[s](x, y);
 
-            keyPnt.octave = o;
-            keyPnt.layer = fs;
-            keyPnt.scale = 2.0 * BASE_SIGMA * pow(LAYER_STEP, fs) * (1 << o);
-            keyPnt.contrast = dogs[s](x, y);
+            ft.octave = o;
+            ft.layer = fs;
 
             const double SIG_FCTR = 1.5;
             const double PEAK_THRESH = 0.8;
@@ -301,40 +310,38 @@ namespace sp{
             const Mem1<Vec2> drcs = calcBlobDrc(imgs[s], getVec(x, y), SIG_FCTR * fs, PEAK_THRESH);
             
             for (int i = 0; i < drcs.size(); i++){
-                keyPnt.drc = drcs[i];
-
-                keyPnts.push(keyPnt);
+                ft.drc = drcs[i];
+                fts.push(ft);
             }
         }
 
-        Mem1<Feature> descript(const Mem1<KeyPoint> &keys){
-            Mem1<Feature> fts(keys.size());
+        void descript(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets){
 
             const int DSC_BINS = 8;
             const int DSC_BLKS = 4;
 
-            for (int i = 0; i < keys.size(); i++){
+            for (int i = 0; i < fts.size(); i++){
 
                 Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
                 hist.zero();
 
-                const KeyPoint &key = keys[i];
-                const Mem2<float> &img = m_imgs[key.octave][round(key.layer)];
+                const SIFT_Feature &ft = fts[i];
+                const Mem2<float> &img = imgsets[ft.octave].imgs[round(ft.layer)];
                 const Rect rect = getRect2(img.dsize) - 1;
 
-                const double kx = key.pix.x / (1 << key.octave);
-                const double ky = key.pix.y / (1 << key.octave);
+                const double kx = ft.pix.x / (1 << ft.octave);
+                const double ky = ft.pix.y / (1 << ft.octave);
+                const double ks = ft.scl / (1 << ft.octave);
 
                 const double DCS_SCL_FCTR = 3.0;
-                const double scale = BASE_SIGMA * pow(LAYER_STEP, key.layer);
-                const double block = DCS_SCL_FCTR * scale;
+                const double block = DCS_SCL_FCTR * ks;
 
                 const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
                 
                 const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
 
-                const double tcos = +key.drc.x;
-                const double tsin = -key.drc.y;
+                const double tcos = +ft.drc.x;
+                const double tsin = -ft.drc.y;
 
                 for (int ry = -radius; ry <= radius; ry++){
                     for (int rx = -radius; rx <= radius; rx++){
@@ -412,13 +419,8 @@ namespace sp{
                     const double sq = sumSq(dsc);
                     const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
 
-                    fts[i].pix = key.pix;
-                    fts[i].drc = key.drc;
-                    fts[i].scl = key.scale;
-
                     fts[i].dsc.resize(dsc.size() * sizeof(float));
                     fts[i].type = Feature::DSC_SIFT;
-                    fts[i].mpnt = NULL;
 
                     float *ptr = reinterpret_cast<float*>(fts[i].dsc.ptr);
                     for (int k = 0; k < dsc.size(); k++){
@@ -426,8 +428,6 @@ namespace sp{
                     }
                 }
             }
-
-            return fts;
         }
     };
 

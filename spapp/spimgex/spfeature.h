@@ -15,16 +15,19 @@ namespace sp {
 
     public:
 
-        // feature point
+        // point
         Vec2 pix;
 
-        // feature direct
+        // direct
         Vec2 drc;
 
-        // feature scale
+        // scale
         double scl;
 
-        // feature descripter
+        // contrast
+        double cst;
+
+        // descripter
         Mem1<Byte> dsc;
 
         // descripter type
