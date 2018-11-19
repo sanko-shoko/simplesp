@@ -247,7 +247,7 @@ namespace sp{
                                 SIFT_Feature ft;
 
                                 ft.pix = getVec(vec.x, vec.y) * (1 << o);
-                                ft.scl = BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ft.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
                                 ft.cst = dogs[s](x, y);
 
                                 ft.octave = o;

@@ -49,12 +49,6 @@ namespace sp{
 
         MemP<MapPnt> _mpnts;
 
-        //--------------------------------------------------------------------------------
-        // temporary data
-        //--------------------------------------------------------------------------------
-      
-        Mem2<Col3> _nimg;
-
     public:
 
         ViewTrack() {
@@ -255,18 +249,9 @@ namespace sp{
                 hom = hom / hom(2, 2);
             }
 
-
-            if (_nimg.size() != view.img.size()) {
-                _nimg.resize(view.img.dsize);
-                for (int i = 0; i < _nimg.size(); i++) {
-                    _nimg[i] = getCol(rand() % 256, rand() % 256, rand() % 256);
-                }
-            }
-
-            Mem2<Col3> wimg = _nimg;
+            Mem2<Col3> wimg(view.img.dsize);
             {
                 warp<Col3, Byte>(wimg, view.img, hom);
-
             }
 
             const int num = view.fts.size();

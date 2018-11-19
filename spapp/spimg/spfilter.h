@@ -13,12 +13,12 @@ namespace sp{
     // filter 
     //--------------------------------------------------------------------------------
 
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+    template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
+    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(2, kernel));
         
         dst.resize(2, src.dsize);
-        const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
         const int halfX = kernel.dsize[0] / 2;
@@ -39,7 +39,7 @@ namespace sp{
                         for (int kx = -halfX; kx <= halfX; kx++){
                             if (isInRect2(rect, u + kx, v + ky) == false) continue;
                             
-                            const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);
+                            const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v + ky, c);
                             const double s = acs2(kernel, kx + halfX, ky + halfY);
 
                             sum += s * val;
@@ -54,12 +54,12 @@ namespace sp{
 
     }
 
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+    template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
+    SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
         dst.resize(2, src.dsize);
-        const Mem2<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+        const Mem2<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
         const int halfX = kernel.dsize[0] / 2;
@@ -78,7 +78,7 @@ namespace sp{
                     for (int kx = -halfX; kx <= halfX; kx++){
                         if (isInRect2(rect, u + kx, v) == false) continue;
                         
-                        const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v, c);
+                        const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v, c);
                         const double s = acs1(kernel, kx + halfX);
 
                         sum += s * val;
@@ -92,12 +92,12 @@ namespace sp{
     }
 
 
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<double> &kernel){
+    template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
+    SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+        const Mem<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
         const int halfY = kernel.dsize[0] / 2;
@@ -116,7 +116,7 @@ namespace sp{
                     for (int ky = -halfY; ky <= halfY; ky++){
                         if (isInRect2(rect, u, v + ky) == false) continue;
                         
-                        const ELEM &val = acs2<TYPE, ELEM>(tmp, u, v + ky, c);
+                        const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u, v + ky, c);
                         const double s = acs1(kernel, ky + halfY);
 
                         sum += s * val;
@@ -394,7 +394,7 @@ namespace sp{
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
-        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>* >(&dst) != &src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
