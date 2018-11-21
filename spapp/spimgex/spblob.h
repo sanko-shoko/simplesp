@@ -8,6 +8,7 @@
 #include "spcore/spcore.h"
 #include "spapp/spimg/spimg.h"
 #include "spapp/spimg/spfilter.h"
+#include "spapp/spimgex/spfeature.h"
 
 namespace sp {
 
@@ -16,20 +17,22 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     template <typename TYPE>
-    SP_CPUFUNC void detectBlob(Mem1<Vec2> &pixs, const Mem2<TYPE> &img, const float thresh = 0.1f * SP_BYTEMAX) {
+    SP_CPUFUNC void detectBlob(Mem1<Feature> &fts, const Mem2<TYPE> &img, const float thresh = 0.1f * SP_BYTEMAX) {
         SP_ASSERT(isValid(2, img));
-
-        pixs.reserve(img.size());
-
-        Mem<float> res(2, img.dsize);
-        res.zero();
 
         const int w = img.dsize[0];
         const int h = img.dsize[1];
+        
+        fts.reserve(img.size() / 4);
+        
+        Mem2<float> res(img.dsize);
+        res.zero();
 
         const TYPE *pimg = img.ptr;
         float *pres = res.ptr;
 
+        //laplacianFilter(res, img, 1.0);
+        //laplacianFilter5x5(res, img);
         for (int v = 0; v < h; v++) {
             const int ys = (v <= 1) ? -v : -2;
             const int yc = 0;
@@ -140,7 +143,8 @@ namespace sp {
                 }
 
                 if (m == true && fabs(d) > thresh) {
-                    pixs.push(getVec(u, v));
+                    Feature *ft = fts.extend();
+                    ft->pix = getVec(u, v);
                 }
             }
         }

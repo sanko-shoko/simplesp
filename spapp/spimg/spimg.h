@@ -124,100 +124,104 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void pyrdownFast(Mem<Byte> &dst, const Mem<Byte> &src) {
-        SP_ASSERT(isValid(2, src));
+    //SP_CPUFUNC void pyrdownFast(Mem<Byte> &dst, const Mem<Byte> &src) {
+    //    SP_ASSERT(isValid(2, src));
 
-        const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
+    //    const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
-        const int dsize0 = (tmp.dsize[0] + 1) / 2;
-        const int dsize1 = (tmp.dsize[1] + 1) / 2;
+    //    const int dsize0 = (tmp.dsize[0] + 1) / 2;
+    //    const int dsize1 = (tmp.dsize[1] + 1) / 2;
+    //    const int pad0 = tmp.dsize[0] % 2;
+    //    const int pad1 = tmp.dsize[1] % 2;
 
-        const int dsize[2] = { dsize0, dsize1 };
-        dst.resize(2, dsize);
+    //    const int dsize[2] = { dsize0, dsize1 };
+    //    dst.resize(2, dsize);
+    //    dst.zero();
 
-        const Mem<short> buf(2, dst.dsize);
+    //    const Mem<short> buf(2, dst.dsize);
 
-        const int tstep = tmp.dsize[0];
-        const int dstep = dst.dsize[0];
+    //    const int tstep = tmp.dsize[0];
+    //    const int dstep = dst.dsize[0];
 
-        const Byte *psrc = tmp.ptr;
-        Byte *pdst = dst.ptr;
-        short *pbuf = buf.ptr;
+    //    const Byte *psrc = tmp.ptr;
+    //    Byte *pdst = dst.ptr;
+    //    short *pbuf = buf.ptr;
 
-        {
-            for (int v = 0; v < dst.dsize[1]; v++) {
-                const int sv = 2 * v;
+    //    {
+    //        for (int v = 0; v < dst.dsize[1]; v++) {
+    //            const int sv = (v < dst.dsize[1] - 1) ? 2 * v : 2 * v - pad1;
 
-                {
-                    const int u = 0;
-                    const int su = 2 * u;
+    //            {
+    //                const int u = 0;
+    //                const int su = 2 * u;
 
-                    const Byte a = psrc[sv * tstep + su + 0];
-                    const Byte b = psrc[sv * tstep + su + 0];
-                    const Byte c = psrc[sv * tstep + su + 1];
+    //                const Byte a = psrc[sv * tstep + su + 0];
+    //                const Byte b = psrc[sv * tstep + su + 0];
+    //                const Byte c = psrc[sv * tstep + su + 1];
 
-                    pbuf[v * dstep + u] = a + 2 * b + c;
-                }
-                {
-                    const int u = dstep - 1;
-                    const int su = 2 * u;
+    //                pbuf[v * dstep + u] = a + 2 * b + c;
+    //            }
+    //            {
+    //                const int u = dstep - 1;
+    //                const int su = 2 * u;
 
-                    const Byte a = psrc[sv * tstep + su - 1];
-                    const Byte b = psrc[sv * tstep + su + 0];
-                    const Byte c = psrc[sv * tstep + su + 0];
+    //                const Byte a = psrc[sv * tstep + su - 1];
+    //                const Byte b = psrc[sv * tstep + su + 0 - pad0];
+    //                const Byte c = psrc[sv * tstep + su + 0 - pad0];
 
-                    pbuf[v * dstep + u] = a + 2 * b + c;
-                }
+    //                pbuf[v * dstep + u] = a + 2 * b + c;
+    //            }
 
-                for (int u = 1; u < dst.dsize[0] - 1; u++) {
-                    const int su = 2 * u;
+    //            for (int u = 1; u < dst.dsize[0] - 1; u++) {
+    //                const int su = 2 * u;
 
-                    const Byte a = psrc[sv * tstep + su - 1];
-                    const Byte b = psrc[sv * tstep + su + 0];
-                    const Byte c = psrc[sv * tstep + su + 1];
+    //                const Byte a = psrc[sv * tstep + su - 1];
+    //                const Byte b = psrc[sv * tstep + su + 0];
+    //                const Byte c = psrc[sv * tstep + su + 1];
 
-                    pbuf[v * dstep + u] = a + 2 * b + c;
-                }
-            }
-        }
-        {
-            {
-                const int v = 0;
-                for (int u = 0; u < dst.dsize[0]; u++) {
+    //                pbuf[v * dstep + u] = a + 2 * b + c;
+    //            }
+    //        }
+    //    }
+    //    return;
+    //    {
+    //        {
+    //            const int v = 0;
+    //            for (int u = 0; u < dst.dsize[0]; u++) {
 
-                    const short a = pbuf[(v + 0) * dstep + u];
-                    const short b = pbuf[(v + 0) * dstep + u];
-                    const short c = pbuf[(v + 1) * dstep + u];
+    //                const short a = pbuf[(v + 0) * dstep + u];
+    //                const short b = pbuf[(v + 0) * dstep + u];
+    //                const short c = pbuf[(v + 1) * dstep + u];
 
-                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
-                }
-            }
+    //                cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
+    //            }
+    //        }
 
-            {
-                const int v = dstep - 1;
-                for (int u = 0; u < dst.dsize[0]; u++) {
+    //        {
+    //            const int v = dstep - 1;
+    //            for (int u = 0; u < dst.dsize[0]; u++) {
 
-                    const short a = pbuf[(v - 1) * dstep + u];
-                    const short b = pbuf[(v + 0) * dstep + u];
-                    const short c = pbuf[(v + 0) * dstep + u];
+    //                const short a = pbuf[(v - 1) * dstep + u];
+    //                const short b = pbuf[(v + 0) * dstep + u];
+    //                const short c = pbuf[(v + 0) * dstep + u];
 
-                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
-                }
-            }
+    //                cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
+    //            }
+    //        }
 
-            for (int v = 1; v < dst.dsize[1] - 1; v++) {
+    //        for (int v = 1; v < dst.dsize[1] - 1; v++) {
 
-                for (int u = 0; u < dst.dsize[0]; u++) {
+    //            for (int u = 0; u < dst.dsize[0]; u++) {
 
-                    const short a = pbuf[(v - 1) * dstep + u];
-                    const short b = pbuf[(v + 0) * dstep + u];
-                    const short c = pbuf[(v + 1) * dstep + u];
+    //                const short a = pbuf[(v - 1) * dstep + u];
+    //                const short b = pbuf[(v + 0) * dstep + u];
+    //                const short c = pbuf[(v + 1) * dstep + u];
 
-                    cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
-                }
-            }
-        }
-    }
+    //                cnvVal(pdst[v * dstep + u], (a + 2 * b + c) / 16.0);
+    //            }
+    //        }
+    //    }
+    //}
 
 
     //--------------------------------------------------------------------------------
@@ -272,6 +276,9 @@ namespace sp{
         SP_ASSERT(isValid(2, src0));
         SP_ASSERT(isValid(2, src1));
 
+        const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
+        const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
+        
         const int dsize0 = (horizon == true) ? src0.dsize[0] + src1.dsize[0] : maxVal(src0.dsize[0], src1.dsize[0]);
         const int dsize1 = (horizon == true) ? maxVal(src0.dsize[1], src1.dsize[1]) : src0.dsize[1] + src1.dsize[1];
         
@@ -279,18 +286,18 @@ namespace sp{
         dst.resize(2, dsize);
         dst.zero();
 
-        for (int v = 0; v < src0.dsize[1]; v++){
-            for (int u = 0; u < src0.dsize[0]; u++){
-                acs2(dst, u, v) = acs2(src0, u, v);
+        for (int v = 0; v < tmp0.dsize[1]; v++){
+            for (int u = 0; u < tmp0.dsize[0]; u++){
+                acs2(dst, u, v) = acs2(tmp0, u, v);
             }
         }
 
-        const int offsetX = (horizon == true) ? src0.dsize[0] : 0;
-        const int offsetY = (horizon == true) ? 0 : src0.dsize[1];
+        const int offsetX = (horizon == true) ? tmp0.dsize[0] : 0;
+        const int offsetY = (horizon == true) ? 0 : tmp0.dsize[1];
 
-        for (int v = 0; v < src1.dsize[1]; v++){
-            for (int u = 0; u < src1.dsize[0]; u++){
-                acs2(dst, u + offsetX, v + offsetY) = acs2(src1, u, v);
+        for (int v = 0; v < tmp1.dsize[1]; v++){
+            for (int u = 0; u < tmp1.dsize[0]; u++){
+                acs2(dst, u + offsetX, v + offsetY) = acs2(tmp1, u, v);
             }
         }
     }
