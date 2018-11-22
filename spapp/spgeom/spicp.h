@@ -154,7 +154,7 @@ namespace sp{
             }
 
             Mat delta;
-            const bool ret = solveEq(delta, J, E, errs);
+            const bool ret = solver::solveAX_B(delta, J, E, solver::calcW(errs));
             if (ret == true) {
                 pose = updatePose(mpose, delta.ptr) * getPose(-mvec);
             }

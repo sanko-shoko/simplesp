@@ -125,69 +125,67 @@ namespace sp {
             {
                 SP_LOGGER_SET("pyrdown");
                 pimgs[0] = img;
-                for (int s = 0; s < pynum - 1; s++) {
-                    //rescale(pimgs[s + 1], pimgs[s], 0.5, 0.5);
-                    //gaussianFilter3x3Fast(pimgs[s], pimgs[s]);
-                    pyrdown(pimgs[s + 1], pimgs[s]);
-                    //saveBMP("test.bmp", pimgs[s]);
+                for (int s = 1; s < pynum; s++) {
+                    pyrdown(pimgs[s], pimgs[s - 1]);
                 }
             }
-            Mem1<Mem1<Feature> > fts(pynum);
+            Mem1<Mem1<Feature> > cpnts(pynum);
             {
-                SP_LOGGER_SET("detectBlob");
-                for (int s = 0; s < pynum - 1; s++) {
-                    Mem1<Feature> tmp;
-                    detectBlob(tmp, pimgs[s + 1], 15);
-
-                    const int t = maxVal(0, s - 1);
-                    for (int i = 0; i < tmp.size(); i++) {
-                        tmp[i].pix *= pow(2, (s + 1) - t);
-                        tmp[i].scl = pow(2, (s + 1) - t);
-                        fts[t].push(tmp[i]);
+                {
+                    SP_LOGGER_SET("detectBlob");
+                    for (int s = 0; s < pynum - 1; s++) {
+                        detectBlob(cpnts[s], pimgs[s + 1], 15);
                     }
                 }
-            }
 
-            Mem1<MyFeature> keys;
-            Mem1<MyFeature> refs;
-            keys.reserve(img.size());
-            refs.reserve(img.size());
-            {
-                SP_LOGGER_SET("refine");
-                for (int s = 0; s < pynum - 1; s++) {
+                SP_ONCE(
 
-                    for (int i = 0; i < fts[s].size(); i++) {
-                        MyFeature key;
-                        key.pix = fts[s][i].pix;
-                        key.scl = fts[s][i].scl;
-                        key.octave = s;
-                        keys.push(key);
-
-                        if (refine(key, pimgs[s], fts[s][i].pix, fts[s][i].scl) == true) {
-                            //key.pix *= scale / a;
-                            //key.scl *= scale / a;
-                            refs.push(key);
-                        }
-                        else {
-                            refs.push(key);
-                        }
+                    for (int s = 0; s < pynum; s++) {
+                        SP_HOLDER_SET(strFormat("cpnts%d", s).c_str(), cpnts[s]);
+                        SP_HOLDER_SET(strFormat("pyimg%d", s).c_str(), pimgs[s]);
                     }
-                }
-            }
-            //refs = keys;
-            m_fts.resize(refs.size());
-            for (int i = 0; i < m_fts.size(); i++) {
-                m_fts[i] = refs[i];
-            }
-            printf("twet");
-            SP_ONCE(
-            SP_HOLDER_SET("keys", keys);
-            SP_HOLDER_SET("refs", refs);
+                );
 
-            for (int s = 0; s < pynum - 1; s++) {
-                SP_HOLDER_SET(strFormat("test%d", s).c_str(), pimgs[s]);
             }
-            );
+            //Mem1<MyFeature> keys;
+            //Mem1<MyFeature> refs;
+            //keys.reserve(img.size());
+            //refs.reserve(img.size());
+            //{
+            //    SP_LOGGER_SET("refine");
+            //    for (int s = 0; s < pynum - 1; s++) {
+
+            //        for (int i = 0; i < fts[s].size(); i++) {
+            //            MyFeature key;
+            //            key.pix = fts[s][i].pix;
+            //            key.scl = fts[s][i].scl;
+            //            key.octave = s;
+            //            keys.push(key);
+
+            //            if (refine(key, pimgs[s], fts[s][i].pix, fts[s][i].scl) == true) {
+            //                //key.pix *= scale / a;
+            //                //key.scl *= scale / a;
+            //                refs.push(key);
+            //            }
+            //            else {
+            //                refs.push(key);
+            //            }
+            //        }
+            //    }
+            //}
+            ////refs = keys;
+            //m_fts.resize(refs.size());
+            //for (int i = 0; i < m_fts.size(); i++) {
+            //    m_fts[i] = refs[i];
+            //}
+            //printf("twet");
+            //SP_ONCE(
+            //SP_HOLDER_SET("refs", refs);
+
+            //for (int s = 0; s < pynum - 1; s++) {
+            //    SP_HOLDER_SET(strFormat("test%d", s).c_str(), pimgs[s]);
+            //}
+            //);
 
             return true;
         }

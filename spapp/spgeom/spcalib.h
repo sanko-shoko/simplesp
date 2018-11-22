@@ -53,7 +53,7 @@ namespace sp{
             }
 
             Mat result;
-            if (solveEqZero(result, M) == false) return false;
+            if (solver::solveAX_Z(result, M) == false) return false;
 
             if (fabs(result[2]) < SP_SMALL) return false;
 
@@ -141,7 +141,7 @@ namespace sp{
                 const double rms = sqrt(meanSq(errs));
 
                 Mat delta;
-                if (solveEq(delta, J, E, errs) == false) return ret;
+                if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return ret;
 
                 cam = updateCam(cam, &delta[0]);
 
@@ -243,8 +243,9 @@ namespace sp{
                         E(p * 4 + 2, 0) = err1.x;
                         E(p * 4 + 3, 0) = err1.y;
                     }
+
                     Mat delta;
-                    if (solveEq(delta, J, E) == false) return false;
+                    if (solver::solveAX_B(delta, J, E) == false) return false;
 
                     vposes[i] = updatePose(vposes[i], delta.ptr);
                 }
@@ -282,7 +283,7 @@ namespace sp{
                     }
 
                     Mat delta;
-                    if (solveEq(delta, J, E, errs) == false) return rms;
+                    if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return rms;
 
                     stereo = updatePose(stereo, delta.ptr);
                 }
@@ -478,7 +479,7 @@ namespace sp{
                     }
 
                     Mat delta;
-                    if (solveEq(delta, J, E, errs) == false) return false;
+                    if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return false;
 
                     delta *= 0.5;
                     vposes[i] = updatePose(vposes[i], delta.ptr);
@@ -516,7 +517,7 @@ namespace sp{
                         }
 
                         Mat delta;
-                        if (solveEq(delta, J, E, errs) == false) return -1.0;
+                        if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return -1.0;
                         cams[i] = updateCam(cams[i], &delta[0]);
                     }
 #endif
@@ -545,7 +546,7 @@ namespace sp{
                         }
 
                         Mat delta;
-                        if (solveEq(delta, J, E, errs) == false) return -1.0;
+                        if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return -1.0;
 
                         delta *= 0.5;
                         poses[i] = updatePose(poses[i], &delta[0]);
@@ -720,7 +721,7 @@ namespace sp{
                 }
 
                 Mat delta;
-                if (solveEq(delta, J, E, errs) == false) return false;
+                if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return false;
 
                 X = updatePose(X, &delta[0]);
                 iZ = updatePose(iZ, &delta[6]);

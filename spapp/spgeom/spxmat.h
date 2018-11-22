@@ -148,22 +148,22 @@ namespace sp{
 
         Mat T0, T1;
         Mem1<Vec2> data0, data1;
-        if (normalize(T0, data0, pixs) == false) return false;
-        if (normalize(T1, data1, objs) == false) return false;
+        if (solver::normalize(T0, data0, pixs) == false) return false;
+        if (solver::normalize(T1, data1, objs) == false) return false;
 
         Mat A(pixs.size() * 2, 9);
         for (int i = 0; i < pixs.size(); i++){
             jacobHMat(&A(i * 2, 0), data0[i], data1[i]);
         }
 
-        Mem1<double> errs;
         for (int it = 0; it < maxit; it++){
+            Mat W;
             if (H.rows() == 3 && H.cols() == 3) {
-                errs = errHMat(H, pixs, objs);
+                W = solver::calcW(errHMat(H, pixs, objs), 2);
             }
         
             Mat result;
-            if (solveEqZero(result, A, errs) == false) return false;
+            if (solver::solveAX_Z(result, A, W) == false) return false;
 
             H = invMat(T0) * Mat(3, 3, result.ptr) * T1;
 
@@ -591,22 +591,22 @@ namespace sp{
 
         Mat T0, T1;
         Mem1<Vec2> data0, data1;
-        if (normalize(T0, data0, npxs0) == false) return false;
-        if (normalize(T1, data1, npxs1) == false) return false;
+        if (solver::normalize(T0, data0, npxs0) == false) return false;
+        if (solver::normalize(T1, data1, npxs1) == false) return false;
 
         Mat A(num, 9);
         for (int i = 0; i < num; i++) {
             jacobEMat(&A(i, 0), data0[i], data1[i]);
         }
 
-        Mem1<double> errs;
         for (int it = 0; it < maxit; it++) {
+            Mat W;
             if (E.rows() == 3 && E.cols() == 3) {
-                errs = errEMat(E, npxs0, npxs1);
+                W = solver::calcW(errEMat(E, npxs0, npxs1), 1);
             }
 
             Mat result;
-            if (solveEqZero(result, A, errs) == false) return false;
+            if (solver::solveAX_Z(result, A, W) == false) return false;
 
             const Mat M = Mat(3, 3, result.ptr);
 

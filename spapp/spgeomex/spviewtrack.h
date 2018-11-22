@@ -251,6 +251,7 @@ namespace sp{
 
             Mem2<Col3> wimg(view.img.dsize);
             {
+                wimg.zero();
                 warp<Col3, Byte>(wimg, view.img, hom);
             }
 
