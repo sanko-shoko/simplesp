@@ -38,6 +38,7 @@ private:
         {
             m_imgs.resize(2);
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", m_imgs[0]));
+            //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/test.bmp", m_imgs[0]));
 
             m_imgs[1].resize(m_imgs[0].dsize);
             setElm(m_imgs[1], getCol(127, 127, 127));
@@ -86,7 +87,9 @@ private:
 
         static FastBlob test;
         test.execute(m_imgs[0]);
-        m_fts.push(*test.getFeatures());
+        if (test.getFeatures() != NULL) {
+            m_fts.push(*test.getFeatures());
+        }
 
         //test.execute(m_imgs[1]);
         //m_fts.push(*test.getFeatures());
@@ -104,6 +107,63 @@ private:
             glLoadView2D(img.dsize, m_viewPos, m_viewScale);
             glTexImg(img);
         }
+        {
+            const int s = m_ival;
+            const Mem2<Byte> *pyimg = SP_HOLDER_GET(strFormat("pyimg%d", s).c_str(), Mem2<Byte>);
+            const Mem1<Feature> *cpnts = SP_HOLDER_GET(strFormat("cpnts%d", s).c_str(), Mem1<Feature>);
+            const Mem1<Feature> *ref = SP_HOLDER_GET(strFormat("refine%d", s).c_str(), Mem1<Feature>);
+            const Mem1<Feature> *ref2 = SP_HOLDER_GET(strFormat("refine2%d", s).c_str(), Mem1<Feature>);
+            const Mem1<Feature> *output = SP_HOLDER_GET("output", Mem1<Feature>);
+            if (pyimg != NULL) {
+                double scale = sp::pow(2, m_ival);
+                glLoadView2D(pyimg->dsize, m_viewPos, m_viewScale * scale);
+                glTexImg(*pyimg);
+            }
+            //if (cpnts != NULL) {
+
+            //    glBegin(GL_LINES);
+            //    glColor(0);
+
+            //    for (int i = 0; i < cpnts->size(); i++) {
+            //        glCircle((*cpnts)[i].pix, 2.0);
+            //    }
+
+            //    glEnd();
+            //}
+            if (ref != NULL) {
+
+                glBegin(GL_LINES);
+                glColor(0);
+
+                for (int i = 0; i < ref->size(); i++) {
+                    glCircle((*ref)[i].pix, (*ref)[i].scl);
+                }
+
+                glEnd();
+            }
+            if (ref2 != NULL) {
+
+                glBegin(GL_LINES);
+                glColor(1);
+
+                for (int i = 0; i < ref2->size(); i++) {
+                    glCircle((*ref2)[i].pix, (*ref2)[i].scl);
+                }
+
+                glEnd();
+            }
+            if (m_ival < 0 && output != NULL) {
+                glBegin(GL_LINES);
+                glColor(2);
+
+                for (int i = 0; i < output->size(); i++) {
+                    glCircle((*output)[i].pix, (*output)[i].scl);
+                }
+
+                glEnd();
+            }
+        }
+        return;
         {
             const Mem1<FastBlob::MyFeature> *keys = SP_HOLDER_GET("keys", Mem1<FastBlob::MyFeature>);
             const Mem1<FastBlob::MyFeature> *refs = SP_HOLDER_GET("refs", Mem1<FastBlob::MyFeature>);

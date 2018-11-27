@@ -121,31 +121,62 @@ namespace sp {
 
             const int pynum = 7;
             Mem1<Mem2<Byte> > pimgs(pynum);
-
             {
                 SP_LOGGER_SET("pyrdown");
                 pimgs[0] = img;
+                gaussianFilter3x3(pimgs[0], pimgs[0]);
                 for (int s = 1; s < pynum; s++) {
                     pyrdown(pimgs[s], pimgs[s - 1]);
                 }
             }
             Mem1<Mem1<Feature> > cpnts(pynum);
+            Mem1<Mem1<Feature> > fts(pynum - 1);
             {
                 {
                     SP_LOGGER_SET("detectBlob");
                     for (int s = 0; s < pynum - 1; s++) {
-                        detectBlob(cpnts[s], pimgs[s + 1], 15);
+                        detectBlob(cpnts[s + 1], pimgs[s + 1], 15);
                     }
                 }
 
-                SP_ONCE(
+                for (int s = 0; s < pynum; s++) {
 
-                    for (int s = 0; s < pynum; s++) {
-                        SP_HOLDER_SET(strFormat("cpnts%d", s).c_str(), cpnts[s]);
-                        SP_HOLDER_SET(strFormat("pyimg%d", s).c_str(), pimgs[s]);
+                    SP_HOLDER_SET(strFormat("pyimg%d", s).c_str(), pimgs[s]);
+                    SP_HOLDER_SET(strFormat("cpnts%d", s).c_str(), cpnts[s]);
+                }
+                for (int s = 0; s < pynum - 1; s++) {
+
+                    fts[s].resize(cpnts[s + 1].size());
+                    for (int i = 0; i < fts[s].size(); i++) {
+                        fts[s][i].pix = cpnts[s + 1][i].pix * 2.0;
+                        fts[s][i].scl = 2.0;
                     }
-                );
+                }
 
+
+            }
+            Mem1<Feature> output;
+            {
+                SP_LOGGER_SET("refine");
+                for (int s = 0; s < pynum - 1; s++) {
+                    SP_HOLDER_SET(strFormat("refine%d", s).c_str(), fts[s]);
+                    refine2(fts[s], pimgs[s]);
+                    //refine2(fts[s], tmp);
+                    
+
+                    SP_HOLDER_SET(strFormat("refine2%d", s).c_str(), fts[s]);
+                }
+
+                for (int s = 0; s < pynum - 1; s++) {
+                    const double ss = pow(2, s);
+                    for (int i = 0; i < fts[s].size(); i++) {
+                        Feature ft = fts[s][i];
+                        ft.pix *= ss;
+                        ft.scl *= ss;
+                        output.push(ft);
+                    }
+                }
+                SP_HOLDER_SET("output", output);
             }
             //Mem1<MyFeature> keys;
             //Mem1<MyFeature> refs;
@@ -189,7 +220,81 @@ namespace sp {
 
             return true;
         }
+        bool refine2(Mem1<Feature> &pnts, const Mem2<Byte> &img) {
+            
+            struct Data{
+                short dx, dy, dxx, dyy;
+            };
+            Mem2<Data> dimg(img.dsize);
+            dimg.zero();
+            {
+                const int w = img.dsize[0];
+                const int h = img.dsize[1];
+                const int m = 1;
+                Byte *iptr = img.ptr;
+                Data *dptr = dimg.ptr;
+                for (int v = m; v < h - m; v++) {
+                    for (int u = m; u < w - m; u++) {
+                        const Byte xa = iptr[(v + 0) * w + (u - 1)];
+                        const Byte xb = iptr[(v + 0) * w + (u + 1)];
+                        const Byte ya = iptr[(v - 1) * w + (u + 0)];
+                        const Byte yb = iptr[(v + 1) * w + (u + 0)];
+                        const Byte cc = iptr[(v + 0) * w + (u + 0)];
 
+                        Data &dd = dptr[(v + 0) * w + (u + 0)];
+                        dd.dx = (xb - xa);
+                        dd.dy = (yb - ya);
+                        dd.dxx = (xb - cc) - (cc - xa);
+                        dd.dyy = (yb - cc) - (cc - ya);
+                    }
+                }
+            }
+
+            for (int i = 0; i < pnts.size(); i++) {
+
+                for (int it = 0; it < 21; it++) {
+                    Vec2 ap = getVec(0.0, 0.0);
+                    double as = 0.0;
+                    {
+                        const Vec2 pix = pnts[i].pix;
+                        const double s = pnts[i].scl;
+
+                        for (int i = 0; i < 18; i++) {
+                            const double p = i / 18.0 * 2.0 * SP_PI;
+                            const Vec2 v = getVec(s * cos(p), s * sin(p));
+                            const Vec2 n = unitVec(v);
+                            const Vec2 a = pix + v;
+
+                            Vec2 d;
+                            d.x = acs2<Data, short>(dimg, a.x, a.y, 0);
+                            d.y = acs2<Data, short>(dimg, a.x, a.y, 1);
+                            Vec2 dd;
+                            dd.x = acs2<Data, short>(dimg, a.x, a.y, 2);
+                            dd.y = acs2<Data, short>(dimg, a.x, a.y, 3);
+
+                            Vec2 nn;
+                            nn.x = sign(n.x);
+                            nn.y = sign(n.y);
+
+                            //as += (dotVec(n, dd)) * sign(dotVec(n, d));
+                            as += n.x * dd.x * sign(d.x);
+                            as += n.y * dd.y * sign(d.y);
+                            ap.x += dd.x * sign(d.x);
+                            ap.y += dd.y * sign(d.y);
+                        }
+                        as /= (255 * 5);
+                        ap /= (255 * 5);
+                        pnts[i].scl += as * 1;
+                        pnts[i].pix += ap;
+                    }
+                }
+            }
+
+            //key.pix = (getVec(u, v) + flow);
+            //key.scl = c;
+
+            return true;
+        }
         bool refine(Feature &key, const Mem2<Byte> &img, const Vec2 &uv, const double ss) {
             const int u = round(uv.x);
             const int v = round(uv.y);
@@ -287,13 +392,10 @@ namespace sp {
                     }
                 }
                 //solveEq(result, A, B, errs);
-                const Mat At = trnMat(A);
-                const Mat AtW = calcAtWeight(A, errs, 1.0) * tw;
-                const Mat invAtA = invMat(AtW * A);
-                const Mat AtB = AtW * B;
+                Mat W = solver::calcW(errs);
 
                 Mat result;
-                result = invMat(AtW * A) * AtW * B;
+                solver::solveAX_B(result, A, B, W);
                 if (result.size() == 0) {
                     return false;
                 }
