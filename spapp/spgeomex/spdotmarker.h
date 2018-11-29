@@ -684,7 +684,7 @@ namespace sp{
                 }
             }
         }
-        gaussianFilter3x3<Col3, Byte>(cmap, cmap);
+        gaussianFilter<Col3, Byte>(cmap, cmap);
 
         {
             const Mat ihom = invMat(hom);

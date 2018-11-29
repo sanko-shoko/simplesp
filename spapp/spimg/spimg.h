@@ -107,13 +107,9 @@ namespace sp{
         for (int v = 0; v < ddsize1; v++) {
             const int sv = 2 * v;
 
-            const int sy0 = (sv == 0) ? 0 : -1;
-            const int sy1 = 0;
-            const int sy2 = (sv == sdsize1 - 1) ? 0 : +1;
-
-            const int sv0 = sv + sy0;
-            const int sv1 = sv + sy1;
-            const int sv2 = sv + sy2;
+            const int sv0 = sv + ((sv == 0) ? 0 : -1);
+            const int sv1 = sv + 0;
+            const int sv2 = sv + ((sv == sdsize1 - 1) ? 0 : +1);
 
             const TYPE0 *psrc0 = &psrc[sv0 * sdsize0];
             const TYPE0 *psrc1 = &psrc[sv1 * sdsize0];
@@ -124,13 +120,9 @@ namespace sp{
             for (int u = 0; u < ddsize0; u++) {
                 const int su = 2 * u;
 
-                const int sx0 = (su == 0) ? 0 : -1;
-                const int sx1 = 0;
-                const int sx2 = (su == sdsize0 - 1) ? 0 : +1;
-
-                const int su0 = su + sx0;
-                const int su1 = su + sx1;
-                const int su2 = su + sx2;
+                const int su0 = su + ((su == 0) ? 0 : -1);
+                const int su1 = su + 0;
+                const int su2 = su + ((su == sdsize0 - 1) ? 0 : +1);
                 
                 const TYPE0 a00 = psrc0[su0];
                 const TYPE0 a01 = psrc0[su1];
