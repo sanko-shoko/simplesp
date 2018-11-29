@@ -6,8 +6,6 @@
 #include "spex/spgl.h"
 #include "spex/spcv.h"
 
-#include "testfeature.h"
-
 using namespace sp;
 
 class FeatureGUI : public BaseWindow {
@@ -85,7 +83,7 @@ private:
     void initTest() {
         m_fts.clear();
 
-        static FastBlob test;
+        static CFBlob test;
         test.execute(m_imgs[0]);
         if (test.getFeatures() != NULL) {
             m_fts.push(*test.getFeatures());
@@ -110,7 +108,7 @@ private:
         {
             const int s = m_ival;
             const Mem2<Byte> *pyimg = SP_HOLDER_GET(strFormat("pyimg%d", s).c_str(), Mem2<Byte>);
-            const Mem1<Feature> *cpnts = SP_HOLDER_GET(strFormat("cpnts%d", s).c_str(), Mem1<Feature>);
+            const Mem1<Feature> *cpnts = SP_HOLDER_GET(strFormat("pyfts%d", s).c_str(), Mem1<Feature>);
             const Mem1<Feature> *ref = SP_HOLDER_GET(strFormat("refine%d", s).c_str(), Mem1<Feature>);
             const Mem1<Feature> *ref2 = SP_HOLDER_GET(strFormat("refine2%d", s).c_str(), Mem1<Feature>);
             const Mem1<Feature> *output = SP_HOLDER_GET("output", Mem1<Feature>);
@@ -163,64 +161,7 @@ private:
                 glEnd();
             }
         }
-        return;
-        {
-            const Mem1<FastBlob::MyFeature> *keys = SP_HOLDER_GET("keys", Mem1<FastBlob::MyFeature>);
-            const Mem1<FastBlob::MyFeature> *refs = SP_HOLDER_GET("refs", Mem1<FastBlob::MyFeature>);
-
-
-            const Mem2<Byte> *pimg = SP_HOLDER_GET(strFormat("test%d", m_ival).c_str(), Mem2<Byte>);
-            if (pimg) {
-                double scale = sp::pow(2, m_ival);
-                glLoadView2D(pimg->dsize, m_viewPos, m_viewScale * scale);
-                glTexImg(*pimg);
-
-                if (keys != NULL) {
-                    glBegin(GL_LINES);
-                    glColor(0);
-
-                    for (int i = 0; i < keys->size(); i++) {
-                        if ((*keys)[i].octave == m_ival) {
-                            //glCircle((*keys)[i].pix / scale, (*keys)[i].scl / scale);
-                            glCircle((*keys)[i].pix, (*keys)[i].scl);
-                        }
-                    }
-                    glColor(1);
-
-                    for (int i = 0; i < refs->size(); i++) {
-                        if ((*refs)[i].octave == m_ival) {
-                            //glCircle((*refs)[i].pix / scale, (*refs)[i].scl / scale);
-                            glCircle((*refs)[i].pix, (*refs)[i].scl);
-                        }
-                    }
-                    glEnd();
-                }
-            }
-            else {
-                glLoadView2D(img.dsize, m_viewPos, m_viewScale);
-
-                if (keys != NULL) {
-                    glBegin(GL_LINES);
-                    double scale = sp::pow(2, m_ival + 1);
-
-                    glColor(0);
-                    for (int i = 0; i < keys->size(); i++) {
-                        int oct = (*keys)[i].octave;
-                        const double ss = ::pow(2, oct);
-                        glCircle((*keys)[i].pix * ss, (*keys)[i].scl * ss);
-                    }
-                    glColor(1);
-                    for (int i = 0; i < refs->size(); i++) {
-                        int oct = (*refs)[i].octave;
-                        const double ss = ::pow(2, oct);
-                        glCircle((*refs)[i].pix * ss, (*refs)[i].scl * ss);
-                    }
-                    glEnd();
-                }
-            }
-
-        }
-
+       
 
     }
     void dispTest2() {

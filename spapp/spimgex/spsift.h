@@ -22,7 +22,7 @@ namespace sp{
 
     public:
 
-        class SIFT_Feature : public Feature{
+        class MyFeature : public Feature{
 
         public:
             int octave;
@@ -130,7 +130,7 @@ namespace sp{
                 // make Imgs & DoGs
                 makeImgSet(m_imgsets, imgf);
 
-                Mem1<SIFT_Feature> fts;
+                Mem1<MyFeature> fts;
 
                 // detect features
                 if(detect(fts, m_imgsets) == false) throw "no featues";
@@ -205,7 +205,7 @@ namespace sp{
             }
         }
 
-        bool detect(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets){
+        bool detect(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
 
             fts.clear();
             for (int o = 0; o < imgsets.size(); o++){
@@ -242,9 +242,10 @@ namespace sp{
 
                                 const double SIG_FCTR = 1.5;
                                 const double PEAK_THRESH = 0.8;
-                                const Mem1<Vec2> drcs = calcBlobDrc(imgs[s], getVec(vec.x, vec.y), SIG_FCTR * vec.z, PEAK_THRESH);
+                                Mem1<Vec2> drcs;
+                                calcBlobDrc(drcs, imgs[s], getVec(vec.x, vec.y), SIG_FCTR * vec.z, PEAK_THRESH);
 
-                                SIFT_Feature ft;
+                                MyFeature ft;
 
                                 ft.pix = getVec(vec.x, vec.y) * (1 << o);
                                 ft.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
@@ -322,7 +323,7 @@ namespace sp{
             return true;
         }
 
-        void descript(Mem1<SIFT_Feature> &fts, const Mem1<ImgSet> &imgsets){
+        void descript(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
 
             const int DSC_BINS = 8;
             const int DSC_BLKS = 4;
@@ -332,7 +333,7 @@ namespace sp{
                 Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
                 hist.zero();
 
-                const SIFT_Feature &ft = fts[i];
+                const MyFeature &ft = fts[i];
                 const Mem2<float> &img = imgsets[ft.octave].imgs[round(ft.layer)];
                 const Rect rect = getRect2(img.dsize) - 1;
 
@@ -433,6 +434,76 @@ namespace sp{
                     for (int k = 0; k < dsc.size(); k++){
                         ptr[k] = static_cast<float>(dsc[k] * nrm);
                     }
+                }
+            }
+        }
+
+        template <typename TYPE>
+        void calcBlobDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double sigma, const double pthresh = 0.8) {
+
+            const int BINS = 36;
+            Mem1<double> hist(BINS);
+
+            const int x = round(pix.x);
+            const int y = round(pix.y);
+
+            // calc direction hist
+            {
+                hist.zero();
+
+                const Rect rect = getRect2(img.dsize) - 1;
+
+                const int radius = round(3.0 * sigma);
+
+                const double sdiv = 1.0 / (2.0 * sigma * sigma);
+
+                for (int ry = -radius; ry <= radius; ry++) {
+                    for (int rx = -radius; rx <= radius; rx++) {
+                        const int ix = x + rx;
+                        const int iy = y + ry;
+                        if (isInRect2(rect, ix, iy) == false) continue;
+
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+
+                        const double angle = atan2(dy, dx);
+
+                        int bin = round(angle * BINS / (2 * SP_PI));
+                        if (bin < 0) bin += BINS;
+
+                        hist[bin] += pythag(dx, dy) * exp(-(rx * rx + ry * ry) * sdiv);
+                    }
+                }
+            }
+
+            Mem1<double> fhist(BINS);
+
+            // filtering
+            for (int i = 0; i < BINS; i++) {
+                const double hi = hist(i);
+                const double hp1 = hist(i + BINS - 1, true);
+                const double hp2 = hist(i + BINS - 2, true);
+                const double hn1 = hist(i + BINS + 1, true);
+                const double hn2 = hist(i + BINS + 2, true);
+
+                fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
+            }
+
+            // detect peak
+            const double thresh = maxVal(fhist) * pthresh;
+
+            drcs.reserve(BINS);
+            for (int i = 0; i < BINS; i++) {
+                const double hi = fhist(i);
+                const double hp1 = fhist(i + BINS - 1, true);
+                const double hn1 = fhist(i + BINS + 1, true);
+
+                if (hi > thresh && hi > maxVal(hp1, hn1)) {
+                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
+                    const double angle = finei * (2.0 * SP_PI / BINS);
+
+                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    drcs.push(drc);
                 }
             }
         }

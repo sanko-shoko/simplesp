@@ -19,8 +19,10 @@ namespace sp{
 
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
 
-        const int WIN_SIZE = 21;
-        const double EIG_THRESH = 0.01;
+        const int wsize = 19;
+        const int whalf = wsize / 2;
+
+        const double EIG_THRESH = 0.01 * SP_BYTEMAX;
 
         Mem1<double> errs;
 
@@ -39,160 +41,187 @@ namespace sp{
 
 
         // pyramid num
-        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 20.0));
+        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 10.0));
 
         Mem1<Mem2<Byte> > pyimgs0(pynum);
         Mem1<Mem2<Byte> > pyimgs1(pynum);
-
-        for (int p = 0; p < pynum; p++) {
-            if (p == 0) {
-                pyimgs0[p] = img0;
-                pyimgs1[p] = img1;
-            }
-            else {
-                pyrdown(pyimgs0[p], pyimgs0[p - 1]);
-                pyrdown(pyimgs1[p], pyimgs1[p - 1]);
+        {
+            SP_LOGGER_SET("pyrdown");
+            for (int p = 0; p < pynum; p++) {
+                if (p == 0) {
+                    pyimgs0[p] = img0;
+                    pyimgs1[p] = img1;
+                }
+                else {
+                    pyrdown(pyimgs0[p], pyimgs0[p - 1]);
+                    pyrdown(pyimgs1[p], pyimgs1[p - 1]);
+                }
             }
         }
 
-        const bool useSclCheck = (scls.size() == pixs.size()) ? true : false;
+        Mem1<Mem2<float> > dXs(pynum);
+        Mem1<Mem2<float> > dYs(pynum);
+        {
+            SP_LOGGER_SET("filter");
+            for (int p = 0; p < pynum; p++) {
+                scharrFilterX3x3(dXs[p], pyimgs1[p]);
+                scharrFilterY3x3(dYs[p], pyimgs1[p]);
+            }
+        }
 
-        for(int p = pynum - 1; p >= 0; p--){
 
-            const Mem2<Byte> &pyimg0 = pyimgs0[p];
-            const Mem2<Byte> &pyimg1 = pyimgs1[p];
-            const double scale = pow(0.5, p);
-
-            Mem2<float> scharrX, scharrY;
-            scharrFilterX3x3(scharrX, pyimg1);
-            scharrFilterY3x3(scharrY, pyimg1);
-
-            const Rect rect0 = getRect2(pyimg0.dsize);
-            const Rect rect1 = getRect2(pyimg1.dsize);
-            const int half = WIN_SIZE / 2;
-
-            const double wscl = (p + 1) * (WIN_SIZE / 2);
-
+        {
+            SP_LOGGER_SET("lk");
             for (int i = 0; i < pixs.size(); i++) {
 
-                // check status
-                {
-                    if (mask[i] == false) continue;
+                for (int p = pynum - 1; p >= 0; p--) {
+                    const double scale = pow(0.5, p);
 
-                    if (p < pynum - 1 && useSclCheck == true && scls[i] > wscl) continue;
+                    const Mem2<Byte> &pyimg0 = pyimgs0[p];
+                    const Mem2<Byte> &pyimg1 = pyimgs1[p];
 
-                    const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
-                    if (isInRect2(rect0, pix0.x, pix0.y) == false) {
-                        mask[i] = false;
-                        continue;
-                    }
-                }
+                    const Rect rect0 = getRect2(pyimg0.dsize);
+                    const Rect rect1 = getRect2(pyimg1.dsize);
 
-                // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
-                Mat A(WIN_SIZE * WIN_SIZE, 2);
-                Mat I(WIN_SIZE * WIN_SIZE, 1);
-                Mat AtA(2, 2);
-                Mat AtB(2, 1);
+                    Mem2<float> &dX = dXs[p];
+                    Mem2<float> &dY = dYs[p];
 
-                {
-                    AtA.zero();
-                    
-                    const Vec2 pix1 = pixs[i] * scale;
+                    // check status
+                    {
+                        if (mask[i] == false) continue;
+                      
+                        const bool sclCheck = (scls.size() == pixs.size()) ? true : false;
+                        if (sclCheck == true && p < pynum - 1) {
+                            //if (scls[i] * scale < whalf) continue;
+                        }
 
-                    for (int y = 0; y < WIN_SIZE; y++) {
-                        for (int x = 0; x < WIN_SIZE; x++) {
-                            const int i = y * WIN_SIZE + x;
-                            const Vec2 v = getVec(x - half, y - half);
+                        const Vec2 pix1 = pixs[i] * scale;
+                        const Vec2 pix0 = pix1 + flows[i] * scale;
 
-                            const Vec2 p1 = pix1 + v;
-                            if (isInRect2(rect1, p1.x, p1.y) == false) continue;
-
-                            const double gx = acs2(scharrX, p1.x, p1.y) / (SP_BYTEMAX);
-                            const double gy = acs2(scharrY, p1.x, p1.y) / (SP_BYTEMAX);
-                            
-                            A(i, 0) = gx;
-                            A(i, 1) = gy;
-
-                            I(i, 0) = acs2(pyimg1, p1.x, p1.y);
-
-                            AtA(0, 0) += gx * gx;
-                            AtA(0, 1) += gx * gy;
-                            AtA(1, 0) += gy * gx;
-                            AtA(1, 1) += gy * gy;
+                        if (isInRect2(rect0, pix0.x, pix0.y) == false || isInRect2(rect1, pix1.x, pix1.y) == false) {
+                            mask[i] = false;
+                            continue;
                         }
                     }
 
-                    const double a = AtA(0, 0);
-                    const double b = AtA(0, 1);
-                    const double c = AtA(1, 1);
-                    const double D = a * c - b * b;
-
-                    const double mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
-
-                    if (mineig / (WIN_SIZE * WIN_SIZE) < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
-                        if (p == 0) mask[i] = false;
-                        continue;
-                    }
-                }
-
-                const Mat invAtA = invMat(AtA);
-
-                const int maxit = 2;
-                for (int it = 0; it < maxit; it++) {
-                    AtB.zero();
+                    // Ai = [dI/dx, dI/dy], A = [A0, A1, ... An-1]^T
+                    Mat A(wsize * wsize, 2);
+                    Mat I(wsize * wsize, 1);
+                    Mat AtA(2, 2);
+                    Mat AtB(2, 1);
 
                     {
-                        const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
-                        const Vec2 pix1 = pixs[i] * scale;
+                        AtA.zero();
 
                         int cnt = 0;
-                        double esum = 0.0;
+                        {
+                            const Vec2 pix1 = pixs[i] * scale;
+                            const int ipix1x = round(pix1.x);
+                            const int ipix1y = round(pix1.y);
 
-                        for (int y = 0; y < WIN_SIZE; y++) {
-                            for (int x = 0; x < WIN_SIZE; x++) {
-                                const int i = y * WIN_SIZE + x;
-                                const Vec2 v = getVec(x - half, y - half);
+                            for (int y = 0; y < wsize; y++) {
+                                for (int x = 0; x < wsize; x++) {
+                                    const int i = y * wsize + x;
 
-                                const Vec2 p0 = pix0 + v;
-                                const Vec2 p1 = pix1 + v;
-                                if (isInRect2(rect0, p0.x, p0.y) == false || isInRect2(rect1, p1.x, p1.y) == false) continue;
+                                    const int i1x = ipix1x + (x - whalf);
+                                    const int i1y = ipix1y + (y - whalf);
+                                    if (isInRect2(rect1, i1x, i1y) == false) continue;
 
-                                const double gx = A(i, 0);
-                                const double gy = A(i, 1);
+                                    const double gx = acs2(dX, i1x, i1y);
+                                    const double gy = acs2(dY, i1x, i1y);
 
-                                const double d = (I(i, 0) - acs2(pyimg0, p0.x, p0.y)) / SP_BYTEMAX;
-                                AtB(0, 0) += gx * d;
-                                AtB(1, 0) += gy * d;
+                                    A(i, 0) = gx;
+                                    A(i, 1) = gy;
 
-                                cnt++;
-                                esum += fabs(d);
+                                    AtA(0, 0) += gx * gx;
+                                    AtA(0, 1) += gx * gy;
+                                    AtA(1, 0) += gy * gx;
+                                    AtA(1, 1) += gy * gy;
+
+                                    I(i, 0) = acs2(pyimg1, i1x, i1y);
+                                    cnt++;
+                                }
                             }
                         }
 
-                        errs[i] = esum / cnt;
+                        const double a = AtA(0, 0);
+                        const double b = AtA(0, 1);
+                        const double c = AtA(1, 1);
+                        const double D = a * c - b * b;
+
+                        const double mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
+
+                        if (mineig / cnt < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
+                            if(p == 0) mask[i] = false;
+                            continue;
+                        }
                     }
 
-                    const Mat result = invAtA * AtB;
-                    if (result.size() == 0) {
-                        if(p == 0) mask[i] = false;
-                        break;
+                    const Mat invAtA = invMat(AtA);
+
+                    const int maxit = 2;
+                    for (int it = 0; it < maxit; it++) {
+                        AtB.zero();
+
+                        int cnt = 0;
+                        {
+                            const Vec2 pix1 = pixs[i] * scale;
+                            const int ipix1x = round(pix1.x);
+                            const int ipix1y = round(pix1.y);
+
+                            const Vec2 pix0 = getVec(ipix1x, ipix1y) + flows[i] * scale;
+
+                            double esum = 0.0;
+
+                            for (int y = 0; y < wsize; y++) {
+                                for (int x = 0; x < wsize; x++) {
+                                    const int i = y * wsize + x;
+
+                                    const Vec2 p0 = pix0 + getVec(x - whalf, y - whalf);
+                                    const int i1x = ipix1x + (x - whalf);
+                                    const int i1y = ipix1y + (y - whalf);
+
+                                    if (isInRect2(rect0, p0.x, p0.y) == false || isInRect2(rect1, i1x, i1y) == false) continue;
+
+                                    const double gx = A(i, 0);
+                                    const double gy = A(i, 1);
+
+                                    const double d = I(i, 0) - acs2(pyimg0, p0.x, p0.y);
+                                    AtB(0, 0) += gx * d;
+                                    AtB(1, 0) += gy * d;
+
+                                    cnt++;
+                                    esum += fabs(d);
+                                }
+                            }
+
+                            errs[i] = esum / cnt;
+                        }
+
+                        const Mat result = invAtA * AtB;
+                        if (result.size() == 0) {
+                            if (p == 0) mask[i] = false;
+                            break;
+                        }
+
+                        Vec2 delta = getVec(result[0], result[1]);
+                        const double norm = normVec(delta);
+
+                        const double limit = 2.0;
+                        if (norm > limit) delta *= limit / norm;
+
+                        flows[i] += delta / scale;
                     }
 
-                    Vec2 delta = getVec(result[0], result[1]);
-                    const double norm = normVec(delta);
+                    {
+                        const Vec2 test = (pixs[i] + flows[i]) * scale;
 
-                    const double limit = 2.0;
-                    if (norm > limit) delta *= limit / norm;
-
-                    flows[i] += delta / scale;
-
-                    const Vec2 test = (pixs[i] + flows[i]) * scale;
-
-                    if (isInRect2(rect0, test.x, test.y) == false) {
-                        mask[i] = false;
-                        break;
+                        if (isInRect2(rect0, test.x, test.y) == false) {
+                            mask[i] = false;
+                            break;
+                        }
                     }
-                }
+               }
             }
         }
  
