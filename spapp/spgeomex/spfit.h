@@ -93,7 +93,7 @@ namespace sp{
                 }
                 
                 Mat delta;
-                if (solveEq(delta, J, E, errs) == false) return false;
+                if (solver::solveAX_B(delta, J, E, solver::calcW(errs)) == false) return false;
 
                 pose = updatePose(pose, delta.ptr);
             }

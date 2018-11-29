@@ -22,21 +22,25 @@ namespace sp{
 
     public:
 
-        struct KeyPoint{
-            Vec2 pix;
-            Vec2 drc;
+        class MyFeature : public Feature{
+
+        public:
             int octave;
             double layer;
-            double scale;
-            double contrast;
+        };
+
+        class ImgSet {
+
+        public:
+            Mem1<Mem2<float> > imgs;
+            Mem1<Mem2<float> > dogs;
         };
 
     private:
  
         Mem1<Feature> m_fts;
 
-        Mem1<Mem1<Mem2<float> > > m_dogs;
-        Mem1<Mem1<Mem2<float> > > m_imgs;
+        Mem1<ImgSet> m_imgsets;
 
     private:
 
@@ -114,6 +118,7 @@ namespace sp{
             // clear data
             {
                 m_fts.clear();
+                m_imgsets.clear();
             }
 
             try{
@@ -122,15 +127,23 @@ namespace sp{
                 Mem2<float> imgf;
                 cnvMem(imgf, img, 1.0 / 255.0);
 
-                // make DoG
-                makeDoG(imgf);
+                // make Imgs & DoGs
+                makeImgSet(m_imgsets, imgf);
 
-                // detect key points
-                Mem1<KeyPoint> keys = detect();
-                if (keys.size() == 0) throw "no keys";
+                Mem1<MyFeature> fts;
+
+                // detect features
+                if(detect(fts, m_imgsets) == false) throw "no featues";
 
                 // descript features
-                m_fts = descript(keys);
+                descript(fts, m_imgsets);
+
+                m_fts.resize(fts.size());
+                for (int i = 0; i < m_fts.size(); i++) {
+                    m_fts[i] = fts[i];
+                }
+
+                prepareMatch(m_fts);
             }
             catch (const char *str){
                 SP_PRINTF("SIFT.execute [%s]\n", str);
@@ -154,19 +167,18 @@ namespace sp{
         // modules
         //--------------------------------------------------------------------------------
 
-        void makeDoG(const Mem2<float> &img){
+        void makeImgSet(Mem1<ImgSet> &imgsets, const Mem2<float> &img){
 
             const int octaves = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
 
-            m_dogs.resize(octaves);
-            m_imgs.resize(octaves);
+            imgsets.resize(octaves);
 
             for (int o = 0; o < octaves; o++){
-                Mem1<Mem2<float> > &dogs = m_dogs[o];
-                Mem1<Mem2<float> > &imgs = m_imgs[o];
+                Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
+                Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
 
-                dogs.resize(LAYERS + 2);
                 imgs.resize(LAYERS + 3);
+                dogs.resize(LAYERS + 2);
 
                 if (o == 0){
                     const double crnt = BASE_SIGMA;
@@ -176,7 +188,7 @@ namespace sp{
                     gaussianFilter(imgs[0], img, dsig);
                 }
                 else{
-                    pyrdown(imgs[0], m_imgs[o - 1][LAYERS]);
+                    pyrdown(imgs[0], imgsets[o - 1].imgs[LAYERS]);
                 }
 
                 for (int s = 1; s < LAYERS + 3; s++){
@@ -193,11 +205,12 @@ namespace sp{
             }
         }
 
-        Mem1<KeyPoint> detect(){
-            Mem1<KeyPoint> keyPnts;
+        bool detect(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
 
-            for (int o = 0; o < m_dogs.size(); o++){
-                const Mem1<Mem2<float>> &dogs = m_dogs[o];
+            fts.clear();
+            for (int o = 0; o < imgsets.size(); o++){
+                const Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
+                const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
 
                 for (int s = 1; s < LAYERS + 1; s++){
                     const int margin = round(4.0 * BASE_SIGMA);
@@ -206,6 +219,9 @@ namespace sp{
                         for (int x = margin; x < dogs[s].dsize[0] - margin; x++){
 
                             const float base = dogs[s](x, y);
+
+                            // check contrast
+                            if (fabs(base) < BLOB_CONTRAST) continue;
 
                             bool npeak = true;
                             bool ppeak = true;
@@ -220,24 +236,45 @@ namespace sp{
                             }
 
                             if (npeak || ppeak){
-                                addKeyPoint(keyPnts, o, x, y, s);
+                                Vec3 vec = getVec(x, y, s);
+
+                                if (refinePos(vec, imgsets, o) == false) continue;
+
+                                const double SIG_FCTR = 1.5;
+                                const double PEAK_THRESH = 0.8;
+                                Mem1<Vec2> drcs;
+                                calcBlobDrc(drcs, imgs[s], getVec(vec.x, vec.y), SIG_FCTR * vec.z, PEAK_THRESH);
+
+                                MyFeature ft;
+
+                                ft.pix = getVec(vec.x, vec.y) * (1 << o);
+                                ft.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ft.cst = dogs[s](x, y);
+
+                                ft.octave = o;
+                                ft.layer = vec.z;
+
+                                for (int i = 0; i < drcs.size(); i++) {
+                                    ft.drc = drcs[i];
+                                    fts.push(ft);
+                                }
                             }
                         }
                     }
                 }
             }
 
-            return keyPnts;
+            return (fts.size() != 0) ? true : false;
         }
 
-        void addKeyPoint(Mem1<KeyPoint> &keyPnts, const int o, const int x, const int y, const int s){
+        bool refinePos(Vec3 &vec, const Mem1<ImgSet> &imgsets, const int o){
 
-            const Mem1<Mem2<float>> &dogs = m_dogs[o];
-            const Mem1<Mem2<float>> &imgs = m_imgs[o];
+            const Mem1<Mem2<float>> &imgs = imgsets[o].imgs;
+            const Mem1<Mem2<float>> &dogs = imgsets[o].dogs;
 
-            double fx = x;
-            double fy = y;
-            double fs = s;
+            const int x = round(vec.x);
+            const int y = round(vec.y);
+            const int s = round(vec.z);
 
             // refine position
             {
@@ -246,9 +283,6 @@ namespace sp{
                 const Mem2<float> &dog2 = dogs[(s - 1) + 2];
 
                 const double val = dog1(x, y);
-
-                // check contrast
-                if (fabs(val) < BLOB_CONTRAST) return;
 
                 const double dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0);
                 const double dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0);
@@ -261,7 +295,7 @@ namespace sp{
                 const double dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
 
                 double dst[3 * 3];
-                if (invMat33(dst, dv2) == false) return;
+                if (invMat33(dst, dv2) == false) return false;
 
                 const double dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;
                 const double dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5;
@@ -272,128 +306,50 @@ namespace sp{
                 double delta[3] = { 0 };
                 mulMat(delta, 3, 1, dst, 3, 3, dv, 3, 1);
 
-                if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return;
+                if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return false;
 
                 const double det = dxx * dyy - dxy * dxy;
                 const double tr = dxx + dyy;
 
                 // check edge
-                if (det <= 0) return;
-                if (tr * tr / det > EDGE_THRESH) return;
+                if (det <= 0) return false;
+                if (tr * tr / det > EDGE_THRESH) return false;
 
-                fx = x - delta[0];
-                fy = y - delta[1];
-                fs = s - delta[2];
+                vec.x = x - delta[0];
+                vec.y = y - delta[1];
+                vec.z = s - delta[2];
             }
 
-            KeyPoint keyPnt;
-
-            keyPnt.pix = getVec(fx, fy) * (1 << o);
-            // keyPnt.drc = next ->
-
-            keyPnt.octave = o;
-            keyPnt.layer = fs;
-            keyPnt.scale = 2.0 * BASE_SIGMA * pow(LAYER_STEP, fs) * (1 << o);
-            keyPnt.contrast = dogs[s](x, y);
-
-
-            const int ORI_BINS = 36;
-            Mem1<double> hist(ORI_BINS);
-
-            // calc orientation hist
-            {
-                hist.zero();
-
-                const Mem2<float> &img = imgs[s];
-                const Rect rect = getRect2(img.dsize) - 1;
-
-                const double ORI_SIG_FCTR = 1.5;
-                const double sigma = ORI_SIG_FCTR * fs;
-                const int radius = round(3.0 * sigma);
-
-                const double sdiv = 1.0 / (2.0 * sigma * sigma);
-
-
-                for (int ry = -radius; ry <= radius; ry++){
-                    for (int rx = -radius; rx <= radius; rx++)    {
-                        const int ix = x + rx;
-                        const int iy = y + ry;
-                        if (isInRect2(rect, ix, iy) == false) continue;
-
-                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
-
-                        const double angle = atan2(dy, dx);
-
-                        int bin = round(angle * ORI_BINS / (2 * SP_PI));
-                        if (bin < 0) bin += ORI_BINS;
-
-                        hist[bin] += pythag(dx, dy) * exp(-(rx * rx + ry * ry) * sdiv);
-                    }
-                }
-            }
-
-            Mem1<double> fhist(ORI_BINS);
-
-            // filtering
-            for (int i = 0; i < ORI_BINS; i++){
-                const double hi = hist(i);
-                const double hp1 = hist(i + ORI_BINS - 1, true);
-                const double hp2 = hist(i + ORI_BINS - 2, true);
-                const double hn1 = hist(i + ORI_BINS + 1, true);
-                const double hn2 = hist(i + ORI_BINS + 2, true);
-
-                fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
-            }
-
-            // detect peak
-            const double ORI_PEAK_THRESH = 0.8;
-            const double thresh = maxVal(fhist) * ORI_PEAK_THRESH;
-    
-            for (int i = 0; i < ORI_BINS; i++){
-                const double hi = fhist(i);
-                const double hp1 = fhist(i + ORI_BINS - 1, true);
-                const double hn1 = fhist(i + ORI_BINS + 1, true);
-
-                if (hi > thresh && hi > maxVal(hp1, hn1)){
-                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
-                    const double angle = finei * (2.0 * SP_PI / ORI_BINS);
-
-                    keyPnt.drc = getVec(cos(angle), sin(angle));
-
-                    keyPnts.push(keyPnt);
-                }
-            }
+            return true;
         }
 
-        Mem1<Feature> descript(const Mem1<KeyPoint> &keys){
-            Mem1<Feature> fts(keys.size());
+        void descript(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
 
             const int DSC_BINS = 8;
             const int DSC_BLKS = 4;
 
-            for (int i = 0; i < keys.size(); i++){
+            for (int i = 0; i < fts.size(); i++){
 
                 Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
                 hist.zero();
 
-                const KeyPoint &key = keys[i];
-                const Mem2<float> &img = m_imgs[key.octave][round(key.layer)];
+                const MyFeature &ft = fts[i];
+                const Mem2<float> &img = imgsets[ft.octave].imgs[round(ft.layer)];
                 const Rect rect = getRect2(img.dsize) - 1;
 
-                const double kx = key.pix.x / (1 << key.octave);
-                const double ky = key.pix.y / (1 << key.octave);
+                const double kx = ft.pix.x / (1 << ft.octave);
+                const double ky = ft.pix.y / (1 << ft.octave);
+                const double ks = ft.scl / (1 << ft.octave);
 
                 const double DCS_SCL_FCTR = 3.0;
-                const double scale = BASE_SIGMA * pow(LAYER_STEP, key.layer);
-                const double block = DCS_SCL_FCTR * scale;
+                const double block = DCS_SCL_FCTR * ks;
 
                 const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
                 
                 const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
 
-                const double tcos = +key.drc.x;
-                const double tsin = -key.drc.y;
+                const double tcos = +ft.drc.x;
+                const double tsin = -ft.drc.y;
 
                 for (int ry = -radius; ry <= radius; ry++){
                     for (int rx = -radius; rx <= radius; rx++){
@@ -471,13 +427,8 @@ namespace sp{
                     const double sq = sumSq(dsc);
                     const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
 
-                    fts[i].pix = key.pix;
-                    fts[i].drc = key.drc;
-                    fts[i].scl = key.scale;
-
                     fts[i].dsc.resize(dsc.size() * sizeof(float));
                     fts[i].type = Feature::DSC_SIFT;
-                    fts[i].mpnt = NULL;
 
                     float *ptr = reinterpret_cast<float*>(fts[i].dsc.ptr);
                     for (int k = 0; k < dsc.size(); k++){
@@ -485,8 +436,76 @@ namespace sp{
                     }
                 }
             }
+        }
 
-            return fts;
+        template <typename TYPE>
+        void calcBlobDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double sigma, const double pthresh = 0.8) {
+
+            const int BINS = 36;
+            Mem1<double> hist(BINS);
+
+            const int x = round(pix.x);
+            const int y = round(pix.y);
+
+            // calc direction hist
+            {
+                hist.zero();
+
+                const Rect rect = getRect2(img.dsize) - 1;
+
+                const int radius = round(3.0 * sigma);
+
+                const double sdiv = 1.0 / (2.0 * sigma * sigma);
+
+                for (int ry = -radius; ry <= radius; ry++) {
+                    for (int rx = -radius; rx <= radius; rx++) {
+                        const int ix = x + rx;
+                        const int iy = y + ry;
+                        if (isInRect2(rect, ix, iy) == false) continue;
+
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+
+                        const double angle = atan2(dy, dx);
+
+                        int bin = round(angle * BINS / (2 * SP_PI));
+                        if (bin < 0) bin += BINS;
+
+                        hist[bin] += pythag(dx, dy) * exp(-(rx * rx + ry * ry) * sdiv);
+                    }
+                }
+            }
+
+            Mem1<double> fhist(BINS);
+
+            // filtering
+            for (int i = 0; i < BINS; i++) {
+                const double hi = hist(i);
+                const double hp1 = hist(i + BINS - 1, true);
+                const double hp2 = hist(i + BINS - 2, true);
+                const double hn1 = hist(i + BINS + 1, true);
+                const double hn2 = hist(i + BINS + 2, true);
+
+                fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
+            }
+
+            // detect peak
+            const double thresh = maxVal(fhist) * pthresh;
+
+            drcs.reserve(BINS);
+            for (int i = 0; i < BINS; i++) {
+                const double hi = fhist(i);
+                const double hp1 = fhist(i + BINS - 1, true);
+                const double hn1 = fhist(i + BINS + 1, true);
+
+                if (hi > thresh && hi > maxVal(hp1, hn1)) {
+                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
+                    const double angle = finei * (2.0 * SP_PI / BINS);
+
+                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    drcs.push(drc);
+                }
+            }
         }
     };
 

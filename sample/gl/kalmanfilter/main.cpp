@@ -134,7 +134,7 @@ private:
         renderPoint(img, getVec(X[0], X[1]), getCol(0, 0, 255), 5);
 
         glLoadView2D(img.dsize[0], img.dsize[1], m_viewPos, m_viewScale);
-        glRenderImg(img);
+        glTexImg(img);
 
         //char path[256];
         //sprintf(path, "img%03d.bmp", cnt);

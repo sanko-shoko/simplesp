@@ -117,7 +117,7 @@ private:
 
             if (m_dataB.dim == 2) {
                 glLoadView2D(m_cam, m_viewPos, m_viewScale);
-                glRenderImg(m_img);
+                glTexImg(m_img);
             }
         }
 

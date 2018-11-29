@@ -73,7 +73,7 @@ namespace sp{
 
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1) {
+        SP_CPUFUNC void crsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1) {
             cpnts0.clear();
             cpnts1.clear();
 
@@ -100,7 +100,7 @@ namespace sp{
         }
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC void getCrsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1){
+        SP_CPUFUNC void crsp(Mem1<TYEP0> &cpnts0, Mem1<TYEP1> &cpnts1, const Pose &pose, const CamParam &cam, const Mem<TYEP0> &pnts0, const Mem<TYEP1> &pnts1){
             cpnts0.clear();
             cpnts1.clear();
 
@@ -124,10 +124,18 @@ namespace sp{
 
 
         template <typename TYEP0, typename TYEP1>
-        SP_CPUFUNC bool solve(Mat &result, const Pose &pose, const Mem1<TYEP0> &cpnts0, const Mem1<TYEP1> &cpnts1){
+        SP_CPUFUNC bool update(Pose &pose, const Mem1<TYEP0> &cpnts0, const Mem1<TYEP1> &cpnts1){
             Mat J(1 * cpnts0.size(), 6);
             Mat E(1 * cpnts0.size(), 1);
             Mem1<double> errs(cpnts0.size());
+
+            Vec3 mvec = getVec(0.0, 0.0, 0.0);
+            for (int i = 0; i < cpnts1.size(); i++) {
+                mvec += getPos(cpnts1[i]);
+            }
+            mvec /= cpnts1.size();
+
+            Pose mpose = pose * getPose(mvec);
 
             for (int i = 0; i < cpnts1.size(); i++){
                 const TYEP1 vec = pose * cpnts1[i];
@@ -136,7 +144,7 @@ namespace sp{
                 const Vec3 drc = getDrc(vec, cpnts0[i]);
 
                 double jPoseToPos[3 * 6] = { 0 };
-                jacobPoseToPos(jPoseToPos, pose, getPos(cpnts1[i]));
+                jacobPoseToPos(jPoseToPos, mpose, getPos(cpnts1[i]) - mvec);
 
                 double jDrc[3] = { drc.x, drc.y, drc.z };
                 mulMat(&J(i, 0), 1, 6, jDrc, 1, 3, jPoseToPos, 3, 6);
@@ -145,7 +153,12 @@ namespace sp{
                 errs[i] = fabs(E(i, 0));
             }
 
-            return solveEq(result, J, E, errs);
+            Mat delta;
+            const bool ret = solver::solveAX_B(delta, J, E, solver::calcW(errs));
+            if (ret == true) {
+                pose = updatePose(mpose, delta.ptr) * getPose(-mvec);
+            }
+            return ret;
         }
     }
 
@@ -158,14 +171,11 @@ namespace sp{
             Mem1<TYEP0> cpnts0;
             Mem1<TYEP1> cpnts1;    
             
-            _icp::getCrsp(cpnts0, cpnts1, pose, pnts0, pnts1);
+            _icp::crsp(cpnts0, cpnts1, pose, pnts0, pnts1);
             if (cpnts0.size() < SP_ICP_MIN_CRSP) return false;
 
-            Mat delta;
-            if (_icp::solve(delta, pose, cpnts0, cpnts1) == false) return false;
+            if (_icp::update(pose, cpnts0, cpnts1) == false) return false;
 
-
-            pose = updatePose(pose, delta.ptr);
         }
 
         return true;
@@ -180,13 +190,10 @@ namespace sp{
             Mem1<TYEP0> cpnts0;
             Mem1<TYEP1> cpnts1;
 
-            _icp::getCrsp(cpnts0, cpnts1, pose, cam, pnts0, pnts1);
+            _icp::crsp(cpnts0, cpnts1, pose, cam, pnts0, pnts1);
             if (cpnts0.size() < SP_ICP_MIN_CRSP) return false;
 
-            Mat delta;
-            if (_icp::solve(delta, pose, cpnts0, cpnts1) == false) return false;
-
-            pose = updatePose(pose, delta.ptr);
+            if (_icp::update(pose, cpnts0, cpnts1) == false) return false;
         }
 
         return true;

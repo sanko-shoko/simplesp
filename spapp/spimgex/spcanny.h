@@ -28,8 +28,7 @@ namespace sp{
         Mem2<Byte> bin(src.dsize);
         {
             Mem2<float> sobelX, sobelY;
-            sobelFilterX3x3(sobelX, src);
-            sobelFilterY3x3(sobelY, src);
+            sobelFilter3x3(sobelX, sobelY, src);
 
             for (int v = 0; v < dst.dsize[1]; v++) {
                 for (int u = 0; u < dst.dsize[0]; u++) {

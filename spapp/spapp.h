@@ -33,12 +33,12 @@
 #include "spapp/spimg/sprender.h"
 
 #include "spapp/spimgex/spfeature.h"
+#include "spapp/spimgex/spcfblob.h"
 #include "spapp/spimgex/spgfilter.h"
 #include "spapp/spimgex/spcontour.h"
 #include "spapp/spimgex/spcorner.h"
 #include "spapp/spimgex/spoptflow.h"
 #include "spapp/spimgex/sppmatch.h"
-#include "spapp/spimgex/spblob.h"
 #include "spapp/spimgex/spsift.h"
 #include "spapp/spimgex/spslic.h"
 #include "spapp/spimgex/spcanny.h"

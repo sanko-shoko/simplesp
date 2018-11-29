@@ -49,12 +49,6 @@ namespace sp{
 
         MemP<MapPnt> _mpnts;
 
-        //--------------------------------------------------------------------------------
-        // temporary data
-        //--------------------------------------------------------------------------------
-      
-        Mem2<Col3> _nimg;
-
     public:
 
         ViewTrack() {
@@ -255,68 +249,38 @@ namespace sp{
                 hom = hom / hom(2, 2);
             }
 
-
-            if (_nimg.size() != view.img.size()) {
-                _nimg.resize(view.img.dsize);
-                for (int i = 0; i < _nimg.size(); i++) {
-                    _nimg[i] = getCol(rand() % 256, rand() % 256, rand() % 256);
-                }
-            }
-
-            Mem2<Col3> wimg = _nimg;
-            {
-                warp<Col3, Byte>(wimg, view.img, hom);
-
-            }
-
             const int num = view.fts.size();
             flows.resize(num);
             flows.zero();
 
             Mem1<Vec2> pixs(num);
-            Mem1<Vec2> tmps(num);
             Mem1<double> scls(num);
             pixs.zero();
-            tmps.zero();
             scls.zero();
 
             {
                 const Vec3 h2 = getVec(hom(2, 0), hom(2, 1), hom(2, 2));
                 const Mem1<Feature> &fts = view.fts;
                 for (int i = 0; i < num; i++) {
-                    const Vec2 &p = fts[i].pix;
+                    const Vec2 pix1 = fts[i].pix;
                     const double s = fts[i].scl;
 
-                    const Vec2 pix0 = hom * p;
-                    const double t = h2.x * p.x + h2.y * p.y + h2.z;
+                    const Vec2 pix0 = hom * pix1;
+                    const double t = h2.x * pix1.x + h2.y * pix1.y + h2.z;
                     if (fabs(t - 1.0) > 0.5) return false;
 
-                    pixs[i] = pix0;
-                    tmps[i] = p;
+                    pixs[i] = pix1;
                     scls[i] = s * t;
-
-                    const MapPnt *mpnt = view.fts[i].mpnt;
-                    if (mpnt == NULL || mpnt->valid == false) continue;
-
-                    const Vec3 obj = pose * fts[i].mpnt->pos;
-
-                    const Vec2 pix1 = mulCam(view.cam, prjVec(obj));
-
-                    flows[i] = pix1 - pix0;
+                    flows[i] = pix0 - pix1;
                 }
             }
+ 
+            opticalFlowLK(flows, mask, img, view.img, pixs, scls);
 
-            opticalFlowLK(flows, mask, img, wimg, pixs, scls);
-        
             for (int i = 0; i < num; i++) {
                 const MapPnt *mpnt = view.fts[i].mpnt;
                 if (mpnt == NULL || mpnt->valid == false) mask[i] = false;
-
-                if (mask[i] == false) continue;
-                flows[i] += pixs[i] - tmps[i];
             }
-
-            SP_HOLDER_SET("warp image", wimg);
 
             return true;
         }

@@ -141,7 +141,7 @@ private:
         //    const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
         //    glLoadView2D(m_wcam, offset, scale);
 
-        //    glRenderImg(m_img);
+        //    glTexImg(m_img);
         //}
         {
             // view 3D

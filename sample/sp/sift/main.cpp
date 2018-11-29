@@ -1,4 +1,6 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_DEBUG 1
+
+#include "simplesp.h"
 
 using namespace sp;
 
@@ -42,14 +44,21 @@ int main(){
 
     Mem1<Feature> fts[2];
 
-    // get features
-    fts[0] = SIFT::getFeatures(imgs[0]);
-    fts[1] = SIFT::getFeatures(imgs[1]);
+    {
+        SP_LOGGER_SET("features");
 
-    // matching
-    //prepareMatch(fts[0]);
-    //prepareMatch(fts[1]);
-    const Mem1<int> matches = findMatch(fts[0], fts[1]);
+        // get features
+        fts[0] = SIFT::getFeatures(imgs[0]);
+        fts[1] = SIFT::getFeatures(imgs[1]);
+    }
+
+    Mem1<int> matches;
+    {
+        SP_LOGGER_SET("matching");
+    
+        // matching
+        matches = findMatch(fts[0], fts[1]);
+    }
 
     const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);
     const Mem1<Vec2> pixs1 = getMatchPixs(fts[1], matches, false);
@@ -102,6 +111,8 @@ int main(){
 
         saveBMP("match.bmp", imgM);
     }
+
+    SP_LOGGER_PRINT(NULL);
     return 0;
 }
 

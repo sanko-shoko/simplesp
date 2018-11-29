@@ -12,78 +12,148 @@
 namespace sp{
 
     //--------------------------------------------------------------------------------
-    // solve util
+    // solveer
     //--------------------------------------------------------------------------------
 
-    template<typename TYPE, typename ELEM = double>
-    SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
+    namespace solver {
 
-        const int dim = sizeof(TYPE) / sizeof(ELEM);
+        template<typename TYPE, typename ELEM = double>
+        SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
 
-        Mat data(mem.size(), dim, mem.ptr);
+            const int dim = sizeof(TYPE) / sizeof(ELEM);
 
-        const Mat mean = meanVal(data, 0);
-        data -= mean;
+            Mat data(mem.size(), dim, mem.ptr);
 
-        double scale = meanSqrt(sumSq(data, 1));
-        if (scale < SP_SMALL) return false;
-        data /= scale;
+            const Mat mean = meanVal(data, 0);
+            data -= mean;
 
-        T = eyeMat(dim + 1, dim + 1);
-        for (int c = 0; c < dim; c++) {
-            T(c, c) /= scale;
-            T(c, dim) -= mean(0, c) / scale;
+            double scale = meanSqrt(sumSq(data, 1));
+            if (scale < SP_SMALL) return false;
+            data /= scale;
+
+            T = eyeMat(dim + 1, dim + 1);
+            for (int c = 0; c < dim; c++) {
+                T(c, c) /= scale;
+                T(c, dim) -= mean(0, c) / scale;
+            }
+
+            dst.resize(mem.dim, mem.dsize);
+            ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
+            for (int i = 0; i < dim * dst.size(); i++) {
+                cnvVal(ptr[i], data[i]);
+            }
+            return true;
         }
 
-        dst.resize(mem.dim, mem.dsize);
-        ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
-        for (int i = 0; i < dim * dst.size(); i++) {
-            cnvVal(ptr[i], data[i]);
-        }
-        return true;
-    }
 
-    SP_CPUFUNC Mat calcAtWeight(const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
-        Mat AtW = trnMat(A);
+        SP_CPUFUNC Mat calcW(const Mem<double> errs, const int step = 1, const double minErr = 0.1) {
+            const int nsize = errs.size();
 
-        if (errs.size() > 0){
-            const int num = AtW.cols() / errs.size();
+            Mat W(nsize * step, 1);
 
             const double sigma = 1.4826 * medianVal(errs);
-            const double thresh = 3.0 * maxVal(sigma, minErr);
+            const double thresh = maxVal(3.0 * sigma, minErr);
 
-            for (int r = 0; r < AtW.rows(); r++){
-                for (int c = 0; c < AtW.cols(); c++){
-                    AtW(r, c) *= funcTukey(errs[c / num], thresh);
+            double *pw = W.ptr;
+            const double *pe = errs.ptr;
+
+            for (int i = 0; i < nsize; i++) {
+                const double w = funcTukey(*pe++, thresh);
+                for (int s = 0; s < step; s++) {
+                    *pw++ = w;
                 }
             }
+
+            return W;
         }
-        return AtW;
-    }
 
-    // solve equation (A * X = B)
-    SP_CPUFUNC bool solveEq(Mat &result, const Mat &A, const Mat &B, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
-        
-        const Mat AtW = calcAtWeight(A, errs, minErr);
+        SP_CPUFUNC Mat calcAtA(const Mat &A, const Mat W = Mat()) {
+            Mat M(A.cols(), A.cols());
+            M.zero();
 
-        result = invMat(AtW * A) * AtW * B;
-        return (result.size() > 0) ? true : false;
-    }
+            const int rsize = M.rows();
+            const int csize = M.cols();
 
-    // solve equation (A * X = 0)
-    SP_CPUFUNC bool solveEqZero(Mat &result, const Mat &A, const Mem<double> errs = Mem<double>(), const double minErr = 0.1){
-        
-        const Mat AtW = calcAtWeight(A, errs, minErr);
+            const int nsize = A.rows();
 
-        Mat eigVec, eigVal;
-        if (eigMat(eigVec, eigVal, AtW * A, true) == false) return false;
+            for (int i = 0; i < nsize; i++) {
+                double *pm = M.ptr;
+                const double *pa_ = &A(i, 0);
+                const double w = (W.ptr != NULL) ? W[i] : 1.0;
 
-        result.resize(eigVec.rows(), 1);
-        for (int i = 0; i < eigVec.rows(); i++) {
-            result[i] = eigVec(i, 0);
+                for (int r = 0; r < rsize; r++) {
+                    const double *pa = pa_;
+                    pm += r;
+                    pa += r;
+
+                    const double a = *pa;
+                    for (int c = r; c < csize; c++) {
+                        (*pm++) += a * (*pa++) * w;
+                    }
+                }
+            }
+
+            // fill
+            {
+                for (int r = 0; r < rsize; r++) {
+                    for (int c = r + 1; c < csize; c++) {
+                        M(c, r) = M(r, c);
+                    }
+                }
+            }
+
+            return M;
         }
-        return true;
+
+        SP_CPUFUNC Mat calcAtB(const Mat &A, const Mat &B, const Mat W = Mat()) {
+            Mat M(A.cols(), 1);
+            M.zero();
+
+            const int rsize = M.rows();
+            const int csize = M.cols();
+
+            const int nsize = A.rows();
+
+            for (int i = 0; i < nsize; i++) {
+                double *pm = M.ptr;
+                const double *pa = &A(i, 0);
+                const double b = B(i, 0);
+                const double w = (W.ptr != NULL) ? W[i] : 1.0;
+
+                for (int r = 0; r < rsize; r++) {
+                    *pm++ += (*pa++) * b * w;
+                }
+            }
+
+            return M;
+        }
+
+        // solve equation (A * X = B)
+        SP_CPUFUNC bool solveAX_B(Mat &result, const Mat &A, const Mat &B, const Mat W = Mat()) {
+            const Mat AtA = calcAtA(A, W);
+            const Mat AtB = calcAtB(A, B, W);
+
+            result = invMat(AtA) * AtB;
+
+            return (result.size() > 0) ? true : false;
+        }
+
+        // solve equation (A * X = 0)
+        SP_CPUFUNC bool solveAX_Z(Mat &result, const Mat &A, const Mat W = Mat()) {
+
+            const Mat AtA = calcAtA(A, W);
+
+            Mat eigVec, eigVal;
+            if (eigMat(eigVec, eigVal, AtA, true) == false) return false;
+
+            result.resize(eigVec.rows(), 1);
+            for (int i = 0; i < eigVec.rows(); i++) {
+                result[i] = eigVec(i, 0);
+            }
+            return true;
+        }
     }
+
 
     //--------------------------------------------------------------------------------
     // ransac util

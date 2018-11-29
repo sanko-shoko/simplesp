@@ -472,7 +472,7 @@ namespace sp {
 #if SP_USE_LOGGER
             for (int i = 0; i < names.size(); i++) {
                 if (name == NULL || name == names[i]) {
-                    if (flags[i] == false) stop(name);
+                    if (flags[i] == false) stop(names[i].c_str());
                     SP_PRINTF("%s : %.3lf [ms]\n", names[i].c_str(), times[i]);
                 }
             }

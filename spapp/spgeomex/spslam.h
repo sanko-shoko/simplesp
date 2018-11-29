@@ -147,7 +147,7 @@ namespace sp {
 
                 }
 
-                const double nThresh = 1.0;
+                const double nThresh = 0.5;
                 const double aThresh = 5.0 * SP_PI / 180.0;
 
                 const double t = norm / nThresh + angle / aThresh;

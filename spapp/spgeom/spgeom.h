@@ -84,7 +84,7 @@ namespace sp {
             }
 
             Mat result;
-            if (solveEq(result, J, E, errs) == false) return false;
+            if (solver::solveAX_B(result, J, E, solver::calcW(errs, 2)) == false) return false;
 
             pnt += getVec(result[0], result[1], result[2]);
         }
@@ -132,7 +132,7 @@ namespace sp {
         }
 
         Mat result;
-        if (solveEq(result, M, V) == false) return false;
+        if (solver::solveAX_B(result, M, V) == false) return false;
 
         pnt = getVec(result[0], result[1], result[2]);
 
@@ -331,8 +331,9 @@ namespace sp {
 
                 errs[i] = normVec(err);
             }
+
             Mat delta;
-            if (solveEq(delta, J, E, errs) == false) return false;
+            if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 3)) == false) return false;
 
             pose = updatePose(pose, delta.ptr);
         }
@@ -362,8 +363,9 @@ namespace sp {
                 E(i * 2 + 1, 0) = err.y;
                 errs[i] = normVec(err);
             }
+
             Mat delta;
-            if (solveEq(delta, J, E, errs) == false) return false;
+            if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return false;
 
             pose = updatePose(pose, delta.ptr);
         }

@@ -18,7 +18,7 @@ namespace sp{
     SP_CPUFUNC void slic(Mem2<int> &map, const Mem2<Col3> &img, const int step = 20, const int maxit = 5){
         
         Mem2<Col3> smooth;
-        gaussianFilter3x3<Col3, Byte>(smooth, img);
+        gaussianFilter<Col3, Byte>(smooth, img);
 
         // convert color space
         Mem2<Vec3> labImg(img.dsize);

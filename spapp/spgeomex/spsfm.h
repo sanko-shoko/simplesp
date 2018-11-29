@@ -330,7 +330,6 @@ namespace sp {
             view.img = img;
             view.cam = cam;
             view.fts = SIFT::getFeatures(img);
-            prepareMatch(view.fts);
 
             if (hint != NULL) {
                 view.state = ViewEx::POSE_HINT;

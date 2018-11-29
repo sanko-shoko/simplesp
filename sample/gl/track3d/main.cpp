@@ -118,7 +118,7 @@ private:
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
 
-            glRenderDepth<Byte>(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
+            glTexDepth<Byte>(m_depth, m_distance - 2 * m_radius, m_distance + 2 * m_radius);
         }
 
         {

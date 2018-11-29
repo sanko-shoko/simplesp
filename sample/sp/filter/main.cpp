@@ -66,7 +66,7 @@ int main(){
     // canny
     {
         Mem2<Col3> tmp;
-        gaussianFilter3x3<Col3, Byte>(tmp, src);
+        gaussianFilter<Col3, Byte>(tmp, src);
 
         Mem2<Byte> dst;
         canny(dst, tmp, 5, 10);

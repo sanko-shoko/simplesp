@@ -265,7 +265,7 @@ void VideoGUI::display(){
     }
 
     glLoadView2D(m_img->dsize, m_viewPos, m_viewScale);
-    glRenderImg(*m_img);
+    glTexImg(*m_img);
 }
 
 int main() {

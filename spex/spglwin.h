@@ -544,7 +544,7 @@ namespace sp {
                     glfwSetWindowSize(m_win, m_img.dsize[0], m_img.dsize[1]);
                 }
                 glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);
-                glRenderImg(m_img);
+                glTexImg(m_img);
             }
         };
 

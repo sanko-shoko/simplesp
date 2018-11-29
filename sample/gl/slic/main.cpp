@@ -52,7 +52,7 @@ private:
 
         // view 2D
         glLoadView2D(m_view->dsize, m_viewPos, m_viewScale);
-        glRenderImg(*m_view);
+        glTexImg(*m_view);
 
 
         for (int i = 0; i < m_vtxsList.size(); i++) {
