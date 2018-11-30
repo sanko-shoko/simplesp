@@ -485,11 +485,11 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double dx = (3.0 * a02 + 10.0 * a12 + 3.0 * a22) - (3.0 * a00 + 10.0 * a10 + 3.0 * a20);
-                const double dy = (3.0 * a20 + 10.0 * a21 + 3.0 * a22) - (3.0 * a00 + 10.0 * a01 + 3.0 * a02);
+                const double dx = ((3.0 * a02 + 10.0 * a12 + 3.0 * a22) - (3.0 * a00 + 10.0 * a10 + 3.0 * a20)) / 32.0;
+                const double dy = ((3.0 * a20 + 10.0 * a21 + 3.0 * a22) - (3.0 * a00 + 10.0 * a01 + 3.0 * a02)) / 32.0;
 
-                cnvVal(*pdx++, dx / 32.0);
-                cnvVal(*pdy++, dy / 32.0);
+                cnvVal(*pdx++, dx);
+                cnvVal(*pdy++, dy);
             }
         }
     }
