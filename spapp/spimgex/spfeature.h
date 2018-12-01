@@ -11,6 +11,44 @@
 namespace sp {
     class MapPnt;
 
+    class Dsc {
+
+    public:
+        // dimension
+        int dim;
+
+        // real value
+        Mem1<Byte> val;
+
+        // binary
+        Mem1<Byte> bin;
+
+        // descripter type
+        enum Type {
+            DSC_NULL = 0,
+            DSC_SIFT = 1
+        };
+        Type type;
+
+        Dsc() {
+            type = DSC_SIFT;
+        }
+
+        Dsc(const Dsc &dsc) {
+            *this = dsc;
+        }
+        
+        Dsc& operator = (const Dsc &dsc) {
+            dim = dsc.dim;
+            val = dsc.val;
+            bin = dsc.bin;
+
+            type = dsc.type;
+
+            return *this;
+        }
+    };
+
     class Feature {
 
     public:
@@ -28,14 +66,7 @@ namespace sp {
         double cst;
 
         // descripter
-        Mem1<Byte> dsc;
-
-        // descripter type
-        enum Type {
-            DSC_NULL = 0,
-            DSC_SIFT = 1
-        };
-        Type type;
+        Dsc dsc;
 
         // map point;
         MapPnt *mpnt;
@@ -47,7 +78,6 @@ namespace sp {
             drc = getVec(0.0, 0.0);
             scl = 0.0;
             mpnt = NULL;
-            type = DSC_SIFT;
         }
 
         Feature(const Feature &ft) {
@@ -59,18 +89,13 @@ namespace sp {
             drc = ft.drc;
             scl = ft.scl;
             cst = ft.cst;
+
             dsc = ft.dsc;
             mpnt = ft.mpnt;
-            type = ft.type;
 
-            bin = ft.bin;
             return *this;
         }
 
-    public:
-
-        // binary
-        Mem1<Byte> bin;
     };
 
 
@@ -113,25 +138,25 @@ namespace sp {
 
         int id = -1;
 
-        if (ft.type == Feature::Type::DSC_SIFT) {
+        if (ft.dsc.type == Dsc::Type::DSC_SIFT) {
             const double MIN_NCC = 0.9;
             const double MIN_BIN = 0.8;
 
             double maxv = MIN_NCC;
 
-            // dim = 128
-            const int dim = ft.dsc.size() / sizeof(float);
+            // SIFT dim = 128
+            const int dim = 128;
 
             for (int i = 0; i < fts.size(); i++) {
                 if (ft.cst * fts[i].cst <= 0.0) continue;
 
-                if (ft.bin.size() > 0 && fts[i].bin.size() > 0) {
-                    const double btest = static_cast<double>(cntBit(ft.bin.ptr, fts[i].bin.ptr, ft.bin.size())) / dim;
+                {
+                    const double btest = static_cast<double>(cntBit(ft.dsc.bin.ptr, fts[i].dsc.bin.ptr, ft.dsc.bin.size())) / dim;
                     if (btest < MIN_BIN) continue;
                 }
 
-                const float *data0 = reinterpret_cast<float*>(ft.dsc.ptr);
-                const float *data1 = reinterpret_cast<float*>(fts[i].dsc.ptr);
+                const float *data0 = reinterpret_cast<float*>(ft.dsc.val.ptr);
+                const float *data1 = reinterpret_cast<float*>(fts[i].dsc.val.ptr);
 
                 double sum = 0.0;
                 for (int d = 0; d < dim; d++) {
@@ -177,15 +202,15 @@ namespace sp {
 
     SP_CPUFUNC void prepareMatch(Feature &ft) {
 
-        if (ft.type == Feature::Type::DSC_SIFT) {
+        if (ft.dsc.type == Dsc::Type::DSC_SIFT) {
 
-            const int dim = ft.dsc.size() / sizeof(float);
+            const int dim = 128;
 
-            const float *data = reinterpret_cast<float*>(ft.dsc.ptr);
+            const float *data = reinterpret_cast<float*>(ft.dsc.val.ptr);
 
             const float thresh = static_cast<float>(1.0 / sqrt(dim));
 
-            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft.bin);
+            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft.dsc.bin);
 
             tmp->resize((dim + 8 - 1) / 8);
             cnvBit(tmp->ptr, tmp->size(), data, dim, thresh);

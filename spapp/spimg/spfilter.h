@@ -223,34 +223,51 @@ namespace sp{
         filterY<TYPE, ELEM>(dst, tmp, kernel);
     }
     
-    template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void boxFilter3x3(Mem<TYPE> &dst, const Mem<TYPE> &src) {
+    template <typename TYPE, typename TYPE0>
+    SP_CPUFUNC void boxFilter3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
         SP_ASSERT(isValid(2, src));
 
-        dst.resize(2, src.dsize);
-        const Mem2<TYPE> &tmp = (&dst != &src) ? src : clone(src);
+        const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
-        const int ch = sizeof(TYPE) / sizeof(ELEM);
+        const int dsize0 = src.dsize[0];
+        const int dsize1 = src.dsize[1];
+        const int dsize[2] = { dsize0, dsize1 };
 
-        for (int v = 0; v < dst.dsize[1]; v++) {
-            for (int u = 0; u < dst.dsize[0]; u++) {
+        dst.resize(2, dsize);
 
-                for (int c = 0; c < ch; c++) {
-                    double sum = 0.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v - 1, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v - 1, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v - 1, c) * 1.0;
+        const TYPE0 *psrc = tmp.ptr;
+        TYPE *pdst = dst.ptr;
 
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 0, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 0, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 0, c) * 1.0;
+        for (int v = 0; v < dsize1; v++) {
+            const int v0 = v + ((v == 0) ? 0 : -1);
+            const int v1 = v + 0;
+            const int v2 = v + ((v == dsize1 - 1) ? 0 : +1);
 
-                    sum += acs2<TYPE, ELEM>(tmp, u - 1, v + 1, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 0, v + 1, c) * 1.0;
-                    sum += acs2<TYPE, ELEM>(tmp, u + 1, v + 1, c) * 1.0;
+            const TYPE0 *psrc0 = &psrc[v0 * dsize0];
+            const TYPE0 *psrc1 = &psrc[v1 * dsize0];
+            const TYPE0 *psrc2 = &psrc[v2 * dsize0];
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / 9.0);
-                }
+            TYPE *pd = &pdst[v * dsize0];
+
+            for (int u = 0; u < dsize0; u++) {
+                const int u0 = u + ((u == 0) ? 0 : -1);
+                const int u1 = u + 0;
+                const int u2 = u + ((u == dsize0 - 1) ? 0 : +1);
+
+                const TYPE0 a00 = psrc0[u0];
+                const TYPE0 a01 = psrc0[u1];
+                const TYPE0 a02 = psrc0[u2];
+
+                const TYPE0 a10 = psrc1[u0];
+                const TYPE0 a11 = psrc1[u1];
+                const TYPE0 a12 = psrc1[u2];
+
+                const TYPE0 a20 = psrc2[u0];
+                const TYPE0 a21 = psrc2[u1];
+                const TYPE0 a22 = psrc2[u2];
+
+                const double d = (a00 + a01 + a02 + a10 + a11 + a12 + a20 + a21 + a22) / 9.0;
+                cnvVal(*pd++, d);
             }
         }
     }
@@ -380,8 +397,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double d = 8.0 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22);
-                cnvVal(*pd++, d / 16.0);
+                const double d = (8 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22)) / 16.0;
+                cnvVal(*pd++, d);
             }
         }
     }
@@ -431,11 +448,11 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double dx = (a02 + 2.0 * a12 + a22) - (a00 + 2.0 * a10 + a20);
-                const double dy = (a20 + 2.0 * a21 + a22) - (a00 + 2.0 * a01 + a02);
+                const double dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
+                const double dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
 
-                cnvVal(*pdx++, dx / 8.0);
-                cnvVal(*pdy++, dy / 8.0);
+                cnvVal(*pdx++, dx);
+                cnvVal(*pdy++, dy);
             }
         }
     }
@@ -485,8 +502,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double dx = ((3.0 * a02 + 10.0 * a12 + 3.0 * a22) - (3.0 * a00 + 10.0 * a10 + 3.0 * a20)) / 32.0;
-                const double dy = ((3.0 * a20 + 10.0 * a21 + 3.0 * a22) - (3.0 * a00 + 10.0 * a01 + 3.0 * a02)) / 32.0;
+                const double dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
+                const double dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
 
                 cnvVal(*pdx++, dx);
                 cnvVal(*pdy++, dy);

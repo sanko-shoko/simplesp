@@ -19,6 +19,7 @@ namespace sp {
         struct short2 {
             short x, y;
         };
+
         class ImgSet {
 
         public:
@@ -376,8 +377,7 @@ namespace sp {
             const Mem2<short2> &di1 = imgset.di1;
             const Mem2<short2> &di2 = imgset.di2;
 
-            const double k = 0.2;
-            const double m = 0.2;
+            const double k = 4.0;
             const int rdiv = 18;
             const int itmax = 20;
 
@@ -395,30 +395,30 @@ namespace sp {
 
             for (int i = 0; i < fts.size(); i++) {
 
-                Vec2 mp = getVec(0.0, 0.0);
-                double ms = 0.0;
-
                 for (int it = 0; it < itmax; it++) {
+                    const Vec2 pix = fts[i].pix;
+                    const double scl = fts[i].scl;
+
                     Vec2 ap = getVec(0.0, 0.0);
                     double as = 0.0;
-                    const Vec2 pix = fts[i].pix;
-                    const double s = fts[i].scl;
-
+                    
+                    int cnt = 0;
                     for (int r = 0; r < rdiv; r++) {
                         const Vec2 n = rvec[r];
-                        const Vec2 v = s * n;
+                        const Vec2 v = scl * n;
                         const Vec2 a = pix + v;
                         const int ax = round(a.x);
                         const int ay = round(a.y);
+                        if (isInRect2(rect, ax, ay) == false) continue;
 
- /*                       Vec2 d1, d2;
+                        Vec2 d1, d2;
                         d1.x = acs2<short2, short>(di1, a.x, a.y, 0);
                         d1.y = acs2<short2, short>(di1, a.x, a.y, 1);
                         d2.x = acs2<short2, short>(di2, a.x, a.y, 0);
                         d2.y = acs2<short2, short>(di2, a.x, a.y, 1);
- */                       short2 d1, d2;
-                        d1 = acs2(di1, ax, ay);
-                        d2 = acs2(di2, ax, ay);
+                        //short2 d1, d2;
+                        //d1 = acs2(di1, ax, ay);
+                        //d2 = acs2(di2, ax, ay);
 
                         Vec2 delta;
                         delta.x = d2.x * sign(d1.x);
@@ -426,46 +426,15 @@ namespace sp {
 
                         ap += delta;
                         as += dotVec(n, delta);
+                        cnt++;
                     }
-                    //for (int r = 0; r < rdiv; r++) {
-                    //    const Vec2 n = rvec[r];
-                    //    const Vec2 v = s * n;
-                    //    const Vec2 a = pix + v;
+                    if (cnt == 0) break;
 
-                    //    const int ix = floor(a.x);
-                    //    const int iy = floor(a.y);
+                    ap *= k / (SP_BYTEMAX * cnt);
+                    as *= k / (SP_BYTEMAX * cnt);
 
-                    //    const double ax = a.x - ix;
-                    //    const double ay = a.y - iy;
-                    //    if (isInRect2(rect, ix, iy) == false) continue;
-
-                    //    const double xa = acs2(img, a.x - 1, a.y);
-                    //    const double xb = acs2(img, a.x + 1, a.y);
-                    //    const double ya = acs2(img, a.x, a.y - 1);
-                    //    const double yb = acs2(img, a.x, a.y + 1);
-                    //    const double cc = acs2(img, a.x, a.y);
-                    //    
-                    //    Vec2 d1, d2;
-                    //    d1.x = (xb - xa);
-                    //    d1.y = (yb - ya);
-                    //    d2.x = (xb - cc) - (cc - xa);
-                    //    d2.y = (yb - cc) - (cc - ya);
-
-                    //    Vec2 delta;
-                    //    delta.x = d2.x * sign(d1.x);
-                    //    delta.y = d2.y * sign(d1.y);
-
-                    //    ap += delta;
-                    //    as += dotVec(n, delta);
-                    //}
-                    ap /= SP_BYTEMAX;
-                    as /= SP_BYTEMAX;
-
-                    mp = ap * k + mp * m;
-                    ms = as * k + ms * m;
-                    
-                    fts[i].pix += mp;
-                    fts[i].scl += ms;
+                    fts[i].pix += ap;
+                    fts[i].scl += as;
                  }
             }
 

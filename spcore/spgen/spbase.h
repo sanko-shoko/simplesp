@@ -30,7 +30,7 @@ namespace sp{
 
     // get sign (+1 or -1)
     template<typename TYPE> SP_GENFUNC int sign(const TYPE val){
-        return (val >= 0) ? +1 : -1;
+        return (val > 0) - (val < 0);
     }
 
     // swap

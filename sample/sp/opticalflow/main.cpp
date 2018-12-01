@@ -1,4 +1,5 @@
-﻿#include "simplesp.h"
+﻿#define SP_USE_DEBUG 1
+#include "simplesp.h"
 
 using namespace sp;
 
@@ -12,7 +13,7 @@ int main() {
 
     // load image
     {
-        if (0) {
+        if (1) {
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", img0));
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", img1));
         }

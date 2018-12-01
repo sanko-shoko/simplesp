@@ -72,7 +72,7 @@ namespace sp{
             for (int i = 0; i < pixs.size(); i++) {
                 
                 int stop = 0;
-                if (scls.size() == pixs.size()) {
+                if (scls.size() > 0) {
                     stop = round(log2(scls[i] / whalf));
                     stop = maxVal(0, minVal(pynum - 1, stop));
                 }
@@ -86,8 +86,8 @@ namespace sp{
                     const Rect rect0 = getRect2(pyimg0.dsize);
                     const Rect rect1 = getRect2(pyimg1.dsize);
 
-                    Mem2<short> &dX = dXs[p];
-                    Mem2<short> &dY = dYs[p];
+                    const Mem2<short> &dX = dXs[p];
+                    const Mem2<short> &dY = dYs[p];
 
                     // check status
                     {
@@ -230,12 +230,11 @@ namespace sp{
 
             for (int i = 0; i < mask.size(); i++) {
                 if (errs[i] > 3.0 * sigma) mask[i] = false;
+             
+                if (mask[i] == false) flows[i] = getVec(0.0, 0.0);
             }
         }
 
-        for (int i = 0; i < mask.size(); i++) {
-            if (mask[i] == false) flows[i] = getVec(0.0, 0.0);
-        }
    }
 
     SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {

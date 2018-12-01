@@ -48,6 +48,9 @@ private:
             };
             const Mat hom(3, 3, mat);
 
+            //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", m_imgs[0]));
+            //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", m_imgs[1]));
+
             warp<Col3, Byte>(m_imgs[1], m_imgs[0], hom);
             merge(m_imgs[0], m_imgs[0], m_imgs[1]);
         }
