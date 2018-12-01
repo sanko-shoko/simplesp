@@ -6,7 +6,7 @@
 #define __SP_SFM_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spscene.h"
+#include "spapp/spimgex/spfeature.h"
 #include "spapp/spgeom/spgeom.h"
 
 namespace sp {
