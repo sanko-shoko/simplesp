@@ -42,14 +42,14 @@ int main(){
     }
 
 
-    Mem1<Feature> fts[2];
+    Mem1<Ftr> ftrs[2];
 
     {
         SP_LOGGER_SET("features");
 
         // get features
-        fts[0] = SIFT::getFeatures(imgs[0]);
-        fts[1] = SIFT::getFeatures(imgs[1]);
+        ftrs[0] = SIFT::getFtrs(imgs[0]);
+        ftrs[1] = SIFT::getFtrs(imgs[1]);
     }
 
     Mem1<int> matches;
@@ -57,15 +57,15 @@ int main(){
         SP_LOGGER_SET("matching");
     
         // matching
-        matches = findMatch(fts[0], fts[1]);
+        matches = findMatch(ftrs[0], ftrs[1]);
     }
 
-    const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);
-    const Mem1<Vec2> pixs1 = getMatchPixs(fts[1], matches, false);
+    const Mem1<Vec2> pixs0 = getMatchPixs(ftrs[0], matches, true);
+    const Mem1<Vec2> pixs1 = getMatchPixs(ftrs[1], matches, false);
     
     // print info
-    printf("fts[0]: %d\n", fts[0].size());
-    printf("fts[1]: %d\n", fts[1].size());
+    printf("ftrs[0]: %d\n", ftrs[0].size());
+    printf("ftrs[1]: %d\n", ftrs[1].size());
 
     printf("match [0->1]: cnt %d, eval %.2lf\n", getMatchCnt(matches), getMatchEval(matches));
 
@@ -73,17 +73,17 @@ int main(){
     {
         if (0) {
             for (int i = 0; i < 2; i++) {
-                for (int f = 0; f < fts[i].size(); f++) {
-                    renderCircle(imgs[i], fts[i][f].pix, fts[i][f].scl, getCol(100, 255, 100), 1);
+                for (int f = 0; f < ftrs[i].size(); f++) {
+                    renderCircle(imgs[i], ftrs[i][f].pix, ftrs[i][f].scl, getCol(100, 255, 100), 1);
                 }
             }
         }
         else {
-            for (int f = 0, c = 0; f < fts[0].size(); f++) {
+            for (int f = 0, c = 0; f < ftrs[0].size(); f++) {
                 const int g = matches[f];
                 if (g < 0) continue;
-                renderCircle(imgs[0], fts[0][f].pix, fts[0][f].scl, getCol(c), 1);
-                renderCircle(imgs[1], fts[1][g].pix, fts[1][g].scl, getCol(c), 1);
+                renderCircle(imgs[0], ftrs[0][f].pix, ftrs[0][f].scl, getCol(c), 1);
+                renderCircle(imgs[1], ftrs[1][g].pix, ftrs[1][g].scl, getCol(c), 1);
                 c++;
             }
         }

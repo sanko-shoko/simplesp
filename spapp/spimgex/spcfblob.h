@@ -31,7 +31,7 @@ namespace sp {
 
     private:
 
-        Mem1<Feature> m_fts;
+        Mem1<Ftr> m_ftrs;
 
         Mem1<ImgSet> m_imgsets;
 
@@ -48,7 +48,7 @@ namespace sp {
             *this = cfblob;
         }
         CFBlob& operator = (const CFBlob &cfblob) {
-            m_fts = cfblob.m_fts;
+            m_ftrs = cfblob.m_ftrs;
             return *this;
         }
 
@@ -66,16 +66,16 @@ namespace sp {
         // data
         //--------------------------------------------------------------------------------
 
-        const Mem1<Feature>* getFeatures() const {
-            return (m_fts.size() > 0) ? &m_fts : NULL;
+        const Mem1<Ftr>* getFtrs() const {
+            return (m_ftrs.size() > 0) ? &m_ftrs : NULL;
         }
 
         template<typename T>
-        static Mem1<Feature> getFeatures(const Mem2<T> &img, const double contrast = 0.01) {
+        static Mem1<Ftr> getFtrs(const Mem2<T> &img, const double contrast = 0.01) {
             CFBlob cfblob;
             cfblob.setParam(contrast);
             cfblob.execute(img);
-            return (cfblob.getFeatures() != NULL) ? *cfblob.getFeatures() : Mem1<Feature>();
+            return (cfblob.getFtrs() != NULL) ? *cfblob.getFtrs() : Mem1<Ftr>();
         }
 
 
@@ -108,7 +108,7 @@ namespace sp {
 
             // clear data
             {
-                m_fts.clear();
+                m_ftrs.clear();
             }
 
             try {
@@ -116,7 +116,7 @@ namespace sp {
 
                 makeImgSet(m_imgsets, img);
 
-                detect(m_fts, m_imgsets);
+                detect(m_ftrs, m_imgsets);
             }
             catch (const char *str) {
                 SP_PRINTF("Test.execute [%s]\n", str);
@@ -192,12 +192,12 @@ namespace sp {
             }
         }
 
-        bool detect(Mem1<Feature> &fts, const Mem1<ImgSet> &imgsets) {
+        bool detect(Mem1<Ftr> &ftrs, const Mem1<ImgSet> &imgsets) {
             SP_LOGGER_SET("detect");
 
             const int pynum = imgsets.size();
 
-            Mem1<Mem1<Feature> > pyfts(pynum - 1);
+            Mem1<Mem1<Ftr> > pyfts(pynum - 1);
             {
                 SP_LOGGER_SET("procCoarse");
                 for (int s = 0; s < pynum - 1; s++) {
@@ -212,7 +212,7 @@ namespace sp {
                 }
             }
 
-            fts.clear();
+            ftrs.clear();
             {
                 SP_LOGGER_SET("procFine");
                 for (int s = 0; s < pynum - 1; s++) {
@@ -223,13 +223,13 @@ namespace sp {
               
                     const double ss = pow(2.0, s);
                     for (int i = 0; i < pyfts[s].size(); i++) {
-                        Feature ft = pyfts[s][i];
-                        ft.pix *= ss;
-                        ft.scl *= ss;
-                        fts.push(ft);
+                        Ftr ftr = pyfts[s][i];
+                        ftr.pix *= ss;
+                        ftr.scl *= ss;
+                        ftrs.push(ftr);
                     }
                 }
-                SP_HOLDER_SET("output", fts);
+                SP_HOLDER_SET("output", ftrs);
             }
 
             return true;
@@ -237,13 +237,13 @@ namespace sp {
 
 
         template <typename TYPE>
-        void procCoarse(Mem1<Feature> &fts, const Mem2<TYPE> &img, const float thresh = 0.1f * SP_BYTEMAX) {
+        void procCoarse(Mem1<Ftr> &ftrs, const Mem2<TYPE> &img, const float thresh = 0.1f * SP_BYTEMAX) {
             SP_ASSERT(isValid(2, img));
 
             const int w = img.dsize[0];
             const int h = img.dsize[1];
 
-            fts.reserve(img.size() / 4);
+            ftrs.reserve(img.size() / 4);
 
             Mem2<float> res(img.dsize);
             res.zero();
@@ -363,15 +363,15 @@ namespace sp {
                     }
 
                     if (m == true && fabs(d) > thresh) {
-                        Feature *ft = fts.extend();
-                        ft->pix = getVec(u, v);
+                        Ftr *ftr = ftrs.extend();
+                        ftr->pix = getVec(u, v);
                     }
                 }
             }
 
         }
 
-        bool procFine(Mem1<Feature> &fts, const ImgSet &imgset) {
+        bool procFine(Mem1<Ftr> &ftrs, const ImgSet &imgset) {
 
             const Mem2<Byte> &img = imgset.img;
             const Mem2<short2> &di1 = imgset.di1;
@@ -393,11 +393,11 @@ namespace sp {
             const int w = img.dsize[0];
             const int h = img.dsize[1];
 
-            for (int i = 0; i < fts.size(); i++) {
+            for (int i = 0; i < ftrs.size(); i++) {
 
                 for (int it = 0; it < itmax; it++) {
-                    const Vec2 pix = fts[i].pix;
-                    const double scl = fts[i].scl;
+                    const Vec2 pix = ftrs[i].pix;
+                    const double scl = ftrs[i].scl;
 
                     Vec2 ap = getVec(0.0, 0.0);
                     double as = 0.0;
@@ -433,8 +433,8 @@ namespace sp {
                     ap *= k / (SP_BYTEMAX * cnt);
                     as *= k / (SP_BYTEMAX * cnt);
 
-                    fts[i].pix += ap;
-                    fts[i].scl += as;
+                    ftrs[i].pix += ap;
+                    ftrs[i].scl += as;
                  }
             }
 

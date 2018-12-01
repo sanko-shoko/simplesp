@@ -42,8 +42,8 @@ namespace sp {
             return m_vtrack.getCam();
         }
         
-        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
-            m_vtrack.setBase(img, pose, fts);
+        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Ftr> *ftrs = NULL) {
+            m_vtrack.setBase(img, pose, ftrs);
         }
 
         void setBase(const View &view) {

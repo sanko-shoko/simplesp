@@ -22,7 +22,7 @@ namespace sp{
 
     public:
 
-        class MyFeature : public Feature{
+        class MyFeature : public Ftr{
 
         public:
             int octave;
@@ -38,7 +38,7 @@ namespace sp{
 
     private:
  
-        Mem1<Feature> m_fts;
+        Mem1<Ftr> m_ftrs;
 
         Mem1<ImgSet> m_imgsets;
 
@@ -56,7 +56,7 @@ namespace sp{
             *this = sift;
         }
         SIFT& operator = (const SIFT &sift) {
-            m_fts = sift.m_fts;
+            m_ftrs = sift.m_ftrs;
             return *this;
         }
 
@@ -74,16 +74,16 @@ namespace sp{
         // data
         //--------------------------------------------------------------------------------
 
-        const Mem1<Feature>* getFeatures() const {
-            return (m_fts.size() > 0) ? &m_fts : NULL;
+        const Mem1<Ftr>* getFtrs() const {
+            return (m_ftrs.size() > 0) ? &m_ftrs : NULL;
         }
 
         template<typename T>
-        static Mem1<Feature> getFeatures(const Mem2<T> &img, const double contrast = 0.01) {
+        static Mem1<Ftr> getFtrs(const Mem2<T> &img, const double contrast = 0.01) {
             SIFT sift;
             sift.setParam(contrast);
             sift.execute(img);
-            return (sift.getFeatures() != NULL) ? *sift.getFeatures() : Mem1<Feature>();
+            return (sift.getFtrs() != NULL) ? *sift.getFtrs() : Mem1<Ftr>();
         }
 
 
@@ -117,7 +117,7 @@ namespace sp{
 
             // clear data
             {
-                m_fts.clear();
+                m_ftrs.clear();
                 m_imgsets.clear();
             }
 
@@ -136,7 +136,7 @@ namespace sp{
                 if(detect(myfts, m_imgsets) == false) throw "no featues";
 
                 // descript features
-                descript(m_fts, myfts, m_imgsets);
+                descript(m_ftrs, myfts, m_imgsets);
 
             }
             catch (const char *str){
@@ -199,9 +199,9 @@ namespace sp{
             }
         }
 
-        bool detect(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
+        bool detect(Mem1<MyFeature> &ftrs, const Mem1<ImgSet> &imgsets){
 
-            fts.clear();
+            ftrs.clear();
             for (int o = 0; o < imgsets.size(); o++){
                 const Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
                 const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
@@ -240,28 +240,28 @@ namespace sp{
 
                                 const double SIG_FCTR = 1.5;
 
-                                MyFeature ft;
+                                MyFeature ftr;
 
-                                ft.pix = getVec(vec.x, vec.y) * (1 << o);
-                                ft.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
-                                ft.cst = dogs[s](x, y);
+                                ftr.pix = getVec(vec.x, vec.y) * (1 << o);
+                                ftr.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ftr.cst = dogs[s](x, y);
 
-                                ft.octave = o;
-                                ft.layer = s;
+                                ftr.octave = o;
+                                ftr.layer = s;
 
-                                fts.push(ft);
+                                ftrs.push(ftr);
                             }
                         }
                     }
                 }
             }
 
-            return (fts.size() != 0) ? true : false;
+            return (ftrs.size() != 0) ? true : false;
         }
 
-        void descript(Mem1<Feature> &fts, const Mem1<MyFeature> &myfts, const Mem1<ImgSet> &imgsets){
+        void descript(Mem1<Ftr> &ftrs, const Mem1<MyFeature> &myfts, const Mem1<ImgSet> &imgsets){
 
-            fts.reserve(myfts.size() * 2);
+            ftrs.reserve(myfts.size() * 2);
 
             for (int i = 0; i < myfts.size(); i++){
  
@@ -272,7 +272,7 @@ namespace sp{
                 const Vec2 pix = myft.pix / (1 << myft.octave);
                 const double scl = myft.scl / (1 << myft.octave);
 
-                Feature ft = myft;
+                Ftr ftr = myft;
 
                 const double PEAK_THRESH = 0.8;
 
@@ -280,9 +280,9 @@ namespace sp{
                 calcFtDrc(drcs, img, pix, scl, PEAK_THRESH);
         
                 for (int a = 0; a < drcs.size(); a++) {
-                    ft.drc = drcs[a];
-                    calcFtDsc(ft.dsc, img, pix, ft.drc, scl);
-                    fts.push(ft);
+                    ftr.drc = drcs[a];
+                    calcFtDsc(ftr.dsc, img, pix, ftr.drc, scl);
+                    ftrs.push(ftr);
                 }
             }
         }

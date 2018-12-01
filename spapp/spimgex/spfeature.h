@@ -50,7 +50,7 @@ namespace sp {
         }
     };
 
-    class Feature {
+    class Ftr {
 
     public:
 
@@ -74,25 +74,25 @@ namespace sp {
 
     public:
 
-        Feature() {
+        Ftr() {
             pix = getVec(0.0, 0.0);
             drc = getVec(0.0, 0.0);
             scl = 0.0;
             mpnt = NULL;
         }
 
-        Feature(const Feature &ft) {
-            *this = ft;
+        Ftr(const Ftr &ftr) {
+            *this = ftr;
         }
 
-        Feature& operator = (const Feature &ft) {
-            pix = ft.pix;
-            drc = ft.drc;
-            scl = ft.scl;
-            cst = ft.cst;
+        Ftr& operator = (const Ftr &ftr) {
+            pix = ftr.pix;
+            drc = ftr.drc;
+            scl = ftr.scl;
+            cst = ftr.cst;
 
-            dsc = ft.dsc;
-            mpnt = ft.mpnt;
+            dsc = ftr.dsc;
+            mpnt = ftr.mpnt;
 
             return *this;
         }
@@ -113,7 +113,7 @@ namespace sp {
         Mem2<Col3> img;
 
         // features
-        Mem1<Feature> fts;
+        Mem1<Ftr> ftrs;
 
         View() {
             valid = false;
@@ -133,7 +133,7 @@ namespace sp {
             pose = view.pose;
 
             img = view.img;
-            fts = view.fts;
+            ftrs = view.ftrs;
 
             return *this;
         }
@@ -154,7 +154,7 @@ namespace sp {
         Mem1<View*> views;
 
         // feature index
-        Mem1<Feature*> fts;
+        Mem1<Ftr*> ftrs;
 
         Mem1<double> errs;
 
@@ -181,7 +181,7 @@ namespace sp {
             err = mpnt.err;
 
             views = mpnt.views;
-            fts = mpnt.fts;
+            ftrs = mpnt.ftrs;
 
             return *this;
         }
@@ -198,7 +198,7 @@ namespace sp {
             for (int i = 0; i < num; i++) {
                 const Pose &pose = views[i]->pose;
                 const CamParam &cam = views[i]->cam;
-                const Vec2 &pix = fts[i]->pix;
+                const Vec2 &pix = ftrs[i]->pix;
 
                 errs[i] = calcPrjErr(pose, cam, pix, pos);
             }
@@ -214,7 +214,7 @@ namespace sp {
             const int num = views.size();
 
             for (int i = 0; i < num; i++) {
-                const Vec2 &pix = fts[i]->pix;
+                const Vec2 &pix = ftrs[i]->pix;
                 vec += getVec(acsc(views[i]->img, pix.x, pix.y)) / num;
             }
 
@@ -251,22 +251,22 @@ namespace sp {
         return scale * c / n;
     };
 
-    SP_CPUFUNC Mem1<Vec2> getMatchPixs(const Mem1<Feature> &fts, const Mem1<int> &matches, const bool flag = true) {
+    SP_CPUFUNC Mem1<Vec2> getMatchPixs(const Mem1<Ftr> &ftrs, const Mem1<int> &matches, const bool flag = true) {
         Mem1<Vec2> pixs;
         for (int i = 0; i < matches.size(); i++) {
             const int j = matches[i];
             if (j < 0) continue;
             const int f = (flag == true) ? i : j;
-            pixs.push(fts[f].pix);
+            pixs.push(ftrs[f].pix);
         }
         return pixs;
     }
 
-    SP_CPUFUNC int findMatch(const Feature &ft, const Mem1<Feature> &fts) {
+    SP_CPUFUNC int findMatch(const Ftr &ftr, const Mem1<Ftr> &ftrs) {
 
         int id = -1;
 
-        if (ft.dsc.type == Dsc::Type::DSC_SIFT) {
+        if (ftr.dsc.type == Dsc::Type::DSC_SIFT) {
             const double MIN_NCC = 0.9;
             const double MIN_BIN = 0.8;
 
@@ -275,16 +275,16 @@ namespace sp {
             // SIFT dim = 128
             const int dim = 128;
 
-            for (int i = 0; i < fts.size(); i++) {
-                if (ft.cst * fts[i].cst <= 0.0) continue;
+            for (int i = 0; i < ftrs.size(); i++) {
+                if (ftr.cst * ftrs[i].cst <= 0.0) continue;
 
                 {
-                    const double btest = static_cast<double>(cntBit(ft.dsc.bin.ptr, fts[i].dsc.bin.ptr, ft.dsc.bin.size())) / dim;
+                    const double btest = static_cast<double>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
                     if (btest < MIN_BIN) continue;
                 }
 
-                const float *data0 = reinterpret_cast<float*>(ft.dsc.val.ptr);
-                const float *data1 = reinterpret_cast<float*>(fts[i].dsc.val.ptr);
+                const float *data0 = reinterpret_cast<float*>(ftr.dsc.val.ptr);
+                const float *data1 = reinterpret_cast<float*>(ftrs[i].dsc.val.ptr);
 
                 double sum = 0.0;
                 for (int d = 0; d < dim; d++) {
@@ -301,24 +301,24 @@ namespace sp {
         return id;
     }
 
-    SP_CPUFUNC Mem1<int> findMatch(const Mem1<Feature> &fts0, const Mem1<Feature> &fts1, const bool crossCheck = true) {
-        Mem1<int> matches(fts0.size());
+    SP_CPUFUNC Mem1<int> findMatch(const Mem1<Ftr> &ftrs0, const Mem1<Ftr> &ftrs1, const bool crossCheck = true) {
+        Mem1<int> matches(ftrs0.size());
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-        for (int i = 0; i < fts0.size(); i++) {
+        for (int i = 0; i < ftrs0.size(); i++) {
             matches[i] = -1;
 
             int j, k;
             {
-                j = findMatch(fts0[i], fts1);
+                j = findMatch(ftrs0[i], ftrs1);
                 if (j < 0) continue;
             }
 
             // cross check
             if (crossCheck == true) {
-                k = findMatch(fts1[j], fts0);
+                k = findMatch(ftrs1[j], ftrs0);
                 if (k != i) continue;
             }
 
@@ -328,28 +328,6 @@ namespace sp {
         return matches;
     }
 
-    SP_CPUFUNC void prepareMatch(Feature &ft) {
-
-        if (ft.dsc.type == Dsc::Type::DSC_SIFT) {
-
-            const int dim = 128;
-
-            const float *data = reinterpret_cast<float*>(ft.dsc.val.ptr);
-
-            const float thresh = static_cast<float>(1.0 / sqrt(dim));
-
-            Mem1<Byte> *tmp = const_cast<Mem1<Byte>*>(&ft.dsc.bin);
-
-            tmp->resize((dim + 8 - 1) / 8);
-            cnvBit(tmp->ptr, tmp->size(), data, dim, thresh);
-        }
-    }
-
-    SP_CPUFUNC void prepareMatch(Mem1<Feature> &fts) {
-        for (int i = 0; i < fts.size(); i++) {
-            prepareMatch(fts[i]);
-        }
-    }
 }
 
 #endif

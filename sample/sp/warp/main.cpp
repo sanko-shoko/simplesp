@@ -51,17 +51,17 @@ int main(){
     }
 
     {
-        Mem1<Feature> fts[2];
+        Mem1<Ftr> ftrs[2];
 
         // get features
-        fts[0] = SIFT::getFeatures(imgs[0]);
-        fts[1] = SIFT::getFeatures(imgs[1]);
+        ftrs[0] = SIFT::getFtrs(imgs[0]);
+        ftrs[1] = SIFT::getFtrs(imgs[1]);
 
         // matching
-        const Mem1<int> matches = findMatch(fts[0], fts[1]);
+        const Mem1<int> matches = findMatch(ftrs[0], ftrs[1]);
 
-        const Mem1<Vec2> pixs0 = getMatchPixs(fts[0], matches, true);
-        const Mem1<Vec2> pixs1 = getMatchPixs(fts[1], matches, false);
+        const Mem1<Vec2> pixs0 = getMatchPixs(ftrs[0], matches, true);
+        const Mem1<Vec2> pixs1 = getMatchPixs(ftrs[1], matches, false);
         {
             Mat hom;
             if (calcHMatRANSAC(hom, pixs1, pixs0) == true) {

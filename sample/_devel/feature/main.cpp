@@ -13,7 +13,7 @@ class FeatureGUI : public BaseWindow {
 private:
     Mem1<Mem2<Col3>> m_imgs;
 
-    Mem1<Mem1<Feature>> m_fts;
+    Mem1<Mem1<Ftr>> m_ftrs;
     Mem1<int> m_matches;
 
     int m_mode;
@@ -84,16 +84,16 @@ private:
     }
 
     void initTest() {
-        m_fts.clear();
+        m_ftrs.clear();
 
         static CFBlob test;
         test.execute(m_imgs[0]);
-        if (test.getFeatures() != NULL) {
-            m_fts.push(*test.getFeatures());
+        if (test.getFtrs() != NULL) {
+            m_ftrs.push(*test.getFtrs());
         }
 
         //test.execute(m_imgs[1]);
-        //m_fts.push(*test.getFeatures());
+        //m_ftrs.push(*test.getFtrs());
         m_viewScale = 0.7;
         SP_LOGGER_PRINT(NULL);
     }
@@ -111,10 +111,10 @@ private:
         {
             const int s = m_ival;
             const Mem2<Byte> *pyimg = SP_HOLDER_GET(strFormat("pyimg%d", s).c_str(), Mem2<Byte>);
-            const Mem1<Feature> *cpnts = SP_HOLDER_GET(strFormat("pyfts%d", s).c_str(), Mem1<Feature>);
-            const Mem1<Feature> *ref = SP_HOLDER_GET(strFormat("refine%d", s).c_str(), Mem1<Feature>);
-            const Mem1<Feature> *ref2 = SP_HOLDER_GET(strFormat("refine2%d", s).c_str(), Mem1<Feature>);
-            const Mem1<Feature> *output = SP_HOLDER_GET("output", Mem1<Feature>);
+            const Mem1<Ftr> *cpnts = SP_HOLDER_GET(strFormat("pyfts%d", s).c_str(), Mem1<Ftr>);
+            const Mem1<Ftr> *ref = SP_HOLDER_GET(strFormat("refine%d", s).c_str(), Mem1<Ftr>);
+            const Mem1<Ftr> *ref2 = SP_HOLDER_GET(strFormat("refine2%d", s).c_str(), Mem1<Ftr>);
+            const Mem1<Ftr> *output = SP_HOLDER_GET("output", Mem1<Ftr>);
             if (pyimg != NULL) {
                 double scale = sp::pow(2, m_ival);
                 glLoadView2D(pyimg->dsize, m_viewPos, m_viewScale * scale);
@@ -183,8 +183,8 @@ private:
             glBegin(GL_LINES);
 
             glColor(1);
-            for (int i = 0; i < m_fts[p].size(); i++) {
-                glCircle(m_fts[p][i].pix, m_fts[p][i].scl);
+            for (int i = 0; i < m_ftrs[p].size(); i++) {
+                glCircle(m_ftrs[p][i].pix, m_ftrs[p][i].scl);
             }
             glEnd();
         }
@@ -193,14 +193,14 @@ private:
     void initSIFT() {
         printf("drag & drop images\n");
 
-        m_fts.clear();
-        m_fts.push(SIFT::getFeatures(m_imgs[0]));
-        m_fts.push(SIFT::getFeatures(m_imgs[1]));
+        m_ftrs.clear();
+        m_ftrs.push(SIFT::getFtrs(m_imgs[0]));
+        m_ftrs.push(SIFT::getFtrs(m_imgs[1]));
     }
 
     void dropSIFT(int num, const char **paths) {
         m_imgs.clear();
-        m_fts.clear();
+        m_ftrs.clear();
 
         for (int i = 0; i < 2; i++) {
             Mem2<Col3> img;
@@ -215,9 +215,9 @@ private:
         }
 
         if (m_imgs.size() >= 2) {
-            m_fts.push(SIFT::getFeatures(m_imgs[0]));
-            m_fts.push(SIFT::getFeatures(m_imgs[1]));
-            m_matches = findMatch(m_fts[0], m_fts[1]);
+            m_ftrs.push(SIFT::getFtrs(m_imgs[0]));
+            m_ftrs.push(SIFT::getFtrs(m_imgs[1]));
+            m_matches = findMatch(m_ftrs[0], m_ftrs[1]);
         }
     }
     void dispSIFT(){
@@ -237,24 +237,24 @@ private:
             {
                 glLoadView2D(cam, m_viewPos, m_viewScale);
 
-                for (int f = 0, c = 0; f < m_fts[0].size(); f++) {
+                for (int f = 0, c = 0; f < m_ftrs[0].size(); f++) {
                     const int g = m_matches[f];
                     if (g < 0) continue;
 
                     glBegin(GL_LINES);
                     glColor(getCol(c));
-                    glCircle(m_fts[0][f].pix, m_fts[0][f].scl);
+                    glCircle(m_ftrs[0][f].pix, m_ftrs[0][f].scl);
                     glEnd();
 
                     glBegin(GL_LINES);
                     glColor(getCol(c));
-                    glCircle(m_fts[1][g].pix + offset, m_fts[1][g].scl);
+                    glCircle(m_ftrs[1][g].pix + offset, m_ftrs[1][g].scl);
                     glEnd();
 
                     glBegin(GL_LINES);
                     glColor(getCol(c));
-                    glVertex(m_fts[0][f].pix);
-                    glVertex(m_fts[1][g].pix + offset);
+                    glVertex(m_ftrs[0][f].pix);
+                    glVertex(m_ftrs[1][g].pix + offset);
                     glEnd();
 
                     c++;
@@ -265,18 +265,18 @@ private:
             glLoadView2D(m_imgs[0].dsize, m_viewPos, m_viewScale);
             glTexImg(m_imgs[0]);
 
-            for (int f = 0; f < m_fts[0].size(); f++) {
+            for (int f = 0; f < m_ftrs[0].size(); f++) {
                 glBegin(GL_LINES);
                 glColor(getCol(f));
-                glCircle(m_fts[0][f].pix, m_fts[0][f].scl);
+                glCircle(m_ftrs[0][f].pix, m_ftrs[0][f].scl);
                 glEnd();
             }
         }
     }
 
-    //void feature(const Feature &ft) {
+    //void feature(const Ftr &ftr) {
     //    glBegin(GL_LINES);
-    //    glCircle(ft.pix, m_fts[0][f].scl);
+    //    glCircle(ftr.pix, m_ftrs[0][f].scl);
     //    glEnd();
     //}
 };
