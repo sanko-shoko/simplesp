@@ -53,7 +53,7 @@ int main(){
     // sobel
     {
         Mem2<float> dstX, dstY;
-        sobelFilterX3x3(dstX, dstY, gry);
+        sobelFilter3x3(dstX, dstY, gry);
         
         Mem2<Byte> tmpX, tmpY;
         cnvMem(tmpX, dstX, 0.5, -255 );
