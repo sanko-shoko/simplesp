@@ -23,12 +23,12 @@ int main() {
     Pose stereo;
     {
         // get feature
-        const Mem1<Feature> fts0 = SIFT::getFeatures(imgs[0]);
-        const Mem1<Feature> fts1 = SIFT::getFeatures(imgs[1]);
-        const Mem1<int> matches = findMatch(fts0, fts1);
+        const Mem1<Ftr> ftrs0 = SIFT::getFtrs(imgs[0]);
+        const Mem1<Ftr> ftrs1 = SIFT::getFtrs(imgs[1]);
+        const Mem1<int> matches = findMatch(ftrs0, ftrs1);
 
-        const Mem1<Vec2> pixs0 = getMatchPixs(fts0, matches, true);
-        const Mem1<Vec2> pixs1 = getMatchPixs(fts1, matches, false);
+        const Mem1<Vec2> pixs0 = getMatchPixs(ftrs0, matches, true);
+        const Mem1<Vec2> pixs1 = getMatchPixs(ftrs1, matches, false);
 
         //                     [stereo pose]   [zero pose] 
         calcPoseRANSAC(stereo, cam[1], pixs1, cam[0], pixs0);

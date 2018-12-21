@@ -22,11 +22,11 @@ namespace sp{
 
     public:
 
-        class MyFeature : public Feature{
+        class MyFeature : public Ftr{
 
         public:
             int octave;
-            double layer;
+            int layer;
         };
 
         class ImgSet {
@@ -38,7 +38,7 @@ namespace sp{
 
     private:
  
-        Mem1<Feature> m_fts;
+        Mem1<Ftr> m_ftrs;
 
         Mem1<ImgSet> m_imgsets;
 
@@ -56,7 +56,7 @@ namespace sp{
             *this = sift;
         }
         SIFT& operator = (const SIFT &sift) {
-            m_fts = sift.m_fts;
+            m_ftrs = sift.m_ftrs;
             return *this;
         }
 
@@ -74,16 +74,16 @@ namespace sp{
         // data
         //--------------------------------------------------------------------------------
 
-        const Mem1<Feature>* getFeatures() const {
-            return (m_fts.size() > 0) ? &m_fts : NULL;
+        const Mem1<Ftr>* getFtrs() const {
+            return (m_ftrs.size() > 0) ? &m_ftrs : NULL;
         }
 
         template<typename T>
-        static Mem1<Feature> getFeatures(const Mem2<T> &img, const double contrast = 0.01) {
+        static Mem1<Ftr> getFtrs(const Mem2<T> &img, const double contrast = 0.01) {
             SIFT sift;
             sift.setParam(contrast);
             sift.execute(img);
-            return (sift.getFeatures() != NULL) ? *sift.getFeatures() : Mem1<Feature>();
+            return (sift.getFtrs() != NULL) ? *sift.getFtrs() : Mem1<Ftr>();
         }
 
 
@@ -117,7 +117,7 @@ namespace sp{
 
             // clear data
             {
-                m_fts.clear();
+                m_ftrs.clear();
                 m_imgsets.clear();
             }
 
@@ -130,20 +130,14 @@ namespace sp{
                 // make Imgs & DoGs
                 makeImgSet(m_imgsets, imgf);
 
-                Mem1<MyFeature> fts;
+                Mem1<MyFeature> myfts;
 
                 // detect features
-                if(detect(fts, m_imgsets) == false) throw "no featues";
+                if(detect(myfts, m_imgsets) == false) throw "no featues";
 
                 // descript features
-                descript(fts, m_imgsets);
+                descript(m_ftrs, myfts, m_imgsets);
 
-                m_fts.resize(fts.size());
-                for (int i = 0; i < m_fts.size(); i++) {
-                    m_fts[i] = fts[i];
-                }
-
-                prepareMatch(m_fts);
             }
             catch (const char *str){
                 SP_PRINTF("SIFT.execute [%s]\n", str);
@@ -205,9 +199,9 @@ namespace sp{
             }
         }
 
-        bool detect(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
+        bool detect(Mem1<MyFeature> &ftrs, const Mem1<ImgSet> &imgsets){
 
-            fts.clear();
+            ftrs.clear();
             for (int o = 0; o < imgsets.size(); o++){
                 const Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
                 const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
@@ -228,49 +222,75 @@ namespace sp{
                             for (int ws = -1; ws <= 1; ws++){
                                 for (int wy = -1; wy <= 1; wy++){
                                     for (int wx = -1; wx <= 1; wx++){
+                                        if (wx == 0 && wy == 0 && ws == 0) continue;
+
                                         const float val = dogs[s + ws](x + wx, y + wy);
-                                        if (val < base) npeak = false;
-                                        if (val > base) ppeak = false;
+                                        npeak &= val > base;
+                                        ppeak &= val < base;
+                                        if (npeak == false && ppeak == false) goto _exit;
                                     }
                                 }
                             }
+                        _exit:;
 
                             if (npeak || ppeak){
                                 Vec3 vec = getVec(x, y, s);
 
-                                if (refinePos(vec, imgsets, o) == false) continue;
+                                if (calcFtRefine(vec, imgsets[o]) == false) continue;
 
                                 const double SIG_FCTR = 1.5;
-                                const double PEAK_THRESH = 0.8;
-                                Mem1<Vec2> drcs;
-                                calcBlobDrc(drcs, imgs[s], getVec(vec.x, vec.y), SIG_FCTR * vec.z, PEAK_THRESH);
 
-                                MyFeature ft;
+                                MyFeature ftr;
 
-                                ft.pix = getVec(vec.x, vec.y) * (1 << o);
-                                ft.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
-                                ft.cst = dogs[s](x, y);
+                                ftr.pix = getVec(vec.x, vec.y) * (1 << o);
+                                ftr.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ftr.cst = dogs[s](x, y);
 
-                                ft.octave = o;
-                                ft.layer = vec.z;
+                                ftr.octave = o;
+                                ftr.layer = s;
 
-                                for (int i = 0; i < drcs.size(); i++) {
-                                    ft.drc = drcs[i];
-                                    fts.push(ft);
-                                }
+                                ftrs.push(ftr);
                             }
                         }
                     }
                 }
             }
 
-            return (fts.size() != 0) ? true : false;
+            return (ftrs.size() != 0) ? true : false;
         }
 
-        bool refinePos(Vec3 &vec, const Mem1<ImgSet> &imgsets, const int o){
+        void descript(Mem1<Ftr> &ftrs, const Mem1<MyFeature> &myfts, const Mem1<ImgSet> &imgsets){
 
-            const Mem1<Mem2<float>> &imgs = imgsets[o].imgs;
-            const Mem1<Mem2<float>> &dogs = imgsets[o].dogs;
+            ftrs.reserve(myfts.size() * 2);
+
+            for (int i = 0; i < myfts.size(); i++){
+ 
+                const MyFeature &myft = myfts[i];
+
+                const Mem2<float> &img = imgsets[myft.octave].imgs[myft.layer];
+
+                const Vec2 pix = myft.pix / (1 << myft.octave);
+                const double scl = myft.scl / (1 << myft.octave);
+
+                Ftr ftr = myft;
+
+                const double PEAK_THRESH = 0.8;
+
+                Mem1<Vec2> drcs;
+                calcFtDrc(drcs, img, pix, scl, PEAK_THRESH);
+        
+                for (int a = 0; a < drcs.size(); a++) {
+                    ftr.drc = drcs[a];
+                    calcFtDsc(ftr.dsc, img, pix, ftr.drc, scl);
+                    ftrs.push(ftr);
+                }
+            }
+        }
+
+        bool calcFtRefine(Vec3 &vec, const ImgSet &imgset) {
+
+            const Mem1<Mem2<float>> &imgs = imgset.imgs;
+            const Mem1<Mem2<float>> &dogs = imgset.dogs;
 
             const int x = round(vec.x);
             const int y = round(vec.y);
@@ -322,124 +342,9 @@ namespace sp{
 
             return true;
         }
-
-        void descript(Mem1<MyFeature> &fts, const Mem1<ImgSet> &imgsets){
-
-            const int DSC_BINS = 8;
-            const int DSC_BLKS = 4;
-
-            for (int i = 0; i < fts.size(); i++){
-
-                Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
-                hist.zero();
-
-                const MyFeature &ft = fts[i];
-                const Mem2<float> &img = imgsets[ft.octave].imgs[round(ft.layer)];
-                const Rect rect = getRect2(img.dsize) - 1;
-
-                const double kx = ft.pix.x / (1 << ft.octave);
-                const double ky = ft.pix.y / (1 << ft.octave);
-                const double ks = ft.scl / (1 << ft.octave);
-
-                const double DCS_SCL_FCTR = 3.0;
-                const double block = DCS_SCL_FCTR * ks;
-
-                const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
-                
-                const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
-
-                const double tcos = +ft.drc.x;
-                const double tsin = -ft.drc.y;
-
-                for (int ry = -radius; ry <= radius; ry++){
-                    for (int rx = -radius; rx <= radius; rx++){
-                        const int ix = round(kx + rx);
-                        const int iy = round(ky + ry);
-                        if (isInRect2(rect, ix, iy) == false) continue;
-
-                        const double tx = (tcos * rx - tsin * ry) / block;
-                        const double ty = (tsin * rx + tcos * ry) / block;
-
-                        const double bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
-                        const double by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
-
-                        if (bx > 0 && bx < DSC_BLKS && by > 0 && by < DSC_BLKS){
-
-                            const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                            const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
-
-                            const double ndx = tcos * dx - tsin * dy;
-                            const double ndy = tsin * dx + tcos * dy;
-
-                            double angle = atan2(ndy, ndx);
-                            if (angle < 0) angle += 2 * SP_PI;
-                            
-                            const double ba = angle * (DSC_BINS / (2 * SP_PI));
-
-                            const int ibx = floor(bx);
-                            const int iby = floor(by);
-                            const int iba = floor(ba);
-
-                            const double abx = bx - ibx;
-                            const double aby = by - iby;
-                            const double aba = ba - iba;
-                            
-                            const double val = pythag(dx, dy) * exp(-(tx * tx + ty * ty) * sdiv);
-                            
-                            hist(ibx + 0, iby + 0, iba + 0) += val * (1 - abx) * (1 - aby) * (1 - aba);
-                            hist(ibx + 0, iby + 0, iba + 1) += val * (1 - abx) * (1 - aby) * (0 + aba);
-                            hist(ibx + 0, iby + 1, iba + 0) += val * (1 - abx) * (0 + aby) * (1 - aba);
-                            hist(ibx + 0, iby + 1, iba + 1) += val * (1 - abx) * (0 + aby) * (0 + aba);
-                            hist(ibx + 1, iby + 0, iba + 0) += val * (0 + abx) * (1 - aby) * (1 - aba);
-                            hist(ibx + 1, iby + 0, iba + 1) += val * (0 + abx) * (1 - aby) * (0 + aba);
-                            hist(ibx + 1, iby + 1, iba + 0) += val * (0 + abx) * (0 + aby) * (1 - aba);
-                            hist(ibx + 1, iby + 1, iba + 1) += val * (0 + abx) * (0 + aby) * (0 + aba);
-                        }
-                    }
-                }
-
-                Mem1<double> dsc(DSC_BLKS * DSC_BLKS * DSC_BINS);
-                {
-                    int cnt = 0;
-                    for (int iby = 1; iby < DSC_BLKS + 1; iby++){
-                        for (int ibx = 1; ibx < DSC_BLKS + 1; ibx++){
-                            hist(ibx, iby, 0) += hist(ibx, iby, DSC_BINS);
-
-                            for (int k = 0; k < DSC_BINS; k++){
-                                dsc[cnt++] = hist(ibx, iby, k);
-                            }
-                        }
-                    }
-                }
-
-                {
-                    const double DSC_MAG_THR = 0.2;
-
-                    const double sq = sumSq(dsc);
-                    const double thresh = sqrt(sq) * DSC_MAG_THR;
-
-                    for (int k = 0; k < dsc.size(); k++){
-                        dsc[k] = minVal(dsc[k], thresh);
-                    }
-                }
-
-                {
-                    const double sq = sumSq(dsc);
-                    const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
-
-                    fts[i].dsc.resize(dsc.size() * sizeof(float));
-                    fts[i].type = Feature::DSC_SIFT;
-
-                    float *ptr = reinterpret_cast<float*>(fts[i].dsc.ptr);
-                    for (int k = 0; k < dsc.size(); k++){
-                        ptr[k] = static_cast<float>(dsc[k] * nrm);
-                    }
-                }
-            }
-        }
-
+        
         template <typename TYPE>
-        void calcBlobDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double sigma, const double pthresh = 0.8) {
+        void calcFtDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double scl, const double pthresh = 0.8) {
 
             const int BINS = 36;
             Mem1<double> hist(BINS);
@@ -453,9 +358,9 @@ namespace sp{
 
                 const Rect rect = getRect2(img.dsize) - 1;
 
-                const int radius = round(3.0 * sigma);
+                const int radius = round(3.0 * scl);
 
-                const double sdiv = 1.0 / (2.0 * sigma * sigma);
+                const double sdiv = 1.0 / (2.0 * scl * scl);
 
                 for (int ry = -radius; ry <= radius; ry++) {
                     for (int rx = -radius; rx <= radius; rx++) {
@@ -505,6 +410,130 @@ namespace sp{
                     const Vec2 drc = getVec(cos(angle), sin(angle));
                     drcs.push(drc);
                 }
+            }
+        }
+
+        template <typename TYPE>
+        void calcFtDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const double scl) {
+
+            const int DSC_BINS = 8;
+            const int DSC_BLKS = 4;
+
+            Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
+            hist.zero();
+
+            const Rect rect = getRect2(img.dsize) - 1;
+
+            const double kx = pix.x;
+            const double ky = pix.y;
+            const double ks = scl;
+
+            const double DCS_SCL_FCTR = 3.0;
+            const double block = DCS_SCL_FCTR * ks;
+
+            const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
+
+            const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
+
+            const double tcos = +drc.x;
+            const double tsin = -drc.y;
+
+            for (int ry = -radius; ry <= radius; ry++) {
+                for (int rx = -radius; rx <= radius; rx++) {
+                    const int ix = round(kx + rx);
+                    const int iy = round(ky + ry);
+                    if (isInRect2(rect, ix, iy) == false) continue;
+
+                    const double tx = (tcos * rx - tsin * ry) / block;
+                    const double ty = (tsin * rx + tcos * ry) / block;
+
+                    const double bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
+                    const double by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
+
+                    if (bx > 0 && bx < DSC_BLKS && by > 0 && by < DSC_BLKS) {
+
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+
+                        const double ndx = tcos * dx - tsin * dy;
+                        const double ndy = tsin * dx + tcos * dy;
+
+                        double angle = atan2(ndy, ndx);
+                        if (angle < 0) angle += 2 * SP_PI;
+
+                        const double ba = angle * (DSC_BINS / (2 * SP_PI));
+
+                        const int ibx = floor(bx);
+                        const int iby = floor(by);
+                        const int iba = floor(ba);
+
+                        const double abx = bx - ibx;
+                        const double aby = by - iby;
+                        const double aba = ba - iba;
+
+                        const double val = pythag(dx, dy) * exp(-(tx * tx + ty * ty) * sdiv);
+
+                        hist(ibx + 0, iby + 0, iba + 0) += val * (1 - abx) * (1 - aby) * (1 - aba);
+                        hist(ibx + 0, iby + 0, iba + 1) += val * (1 - abx) * (1 - aby) * (0 + aba);
+                        hist(ibx + 0, iby + 1, iba + 0) += val * (1 - abx) * (0 + aby) * (1 - aba);
+                        hist(ibx + 0, iby + 1, iba + 1) += val * (1 - abx) * (0 + aby) * (0 + aba);
+                        hist(ibx + 1, iby + 0, iba + 0) += val * (0 + abx) * (1 - aby) * (1 - aba);
+                        hist(ibx + 1, iby + 0, iba + 1) += val * (0 + abx) * (1 - aby) * (0 + aba);
+                        hist(ibx + 1, iby + 1, iba + 0) += val * (0 + abx) * (0 + aby) * (1 - aba);
+                        hist(ibx + 1, iby + 1, iba + 1) += val * (0 + abx) * (0 + aby) * (0 + aba);
+                    }
+                }
+            }
+
+            Mem1<double> ddsc(DSC_BLKS * DSC_BLKS * DSC_BINS);
+            {
+                int cnt = 0;
+                for (int iby = 1; iby < DSC_BLKS + 1; iby++) {
+                    for (int ibx = 1; ibx < DSC_BLKS + 1; ibx++) {
+                        hist(ibx, iby, 0) += hist(ibx, iby, DSC_BINS);
+
+                        for (int k = 0; k < DSC_BINS; k++) {
+                            ddsc[cnt++] = hist(ibx, iby, k);
+                        }
+                    }
+                }
+            }
+
+            {
+                const double DSC_MAG_THR = 0.2;
+
+                const double sq = sumSq(ddsc);
+                const double thresh = sqrt(sq) * DSC_MAG_THR;
+
+                for (int k = 0; k < ddsc.size(); k++) {
+                    ddsc[k] = minVal(ddsc[k], thresh);
+                }
+            }
+
+            {
+                const double sq = sumSq(ddsc);
+                const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
+
+                const int dim = ddsc.size();
+
+                const int bsize = dim / 8;
+                const int fsize = dim * sizeof(float);
+
+                dsc.dim = dim;
+                dsc.type = Dsc::DSC_SIFT;
+                dsc.bin.resize(bsize);
+                dsc.val.resize(fsize);
+
+                // float
+                float *val = reinterpret_cast<float*>(dsc.val.ptr);
+                for (int k = 0; k < dim; k++) {
+                    val[k] = static_cast<float>(ddsc[k] * nrm);
+                }
+  
+                // binary
+                Byte *bin = reinterpret_cast<Byte*>(dsc.bin.ptr);
+                const float thresh = static_cast<float>(1.0 / sqrt(dim));
+                cnvBit(bin, bsize, val, dim, thresh);
             }
         }
     };

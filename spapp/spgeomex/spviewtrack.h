@@ -6,7 +6,7 @@
 #define __SP_VIEWTRACK_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spscene.h"
+#include "spapp/spimgex/spfeature.h"
 #include "spapp/spimgex/spoptflow.h"
 
 namespace sp{
@@ -81,8 +81,8 @@ namespace sp{
             return m_cam;
         }
         
-        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
-            _setBase(img, pose, fts);
+        void setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Ftr> *ftrs = NULL) {
+            _setBase(img, pose, ftrs);
         }
 
         void setBase(const View &view) {
@@ -126,7 +126,7 @@ namespace sp{
 
     private:
 
-        void _setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Feature> *fts = NULL) {
+        void _setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Ftr> *ftrs = NULL) {
           
             // set default camera parameter
             if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
@@ -137,7 +137,7 @@ namespace sp{
             m_inst.img = img;
             m_inst.pose = pose;
 
-            m_inst.fts = (fts != NULL) ? *fts : SIFT::getFeatures(img);
+            m_inst.ftrs = (ftrs != NULL) ? *ftrs : SIFT::getFtrs(img);
 
             m_inst.valid = true;
 
@@ -191,8 +191,8 @@ namespace sp{
 
         int cntMPnt(const View &view) {
             int cnt = 0;
-            for (int i = 0; i < view.fts.size(); i++) {
-                if (view.fts[i].mpnt != NULL) cnt++;
+            for (int i = 0; i < view.ftrs.size(); i++) {
+                if (view.ftrs[i].mpnt != NULL) cnt++;
             }
             return cnt;
         }
@@ -200,11 +200,11 @@ namespace sp{
         double calcMeanZ(const View &view) {
             Mem1<double> zlist;
 
-            const Mem1<Feature> &fts = view.fts;
-            for (int i = 0; i < fts.size(); i++) {
-                if (fts[i].mpnt == NULL) continue;
+            const Mem1<Ftr> &ftrs = view.ftrs;
+            for (int i = 0; i < ftrs.size(); i++) {
+                if (ftrs[i].mpnt == NULL) continue;
 
-                zlist.push(fts[i].mpnt->pos.z);
+                zlist.push(ftrs[i].mpnt->pos.z);
             }
             
             sort(zlist);
@@ -219,10 +219,10 @@ namespace sp{
             Mem1<Vec2> pixs;
             Mem1<double> scls;
 
-            const Mem1<Feature> &fts = view.fts;
-            for (int i = 0; i < fts.size(); i++) {
-                pixs.push(fts[i].pix);
-                scls.push(fts[i].scl);
+            const Mem1<Ftr> &ftrs = view.ftrs;
+            for (int i = 0; i < ftrs.size(); i++) {
+                pixs.push(ftrs[i].pix);
+                scls.push(ftrs[i].scl);
             }
             opticalFlowLK(flows, mask, img, view.img, pixs, scls);
 
@@ -249,7 +249,7 @@ namespace sp{
                 hom = hom / hom(2, 2);
             }
 
-            const int num = view.fts.size();
+            const int num = view.ftrs.size();
             flows.resize(num);
             flows.zero();
 
@@ -260,10 +260,10 @@ namespace sp{
 
             {
                 const Vec3 h2 = getVec(hom(2, 0), hom(2, 1), hom(2, 2));
-                const Mem1<Feature> &fts = view.fts;
+                const Mem1<Ftr> &ftrs = view.ftrs;
                 for (int i = 0; i < num; i++) {
-                    const Vec2 pix1 = fts[i].pix;
-                    const double s = fts[i].scl;
+                    const Vec2 pix1 = ftrs[i].pix;
+                    const double s = ftrs[i].scl;
 
                     const Vec2 pix0 = hom * pix1;
                     const double t = h2.x * pix1.x + h2.y * pix1.y + h2.z;
@@ -278,7 +278,7 @@ namespace sp{
             opticalFlowLK(flows, mask, img, view.img, pixs, scls);
 
             for (int i = 0; i < num; i++) {
-                const MapPnt *mpnt = view.fts[i].mpnt;
+                const MapPnt *mpnt = view.ftrs[i].mpnt;
                 if (mpnt == NULL || mpnt->valid == false) mask[i] = false;
             }
 
@@ -300,8 +300,8 @@ namespace sp{
             for (int i = 0; i < flows.size(); i++) {
                 if (mask[i] == false) continue;
 
-                const Vec2 pix0 = view.fts[i].pix;
-                const Vec2 pix1 = view.fts[i].pix + flows[i];
+                const Vec2 pix0 = view.ftrs[i].pix;
+                const Vec2 pix1 = view.ftrs[i].pix + flows[i];
 
                 bases[i] = pix0;
                 crsps[i] = pix1;
@@ -326,8 +326,8 @@ namespace sp{
             for (int i = 0; i < mask.size(); i++) {
                 if (mask[i] == false) continue;
 
-                const Vec2 pix0 = view.fts[i].pix;
-                const Vec2 pix1 = view.fts[i].pix + flows[i];
+                const Vec2 pix0 = view.ftrs[i].pix;
+                const Vec2 pix1 = view.ftrs[i].pix + flows[i];
 
                 Vec3 pnt;
                 if (calcPnt3d(pnt, view.pose, view.cam, pix0, pose, view.cam, pix1) == false) continue;
@@ -335,7 +335,7 @@ namespace sp{
                 MapPnt *m = _mpnts.malloc();
                 m->pos = pnt;
                 m->valid = true;
-                view.fts[i].mpnt = m;
+                view.ftrs[i].mpnt = m;
             }
 
             return true;
@@ -353,17 +353,17 @@ namespace sp{
 
             Mem1<Vec2> pixs;
             Mem1<Vec3> objs;
-            for (int i = 0; i < view.fts.size(); i++) {
+            for (int i = 0; i < view.ftrs.size(); i++) {
                 if (mask[i] == false) continue;
 
-                const Vec2 pix0 = view.fts[i].pix;
-                const Vec2 pix1 = view.fts[i].pix + flows[i];
+                const Vec2 pix0 = view.ftrs[i].pix;
+                const Vec2 pix1 = view.ftrs[i].pix + flows[i];
                 bases[i] = pix0;
                 crsps[i] = pix1;
 
-                if (view.fts[i].mpnt == NULL) continue;
+                if (view.ftrs[i].mpnt == NULL) continue;
 
-                const Vec3 obj = view.fts[i].mpnt->pos;
+                const Vec3 obj = view.ftrs[i].mpnt->pos;
                 pixs.push(pix1);
                 objs.push(obj);
             }

@@ -43,7 +43,7 @@ namespace sp{
                 dmap[i].gyy = gy * gy;
             }
 
-            boxFilter3x3<Gnn, float>(dmap, dmap);
+            boxFilter<Gnn, float>(dmap, dmap, 3);
 
             const double k = 0.04;
             for (int i = 0; i < rmap.size(); i++){

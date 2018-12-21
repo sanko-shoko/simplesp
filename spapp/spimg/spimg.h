@@ -136,8 +136,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[su1];
                 const TYPE0 a22 = psrc2[su2];
 
-                const double d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
-                cnvVal(*pd++, d / 16.0);
+                const double d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
+                cnvVal(*pd++, d);
             }
         }
     }

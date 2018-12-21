@@ -6,7 +6,7 @@
 #define __SP_SFM_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spscene.h"
+#include "spapp/spimgex/spfeature.h"
 #include "spapp/spgeom/spgeom.h"
 
 namespace sp {
@@ -130,11 +130,12 @@ namespace sp {
         // map points
         Mem1<MapPnt*> m_mpnts;
 
+        Mem1<ViewEx*> m_queue;
 
     private:
 
         //--------------------------------------------------------------------------------
-        // memory pool & stack
+        // memory pool
         //--------------------------------------------------------------------------------
 
         MemP<ViewEx> _viewsPool;
@@ -142,9 +143,6 @@ namespace sp {
         MemP<MatchPair> _pairsPool;
 
         MemP<MapPnt> _mpntsPool;
-
-        Mem1<ViewEx*> _viewsStack;
-
 
     public:
 
@@ -166,7 +164,7 @@ namespace sp {
             _pairsPool.clear();
             _mpntsPool.clear();
 
-            _viewsStack.clear();
+            m_queue.clear();
         }
 
 
@@ -302,8 +300,8 @@ namespace sp {
         }
 
         void initMem() {
-            m_views.push(_viewsStack);
-            _viewsStack.clear();
+            m_views.push(m_queue);
+            m_queue.clear();
 
             if (m_views.size() > m_pairs.dsize[0]) {
                 const Mem2<MatchPair*> tmp = m_pairs;
@@ -329,14 +327,14 @@ namespace sp {
             ViewEx &view = *_viewsPool.malloc();
             view.img = img;
             view.cam = cam;
-            view.fts = SIFT::getFeatures(img);
+            view.ftrs = SIFT::getFtrs(img);
 
             if (hint != NULL) {
                 view.state = ViewEx::POSE_HINT;
                 view.pose = *hint;
             }
 
-            _viewsStack.push(&view);
+            m_queue.push(&view);
         }
 
         void setView(ViewEx &view, const Pose &pose) {
@@ -355,7 +353,7 @@ namespace sp {
             pair.a = a;
             pair.b = b;
 
-            pair.matches = findMatch(views[a]->fts, views[b]->fts);
+            pair.matches = findMatch(views[a]->ftrs, views[b]->ftrs);
             pair.eval = getMatchEval(pair.matches);
 
             if (pair.eval > MIN_MATCHEVAL) {
@@ -454,18 +452,18 @@ namespace sp {
         }
 
         void setMPnt(MapPnt &mpnt, ViewEx& view, const int f) {
-            if (view.fts[f].mpnt != NULL) return;
+            if (view.ftrs[f].mpnt != NULL) return;
 
             for (int i = 0; i < mpnt.views.size(); i++) {
                 if (mpnt.views[i] == &view) return;
             }
 
             mpnt.views.push(&view);
-            mpnt.fts.push(&view.fts[f]);
+            mpnt.ftrs.push(&view.ftrs[f]);
             mpnt.updateCol();
             mpnt.updatePrjErr();
 
-            view.fts[f].mpnt = &mpnt;
+            view.ftrs[f].mpnt = &mpnt;
         }
 
         //--------------------------------------------------------------------------------
@@ -492,8 +490,8 @@ namespace sp {
                         if (a != 0) continue;
                     }
 
-                    const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, list[i]->matches, true);
-                    const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, list[i]->matches, false);
+                    const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->ftrs, list[i]->matches, true);
+                    const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->ftrs, list[i]->matches, false);
                     const double eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
 
                     if (eval > maxv) {
@@ -511,8 +509,8 @@ namespace sp {
                 const int a = pair->a;
                 const int b = pair->b;
 
-                const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->fts, pair->matches, true);
-                const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->fts, pair->matches, false);
+                const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->ftrs, pair->matches, true);
+                const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->ftrs, pair->matches, false);
 
                 Pose pose = zeroPose();
                 if (calcPoseRANSAC(pose, views[b]->cam, pixs1, views[a]->cam, pixs0) == false) return false;
@@ -581,10 +579,10 @@ namespace sp {
                         const int g = matches[f];
                         if (g < 0) continue;
 
-                        MapPnt *mpnt = views[b]->fts[g].mpnt;
+                        MapPnt *mpnt = views[b]->ftrs[g].mpnt;
                         if (mpnt == NULL || mpnt->valid == false) continue;
 
-                        pixs.push(views[a]->fts[f].pix);
+                        pixs.push(views[a]->ftrs[f].pix);
                         objs.push(mpnt->pos);
                     }
                     //printf("%d %d %d\n", a, b, pixs.size());
@@ -614,10 +612,10 @@ namespace sp {
                         const int g = matches[f];
                         if (g < 0) continue;
 
-                        MapPnt *mpnt = views[b]->fts[g].mpnt;
+                        MapPnt *mpnt = views[b]->ftrs[g].mpnt;
                         if (mpnt == NULL || mpnt->valid == false) continue;
 
-                        const double err = calcPrjErr(pose, views[a]->cam, views[a]->fts[f].pix, mpnt->pos);
+                        const double err = calcPrjErr(pose, views[a]->cam, views[a]->ftrs[f].pix, mpnt->pos);
                         if (err > MPNT_PRJERR) continue;
 
                         setMPnt(*mpnt, *views[a], f);
@@ -631,10 +629,10 @@ namespace sp {
 
         bool updateMPnt(Mem1<ViewEx*> &views, Mem1<MapPnt*> &mpnts, ViewEx &view) {
 
-            for (int f = 0; f < view.fts.size(); f++) {
+            for (int f = 0; f < view.ftrs.size(); f++) {
 
                 // add new
-                if (view.fts[f].mpnt == NULL) {
+                if (view.ftrs[f].mpnt == NULL) {
 
                     MapPnt *find = NULL;
 
@@ -649,7 +647,7 @@ namespace sp {
                         const int g = view.pairs[i]->matches[f];
                         if (g < 0) continue;
 
-                        MapPnt *mpnt = vref->fts[g].mpnt;
+                        MapPnt *mpnt = vref->ftrs[g].mpnt;
                         if (mpnt != NULL) {
                             find = mpnt;
                             break;
@@ -676,12 +674,12 @@ namespace sp {
                 }
 
                 // refine 
-                if (view.fts[f].mpnt != NULL) {
+                if (view.ftrs[f].mpnt != NULL) {
 
-                    MapPnt *mpnt = view.fts[f].mpnt;
+                    MapPnt *mpnt = view.ftrs[f].mpnt;
 
                     const Mem1<View*> &mviews = mpnt->views;
-                    const Mem1<Feature*> &mfts = mpnt->fts;
+                    const Mem1<Ftr*> &mfts = mpnt->ftrs;
 
                     const int num = mviews.size();
                     if (num < 2) continue;
@@ -728,11 +726,11 @@ namespace sp {
             Mem1<Vec2> pixs;
             Mem1<Vec3> objs;
             Mem1<double> errs;
-            for (int f = 0; f < view.fts.size(); f++) {
-                MapPnt *mpnt = view.fts[f].mpnt;
+            for (int f = 0; f < view.ftrs.size(); f++) {
+                MapPnt *mpnt = view.ftrs[f].mpnt;
                 if (mpnt == NULL || mpnt->valid == false) continue;
 
-                pixs.push(view.fts[f].pix);
+                pixs.push(view.ftrs[f].pix);
                 objs.push(mpnt->pos);
                 errs.push(mpnt->err);
             }

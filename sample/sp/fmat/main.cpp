@@ -82,13 +82,13 @@ int main() {
         SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba04.bmp", img1));
 
         // get feature
-        const Mem1<Feature> fts0 = SIFT::getFeatures(img0);
-        const Mem1<Feature> fts1 = SIFT::getFeatures(img1);
+        const Mem1<Ftr> ftrs0 = SIFT::getFtrs(img0);
+        const Mem1<Ftr> ftrs1 = SIFT::getFtrs(img1);
 
         // get match pix
-        const Mem1<int> matches = findMatch(fts0, fts1);
-        const Mem1<Vec2> pixs0 = getMatchPixs(fts0, matches, true);
-        const Mem1<Vec2> pixs1 = getMatchPixs(fts1, matches, false);
+        const Mem1<int> matches = findMatch(ftrs0, ftrs1);
+        const Mem1<Vec2> pixs0 = getMatchPixs(ftrs0, matches, true);
+        const Mem1<Vec2> pixs1 = getMatchPixs(ftrs1, matches, false);
     
         // calc fundamental matrix
         Mat F;

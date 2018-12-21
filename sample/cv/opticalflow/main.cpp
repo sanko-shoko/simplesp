@@ -56,10 +56,10 @@ void sample(cv::Mat &cvimg, const int key){
             harris(pixs, crnt, 6);
         }
         if (key == 's') {
-            const Mem1<Feature> fts = SIFT::getFeatures(crnt);
-            for (int i = 0; i < fts.size(); i++) {
-                pixs.push(fts[i].pix);
-                scls.push(fts[i].scl);
+            const Mem1<Ftr> ftrs = SIFT::getFtrs(crnt);
+            for (int i = 0; i < ftrs.size(); i++) {
+                pixs.push(ftrs[i].pix);
+                scls.push(ftrs[i].scl);
             }
         }
     }

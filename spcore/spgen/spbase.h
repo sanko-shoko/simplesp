@@ -30,7 +30,7 @@ namespace sp{
 
     // get sign (+1 or -1)
     template<typename TYPE> SP_GENFUNC int sign(const TYPE val){
-        return (val >= 0) ? +1 : -1;
+        return (val > 0) - (val < 0);
     }
 
     // swap
@@ -141,27 +141,27 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE> SP_GENFUNC void cnvVal(char &dst, const TYPE &src){
-        dst = static_cast<char>((src > 0) ? (src + 0.5) : (src - 0.5));
+        dst = static_cast<char>(src + 0.5 - (src < 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(unsigned char &dst, const TYPE &src){
-        dst = static_cast<unsigned char>((src > 0) ? (src + 0.5) : 0.0);
+        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(short &dst, const TYPE &src){
-        dst = static_cast<short>((src > 0) ? (src + 0.5) : (src - 0.5));
+        dst = static_cast<short>(src + 0.5 - (src < 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(unsigned short &dst, const TYPE &src){
-        dst = static_cast<unsigned short>((src > 0) ? (src + 0.5) : 0.0);
+        dst = static_cast<unsigned short>((src + 0.5) * (src > 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(int &dst, const TYPE &src){
-        dst = static_cast<int>((src > 0) ? (src + 0.5) : (src - 0.5));
+        dst = static_cast<int>(src + 0.5 - (src < 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(unsigned int &dst, const TYPE &src){
-        dst = static_cast<unsigned int>((src > 0) ? (src + 0.5) : 0.0);
+        dst = static_cast<unsigned int>((src + 0.5) * (src > 0));
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(float &dst, const TYPE &src){
