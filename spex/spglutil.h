@@ -80,7 +80,7 @@ namespace sp{
 
 		int ww, wh;
 		glfwGetWindowSize(win, &ww, &wh);
-		const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) * 0.5;
+		const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
 
 		return pixScale;
 	}
@@ -159,9 +159,10 @@ namespace sp{
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(-0.5, viewport[2] - 0.5, viewport[3] - 0.5, -0.5, -1.0, 1.0);
+        glMultMatrix(vmat);
 
         glMatrixMode(GL_MODELVIEW);
-        glLoadMatrix(vmat);
+        glLoadIdentity();
     }
 
     SP_CPUFUNC void glLoadView2D(const int *dsize, const Mat &vmat) {
