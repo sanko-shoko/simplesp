@@ -15,8 +15,12 @@
 #include "imgui_impl_glfw.h"
 #endif
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+#include "spcore/spcore.h"
+#include "spex/spgltex.h"
+
+#include <string>
+#include <map>
 
 namespace sp {
 
@@ -199,6 +203,8 @@ namespace sp {
 
         // background color
         Col4 m_bcol;
+
+        std::map<std::string, Texture> m_texs;
 
     public:
 

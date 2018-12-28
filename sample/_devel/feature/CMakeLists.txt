@@ -1,6 +1,8 @@
 ﻿set(target "feature")
 message(STATUS "${target}")
 
+project(${target})
+
 include(../../cmake_base.txt)
 include(../../cmake_imgui.txt)
 

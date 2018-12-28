@@ -1,5 +1,3 @@
-project(${target})
-
 file(GLOB MAIN *.h *.hpp *.cpp)
 source_group("main" FILES ${MAIN})
 
@@ -45,10 +43,6 @@ set(SUB ${SUB}
 	${SPAPP} ${SPDATA} ${SPALGO} ${SPIMG} ${SPIMGEX} ${SPGEOM} ${SPGEOMEX} ${SPLEARN})
 
 add_executable(${target} ${MAIN} ${SUB})
-
-set_target_properties(${target} PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/"
-)
 
 target_link_libraries(${target} ${EX_LIBS} ${OpenGL_LIBS} ${OpenCV_LIBS})
 
