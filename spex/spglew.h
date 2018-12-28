@@ -5,14 +5,8 @@
 #ifndef __SP_GLEW_H__
 #define __SP_GLEW_H__
 
-#ifndef SP_USE_GLEW
-#define SP_USE_GLEW 1
-#endif
-
-#if defined(_WIN32) && SP_USE_GLEW
 #define GLEW_STATIC
 #include "GL/glew.h"
-#endif
 
 #include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
@@ -399,4 +393,5 @@ namespace sp{
 
     };
 }
+
 #endif
