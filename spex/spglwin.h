@@ -5,7 +5,7 @@
 #ifndef __SP_GLWIN_H__
 #define __SP_GLWIN_H__
 
-#if defined(_WIN32) && SP_USE_GLEW
+#if SP_USE_GLEW
 #define GLEW_STATIC
 #include "GL/glew.h"
 #endif
@@ -15,8 +15,12 @@
 #include "imgui_impl_glfw.h"
 #endif
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+#include "spcore/spcore.h"
+#include "spex/spgltex.h"
+
+#include <string>
+#include <map>
 
 namespace sp {
 
@@ -200,6 +204,8 @@ namespace sp {
         // background color
         Col4 m_bcol;
 
+        std::map<std::string, Texture> m_texs;
+
     public:
 
         BaseWindow() {
@@ -232,6 +238,9 @@ namespace sp {
                 return false;
             }
 
+            // glfw make context
+            glfwMakeContextCurrent(m_win);
+
             m_wcam = getCamParam(width, height);
 
             m_parent = parent;
@@ -254,10 +263,7 @@ namespace sp {
 
             if (create(name, width, height) == false) return;
 
-            // glfw make context
-            glfwMakeContextCurrent(m_win);
-
-#if defined(_WIN32) && SP_USE_GLEW
+#if SP_USE_GLEW
             // glew init
             SP_ASSERT(glewInit() == GLEW_OK);
 #endif

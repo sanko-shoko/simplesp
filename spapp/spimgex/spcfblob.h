@@ -16,6 +16,18 @@ namespace sp {
 
     public:
 
+        class MyFtr : public Ftr {
+
+        public:
+            int pyid;
+            int stat;
+
+            MyFtr() :Ftr() {
+                pyid = 0;
+                stat = 0;
+            }
+        };
+
         struct short2 {
             short x, y;
         };
@@ -24,6 +36,7 @@ namespace sp {
 
         public:
             Mem2<Byte> img;
+            Mem2<short> dog;
             Mem2<short2> di1;
             Mem2<short2> di2;
         };
@@ -57,7 +70,7 @@ namespace sp {
         // parameter
         //--------------------------------------------------------------------------------
 
-        void setParam(const double contrast = 0.01) {
+        void setParam(const double contrast) {
             BLOB_CONTRAST = contrast;
         }
 
@@ -105,6 +118,7 @@ namespace sp {
     private:
 
         bool _execute(const Mem2<Byte> &img) {
+            SP_LOGGER_SET("CFBlob.execute");
 
             // clear data
             {
@@ -116,7 +130,13 @@ namespace sp {
 
                 makeImgSet(m_imgsets, img);
 
-                detect(m_ftrs, m_imgsets);
+                Mem1<MyFtr> myfts;
+
+                // detect features
+                if (detect(myfts, m_imgsets) == false) throw "no featues";
+
+                // descript features
+                descript(m_ftrs, myfts, m_imgsets);
             }
             catch (const char *str) {
                 SP_PRINTF("Test.execute [%s]\n", str);
@@ -144,6 +164,17 @@ namespace sp {
 
                 for (int s = 1; s < pynum; s++) {
                     pyrdown(imgsets[s].img, imgsets[s - 1].img);
+                }
+            }
+            {
+                SP_LOGGER_SET("ss");
+
+                for (int s = 0; s < pynum; s++) {
+                    Mem2<Byte> g1, g2;
+                    gaussianFilter3x3(g1, imgsets[s].img);
+                    gaussianFilter3x3(g2, g1);
+
+                    subMem(imgsets[s].dog, g2, g1);
                 }
             }
             {
@@ -192,208 +223,250 @@ namespace sp {
             }
         }
 
-        bool detect(Mem1<Ftr> &ftrs, const Mem1<ImgSet> &imgsets) {
-            SP_LOGGER_SET("detect");
+        bool detect(Mem1<MyFtr> &myftrs, const Mem1<ImgSet> &imgsets) {
+            SP_LOGGER_SET("CFBlob.detect");
 
             const int pynum = imgsets.size();
 
-            Mem1<Mem1<Ftr> > pyfts(pynum - 1);
+            myftrs.clear();
             {
                 SP_LOGGER_SET("procCoarse");
-                for (int s = 0; s < pynum - 1; s++) {
-                    procCoarse(pyfts[s], imgsets[s + 1].img, 15);
+                procCoarse(myftrs, imgsets, 10);
 
-                    for (int i = 0; i < pyfts[s].size(); i++) {
-                        pyfts[s][i].pix *= 2.0;
-                        pyfts[s][i].scl = 2.0;
-                    }
-
-                    SP_HOLDER_SET(strFormat("pyfts%d", s).c_str(), pyfts[s]);
-                }
+                SP_HOLDER_SET("myftrs1", myftrs);
             }
 
-            ftrs.clear();
             {
                 SP_LOGGER_SET("procFine");
-                for (int s = 0; s < pynum - 1; s++) {
-                    SP_HOLDER_SET(strFormat("refine%d", s).c_str(), pyfts[s]);
-                    procFine(pyfts[s], imgsets[s]);
+                procFine(myftrs, imgsets);
+                SP_HOLDER_SET("myftrs2", myftrs);
 
-                    SP_HOLDER_SET(strFormat("refine2%d", s).c_str(), pyfts[s]);
-              
-                    const double ss = pow(2.0, s);
-                    for (int i = 0; i < pyfts[s].size(); i++) {
-                        Ftr ftr = pyfts[s][i];
-                        ftr.pix *= ss;
-                        ftr.scl *= ss;
-                        ftrs.push(ftr);
-                    }
+                for (int i = 0; i < myftrs.size(); i++) {
+                    MyFtr &myftr = myftrs[i];
+                    myftr.pix *= (1 << myftr.pyid);
+                    myftr.scl *= (1 << myftr.pyid);
                 }
-                SP_HOLDER_SET("output", ftrs);
+                SP_HOLDER_SET("myftrs3", myftrs);
             }
 
             return true;
         }
+        
+        void descript(Mem1<Ftr> &ftrs, const Mem1<MyFtr> &myfts, const Mem1<ImgSet> &imgsets) {
+            SP_LOGGER_SET("CFBlob.descript");
 
+            ftrs.reserve(myfts.size() * 2);
 
-        template <typename TYPE>
-        void procCoarse(Mem1<Ftr> &ftrs, const Mem2<TYPE> &img, const float thresh = 0.1f * SP_BYTEMAX) {
-            SP_ASSERT(isValid(2, img));
+            for (int i = 0; i < myfts.size(); i++) {
 
-            const int w = img.dsize[0];
-            const int h = img.dsize[1];
+                const MyFtr &myft = myfts[i];
+                if (myft.stat < 0) continue;
 
-            ftrs.reserve(img.size() / 4);
+                const Mem2<Byte> &img = imgsets[myft.pyid].img;
 
-            Mem2<float> res(img.dsize);
-            res.zero();
+                const Vec2 pix = myft.pix / (1 << myft.pyid);
+                const double scl = myft.scl / (1 << myft.pyid);
 
-            const TYPE *pimg = img.ptr;
-            float *pres = res.ptr;
+                Ftr ftr = myft;
 
-            //laplacianFilter(res, img, 1.0);
-            //laplacianFilter5x5(res, img);
-            for (int v = 0; v < h; v++) {
-                const int ys = (v <= 1) ? -v : -2;
-                const int yc = 0;
-                const int ye = (v >= h - 2) ? h - 1 - v : +2;
+                Mem1<Vec2> drcs;
+                calcFtrDrc(drcs, img, pix, scl);
 
-                const int vs = v + ys;
-                const int vc = v + yc;
-                const int ve = v + ye;
-
-                const TYPE *pimg0 = &pimg[vs * w];
-                const TYPE *pimg1 = &pimg[vc * w];
-                const TYPE *pimg2 = &pimg[ve * w];
-
-                float *pdst = &pres[vc * w];
-
-                float val[8];
-
-                for (int u = 0; u < w; u++) {
-                    const int xs = (u <= 1) ? -u : -2;
-                    const int xc = 0;
-                    const int xe = (u >= w - 2) ? w - 1 - u : +2;
-
-                    const int us = u + xs;
-                    const int uc = u + xc;
-                    const int ue = u + xe;
-
-                    const TYPE c = pimg1[uc];
-                    cnvVal(val[0], c - pimg0[us]);
-                    cnvVal(val[1], c - pimg0[uc]);
-                    cnvVal(val[2], c - pimg0[ue]);
-
-                    cnvVal(val[3], c - pimg1[us]);
-                    cnvVal(val[4], c - pimg1[ue]);
-
-                    cnvVal(val[5], c - pimg2[us]);
-                    cnvVal(val[6], c - pimg2[uc]);
-                    cnvVal(val[7], c - pimg2[ue]);
-
-                    const float a = (val[0] < val[1]) ? val[0] : val[1];
-                    const float b = (val[0] > val[1]) ? val[0] : val[1];
-                    float min0 = a;
-                    float min1 = b;
-                    float max0 = b;
-                    float max1 = a;
-
-                    for (int i = 2; i < 8; i++) {
-                        if (val[i] < min0) { min1 = min0; min0 = val[i]; }
-                        else if (val[i] < min1) { min1 = val[i]; }
-
-                        if (val[i] > max0) { max1 = max0; max0 = val[i]; }
-                        else if (val[i] > max1) { max1 = val[i]; }
-                    }
-
-                    float d = 0.f;
-                    if (min1 > 0) {
-                        d = min1;
-                    }
-                    if (max1 < 0) {
-                        d = max1;
-                    }
-                    cnvVal(*pdst++, d);
+                for (int a = 0; a < drcs.size(); a++) {
+                    ftr.drc = drcs[a];
+                    calcFtrDsc(ftr.dsc, img, pix, ftr.drc, scl);
+                    ftrs.push(ftr);
                 }
             }
-
-            const int margin = 1;
-            for (int v = margin; v < h - margin; v++) {
-                const int ys = (v == 0) ? 0 : -1;
-                const int yc = 0;
-                const int ye = (v == h - 1) ? 0 : +1;
-
-                const int vs = v + ys;
-                const int vc = v + yc;
-                const int ve = v + ye;
-
-                const float *pres0 = &pres[vs * w];
-                const float *pres1 = &pres[vc * w];
-                const float *pres2 = &pres[ve * w];
-
-                for (int u = margin; u < w - margin; u++) {
-                    const int xs = (u == 0) ? 0 : -1;
-                    const int xc = 0;
-                    const int xe = (u == w - 1) ? 0 : +1;
-
-                    const int us = u + xs;
-                    const int uc = u + xc;
-                    const int ue = u + xe;
-
-                    const float d00 = pres0[us];
-                    const float d01 = pres0[uc];
-                    const float d02 = pres0[ue];
-
-                    const float d10 = pres1[us];
-                    const float d11 = pres1[uc];
-                    const float d12 = pres1[ue];
-
-                    const float d20 = pres2[us];
-                    const float d21 = pres2[uc];
-                    const float d22 = pres2[ue];
-
-                    const float d = d11;
-
-                    bool m = false;
-                    if (d > 0) {
-                        if (d > d00 && d > d01 && d > d02 && d > d10 && d >= d12 && d >= d20 && d >= d21 && d >= d22) m = true;
-                    }
-                    else {
-                        if (d < d00 && d < d01 && d < d02 && d < d10 && d <= d12 && d <= d20 && d <= d21 && d <= d22) m = true;
-                    }
-
-                    if (m == true && fabs(d) > thresh) {
-                        Ftr *ftr = ftrs.extend();
-                        ftr->pix = getVec(u, v);
-                    }
-                }
-            }
-
         }
 
-        bool procFine(Mem1<Ftr> &ftrs, const ImgSet &imgset) {
+        void procCoarse(Mem1<MyFtr> &ftrs, const Mem1<ImgSet> &imgsets, const float thresh = 0.1f * SP_BYTEMAX) {
+            ftrs.reserve(1000);
 
-            const Mem2<Byte> &img = imgset.img;
-            const Mem2<short2> &di1 = imgset.di1;
-            const Mem2<short2> &di2 = imgset.di2;
+            for (int p = 0; p < imgsets.size() - 1; p++) {
 
-            const double k = 4.0;
-            const int rdiv = 18;
-            const int itmax = 20;
+                const Mem2<Byte> &img = imgsets[p + 1].img;
+                const Mem2<short> &dog = imgsets[p].dog;
 
-            Mem1<Vec2> rvec;
-            for (int r = 0; r < rdiv; r++) {
-                const double p = r * 2.0 * SP_PI / rdiv;
-                const Vec2 v = getVec(cos(p), sin(p));
-                rvec.push(v);
+                const int dsize0 = img.dsize[0];
+                const int dsize1 = img.dsize[1];
+
+                Mem2<short> res(img.dsize);
+                res.zero();
+
+                const Byte *pimg = img.ptr;
+                short *pres = res.ptr;
+
+                const int m = 2;
+
+                for (int v = m; v < dsize1 - m; v++) {
+
+                    const int v0 = v - 2;
+                    const int v1 = v + 0;
+                    const int v2 = v + 2;
+
+                    const Byte *pimg0 = &pimg[v0 * dsize0];
+                    const Byte *pimg1 = &pimg[v1 * dsize0];
+                    const Byte *pimg2 = &pimg[v2 * dsize0];
+
+                    short *pdst = &pres[v1 * dsize0];
+
+                    short val[8];
+
+                    for (int u = m; u < dsize0 - m; u++) {
+
+                        const int u0 = u - 2;
+                        const int u1 = u + 0;
+                        const int u2 = u + 2;
+
+                        const short c = (2 * pimg1[u1] + pimg1[u1 - dsize0] + pimg1[u1 + dsize0] + pimg1[u1 - 1] + pimg1[u1 + 1]) / 6;
+                        val[0] = c - pimg0[u0];
+                        val[1] = c - pimg0[u1];
+                        val[2] = c - pimg0[u2];
+
+                        val[3] = c - pimg1[u0];
+                        val[4] = c - pimg1[u2];
+
+                        val[5] = c - pimg2[u0];
+                        val[6] = c - pimg2[u1];
+                        val[7] = c - pimg2[u2];
+                        const short a = (val[0] < val[1]) ? val[0] : val[1];
+                        const short b = (val[0] > val[1]) ? val[0] : val[1];
+                        short min0 = a;
+                        short min1 = b;
+                        short max0 = b;
+                        short max1 = a;
+
+                        for (int i = 2; i < 8; i++) {
+                            if (val[i] < min0) { min1 = min0; min0 = val[i]; }
+                            else if (val[i] < min1) { min1 = val[i]; }
+
+                            if (val[i] > max0) { max1 = max0; max0 = val[i]; }
+                            else if (val[i] > max1) { max1 = val[i]; }
+                        }
+
+                        short d = 0;
+                        if (min1 > 0) {
+                            d = min1;
+                        }
+                        if (max1 < 0) {
+                            d = max1;
+                        }
+                        pdst[u1] = d;
+                    }
+                }
+
+                for (int v = m; v < dsize1 - m; v++) {
+
+                    const int vs = v - 1;
+                    const int vc = v + 0;
+                    const int ve = v + 1;
+
+                    const short *pres0 = &pres[vs * dsize0];
+                    const short *pres1 = &pres[vc * dsize0];
+                    const short *pres2 = &pres[ve * dsize0];
+
+                    for (int u = m; u < dsize0 - m; u++) {
+
+                        const int us = u - 1;
+                        const int uc = u + 0;
+                        const int ue = u + 1;
+
+                        const short d00 = pres0[us];
+                        const short d01 = pres0[uc];
+                        const short d02 = pres0[ue];
+
+                        const short d10 = pres1[us];
+                        const short d11 = pres1[uc];
+                        const short d12 = pres1[ue];
+
+                        const short d20 = pres2[us];
+                        const short d21 = pres2[uc];
+                        const short d22 = pres2[ue];
+
+                        const short d = d11;
+
+                        int cst = 0;
+                        if (d > 0) {
+                            if (d > d00 && d > d01 && d > d02 && d > d10 && d >= d12 && d >= d20 && d >= d21 && d >= d22) cst = +1;
+                        }
+                        else {
+                            if (d < d00 && d < d01 && d < d02 && d < d10 && d <= d12 && d <= d20 && d <= d21 && d <= d22) cst = -1;
+                        }
+
+                        if (cst != 0 && fabs(d) > thresh) {
+                            MyFtr *ftr = ftrs.extend();
+                            ftr->pix = getVec(u, v) * 2.0;
+                            ftr->scl = 2.0;
+                            ftr->cst = cst;
+                            ftr->pyid = p;
+                        }
+                    }
+                }
             }
+        }
 
-            const Rect rect = getRect2(img.dsize) - 2;
-            
-            const int w = img.dsize[0];
-            const int h = img.dsize[1];
-
+        void procFine(Mem1<MyFtr> &ftrs, const Mem1<ImgSet> &imgsets) {
             for (int i = 0; i < ftrs.size(); i++) {
+                const int p = ftrs[i].pyid;
+
+                const Mem2<Byte> &img = imgsets[p].img;
+                const Mem2<short2> &di1 = imgsets[p].di1;
+                const Mem2<short2> &di2 = imgsets[p].di2;
+
+                const double k = 4.0;
+                const int rdiv = 18;
+                const int itmax = 20;
+
+                Mem1<Vec2> rvec;
+                for (int r = 0; r < rdiv; r++) {
+                    const double p = r * 2.0 * SP_PI / rdiv;
+                    const Vec2 v = getVec(cos(p), sin(p));
+                    rvec.push(v);
+                }
+
+                const Rect rect = getRect2(img.dsize) - 2;
+
+                //{
+                //    const Vec2 pix = ftrs[i].pix;
+                //    const double scl = ftrs[i].scl;
+
+                //    Vec3 result;
+                //    double maxv = 0.0;
+                //    const int r = 3;
+                //    for (int s = -r; s <= +r; s++) {
+                //        for (int y = -1; y <= +1; y++) {
+                //            for (int x = -1; x <= +1; x++) {
+
+                //                const Vec2 tpix = pix + getVec(x, y) * 0.5;
+                //                const double tscl = scl + s * 0.5;
+
+                //                double mm = 0.0;
+                //                for (int r = 0; r < rdiv; r++) {
+                //                    const Vec2 n = rvec[r];
+                //                    const Vec2 v = tscl * n;
+                //                    const Vec2 a = tpix + v;
+                //                    const int ax = round(a.x);
+                //                    const int ay = round(a.y);
+                //                    if (isInRect2(rect, ax, ay) == false) continue;
+
+                //                    Vec2 d1, d2;
+                //                    d1.x = acs2<short2, short>(di1, a.x, a.y, 0);
+                //                    d1.y = acs2<short2, short>(di1, a.x, a.y, 1);
+                //                    const double dd = fabs(dotVec(n, d1));
+
+                //                    mm += dd;
+                //                }
+                //                if (mm > maxv) {
+                //                    maxv = mm;
+                //                    result = getVec(x * 0.5, y * 0.5, s * 0.5);
+                //                }
+                //            }
+                //        }
+                //    }
+                //    ftrs[i].pix += getVec(result.x, result.y);
+                //    ftrs[i].scl += result.z;
+                //}
 
                 for (int it = 0; it < itmax; it++) {
                     const Vec2 pix = ftrs[i].pix;
@@ -401,7 +474,7 @@ namespace sp {
 
                     Vec2 ap = getVec(0.0, 0.0);
                     double as = 0.0;
-                    
+
                     int cnt = 0;
                     for (int r = 0; r < rdiv; r++) {
                         const Vec2 n = rvec[r];
@@ -435,11 +508,242 @@ namespace sp {
 
                     ftrs[i].pix += ap;
                     ftrs[i].scl += as;
-                 }
+
+                    ftrs[i].stat = 0;
+                    if (ftrs[i].scl < 1.5) {
+                        ftrs[i].stat = -1;
+                    }
+                }
+                {
+                    const Vec2 pix = ftrs[i].pix;
+                    const double scl = ftrs[i].scl;
+
+                    Vec2 ap = getVec(0.0, 0.0);
+                    double as = 0.0;
+
+                    double minv = SP_INFINITY;
+                    for (int r = 0; r < rdiv / 2; r++) {
+                        const Vec2 n0 = rvec[r];
+                        const Vec2 v0 = scl * n0;
+                        const Vec2 n1 = rvec[r + rdiv / 2];
+                        const Vec2 v1 = scl * n1;
+
+                        const Vec2 a = pix + v0;
+                        const Vec2 b = pix + v1;
+                        const int ax = round(a.x);
+                        const int ay = round(a.y);
+                        const int bx = round(b.x);
+                        const int by = round(b.y);
+                        if (isInRect2(rect, ax, ay) == false) continue;
+                        if (isInRect2(rect, bx, by) == false) continue;
+
+                        Vec2 ad1, bd1;
+                        ad1.x = acs2<short2, short>(di1, a.x, a.y, 0);
+                        ad1.y = acs2<short2, short>(di1, a.x, a.y, 1);
+                        bd1.x = acs2<short2, short>(di1, b.x, b.y, 0);
+                        bd1.y = acs2<short2, short>(di1, b.x, b.y, 1);
+
+                        const double s0 = dotVec(n0, ad1);
+                        const double s1 = dotVec(n1, bd1);
+                        const double s = maxVal(fabs(s0), fabs(s1));
+                        minv = minVal(minv, s);
+                    }
+
+                    if (minv < 11) {
+                        ftrs[i].stat = -1;
+                    }
+                }
+            }
+        }
+       
+        template <typename TYPE>
+        void calcFtrDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double scl) {
+
+            const int BINS = 36;
+            Mem1<double> hist(BINS);
+
+            const int x = round(pix.x);
+            const int y = round(pix.y);
+
+            // calc direction hist
+            {
+                hist.zero();
+
+                const Rect rect = getRect2(img.dsize) - 1;
+
+                const int radius = round(3.0 * scl);
+
+                const double sdiv = 1.0 / (2.0 * scl * scl);
+
+                for (int ry = -radius; ry <= radius; ry++) {
+                    for (int rx = -radius; rx <= radius; rx++) {
+                        const int ix = x + rx;
+                        const int iy = y + ry;
+                        if (isInRect2(rect, ix, iy) == false) continue;
+
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+
+                        const double angle = atan2(dy, dx);
+
+                        int bin = round(angle * BINS / (2 * SP_PI));
+                        if (bin < 0) bin += BINS;
+
+                        hist[bin] += pythag(dx, dy) * exp(-(rx * rx + ry * ry) * sdiv);
+                    }
+                }
             }
 
-            return true;
+            Mem1<double> fhist(BINS);
+
+            // filtering
+            for (int i = 0; i < BINS; i++) {
+                const double hi = hist(i);
+                const double hp1 = hist(i + BINS - 1, true);
+                const double hp2 = hist(i + BINS - 2, true);
+                const double hn1 = hist(i + BINS + 1, true);
+                const double hn2 = hist(i + BINS + 2, true);
+
+                fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
+            }
+
+            // detect peak
+            const double phresh = maxVal(fhist) * 0.8;
+
+            drcs.reserve(BINS);
+            for (int i = 0; i < BINS; i++) {
+                const double hi = fhist(i);
+                const double hp1 = fhist(i + BINS - 1, true);
+                const double hn1 = fhist(i + BINS + 1, true);
+
+                if (hi > phresh && hi > maxVal(hp1, hn1)) {
+                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
+                    const double angle = finei * (2.0 * SP_PI / BINS);
+
+                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    drcs.push(drc);
+                }
+            }
         }
 
+        template <typename TYPE>
+        void calcFtrDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const double scl) {
+
+            const int DSC_BINS = 8;
+            const int DSC_BLKS = 4;
+            const double DCS_SCL_FCTR = 3.0;
+
+            Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
+            hist.zero();
+
+            const Rect rect = getRect2(img.dsize) - 1;
+
+            const double block = DCS_SCL_FCTR * scl;
+
+            const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
+
+            const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
+
+            const double tcos = +drc.x;
+            const double tsin = -drc.y;
+
+            for (int ry = -radius; ry <= radius; ry++) {
+                for (int rx = -radius; rx <= radius; rx++) {
+                    const int ix = round(pix.x + rx);
+                    const int iy = round(pix.y + ry);
+                    if (isInRect2(rect, ix, iy) == false) continue;
+
+                    const double tx = (tcos * rx - tsin * ry) / block;
+                    const double ty = (tsin * rx + tcos * ry) / block;
+
+                    const double bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
+                    const double by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
+
+                    if (bx > 0 && bx < DSC_BLKS && by > 0 && by < DSC_BLKS) {
+
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+
+                        const double ndx = tcos * dx - tsin * dy;
+                        const double ndy = tsin * dx + tcos * dy;
+
+                        double angle = atan2(ndy, ndx);
+                        if (angle < 0) angle += 2 * SP_PI;
+
+                        const double ba = angle * (DSC_BINS / (2 * SP_PI));
+
+                        const int ibx = floor(bx);
+                        const int iby = floor(by);
+                        const int iba = floor(ba);
+
+                        const double abx = bx - ibx;
+                        const double aby = by - iby;
+                        const double aba = ba - iba;
+
+                        const double val = pythag(dx, dy) * exp(-(tx * tx + ty * ty) * sdiv);
+
+                        hist(ibx + 0, iby + 0, iba + 0) += val * (1 - abx) * (1 - aby) * (1 - aba);
+                        hist(ibx + 0, iby + 0, iba + 1) += val * (1 - abx) * (1 - aby) * (0 + aba);
+                        hist(ibx + 0, iby + 1, iba + 0) += val * (1 - abx) * (0 + aby) * (1 - aba);
+                        hist(ibx + 0, iby + 1, iba + 1) += val * (1 - abx) * (0 + aby) * (0 + aba);
+                        hist(ibx + 1, iby + 0, iba + 0) += val * (0 + abx) * (1 - aby) * (1 - aba);
+                        hist(ibx + 1, iby + 0, iba + 1) += val * (0 + abx) * (1 - aby) * (0 + aba);
+                        hist(ibx + 1, iby + 1, iba + 0) += val * (0 + abx) * (0 + aby) * (1 - aba);
+                        hist(ibx + 1, iby + 1, iba + 1) += val * (0 + abx) * (0 + aby) * (0 + aba);
+                    }
+                }
+            }
+
+            Mem1<double> ddsc(DSC_BLKS * DSC_BLKS * DSC_BINS);
+            {
+                int cnt = 0;
+                for (int iby = 1; iby < DSC_BLKS + 1; iby++) {
+                    for (int ibx = 1; ibx < DSC_BLKS + 1; ibx++) {
+                        hist(ibx, iby, 0) += hist(ibx, iby, DSC_BINS);
+
+                        for (int k = 0; k < DSC_BINS; k++) {
+                            ddsc[cnt++] = hist(ibx, iby, k);
+                        }
+                    }
+                }
+            }
+
+            {
+                const double DSC_MAG_THR = 0.2;
+
+                const double sq = sumSq(ddsc);
+                const double thresh = sqrt(sq) * DSC_MAG_THR;
+
+                for (int k = 0; k < ddsc.size(); k++) {
+                    ddsc[k] = minVal(ddsc[k], thresh);
+                }
+            }
+
+            {
+                const double sq = sumSq(ddsc);
+                const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
+
+                const int dim = ddsc.size();
+
+                const int bsize = dim / 8;
+                const int fsize = dim * sizeof(float);
+
+                dsc.dim = dim;
+                dsc.type = Dsc::DSC_CFBlob;
+                dsc.bin.resize(bsize);
+                dsc.val.resize(fsize);
+
+                // float
+                float *val = reinterpret_cast<float*>(dsc.val.ptr);
+                for (int k = 0; k < dim; k++) {
+                    val[k] = static_cast<float>(ddsc[k] * nrm);
+                }
+
+                // binary
+                Byte *bin = reinterpret_cast<Byte*>(dsc.bin.ptr);
+                const float thresh = static_cast<float>(1.0 / sqrt(dim));
+                cnvBit(bin, bsize, val, dim, thresh);
+            }
+        }
     };
 }
