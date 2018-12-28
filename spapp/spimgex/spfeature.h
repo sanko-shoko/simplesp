@@ -27,7 +27,8 @@ namespace sp {
         // descripter type
         enum Type {
             DSC_NULL = 0,
-            DSC_SIFT = 1
+            DSC_SIFT = 1,
+            DSC_CFBlob = 2
         };
         Type type;
 
@@ -100,7 +101,9 @@ namespace sp {
     };
 
     class View {
+
     public:
+
         bool valid;
 
         // camera parameter
@@ -141,7 +144,9 @@ namespace sp {
     };
 
     class MapPnt : public VecPN3 {
+
     public:
+
         bool valid;
 
         // point color
@@ -188,7 +193,7 @@ namespace sp {
 
     public:
 
-        void updatePrjErr() {
+        void updateErr() {
             if (valid == false) return;
 
             const int num = views.size();
@@ -215,10 +220,10 @@ namespace sp {
 
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = ftrs[i]->pix;
-                vec += getVec(acsc(views[i]->img, pix.x, pix.y)) / num;
+                vec += getVec(acsc(views[i]->img, pix.x, pix.y));
             }
 
-            col = getCol(vec);
+            col = getCol(vec / num);
         }
     };
 
@@ -253,6 +258,7 @@ namespace sp {
 
     SP_CPUFUNC Mem1<Vec2> getMatchPixs(const Mem1<Ftr> &ftrs, const Mem1<int> &matches, const bool flag = true) {
         Mem1<Vec2> pixs;
+        pixs.reserve(matches.size());
         for (int i = 0; i < matches.size(); i++) {
             const int j = matches[i];
             if (j < 0) continue;
@@ -266,9 +272,11 @@ namespace sp {
 
         int id = -1;
 
-        if (ftr.dsc.type == Dsc::Type::DSC_SIFT) {
+        switch (ftr.dsc.type) {
+        case Dsc::Type::DSC_SIFT:
+        {
             const double MIN_NCC = 0.9;
-            const double MIN_BIN = 0.8;
+            const double MIN_BIN = MIN_NCC * 0.9;
 
             double maxv = MIN_NCC;
 
@@ -296,17 +304,51 @@ namespace sp {
                     id = i;
                 }
             }
+            break;
         }
+        case Dsc::Type::DSC_CFBlob:
+        {
+            const double MIN_NCC = 0.9;
+            const double MIN_BIN = MIN_NCC * 0.9;
 
+            double maxv = MIN_NCC;
+
+            // SIFT dim = 128
+            const int dim = 128;
+
+            for (int i = 0; i < ftrs.size(); i++) {
+                if (ftr.cst * ftrs[i].cst <= 0.0) continue;
+
+                {
+                    const double btest = static_cast<double>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
+                    if (btest < MIN_BIN) continue;
+                }
+
+                const float *data0 = reinterpret_cast<float*>(ftr.dsc.val.ptr);
+                const float *data1 = reinterpret_cast<float*>(ftrs[i].dsc.val.ptr);
+
+                double sum = 0.0;
+                for (int d = 0; d < dim; d++) {
+                    sum += (*data0++) * (*data1++);
+                }
+
+                if (sum > maxv) {
+                    maxv = sum;
+                    id = i;
+                }
+            }
+            break;
+        }
+        }
         return id;
     }
 
     SP_CPUFUNC Mem1<int> findMatch(const Mem1<Ftr> &ftrs0, const Mem1<Ftr> &ftrs1, const bool crossCheck = true) {
         Mem1<int> matches(ftrs0.size());
 
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
+//#if SP_USE_OMP
+//#pragma omp parallel for
+//#endif
         for (int i = 0; i < ftrs0.size(); i++) {
             matches[i] = -1;
 
@@ -317,7 +359,8 @@ namespace sp {
             }
 
             // cross check
-            if (crossCheck == true) {
+            if (crossCheck == true) 
+            {
                 k = findMatch(ftrs1[j], ftrs0);
                 if (k != i) continue;
             }

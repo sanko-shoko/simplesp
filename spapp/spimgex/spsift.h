@@ -22,11 +22,16 @@ namespace sp{
 
     public:
 
-        class MyFeature : public Ftr{
+        class MyFtr : public Ftr{
 
         public:
-            int octave;
-            int layer;
+            int pyid;
+            int lyid;
+
+            MyFtr() :Ftr() {
+                pyid = 0;
+                lyid = 0;
+            }
         };
 
         class ImgSet {
@@ -55,6 +60,7 @@ namespace sp{
         SIFT(const SIFT &sift) {
             *this = sift;
         }
+
         SIFT& operator = (const SIFT &sift) {
             m_ftrs = sift.m_ftrs;
             return *this;
@@ -65,7 +71,7 @@ namespace sp{
         // parameter
         //--------------------------------------------------------------------------------
 
-        void setParam(const double contrast = 0.01) {
+        void setParam(const double contrast) {
             BLOB_CONTRAST = contrast;
         }
 
@@ -114,6 +120,7 @@ namespace sp{
     private:
 
         bool _execute(const Mem2<Byte> &img){
+            SP_LOGGER_SET("SIFT.execute");
 
             // clear data
             {
@@ -124,16 +131,13 @@ namespace sp{
             try{
                 if (img.size() == 0) throw "image size";
 
-                Mem2<float> imgf;
-                cnvMem(imgf, img, 1.0 / 255.0);
-
                 // make Imgs & DoGs
-                makeImgSet(m_imgsets, imgf);
+                makeImgSet(m_imgsets, img);
 
-                Mem1<MyFeature> myfts;
+                Mem1<MyFtr> myfts;
 
                 // detect features
-                if(detect(myfts, m_imgsets) == false) throw "no featues";
+                if (detect(myfts, m_imgsets) == false) throw "no featues";
 
                 // descript features
                 descript(m_ftrs, myfts, m_imgsets);
@@ -161,28 +165,31 @@ namespace sp{
         // modules
         //--------------------------------------------------------------------------------
 
-        void makeImgSet(Mem1<ImgSet> &imgsets, const Mem2<float> &img){
+        void makeImgSet(Mem1<ImgSet> &imgsets, const Mem2<Byte> &img){
+            Mem2<float> imgf;
+            cnvMem(imgf, img, 1.0 / 255.0);
 
-            const int octaves = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
+            const int pynum = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
 
-            imgsets.resize(octaves);
+            imgsets.resize(pynum);
 
-            for (int o = 0; o < octaves; o++){
-                Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
-                Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
+            // octaves
+            for (int p = 0; p < pynum; p++) {
+                Mem1<Mem2<float> > &imgs = imgsets[p].imgs;
+                Mem1<Mem2<float> > &dogs = imgsets[p].dogs;
 
                 imgs.resize(LAYERS + 3);
                 dogs.resize(LAYERS + 2);
 
-                if (o == 0){
+                if (p == 0){
                     const double crnt = BASE_SIGMA;
                     const double prev = INIT_SIGMA;
                     const double dsig = sqrt(crnt * crnt - prev * prev);
 
-                    gaussianFilter(imgs[0], img, dsig);
+                    gaussianFilter(imgs[0], imgf, dsig);
                 }
                 else{
-                    pyrdown(imgs[0], imgsets[o - 1].imgs[LAYERS]);
+                    pyrdown(imgs[0], imgsets[p - 1].imgs[LAYERS]);
                 }
 
                 for (int s = 1; s < LAYERS + 3; s++){
@@ -199,18 +206,20 @@ namespace sp{
             }
         }
 
-        bool detect(Mem1<MyFeature> &ftrs, const Mem1<ImgSet> &imgsets){
+        bool detect(Mem1<MyFtr> &ftrs, const Mem1<ImgSet> &imgsets){
+            SP_LOGGER_SET("SIFT.detect");
 
-            ftrs.clear();
-            for (int o = 0; o < imgsets.size(); o++){
-                const Mem1<Mem2<float> > &imgs = imgsets[o].imgs;
-                const Mem1<Mem2<float> > &dogs = imgsets[o].dogs;
+            ftrs.reserve(1000);
+
+            for (int p = 0; p < imgsets.size(); p++){
+                const Mem1<Mem2<float> > &imgs = imgsets[p].imgs;
+                const Mem1<Mem2<float> > &dogs = imgsets[p].dogs;
+
+                const int m = round(4.0 * BASE_SIGMA);
 
                 for (int s = 1; s < LAYERS + 1; s++){
-                    const int margin = round(4.0 * BASE_SIGMA);
-
-                    for (int y = margin; y < dogs[s].dsize[1] - margin; y++){
-                        for (int x = margin; x < dogs[s].dsize[0] - margin; x++){
+                    for (int y = m; y < dogs[s].dsize[1] - m; y++){
+                        for (int x = m; x < dogs[s].dsize[0] - m; x++){
 
                             const float base = dogs[s](x, y);
 
@@ -236,18 +245,18 @@ namespace sp{
                             if (npeak || ppeak){
                                 Vec3 vec = getVec(x, y, s);
 
-                                if (calcFtRefine(vec, imgsets[o]) == false) continue;
+                                if (calcFtrRefine(vec, imgsets[p].dogs) == false) continue;
 
                                 const double SIG_FCTR = 1.5;
 
-                                MyFeature ftr;
+                                MyFtr ftr;
 
-                                ftr.pix = getVec(vec.x, vec.y) * (1 << o);
-                                ftr.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << o);
+                                ftr.pix = getVec(vec.x, vec.y) * (1 << p);
+                                ftr.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << p);
                                 ftr.cst = dogs[s](x, y);
 
-                                ftr.octave = o;
-                                ftr.layer = s;
+                                ftr.pyid = p;
+                                ftr.lyid = s;
 
                                 ftrs.push(ftr);
                             }
@@ -259,92 +268,85 @@ namespace sp{
             return (ftrs.size() != 0) ? true : false;
         }
 
-        void descript(Mem1<Ftr> &ftrs, const Mem1<MyFeature> &myfts, const Mem1<ImgSet> &imgsets){
+        void descript(Mem1<Ftr> &ftrs, const Mem1<MyFtr> &myfts, const Mem1<ImgSet> &imgsets){
+            SP_LOGGER_SET("SIFT.descript");
 
             ftrs.reserve(myfts.size() * 2);
 
             for (int i = 0; i < myfts.size(); i++){
  
-                const MyFeature &myft = myfts[i];
+                const MyFtr &myft = myfts[i];
 
-                const Mem2<float> &img = imgsets[myft.octave].imgs[myft.layer];
+                const Mem2<float> &img = imgsets[myft.pyid].imgs[myft.lyid];
 
-                const Vec2 pix = myft.pix / (1 << myft.octave);
-                const double scl = myft.scl / (1 << myft.octave);
+                const Vec2 pix = myft.pix / (1 << myft.pyid);
+                const double scl = myft.scl / (1 << myft.pyid);
 
                 Ftr ftr = myft;
 
-                const double PEAK_THRESH = 0.8;
-
                 Mem1<Vec2> drcs;
-                calcFtDrc(drcs, img, pix, scl, PEAK_THRESH);
+                calcFtrDrc(drcs, img, pix, scl);
         
                 for (int a = 0; a < drcs.size(); a++) {
                     ftr.drc = drcs[a];
-                    calcFtDsc(ftr.dsc, img, pix, ftr.drc, scl);
+                    calcFtrDsc(ftr.dsc, img, pix, ftr.drc, scl);
                     ftrs.push(ftr);
                 }
             }
         }
 
-        bool calcFtRefine(Vec3 &vec, const ImgSet &imgset) {
-
-            const Mem1<Mem2<float>> &imgs = imgset.imgs;
-            const Mem1<Mem2<float>> &dogs = imgset.dogs;
+        bool calcFtrRefine(Vec3 &vec, const Mem1<Mem2<float> > &dogs) {
 
             const int x = round(vec.x);
             const int y = round(vec.y);
             const int s = round(vec.z);
 
-            // refine position
-            {
-                const Mem2<float> &dog0 = dogs[(s - 1) + 0];
-                const Mem2<float> &dog1 = dogs[(s - 1) + 1];
-                const Mem2<float> &dog2 = dogs[(s - 1) + 2];
+            const Mem2<float> &dog0 = dogs[(s - 1) + 0];
+            const Mem2<float> &dog1 = dogs[(s - 1) + 1];
+            const Mem2<float> &dog2 = dogs[(s - 1) + 2];
 
-                const double val = dog1(x, y);
+            const double val = dog1(x, y);
 
-                const double dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0);
-                const double dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0);
-                const double dss = (dog2(x + 0, y + 0) + dog0(x + 0, y + 0) - val * 2.0);
+            const double dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0);
+            const double dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0);
+            const double dss = (dog2(x + 0, y + 0) + dog0(x + 0, y + 0) - val * 2.0);
 
-                const double dxy = (dog1(x + 1, y + 1) - dog1(x - 1, y + 1) - dog1(x + 1, y - 1) + dog1(x - 1, y - 1)) * 0.25;
-                const double dxs = (dog2(x + 1, y + 0) - dog2(x - 1, y + 0) - dog0(x + 1, y + 0) + dog0(x - 1, y + 0)) * 0.25;
-                const double dys = (dog2(x + 0, y + 1) - dog2(x + 0, y - 1) - dog0(x + 0, y + 1) + dog0(x + 0, y - 1)) * 0.25;
+            const double dxy = (dog1(x + 1, y + 1) - dog1(x - 1, y + 1) - dog1(x + 1, y - 1) + dog1(x - 1, y - 1)) * 0.25;
+            const double dxs = (dog2(x + 1, y + 0) - dog2(x - 1, y + 0) - dog0(x + 1, y + 0) + dog0(x - 1, y + 0)) * 0.25;
+            const double dys = (dog2(x + 0, y + 1) - dog2(x + 0, y - 1) - dog0(x + 0, y + 1) + dog0(x + 0, y - 1)) * 0.25;
 
-                const double dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
+            const double dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
 
-                double dst[3 * 3];
-                if (invMat33(dst, dv2) == false) return false;
+            double dst[3 * 3];
+            if (invMat33(dst, dv2) == false) return false;
 
-                const double dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;
-                const double dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5;
-                const double ds = (dog2(x + 0, y + 0) - dog0(x + 0, y + 0)) * 0.5;
+            const double dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;
+            const double dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5;
+            const double ds = (dog2(x + 0, y + 0) - dog0(x + 0, y + 0)) * 0.5;
 
-                const double dv[3] = { dx, dy, ds };
+            const double dv[3] = { dx, dy, ds };
 
-                double delta[3] = { 0 };
-                mulMat(delta, 3, 1, dst, 3, 3, dv, 3, 1);
+            double delta[3] = { 0 };
+            mulMat(delta, 3, 1, dst, 3, 3, dv, 3, 1);
 
-                if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return false;
+            if (fabs(delta[0]) >= 0.5 || fabs(delta[1]) >= 0.5 || fabs(delta[2]) >= 0.5) return false;
 
-                const double det = dxx * dyy - dxy * dxy;
-                const double tr = dxx + dyy;
+            const double det = dxx * dyy - dxy * dxy;
+            const double tr = dxx + dyy;
 
-                // check edge
-                if (det <= 0) return false;
-                if (tr * tr / det > EDGE_THRESH) return false;
+            // check edge
+            if (det <= 0) return false;
+            if (tr * tr / det > EDGE_THRESH) return false;
 
-                vec.x = x - delta[0];
-                vec.y = y - delta[1];
-                vec.z = s - delta[2];
-            }
+            vec.x = x - delta[0];
+            vec.y = y - delta[1];
+            vec.z = s - delta[2];
 
             return true;
         }
         
         template <typename TYPE>
-        void calcFtDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double scl, const double pthresh = 0.8) {
+        void calcFtrDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double scl) {
 
             const int BINS = 36;
             Mem1<double> hist(BINS);
@@ -395,7 +397,7 @@ namespace sp{
             }
 
             // detect peak
-            const double thresh = maxVal(fhist) * pthresh;
+            const double phresh = maxVal(fhist) * 0.8;
 
             drcs.reserve(BINS);
             for (int i = 0; i < BINS; i++) {
@@ -403,7 +405,7 @@ namespace sp{
                 const double hp1 = fhist(i + BINS - 1, true);
                 const double hn1 = fhist(i + BINS + 1, true);
 
-                if (hi > thresh && hi > maxVal(hp1, hn1)) {
+                if (hi > phresh && hi > maxVal(hp1, hn1)) {
                     const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
                     const double angle = finei * (2.0 * SP_PI / BINS);
 
@@ -414,22 +416,18 @@ namespace sp{
         }
 
         template <typename TYPE>
-        void calcFtDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const double scl) {
+        void calcFtrDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const double scl) {
 
             const int DSC_BINS = 8;
             const int DSC_BLKS = 4;
+            const double DCS_SCL_FCTR = 3.0;
 
             Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
             hist.zero();
 
             const Rect rect = getRect2(img.dsize) - 1;
 
-            const double kx = pix.x;
-            const double ky = pix.y;
-            const double ks = scl;
-
-            const double DCS_SCL_FCTR = 3.0;
-            const double block = DCS_SCL_FCTR * ks;
+            const double block = DCS_SCL_FCTR * scl;
 
             const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
 
@@ -440,8 +438,8 @@ namespace sp{
 
             for (int ry = -radius; ry <= radius; ry++) {
                 for (int rx = -radius; rx <= radius; rx++) {
-                    const int ix = round(kx + rx);
-                    const int iy = round(ky + ry);
+                    const int ix = round(pix.x + rx);
+                    const int iy = round(pix.y + ry);
                     if (isInRect2(rect, ix, iy) == false) continue;
 
                     const double tx = (tcos * rx - tsin * ry) / block;

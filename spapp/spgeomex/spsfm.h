@@ -448,7 +448,7 @@ namespace sp {
             mpnt.valid = true;
             mpnt.pos = pos;
             mpnt.updateCol();
-            mpnt.updatePrjErr();
+            mpnt.updateErr();
         }
 
         void setMPnt(MapPnt &mpnt, ViewEx& view, const int f) {
@@ -461,7 +461,7 @@ namespace sp {
             mpnt.views.push(&view);
             mpnt.ftrs.push(&view.ftrs[f]);
             mpnt.updateCol();
-            mpnt.updatePrjErr();
+            mpnt.updateErr();
 
             view.ftrs[f].mpnt = &mpnt;
         }

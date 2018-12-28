@@ -415,7 +415,7 @@ namespace sp{
             glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
             glTexCoord2i(0, 1); glVertex2d(0 - 0.5, h - 0.5);
             glTexCoord2i(1, 1); glVertex2d(w - 0.5, h - 0.5);
-            glTexCoord2i(1, 0);    glVertex2d(w - 0.5, 0 - 0.5);
+            glTexCoord2i(1, 0); glVertex2d(w - 0.5, 0 - 0.5);
             glEnd();
 
             glBindTexture(GL_TEXTURE_2D, 0);
