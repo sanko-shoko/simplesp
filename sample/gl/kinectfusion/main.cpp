@@ -59,6 +59,11 @@ private:
         if (m_keyAction[GLFW_KEY_R] == 1) {
             m_kfusion.reset();
         }
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            Mem1<Mesh3> model;
+            cnvVoxelToModel(model, *m_kfusion.getMap());
+            savePLY("model.ply", model);
+        }
     }
 
     virtual void display() {

@@ -193,7 +193,7 @@ namespace sp{
                             for (int k = 0; k < 8; k++) {
                                 const char &val = voxel.vmap(x + order[k][0], y + order[k][1], z + order[k][2]);
                                 
-                                if ((val - 0.5) * pattern[k] > 0) {
+                                if ((val + 0.5) * pattern[k] > 0) {
                                     score++;
                                 }
                                 else {
@@ -222,107 +222,111 @@ namespace sp{
 
                     Mem1<Mesh3> tmps;
 
+                    auto m = [p, v](const int i, const int j)-> Vec3 {
+                        return (v[j] * p[i] + v[i] * p[j]) / (v[i] + v[j]);
+                    };
+
                     switch (pid) {
                     default:
                         break;
                     case 1:
                     {
-                        tmps.push(getMesh(p[6] + p[2], p[6] + p[7], p[6] + p[4]) / 2.0);
+                        tmps.push(getMesh(m(6, 2), m(6, 7), m(6, 4)));
                         break;
                     }
                     case 2:
                     {
-                        tmps.push(getMesh(p[6] + p[2], p[7] + p[5], p[6] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[7] + p[3], p[7] + p[5], p[6] + p[2]) / 2.0);
+                        tmps.push(getMesh(m(6, 2), m(7, 5), m(6, 4)));
+                        tmps.push(getMesh(m(7, 3), m(7, 5), m(6, 2)));
                         break;
                     }
                     case 3:
                     {
-                        tmps.push(getMesh(p[6] + p[2], p[6] + p[7], p[6] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[3] + p[1], p[3] + p[7], p[3] + p[2]) / 2.0);
+                        tmps.push(getMesh(m(6, 2), m(6, 7), m(6, 4)));
+                        tmps.push(getMesh(m(3, 1), m(3, 7), m(3, 2)));
                         break;
                     }
                     case 4:
                     {
-                        tmps.push(getMesh(p[4] + p[0], p[7] + p[3], p[5] + p[1]) / 2.0);
-                        tmps.push(getMesh(p[4] + p[0], p[4] + p[6], p[7] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[7] + p[3], p[4] + p[6], p[7] + p[6]) / 2.0);
+                        tmps.push(getMesh(m(4, 0), m(7, 3), m(5, 1)));
+                        tmps.push(getMesh(m(4, 0), m(4, 6), m(7, 3)));
+                        tmps.push(getMesh(m(7, 3), m(4, 6), m(7, 6)));
                         break;
                     }
 
                     case 5:
                     {
-                        tmps.push(getMesh(p[4] + p[0], p[6] + p[2], p[5] + p[1]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[1], p[6] + p[2], p[7] + p[3]) / 2.0);
+                        tmps.push(getMesh(m(4, 0), m(6, 2), m(5, 1)));
+                        tmps.push(getMesh(m(5, 1), m(6, 2), m(7, 3)));
                         break;
                     }
 
                     case 6:
                     {
-                        tmps.push(getMesh(p[2] + p[0], p[2] + p[3], p[2] + p[6]) / 2.0);
-                        tmps.push(getMesh(p[4] + p[0], p[7] + p[3], p[5] + p[1]) / 2.0);
-                        tmps.push(getMesh(p[4] + p[0], p[4] + p[6], p[7] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[7] + p[3], p[4] + p[6], p[7] + p[6]) / 2.0);
+                        tmps.push(getMesh(m(2, 0), m(2, 3), m(2, 6)));
+                        tmps.push(getMesh(m(4, 0), m(7, 3), m(5, 1)));
+                        tmps.push(getMesh(m(4, 0), m(4, 6), m(7, 3)));
+                        tmps.push(getMesh(m(7, 3), m(4, 6), m(7, 6)));
                         break;
                     }
                     case 7:
                     {
-                        tmps.push(getMesh(p[0] + p[1], p[0] + p[2], p[0] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[3] + p[1], p[3] + p[7], p[3] + p[2]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[1], p[5] + p[7], p[5] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[6] + p[2], p[6] + p[7], p[6] + p[4]) / 2.0);
+                        tmps.push(getMesh(m(0, 1), m(0, 2), m(0, 4)));
+                        tmps.push(getMesh(m(3, 1), m(3, 7), m(3, 2)));
+                        tmps.push(getMesh(m(5, 1), m(5, 7), m(5, 4)));
+                        tmps.push(getMesh(m(6, 2), m(6, 7), m(6, 4)));
                         break;
                     }
                     case 8:
                     {
-                        tmps.push(getMesh(p[0] + p[1], p[0] + p[2], p[6] + p[2]) / 2.0);
-                        tmps.push(getMesh(p[0] + p[1], p[6] + p[2], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[0] + p[1], p[6] + p[7], p[5] + p[1]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[1], p[6] + p[7], p[5] + p[7]) / 2.0);
+                        tmps.push(getMesh(m(0, 1), m(0, 2), m(6, 2)));
+                        tmps.push(getMesh(m(0, 1), m(6, 2), m(6, 7)));
+                        tmps.push(getMesh(m(0, 1), m(6, 7), m(5, 1)));
+                        tmps.push(getMesh(m(5, 1), m(6, 7), m(5, 7)));
                         break;
                     }
                     case 9:
                     {
-                        tmps.push(getMesh(p[0] + p[1], p[0] + p[2], p[5] + p[1]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[1], p[0] + p[2], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[0] + p[2], p[4] + p[6], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[1], p[7] + p[6], p[7] + p[3]) / 2.0);
+                        tmps.push(getMesh(m(0, 1), m(0, 2), m(5, 1)));
+                        tmps.push(getMesh(m(5, 1), m(0, 2), m(6, 7)));
+                        tmps.push(getMesh(m(0, 2), m(4, 6), m(6, 7)));
+                        tmps.push(getMesh(m(5, 1), m(7, 6), m(7, 3)));
                         break;
                     }
                     case 10:
                     {
-                        tmps.push(getMesh(p[6] + p[2], p[6] + p[7], p[6] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[1] + p[0], p[1] + p[5], p[1] + p[3]) / 2.0);
+                        tmps.push(getMesh(m(6, 2), m(6, 7), m(6, 4)));
+                        tmps.push(getMesh(m(1, 0), m(1, 5), m(1, 3)));
                         break;
                     }
                     case 11:
                     {
-                        tmps.push(getMesh(p[1] + p[0], p[1] + p[5], p[1] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[6] + p[2], p[7] + p[5], p[6] + p[4]) / 2.0);
-                        tmps.push(getMesh(p[7] + p[3], p[7] + p[5], p[6] + p[2]) / 2.0);
+                        tmps.push(getMesh(m(1, 0), m(1, 5), m(1, 3)));
+                        tmps.push(getMesh(m(6, 2), m(7, 5), m(6, 4)));
+                        tmps.push(getMesh(m(7, 3), m(7, 5), m(6, 2)));
                         break;
                     }
                     case 12:
                     {
-                        tmps.push(getMesh(p[1] + p[0], p[1] + p[5], p[1] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[2] + p[0], p[2] + p[3], p[2] + p[6]) / 2.0);
-                        tmps.push(getMesh(p[7] + p[3], p[7] + p[5], p[7] + p[6]) / 2.0);
+                        tmps.push(getMesh(m(1, 0), m(1, 5), m(1, 3)));
+                        tmps.push(getMesh(m(2, 0), m(2, 3), m(2, 6)));
+                        tmps.push(getMesh(m(7, 3), m(7, 5), m(7, 6)));
                         break;
                     }
                     case 13:
                     {
-                        tmps.push(getMesh(p[1] + p[0], p[5] + p[7], p[1] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[1] + p[0], p[5] + p[4], p[5] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[2] + p[0], p[2] + p[3], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[2] + p[0], p[6] + p[7], p[6] + p[4]) / 2.0);
+                        tmps.push(getMesh(m(1, 0), m(5, 7), m(1, 3)));
+                        tmps.push(getMesh(m(1, 0), m(5, 4), m(5, 7)));
+                        tmps.push(getMesh(m(2, 0), m(2, 3), m(6, 7)));
+                        tmps.push(getMesh(m(2, 0), m(6, 7), m(6, 4)));
                         break;
                     }
                     case 14:
                     {
-                        tmps.push(getMesh(p[1] + p[0], p[4] + p[0], p[1] + p[3]) / 2.0);
-                        tmps.push(getMesh(p[1] + p[3], p[4] + p[0], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[4] + p[0], p[6] + p[2], p[6] + p[7]) / 2.0);
-                        tmps.push(getMesh(p[5] + p[7], p[1] + p[3], p[6] + p[7]) / 2.0);
+                        tmps.push(getMesh(m(1, 0), m(4, 0), m(1, 3)));
+                        tmps.push(getMesh(m(1, 3), m(4, 0), m(6, 7)));
+                        tmps.push(getMesh(m(4, 0), m(6, 2), m(6, 7)));
+                        tmps.push(getMesh(m(5, 7), m(1, 3), m(6, 7)));
                         break;
                     }
 
