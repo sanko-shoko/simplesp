@@ -27,6 +27,7 @@ private:
 
     void help() {
         printf("'r' key : reset kinect fusion\n");
+        printf("'s' key : output ply\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }

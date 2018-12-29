@@ -45,7 +45,8 @@ namespace sp{
         }
 
         void zero() {
-            vmap.zero();
+            //vmap.zero();
+            setElm(vmap, +1);
             wmap.zero();
         }
 
@@ -193,7 +194,7 @@ namespace sp{
                             for (int k = 0; k < 8; k++) {
                                 const char &val = voxel.vmap(x + order[k][0], y + order[k][1], z + order[k][2]);
                                 
-                                if ((val + 0.5) * pattern[k] > 0) {
+                                if ((val - 0.5) * pattern[k] > 0) {
                                     score++;
                                 }
                                 else {
