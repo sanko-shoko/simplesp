@@ -36,8 +36,7 @@ namespace sp{
         }
 
         void init(const int size, const double unit, const CamParam &cam, const Pose &base) {
-            m_tsdf.resize(size, unit);
-            m_tsdf.zero();
+            m_tsdf.init(size, unit);
 
             m_cast.resize(cam.dsize);
             m_cast.zero();
