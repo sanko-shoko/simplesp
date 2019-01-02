@@ -31,46 +31,36 @@ namespace sp{
     // get color
     SP_GENFUNC Col3 getCol(const Vec3 &vec) {
         Col3 dst;
-        cnvVal(dst.r, vec.x);
-        cnvVal(dst.g, vec.y);
-        cnvVal(dst.b, vec.z);
+        cnvVal(dst.r, vec.x * SP_BYTEMAX);
+        cnvVal(dst.g, vec.y * SP_BYTEMAX);
+        cnvVal(dst.b, vec.z * SP_BYTEMAX);
         return dst;
     }
 
-    // extend color
-    SP_GENFUNC Col4 extCol(const Col3 &col, const Byte a) {
+    // get color
+    SP_GENFUNC Col4 getCol(const Col3 &col, const Byte a) {
         Col4 dst;
         dst.r = col.r; dst.g = col.g; dst.b = col.b; dst.a = a;
         return dst;
     }
 
-    // addition
-    SP_GENFUNC Col3 addCol(const Col3 &col0, const Col3 &col1) {
-        const Byte r = static_cast<Byte>(maxVal(0, minVal(255, col0.r + col1.r)));
-        const Byte g = static_cast<Byte>(maxVal(0, minVal(255, col0.g + col1.g)));
-        const Byte b = static_cast<Byte>(maxVal(0, minVal(255, col0.b + col1.b)));
-        return getCol(r, g, b);
+
+    //--------------------------------------------------------------------------------
+    // blend
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Byte blendCol(const Byte &val0, const Byte &val1, const double rate = 0.5){
+        Byte val;
+        cnvVal(val, val0 * rate + val1 * (1.0 - rate));
+        return val;
     }
 
-    // subtraction
-    SP_GENFUNC Col3 subCol(const Col3 &col0, const Col3 &col1) {
-        const Byte r = static_cast<Byte>(maxVal(0, minVal(255, col0.r - col1.r)));
-        const Byte g = static_cast<Byte>(maxVal(0, minVal(255, col0.g - col1.g)));
-        const Byte b = static_cast<Byte>(maxVal(0, minVal(255, col0.b - col1.b)));
-        return getCol(r, g, b);
-    }
-
-    // multiple
-    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
-        const Byte r = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.r * val))));
-        const Byte g = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.g * val))));
-        const Byte b = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.b * val))));
-        return getCol(r, g, b);
-    }
-
-    // division
-    SP_GENFUNC Col3 divCol(const Col3 &col, const double val) {
-        return (val != 0.0) ? mulCol(col, 1.0 / val) : col;
+    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate = 0.5) {
+        Col3 col;
+        cnvVal(col.r, col0.r * rate + col1.r * (1.0 - rate));
+        cnvVal(col.g, col0.g * rate + col1.g * (1.0 - rate));
+        cnvVal(col.b, col0.b * rate + col1.b * (1.0 - rate));
+        return col;
     }
 
 
@@ -79,55 +69,14 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC Col3 operator + (const Col3 &col0, const Col3 &col1) {
-        return addCol(col0, col1);
-    }
-
-    SP_GENFUNC Col3 operator - (const Col3 &col0, const Col3 &col1) {
-        return subCol(col0, col1);
-    }
-
-    SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
-        return mulCol(col, val);
-    }
-
-    SP_GENFUNC Col3 operator / (const Col3 &col, const double val) {
-        return divCol(col, val);
+        return blendCol(col0, col1);
     }
 
     SP_GENFUNC void operator += (Col3 &col0, const Col3 &col1) {
-        col0 = addCol(col0, col1);
-    }
-
-    SP_GENFUNC void operator -= (Col3 &col0, const Col3 &col1) {
-        col0 = subCol(col0, col1);
-    }
-
-    SP_GENFUNC void operator *= (Col3 &col, const double val) {
-        col = mulCol(col, val);
-    }
-
-    SP_GENFUNC void operator /= (Col3 &col, const double val) {
-        col = divCol(col, val);
+        col0 = blendCol(col0, col1);
     }
 
 
-    //--------------------------------------------------------------------------------
-    // blend
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC Byte blendCol(const Byte &val0, const Byte &val1, const double rate){
-        Byte val;
-        cnvVal(val, val0 * rate + val1 * (1.0 - rate));
-        return val;
-    }
-
-    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate) {
-        Col3 col;
-        cnvVal(col.r, col0.r * rate + col1.r * (1.0 - rate));
-        cnvVal(col.g, col0.g * rate + col1.g * (1.0 - rate));
-        cnvVal(col.b, col0.b * rate + col1.b * (1.0 - rate));
-        return col;
-    }
 
     //--------------------------------------------------------------------------------
     // color space
@@ -269,9 +218,9 @@ namespace sp{
         val.y = -0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z;
         val.z = 0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z;
     
-        val.x = minVal(1.0, f(val.x)) * 255.0;
-        val.y = minVal(1.0, f(val.y)) * 255.0;
-        val.z = minVal(1.0, f(val.z)) * 255.0;
+        val.x = minVal(1.0, f(val.x));
+        val.y = minVal(1.0, f(val.y));
+        val.z = minVal(1.0, f(val.z));
 
         col = getCol(val);
     }

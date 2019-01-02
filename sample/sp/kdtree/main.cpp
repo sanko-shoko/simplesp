@@ -40,6 +40,7 @@ int main(){
             for (int i = 0; i < targ.size(); i++){
                 kdtree.addData(&targ[i]);
             }
+            kdtree.makeTree();
 
             for (int i = 0; i < test.size(); i++){
                 const int crsp = kdtree.search(&test[i]);

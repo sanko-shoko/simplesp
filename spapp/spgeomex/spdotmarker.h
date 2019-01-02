@@ -252,6 +252,7 @@ namespace sp{
                 for (int i = 0; i < pixs.size(); i++){
                     kdtree.addData(&pixs[i]);
                 }
+                kdtree.makeTree();
             }
 
             Mat trkHom;
