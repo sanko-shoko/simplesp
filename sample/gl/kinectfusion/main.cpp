@@ -27,6 +27,7 @@ private:
 
     void help() {
         printf("'r' key : reset kinect fusion\n");
+        printf("'s' key : output ply\n");
         printf("'ESC' key : exit\n");
         printf("\n");
     }
@@ -58,6 +59,11 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
         if (m_keyAction[GLFW_KEY_R] == 1) {
             m_kfusion.reset();
+        }
+        if (m_keyAction[GLFW_KEY_S] == 1) {
+            Mem1<Mesh3> model;
+            cnvVoxelToModel(model, *m_kfusion.getMap());
+            savePLY("model.ply", model);
         }
     }
 

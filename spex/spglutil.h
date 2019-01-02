@@ -443,7 +443,7 @@ namespace sp{
                 for (int y = 0; y < voxel.vmap.dsize[1]; y++) {
                     for (int x = 0; x < voxel.vmap.dsize[0]; x++) {
                         const char &val = voxel.vmap(x, y, z);
-                        if (val > 0) continue;
+                        if (val < 0) continue;
 
                         const Vec3 mpos = getVec(x, y, z);
                         const Vec3 cpos = ((mpos - cent) * voxel.unit);

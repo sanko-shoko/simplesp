@@ -204,7 +204,7 @@ namespace sp {
         // background color
         Col4 m_bcol;
 
-        std::map<std::string, Texture> m_texs;
+        //std::map<std::string, Texture> m_texs;
 
     public:
 

@@ -44,6 +44,21 @@ namespace sp{
             }
         }
 
+        Texture(const Texture &tex) {
+            *this = tex;
+        }
+
+        Texture& operator = (const Texture &tex) {
+            id = tex.id;
+            w = tex.w;
+            h = tex.h;
+
+            mem = tex.mem;
+            ptr = mem.ptr;
+
+            return *this;
+        }
+
         template <typename TYPE>
         bool setImg(const Mem<TYPE> &img) {
 
