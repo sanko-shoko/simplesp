@@ -29,6 +29,9 @@ namespace sp {
         // weight map
         Mem3<char> wmap;
 
+        // color map
+        Mem3<Col4> cmap;
+
     public:
         Voxel() {
             dsize[0] = 0;
@@ -45,6 +48,7 @@ namespace sp {
 
             vmap.resize(dsize);
             wmap.resize(dsize);
+            cmap.resize(dsize);
 
             zero();
         }
@@ -52,6 +56,7 @@ namespace sp {
         void zero() {
             setElm(vmap, SP_VOXEL_NULL);
             wmap.zero();
+            cmap.zero();
         }
 
         void update(const int x, const int y, const int z, const double src) {

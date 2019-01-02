@@ -44,6 +44,9 @@ namespace sp{
         // space rect 
         Mem2<TYPE> m_rect;
 
+        // data ptr;
+        Mem1<const TYPE*> m_stack;
+
         // memory pool
         MemP<Node> nodePool;
         MemP<TYPE> dataPool;
@@ -68,6 +71,8 @@ namespace sp{
             m_size = 0;
             m_root = NULL;
             m_rect.resize(dim, 2);
+
+            m_stack.clear();
         }
 
         //--------------------------------------------------------------------------------
@@ -92,30 +97,40 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         void addData(const void *ptr){
-            const TYPE *data = (TYPE*)ptr;
-
-            addNode(&m_root, data, 0, m_size);
-
-            for (int i = 0; i < m_dim; i++){
-                if (m_size == 0) {
-                    m_rect(i, 0) = data[i];
-                    m_rect(i, 1) = data[i];
-                }
-                else {
-                    m_rect(i, 0) = (TYPE)minVal(data[i], m_rect(i, 0));
-                    m_rect(i, 1) = (TYPE)maxVal(data[i], m_rect(i, 1));
-                }
-            }
-            
-            m_size++;
+            m_stack.push((const TYPE*)ptr);
         }
 
+        void makeTree() {
+            if (m_stack.size() == 0) return;
+
+            shuffle(m_stack);
+            for (int i = 0; i < m_stack.size(); i++) {
+                const TYPE *data = m_stack[i];
+                addNode(&m_root, data, 0, m_size);
+
+                for (int i = 0; i < m_dim; i++) {
+                    if (m_size == 0) {
+                        m_rect(i, 0) = data[i];
+                        m_rect(i, 1) = data[i];
+                    }
+                    else {
+                        m_rect(i, 0) = (TYPE)minVal(data[i], m_rect(i, 0));
+                        m_rect(i, 1) = (TYPE)maxVal(data[i], m_rect(i, 1));
+                    }
+                }
+
+                m_size++;
+            }
+
+            m_stack.clear();
+        }
 
         //--------------------------------------------------------------------------------
         // search data
         //--------------------------------------------------------------------------------
 
         int search(const void *ptr) const {
+            SP_ASSERT(m_stack.size() == 0);
             if (m_root == NULL) return -1;
 
             const TYPE *data = (TYPE*)ptr;
@@ -131,6 +146,7 @@ namespace sp{
         }
 
         Mem1<int> search(const void *ptr, double range) const {
+            SP_ASSERT(m_stack.size() == 0);
             Mem1<int> index;
 
             const TYPE *data = (TYPE*)ptr;

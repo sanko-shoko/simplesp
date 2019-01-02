@@ -100,6 +100,7 @@ namespace sp{
                 kdtree.addData(&model[i].pos[j]);
             }
         }
+        kdtree.makeTree();
 
         Mem1<Edge> edges;
 
@@ -217,6 +218,7 @@ namespace sp{
             for (int i = 0; i < edges.size(); i++) {
                 kdtree.addData(&edges[i].pos);
             }
+            kdtree.makeTree();
 
 #if SP_USE_OMP
 #pragma omp parallel for
