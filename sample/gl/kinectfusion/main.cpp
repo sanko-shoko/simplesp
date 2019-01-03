@@ -1,4 +1,4 @@
-﻿#define SP_USE_DEBUG 1
+﻿//#define SP_USE_DEBUG 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"

@@ -77,6 +77,7 @@ namespace sp {
             }
             return val;
         }
+
         char getw(const int x, const int y, const int z) const {
             char wei = 0;
 
@@ -84,6 +85,13 @@ namespace sp {
                 wei = wmap(x, y, z);
             }
             return wei;
+        }
+
+        Vec3 getn(const int x, const int y, const int z) const {
+            const double vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
+            const double vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
+            const double vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
+            return unitVec(getVec(-vx, -vy, -vz));
         }
 
         Vec3 center() const {
@@ -558,14 +566,6 @@ namespace sp {
     // truncated signed distance function
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Vec3 getSDFNrm(const Mem3<char> &tsdfmap, const int x, const int y, const int z) {
-
-        const double vx = tsdfmap(x + 1, y, z) - tsdfmap(x - 1, y, z);
-        const double vy = tsdfmap(x, y + 1, z) - tsdfmap(x, y - 1, z);
-        const double vz = tsdfmap(x, y, z + 1) - tsdfmap(x, y, z - 1);
-        return unitVec(getVec(-vx, -vy, -vz));
-    }
-
     SP_CPUFUNC void updateTSDF(Voxel &voxel, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const double mu = 5.0) {
 
         const Vec3 cent = voxel.center();
@@ -657,7 +657,7 @@ namespace sp {
 
                 if (detect > minv) {
                     const Vec3 mpos = (ipose.trn + mvec * detect) / voxel.unit + cent;
-                    const Vec3 mnrm = getSDFNrm(voxel.vmap, round(mpos.x), round(mpos.y), round(mpos.z));
+                    const Vec3 mnrm = voxel.getn(round(mpos.x), round(mpos.y), round(mpos.z));
 
                     const Vec3 cpos = cvec * detect;
                     const Vec3 cnrm = pose.rot * mnrm;
