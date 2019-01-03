@@ -4,20 +4,24 @@ set (CMAKE_CXX_STANDARD 11)
 
 project(simplesp)
 
+## output
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/)
 
-include_directories(${CMAKE_SOURCE_DIR})
+
+## simplesp
+find_package(SIMPLESP REQUIRED)
+include_directories(${SIMPLESP_DIR})
+
 
 ## external
-include_directories(${CMAKE_SOURCE_DIR}/external)
-include_directories(${CMAKE_SOURCE_DIR}/external/imgui)
-include_directories(${CMAKE_SOURCE_DIR}/external/tinyfd)
+include_directories(${SIMPLESP_DIR}/external)
+include_directories(${SIMPLESP_DIR}/external/imgui)
+include_directories(${SIMPLESP_DIR}/external/tinyfd)
 
-link_directories(${CMAKE_SOURCE_DIR}/external)
-
-file(GLOB EX_LIBS ${CMAKE_SOURCE_DIR}/external/*.lib)
+link_directories(${SIMPLESP_DIR}/external)
+file(GLOB EX_LIBS ${SIMPLESP_DIR}/external/*.lib)
 
 
 ## openCV
@@ -27,6 +31,8 @@ if(SP_USE_OPENCV)
     
     include_directories(${OpenCV_INCLUDE_DIRS})
     link_directories(${OpenCV_LIB_DIRS})
+    
+    set(EX_LIBS "${EX_LIBS} ${OpenCV_LIBS})")
 endif(SP_USE_OPENCV)
 
 
@@ -37,7 +43,8 @@ if(SP_USE_OPENGL)
     find_package(GLFW REQUIRED)
     
     include_directories(${GLFW_INCLUDE_DIR})
-    set(OpenGL_LIBS ${OPENGL_LIBRARY} ${GLFW_LIB})
+    
+    set(EX_LIBS "${EX_LIBS} ${OPENGL_LIBRARY} ${GLFW_LIB}")
 endif()
 
 
