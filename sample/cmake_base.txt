@@ -1,7 +1,7 @@
-file(GLOB MAIN *.h *.hpp *.cpp)
+﻿file(GLOB MAIN *.h *.hpp *.cpp)
 source_group("main" FILES ${MAIN})
 
 add_executable(${target} ${MAIN})
 
-target_link_libraries(${target} ${EX_LIBS} ${OpenGL_LIBS} ${OpenCV_LIBS})
+target_link_libraries(${target} ${EX_LIBS})
 
