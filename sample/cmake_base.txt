@@ -1,4 +1,4 @@
-file(GLOB MAIN *.h *.hpp *.cpp)
+﻿file(GLOB MAIN *.h *.hpp *.cpp)
 source_group("main" FILES ${MAIN})
 
 add_executable(${target} ${MAIN})
