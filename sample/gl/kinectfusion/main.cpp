@@ -1,4 +1,4 @@
-﻿#define SP_USE_DEBUG 1
+﻿//#define SP_USE_DEBUG 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"
@@ -98,6 +98,7 @@ private:
             }
 
             m_kfusion.execute(depth);
+            SP_LOGGER_PRINT(NULL);
         }
 
         // render
