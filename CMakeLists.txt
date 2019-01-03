@@ -32,7 +32,7 @@ if(SP_USE_OPENCV)
     include_directories(${OpenCV_INCLUDE_DIRS})
     link_directories(${OpenCV_LIB_DIRS})
     
-    set(EX_LIBS "${EX_LIBS} ${OpenCV_LIBS})")
+    set(EX_LIBS ${EX_LIBS} ${OpenCV_LIBS})
 endif(SP_USE_OPENCV)
 
 
@@ -44,7 +44,7 @@ if(SP_USE_OPENGL)
     
     include_directories(${GLFW_INCLUDE_DIR})
     
-    set(EX_LIBS "${EX_LIBS} ${OPENGL_LIBRARY} ${GLFW_LIB}")
+    set(EX_LIBS ${EX_LIBS} ${OPENGL_LIBRARY} ${GLFW_LIB})
 endif()
 
 
