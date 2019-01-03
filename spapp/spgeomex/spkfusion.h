@@ -88,6 +88,7 @@ namespace sp{
     private:
 
         bool _execute(const Mem2<double> &depth){
+            SP_LOGGER_SET("KinectFusion::execute");
 
             if (cmpSize(2, m_cam.dsize, depth.dsize) == false) {
                 return false;
@@ -103,6 +104,7 @@ namespace sp{
                 Mem2<VecPN3> pnmap;
 
                 if (m_track == true){
+                    SP_LOGGER_SET("KinectFusion::bilateralFilter");
                     Mem2<double> bilateral;
                     bilateralFilterDepth(bilateral, depth, 0.8, 10.0);
                         
@@ -110,16 +112,18 @@ namespace sp{
                 }
 
                 if (m_track == true){
+                    SP_LOGGER_SET("KinectFusion::updatePose");
                     updatePose(m_pose, m_cam, pnmap, m_cast);
                 }
 
                 {
+                    SP_LOGGER_SET("KinectFusion::updateTSDF");
                     updateTSDF(m_tsdf, m_cam, m_pose, depth);
                 }
 
                 {
+                    SP_LOGGER_SET("KinectFusion::rayCasting");
                     rayCasting(m_cast, m_cam, m_pose, m_tsdf);
-                    //rayCastingFast(m_cast, m_cam, m_pose, m_tsdf);
                 }
                 m_track = true;
             }

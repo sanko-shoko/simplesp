@@ -98,6 +98,7 @@ private:
             }
 
             m_kfusion.execute(depth);
+            SP_LOGGER_PRINT(NULL);
         }
 
         // render

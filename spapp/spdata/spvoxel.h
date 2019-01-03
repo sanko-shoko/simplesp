@@ -69,6 +69,23 @@ namespace sp {
             wei = minVal(wei + 1, SP_VOXEL_WMAX);
         }
 
+        char getv(const int x, const int y, const int z) const {
+            char val = -1;
+
+            if (isInRect3(dsize, x, y, z) == true) {
+                val = vmap(x, y, z);
+            }
+            return val;
+        }
+        char getw(const int x, const int y, const int z) const {
+            char wei = 0;
+
+            if (isInRect3(dsize, x, y, z) == true) {
+                wei = wmap(x, y, z);
+            }
+            return wei;
+        }
+
         Vec3 center() const {
             return getVec(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
         }
@@ -78,6 +95,7 @@ namespace sp {
     SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh3> &model, const double unit = 1.0) {
 
         const int size = (ceil(getModelRadius(model) / unit) + 2) * 2;
+        SP_PRINTD("voxel size %d\n", size);
 
         voxel.init(size, unit);
         setElm(voxel.vmap, +1);
@@ -94,8 +112,8 @@ namespace sp {
         for (int i = 0; i < getGeodesicMeshNum(level); i++) {
             const Pose pose = getGeodesicPose(level, i, distance);
 
-            Mem2<VecPN3> map;
-            renderVecPN(map, cam, pose, model);
+            Mem2<VecPN3> pnmap;
+            renderVecPN(pnmap, cam, pose, model);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -107,16 +125,13 @@ namespace sp {
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
-                        if (isInRect2(map.dsize, pix.x, pix.y) == false) continue;
+                        if (isInRect2(pnmap.dsize, pix.x, pix.y) == false) continue;
 
-                        char &val = voxel.vmap(x, y, z);
-                        char &wei = voxel.wmap(x, y, z);
-
-                        const Vec3 &pos = map(round(pix.x), round(pix.y)).pos;
-                        const Vec3 &nrm = map(round(pix.x), round(pix.y)).nrm;
+                        const Vec3 &pos = pnmap(round(pix.x), round(pix.y)).pos;
+                        const Vec3 &nrm = pnmap(round(pix.x), round(pix.y)).nrm;
 
                         if (pos.z == 0.0) {
-                            voxel.update(x, y, z, -1.0);
+                            voxel.update(x, y, z, -0.1);
                         }
                         else {
                             if (dotVec(cpos, nrm) >= 0) continue;
@@ -144,25 +159,24 @@ namespace sp {
         typedef MemA<int, 8> Mem8i;
 
         Mem1<Mem1<Mem3i> > orders;
-        {
-            // vertex orders
-            for (int z = 0; z < 2; z++) {
-                for (int y = 0; y < 2; y++) {
-                    for (int x = 0; x < 2; x++) {
-                        const int _x[2] = { x, 1 - x };
-                        const int _y[2] = { y, 1 - y };
-                        const int _z[2] = { z, 1 - z };
-                        const int m = (x + y + z) % 2 ? -1 : +1;
-                        for (int i = 0; i < 3; i++) {
-                            Mem1<Mem3i> order;
-                            for (int j = 0; j < 8; j++) {
-                                const int ix = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 : 0;
-                                const int iy = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 : 0;
-                                const int iz = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 : 0;
-                                order.push(Mem3i(_x[ix], _y[iy], _z[iz]));
-                            }
-                            orders.push(order);
+
+        // vertex orders
+        for (int z = 0; z < 2; z++) {
+            for (int y = 0; y < 2; y++) {
+                for (int x = 0; x < 2; x++) {
+                    const int _x[2] = { x, 1 - x };
+                    const int _y[2] = { y, 1 - y };
+                    const int _z[2] = { z, 1 - z };
+                    const int m = (x + y + z) % 2 ? -1 : +1;
+                    for (int i = 0; i < 3; i++) {
+                        Mem1<Mem3i> order;
+                        for (int j = 0; j < 8; j++) {
+                            const int ix = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 : 0;
+                            const int iy = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 : 0;
+                            const int iz = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 : 0;
+                            order.push(Mem3i(_x[ix], _y[iy], _z[iz]));
                         }
+                        orders.push(order);
                     }
                 }
             }
@@ -190,14 +204,17 @@ namespace sp {
             patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1));
         }
 
-        Mem3<Mem1<Mesh3> > map(voxel.dsize[0] - 1, voxel.dsize[1] - 1, voxel.dsize[2] - 1);
+        Mem3<Mem1<Mesh3> > map(voxel.dsize[0] + 1, voxel.dsize[1] + 1, voxel.dsize[2] + 1);
 
-        for (int z = 0; z < voxel.dsize[2] - 1; z++) {
-            for (int y = 0; y < voxel.dsize[1] - 1; y++) {
-                for (int x = 0; x < voxel.dsize[0] - 1; x++) {
+        for (int z = -1; z < voxel.dsize[2]; z++) {
+            for (int y = -1; y < voxel.dsize[1]; y++) {
+                for (int x = -1; x < voxel.dsize[0]; x++) {
 
-                    // order id,  pattern id
-                    int oid = 0, pid = 0;
+                    // pattern id
+                    int pid = -1;
+
+                    Vec3 p[8];
+                    char v[8];
 
                     int reverse = 0;
 
@@ -210,9 +227,11 @@ namespace sp {
 
                             int score = 0;
                             for (int k = 0; k < 8; k++) {
-                                const char &val = voxel.vmap(x + order[k][0], y + order[k][1], z + order[k][2]);
 
-                                if ((val + 0.5) * pattern[k] > 0) {
+                                p[k] = getVec(x, y, z) + getVec(order[k]);
+                                v[k] = voxel.getv(round(p[k].x), round(p[k].y), round(p[k].z));
+
+                                if ((v[k] + 0.5) * pattern[k] > 0) {
                                     score++;
                                 }
                                 else {
@@ -221,28 +240,20 @@ namespace sp {
                             }
 
                             if (abs(score) == 8) {
-                                oid = i;
                                 pid = j;
                                 reverse = sign(score);
                                 goto _match;
                             }
                         }
                     }
+
                 _match:;
-
-                    if (pid == 0) continue;
-
-                    Vec3 p[8];
-                    double v[8];
-                    for (int i = 0; i < 8; i++) {
-                        p[i] = getVec(x, y, z) + getVec(orders[oid][i]);
-                        v[i] = fabs(voxel.vmap(round(p[i].x), round(p[i].y), round(p[i].z)));
-                    }
+                    if (pid < 1) continue;
 
                     Mem1<Mesh3> tmps;
 
                     auto m = [p, v](const int i, const int j)-> Vec3 {
-                        return (v[j] * p[i] + v[i] * p[j]) / (v[i] + v[j]);
+                        return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
                     };
 
                     switch (pid) {
@@ -350,6 +361,7 @@ namespace sp {
                     }
 
                     }
+
                     if (reverse < 0) {
                         for (int i = 0; i < tmps.size(); i++) {
                             swap(tmps[i].pos[1], tmps[i].pos[2]);
@@ -357,26 +369,27 @@ namespace sp {
                     }
 
                     model.push(tmps);
-                    map(x, y, z).push(tmps);
+                    map(x + 1, y + 1, z + 1).push(tmps);
                 }
             }
         }
 
         // hole filling
-        for (int z = 0; z < voxel.dsize[2] - 1; z++) {
-            for (int y = 0; y < voxel.dsize[1] - 1; y++) {
-                for (int x = 0; x < voxel.dsize[0] - 1; x++) {
+        for (int z = -1; z < voxel.dsize[2]; z++) {
+            for (int y = -1; y < voxel.dsize[1]; y++) {
+                for (int x = -1; x < voxel.dsize[0]; x++) {
                     for (int n = 0; n < 3; n++) {
-                        if (n == 0 && x + 1 >= voxel.dsize[0] - 1) continue;
-                        if (n == 1 && y + 1 >= voxel.dsize[1] - 1) continue;
-                        if (n == 2 && z + 1 >= voxel.dsize[2] - 1) continue;
+
+                        if (n == 0 && x + 1 >= voxel.dsize[0]) continue;
+                        if (n == 1 && y + 1 >= voxel.dsize[1]) continue;
+                        if (n == 2 && z + 1 >= voxel.dsize[2]) continue;
 
                         Mem1<Mesh3> tmps;
-                        tmps.push(map(x, y, z));
+                        tmps.push(map(x + 1, y + 1, z + 1));
 
-                        if (n == 0) tmps.push(map(x + 1, y, z));
-                        if (n == 1) tmps.push(map(x, y + 1, z));
-                        if (n == 2) tmps.push(map(x, y, z + 1));
+                        if (n == 0) tmps.push(map(x + 2, y + 1, z + 1));
+                        if (n == 1) tmps.push(map(x + 1, y + 2, z + 1));
+                        if (n == 2) tmps.push(map(x + 1, y + 1, z + 2));
 
                         if (tmps.size() < 4) continue;
 
@@ -425,7 +438,68 @@ namespace sp {
         return true;
     }
 
+    // voxel range mask
+    SP_CPUFUNC void calcVoxelMask(Mem2<Vec2> &rmsk, const CamParam &cam, const Pose &pose, const Voxel &voxel) {
 
+        rmsk.resize(cam.dsize);
+
+        const double radius = (voxel.dsize[0] - 1) * voxel.unit * 0.5;
+        const Vec3 _axis[3] = { getVec(1.0, 0.0, 0.0), getVec(0.0, 1.0, 0.0), getVec(0.0, 0.0, 1.0) };
+
+        struct VoxelPlane {
+            Vec3 pos, axis[3];
+        };
+        Mem1<VoxelPlane> vps;
+
+        for (int i = 0; i < 3; i++) {
+            for (int s = -1; s <= +1; s += 2) {
+                VoxelPlane vp;
+                vp.pos = pose * (_axis[(i + 0) % 3] * s * radius);
+                for (int j = 0; j < 3; j++) {
+                    vp.axis[j] = pose.rot * (_axis[(i + j) % 3] * s);
+                }
+                vps.push(vp);
+            }
+        }
+
+        Mem2<Byte> img(cam.dsize);
+        setElm(img, 100);
+        for (int v = 0; v < rmsk.dsize[1]; v++) {
+            for (int u = 0; u < rmsk.dsize[0]; u++) {
+                Vec2 &range = rmsk(u, v);
+                range = getVec(0.0, SP_INFINITY);
+
+                const Vec3 vec = prjVec(invCam(cam, getVec(u, v)));
+                for (int i = 0; i < vps.size(); i++) {
+                    const Vec3 &pos = vps[i].pos;
+                    const Vec3 &Z = vps[i].axis[0];
+                    const Vec3 &X = vps[i].axis[1];
+                    const Vec3 &Y = vps[i].axis[2];
+
+                    const double a = dotVec(vec, Z);
+                    if (fabs(a) < SP_SMALL) continue;
+
+                    const double d = dotVec(pos, Z) / a;
+                    if (d <= SP_SMALL) continue;
+
+                    const Vec3 crs = vec * d;
+                    const double x = dotVec(crs - pos, X);
+                    const double y = dotVec(crs - pos, Y);
+
+                    if (a < 0) {
+                        if (maxVal(fabs(x), fabs(y)) > radius * 1.00) continue;
+                        range.x = maxVal(range.x, d);
+                    }
+                    else {
+                        if (maxVal(fabs(x), fabs(y)) > radius * 1.01) continue;
+                        range.y = minVal(range.y, d);
+                    }
+                }
+   
+            }
+        }
+
+    }
     //--------------------------------------------------------------------------------
     // visual hull
     //--------------------------------------------------------------------------------
@@ -489,22 +563,22 @@ namespace sp {
         const double vx = tsdfmap(x + 1, y, z) - tsdfmap(x - 1, y, z);
         const double vy = tsdfmap(x, y + 1, z) - tsdfmap(x, y - 1, z);
         const double vz = tsdfmap(x, y, z + 1) - tsdfmap(x, y, z - 1);
-        return unitVec(getVec(vx, vy, vz));
+        return unitVec(getVec(-vx, -vy, -vz));
     }
 
-    SP_CPUFUNC void updateTSDF(Voxel &tsdf, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const double mu = 5.0) {
+    SP_CPUFUNC void updateTSDF(Voxel &voxel, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const double mu = 5.0) {
 
-        const Vec3 cent = tsdf.center();
-        const double step = mu * tsdf.unit;
+        const Vec3 cent = voxel.center();
+        const double step = mu * voxel.unit;
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-        for (int z = 0; z < tsdf.dsize[2]; z++) {
-            for (int y = 0; y < tsdf.dsize[1]; y++) {
-                for (int x = 0; x < tsdf.dsize[0]; x++) {
+        for (int z = 0; z < voxel.dsize[2]; z++) {
+            for (int y = 0; y < voxel.dsize[1]; y++) {
+                for (int x = 0; x < voxel.dsize[0]; x++) {
                     const Vec3 mpos = getVec(x, y, z);
-                    const Vec3 cpos = pose * ((mpos - cent) * tsdf.unit);
+                    const Vec3 cpos = pose * ((mpos - cent) * voxel.unit);
 
                     const Vec2 pix = mulCam(cam, prjVec(cpos));
                     if (isInRect2(depth.dsize, pix.x, pix.y) == false) continue;
@@ -513,99 +587,80 @@ namespace sp {
                     if (d == 0.0) continue;
 
                     const double dist = maxVal(cpos.z - d, -step) / step;
-                    tsdf.update(x, y, z, dist);
+                    voxel.update(x, y, z, dist);
                 }
             }
         }
     }
 
-
-    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &tsdf, const double mu = 5.0) {
-
-        const double stepC = mu * tsdf.unit;
-        const double stepF = tsdf.unit;
+    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &voxel, const double mu = 5.0) {
 
         map.resize(cam.dsize);
         map.zero();
 
-        const Vec3 cent = tsdf.center();
-
+        const Vec3 cent = voxel.center();
         const Pose ipose = invPose(pose);
-        const double radius = normVec(cent * tsdf.unit);
+
+        Mem2<Vec2> rmsk;
+        calcVoxelMask(rmsk, cam, pose, voxel);
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
         for (int v = 0; v < map.dsize[1]; v++) {
             for (int u = 0; u < map.dsize[0]; u++) {
+
+                const double minv = rmsk(u, v).x;
+                const double maxv = rmsk(u, v).y;
+                if (minv <= SP_SMALL) continue;
+
                 const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
-
-                double maxv;
-                double minv;
-                {
-                    const double a = sqVec(cvec);
-                    const double b = -2.0 * dotVec(cvec, pose.trn);
-                    const double c = sqVec(pose.trn) - square(radius);
-
-                    const double D = b * b - 4 * a * c;
-                    if (D <= 0.0) continue;
-
-                    maxv = (-b + sqrt(D)) / (2.0 * a);
-                    minv = (-b - sqrt(D)) / (2.0 * a);
-
-                    if (maxv <= 0) continue;
-                    minv = maxVal(minv, 0.0);
-                }
-
                 const Vec3 mvec = ipose.rot * cvec;
 
-                double step = stepF;
-                double pre = -1.0;
-
                 double detect = minv;
-                for (double d = minv; d < maxv; d += step) {
-                    const Vec3 mpos = (ipose.trn + mvec * d) / tsdf.unit + cent;
+
+                char pre = 0;
+                double step = mu;
+
+                for (double d = minv; d < maxv; d += step * voxel.unit) {
+                    const Vec3 mpos = (ipose.trn + mvec * d) / voxel.unit + cent;
                     const int x = round(mpos.x);
                     const int y = round(mpos.y);
                     const int z = round(mpos.z);
 
-                    if (isInRect3(tsdf.dsize, x, y, z) == false) continue;
+                    if (isInRect3(voxel.dsize, x, y, z) == false) continue;
 
-                    const char val = tsdf.vmap(x, y, z);
-                    const char wei = tsdf.wmap(x, y, z);
+                    const char val = voxel.vmap(x, y, z);
+                    const char wei = voxel.wmap(x, y, z);
 
                     if (wei == 0) {
-                        step = stepC;
+                        pre = 0;
+                        step = mu * voxel.unit;
                         continue;
                     }
 
-                    const double thresh = -0.9 * SP_VOXEL_VMAX;
-
-                    if (step == stepC) {
-                        if (val > thresh) {
-                            d -= stepC;
-                            step = stepF;
-                        }
-                    }
-                    else {
-                        if (val < thresh) {
-                            step = stepC;
-                            continue;
-                        }
-                        if (val >= 0 && pre < 0) {
+                    if (val >= 0 && pre < 0) {
+                        if (step == 1.0){
                             detect = d - step * val / (val - pre);
                             break;
                         }
+                        else {
+                            d -= step;
+                        }
                     }
-                    pre = val;
+                    else {
+                        pre = val;
+                    }
+
+                    step = (val > -0.9 * SP_VOXEL_VMAX) ? 1.0 : mu;
                 }
 
                 if (detect > minv) {
-                    const Vec3 mpos = (ipose.trn + mvec * detect) / tsdf.unit + cent;
-                    const Vec3 mnrm = getSDFNrm(tsdf.vmap, round(mpos.x), round(mpos.y), round(mpos.z));
+                    const Vec3 mpos = (ipose.trn + mvec * detect) / voxel.unit + cent;
+                    const Vec3 mnrm = getSDFNrm(voxel.vmap, round(mpos.x), round(mpos.y), round(mpos.z));
 
                     const Vec3 cpos = cvec * detect;
-                    const Vec3 cnrm = pose.rot * -mnrm;
+                    const Vec3 cnrm = pose.rot * mnrm;
 
                     map(u, v) = getVecPN(cpos, cnrm);
                 }
@@ -613,176 +668,6 @@ namespace sp {
         }
     }
 
-    //    SP_CPUFUNC void rayCastingFast(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &tsdf) {
-    //  
-    //        map.resize(cam.dsize);
-    //        map.zero();
-    //
-    //        const Vec3 cent = tsdf.center();
-    //        const double mu = SP_TSDF_MU * tsdf.unit;
-    //
-    //        const Pose ipose = invPose(pose);
-    //        const double radius = normVec(cent * tsdf.unit);
-    //
-    //        Mem2<double> depth(cam.dsize);
-    //        Mem2<double> eval(cam.dsize);
-    //
-    //        for (int v = 0; v < depth.dsize[1]; v++) {
-    //            for (int u = 0; u < depth.dsize[0]; u++) {
-    //                const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
-    //
-    //                double maxv;
-    //                double minv;
-    //                {
-    //                    const double a = sqVec(cvec);
-    //                    const double b = -2.0 * dotVec(cvec, pose.trn);
-    //                    const double c = sqVec(pose.trn) - square(radius);
-    //
-    //                    const double D = b * b - 4 * a * c;
-    //                    if (D <= 0) continue;
-    //
-    //                    maxv = (-b + sqrt(D)) / (2.0 * a);
-    //                    minv = (-b - sqrt(D)) / (2.0 * a);
-    //
-    //                    if (maxv <= 0) continue;
-    //                    minv = maxVal(minv, 0.0);
-    //                }
-    //
-    //                depth(u, v) = radius * randValUnif() + pose.trn.z;
-    //                //depth(u, v) = (maxv - minv) * randValUnif() * 0.5 + (minv + maxv) * 0.5;
-    //
-    //                const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
-    //                const Vec3 mpos = (ipose.trn + mvec * depth(u, v)) / tsdf.unit + cent;
-    //                if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
-    //
-    //                const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_VOXEL_VMAX;
-    //                const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
-    //                if (weight > 0) {
-    //                    eval(u, v) = val;
-    //                }
-    //                else {
-    //                    eval(u, v) = (depth(u, v) < pose.trn.z) ? +1.0 : -1.0;
-    //                }
-    //            }
-    //        }
-    //        for (int it = 0; it < 15; it++) {
-    //            // eval
-    //
-    //#if SP_USE_OMP
-    //#pragma omp parallel for
-    //#endif
-    //            for (int v = 0; v < depth.dsize[1]; v++) {
-    //                for (int u = 0; u < depth.dsize[0]; u++) {
-    //
-    //                    const double delta = eval(u, v) * mu;
-    //
-    //                    const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
-    //                    const Vec3 mpos = (ipose.trn + mvec * (depth(u, v) + delta)) / tsdf.unit + cent;
-    //                    if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
-    //
-    //                    const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_VOXEL_VMAX;
-    //                    const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
-    //
-    //                    if (weight == 0) {
-    //                        depth(u, v) += delta;
-    //                    }
-    //                    if (fabs(val) < fabs(eval(u, v))) {
-    //                        eval(u, v) = val;
-    //                        depth(u, v) += delta;
-    //                    }
-    //                }
-    //            }
-    //            //continue;
-    //            // propagate
-    //            const int prop = (it % 2 == 0) ? +1 : -1;
-    //
-    //#if SP_USE_OMP
-    //#pragma omp parallel for
-    //#endif
-    //            for (int v = 0; v < depth.dsize[1]; v++) {
-    //                for (int iu = 1; iu < depth.dsize[0]; iu++) {
-    //                    const int u = (prop > 0) ? iu : depth.dsize[0] - 1 - iu;
-    //
-    //                    const double cd = depth(u, v);
-    //                    const double ce = eval(u, v);
-    //
-    //                    const double rd = depth(u - prop, v);
-    //                    const double re = eval(u - prop, v);
-    //
-    //                    if (fabs(re) < fabs(ce) && (ce == 1.0 || rd < cd + mu)) {
-    //                        const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
-    //                        const Vec3 mpos = (ipose.trn + mvec * rd) / tsdf.unit + cent;
-    //
-    //                        if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
-    //
-    //                        const double val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z)) / SP_VOXEL_VMAX;
-    //                        const char weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
-    //
-    //                        if (weight == 0) continue;
-    //                        if (fabs(val) < fabs(ce)) {
-    //                            depth(u, v) = rd;
-    //                            eval(u, v) = val;
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //#if SP_USE_OMP
-    //#pragma omp parallel for
-    //#endif
-    //            for (int u = 0; u < depth.dsize[0]; u++) {
-    //                for (int iv = 0; iv < depth.dsize[1]; iv++) {
-    //                    const int v = (prop > 0) ? iv : depth.dsize[1] - iv;
-    //
-    //                    const Vec3 mvec = ipose.rot * prjVec(invCam(cam, getVec(u, v)));
-    //
-    //                    const double ce = eval(u, v);
-    //                    const double cd = depth(u, v);
-    //
-    //                    const int x = u;
-    //                    const int y = v + prop;
-    //                    if (isInRect2(depth.dsize, x, y) == false) continue;
-    //
-    //                    const double re = eval(x, y);
-    //                    const double rd = depth(x, y);
-    //
-    //                    if (re < 0.5 && rd < cd - mu) {
-    //                        const Vec3 mpos = (ipose.trn + mvec * rd) / tsdf.unit + cent;
-    //
-    //                        if (isInRect3(tsdf.dsize, mpos.x, mpos.y, mpos.z) == false) continue;
-    //
-    //                        const char &val = tsdf.vmap(round(mpos.x), round(mpos.y), round(mpos.z));
-    //                        const char &weight = tsdf.wmap(round(mpos.x), round(mpos.y), round(mpos.z));
-    //
-    //                        if (weight == 0) continue;
-    //
-    //                        depth(u, v) = rd;
-    //                        eval(u, v) = val / SP_VOXEL_VMAX;
-    //                    }
-    //                }
-    //            }
-    //
-    //        }
-    //
-    //        for (int v = 0; v < depth.dsize[1]; v++) {
-    //            for (int u = 0; u < depth.dsize[0]; u++) {
-    //                if (fabs(eval(u, v)) < 1.0) {
-    //                    const Vec2 npx = invCam(cam, getVec(u, v));
-    //                    const Vec3 cvec = getVec(npx.x, npx.y, 1.0);
-    //
-    //                    const Vec3 mvec = ipose.rot * cvec;
-    //
-    //                    const double detect = depth(u, v);
-    //                    const Vec3 mpos = (ipose.trn + mvec * detect) / tsdf.unit + cent;
-    //                    const Vec3 mnrm = getSDFNrm(tsdf.vmap, round(mpos.x), round(mpos.y), round(mpos.z));
-    //
-    //                    const Vec3 cpos = cvec * detect;
-    //                    const Vec3 cnrm = pose.rot * mnrm;
-    //
-    //                    map(u, v) = getVecPN(cpos, cnrm);
-    //                }
-    //            }
-    //        }
-    //    }
 }
 
 #endif
