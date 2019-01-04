@@ -208,7 +208,7 @@ namespace sp{
             }
             
             sort(zlist);
-            zlist = zlist.slice(0, round(0.1 * zlist.size()), round(0.9 * zlist.size()));
+            zlist = zlist.part(round(0.1 * zlist.size()), round(0.8 * zlist.size()));
 
             const double meanZ = meanVal(zlist);
 

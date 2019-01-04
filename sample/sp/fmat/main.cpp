@@ -59,7 +59,7 @@ int main() {
         {
             printf("\n\n");
             Mat F;
-            calcFMat(F, pixs0.slice(0, 0, 8), pixs1.slice(0, 0, 8));
+            calcFMat(F, pixs0.part(0, 8), pixs1.part(0, 8));
             print(F);
            
             Pose pose;

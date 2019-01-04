@@ -42,8 +42,8 @@ void mnist(const char *path) {
 
         // train
         for (int i = 0; i < trainImages.size(); i += batch) {
-            const Mem1<Mem<double> > X = images.slice(0, i, i + batch);
-            const Mem1<int> T = labels.slice(0, i, i + batch);
+            const Mem1<Mem<double> > X = images.part(i, batch);
+            const Mem1<int> T = labels.part(i, batch);
 
             model.train(X, T);
 
@@ -100,8 +100,8 @@ void cifar(const char *path) {
 
         // train
         for (int i = 0; i < trainImages.size(); i += batch) {
-            const Mem1<Mem<double> > X = images.slice(0, i, i + batch);
-            const Mem1<int> T = labels.slice(0, i, i + batch);
+            const Mem1<Mem<double> > X = images.part(i, batch);
+            const Mem1<int> T = labels.part(i, batch);
 
             model.train(X, T);
 

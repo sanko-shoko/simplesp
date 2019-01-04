@@ -537,7 +537,7 @@ namespace sp {
         SP_ASSERT(pixs.size() >= 4 && pixs.size() == objs.size());
 
         Mem1<Pose> poses;
-        if(calcPoseP3P(poses, cam, pixs.slice(0, 0, 3), objs.slice(0, 0, 3)) == false) return false;
+        if(calcPoseP3P(poses, cam, pixs.part(0, 3), objs.part(0, 3)) == false) return false;
 
         double mine = SP_INFINITY;
         for (int i = 0; i < poses.size(); i++) {
@@ -608,7 +608,7 @@ namespace sp {
         if (pixs.size() < unit) return false;
 
         if (pixs.size() < 6) {
-            if (calcPoseP4P(pose, cam, pixs.slice(0, 0, 4), objs.slice(0, 0, 4)) == false) return false;
+            if (calcPoseP4P(pose, cam, pixs.part(0, 4), objs.part(0, 4)) == false) return false;
         }
         else {
             if (calcPoseDLT(pose, cam, pixs, objs) == false) return false;

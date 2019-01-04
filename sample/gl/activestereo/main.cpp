@@ -178,8 +178,8 @@ private:
             m_wimg = caps[0];
             m_bimg = caps[1];
 
-            m_gcimgs = caps.slice(0, 2, 2 + m_graycode.getCodeNum());
-            m_psimgs = caps.slice(0, 2 + m_graycode.getCodeNum(), 2 + m_graycode.getCodeNum() + m_phaseshift.getCodeNum());
+            m_gcimgs = caps.part(2, m_graycode.getCodeNum());
+            m_psimgs = caps.part(2 + m_graycode.getCodeNum(), m_phaseshift.getCodeNum());
 
             m_capture = -1;
         }

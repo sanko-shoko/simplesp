@@ -191,25 +191,26 @@ namespace sp {
         }
 
         Mem1<Mem8i> patterns;
+        Mem1<int> pcnts;
         {
             // 15 patterns
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, +1, +1));
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, +1));
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, -1));
-            patterns.push(Mem8i(+1, +1, +1, -1, +1, +1, -1, +1));
-            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, +1, -1));
+            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, +1, +1)); pcnts.push(0);
+            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, +1)); pcnts.push(1);
+            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, -1)); pcnts.push(2);
+            patterns.push(Mem8i(+1, +1, +1, -1, +1, +1, -1, +1)); pcnts.push(2);
+            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, +1, -1)); pcnts.push(3);
 
-            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, -1, -1));
-            patterns.push(Mem8i(+1, +1, -1, +1, -1, -1, +1, -1));
-            patterns.push(Mem8i(-1, +1, +1, -1, +1, -1, -1, +1));
-            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, -1, +1));
-            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, +1, -1));
+            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, -1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(+1, +1, -1, +1, -1, -1, +1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, +1, +1, -1, +1, -1, -1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, +1, -1)); pcnts.push(4);
 
-            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, +1));
-            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, -1));
-            patterns.push(Mem8i(+1, -1, -1, +1, +1, +1, +1, -1));
-            patterns.push(Mem8i(+1, -1, -1, +1, +1, -1, -1, +1));
-            patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1));
+            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, +1)); pcnts.push(2);
+            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, -1)); pcnts.push(3);
+            patterns.push(Mem8i(+1, -1, -1, +1, +1, +1, +1, -1)); pcnts.push(3);
+            patterns.push(Mem8i(+1, -1, -1, +1, +1, -1, -1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
         }
 
         Mem3<Mem1<Mesh3> > map(voxel.dsize[0] + 1, voxel.dsize[1] + 1, voxel.dsize[2] + 1);
@@ -220,42 +221,55 @@ namespace sp {
 
                     // pattern id
                     int pid = -1;
-
+                    
                     Vec3 p[8];
                     char v[8];
 
                     int reverse = 0;
 
-                    // matching
-                    for (int i = 0; i < orders.size(); i++) {
-                        const Mem1<Mem3i> &order = orders[i];
-
-                        for (int j = 0; j < patterns.size(); j++) {
-                            const Mem8i &pattern = patterns[j];
-
-                            int score = 0;
-                            for (int k = 0; k < 8; k++) {
-
-                                p[k] = getVec(x, y, z) + getVec(order[k]);
-                                v[k] = voxel.getv(round(p[k].x), round(p[k].y), round(p[k].z));
-
-                                if ((v[k] + 0.5) * pattern[k] > 0) {
-                                    score++;
+                    {
+                        Mem3<char> vmap(2, 2, 2);
+                        for (int zz = 0; zz < 2; zz++) {
+                            for (int yy = 0; yy < 2; yy++) {
+                                for (int xx = 0; xx < 2; xx++) {
+                                    vmap(xx, yy, zz) = voxel.getv(x + xx, y + yy, z + zz);
                                 }
-                                else {
-                                    score--;
-                                }
-                            }
-
-                            if (abs(score) == 8) {
-                                pid = j;
-                                reverse = sign(score);
-                                goto _match;
                             }
                         }
+
+                        int pcnt = 0;
+                        for (int i = 0; i < vmap.size(); i++) {
+                            if (vmap[i] >= 0) pcnt++;
+                        }
+                        pcnt = minVal(pcnt, 8 - pcnt);
+
+                        // matching
+                        for (int i = 0; i < patterns.size(); i++) {
+                            //if (pcnt != pcnts[i]) continue;
+                            const Mem8i &pattern = patterns[i];
+
+                            for (int j = 0; j < orders.size(); j++) {
+                                const Mem1<Mem3i> &order = orders[j];
+
+                                int score = 0;
+                                for (int k = 0; k < 8; k++) {
+                                    p[k] = getVec(x, y, z) + getVec(order[k]);
+                                    v[k] = vmap(order[k][0], order[k][1], order[k][2]);
+
+                                    score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
+                                }
+
+                                if (abs(score) == 8) {
+                                    pid = i;
+                                    reverse = sign(score);
+                                    goto _match;
+                                }
+                            }
+                        }
+
+                    _match:;
                     }
 
-                _match:;
                     if (pid < 1) continue;
 
                     Mem1<Mesh3> tmps;
@@ -311,7 +325,7 @@ namespace sp {
                     {
                         tmps.push(getMesh(m(0, 1), m(0, 4), m(0, 2)));
                         tmps.push(getMesh(m(3, 1), m(3, 2), m(3, 7)));
-                        tmps.push(getMesh(m(5, 1), m(5, 4), m(5, 7)));
+                        tmps.push(getMesh(m(5, 1), m(5, 7), m(5, 4)));
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
                         break;
                     }
@@ -375,7 +389,7 @@ namespace sp {
                             swap(tmps[i].pos[1], tmps[i].pos[2]);
                         }
                     }
-
+ 
                     model.push(tmps);
                     map(x + 1, y + 1, z + 1).push(tmps);
                 }
