@@ -33,6 +33,7 @@ namespace sp {
         Mem3<Col4> cmap;
 
     public:
+
         Voxel() {
             dsize[0] = 0;
             dsize[1] = 0;
@@ -172,17 +173,15 @@ namespace sp {
         for (int z = 0; z < 2; z++) {
             for (int y = 0; y < 2; y++) {
                 for (int x = 0; x < 2; x++) {
-                    const int _x[2] = { x, 1 - x };
-                    const int _y[2] = { y, 1 - y };
-                    const int _z[2] = { z, 1 - z };
                     const int m = (x + y + z) % 2 ? -1 : +1;
+
                     for (int i = 0; i < 3; i++) {
                         Mem1<Mem3i> order;
                         for (int j = 0; j < 8; j++) {
-                            const int ix = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 : 0;
-                            const int iy = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 : 0;
-                            const int iz = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 : 0;
-                            order.push(Mem3i(_x[ix], _y[iy], _z[iz]));
+                            const int ix = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 - x : x;
+                            const int iy = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 - y : y;
+                            const int iz = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 - z : z;
+                            order.push(Mem3i(ix, iy, iz));
                         }
                         orders.push(order);
                     }
@@ -245,7 +244,7 @@ namespace sp {
 
                         // matching
                         for (int i = 0; i < patterns.size(); i++) {
-                            //if (pcnt != pcnts[i]) continue;
+                            if (pcnt != pcnts[i]) continue;
                             const Mem8i &pattern = patterns[i];
 
                             for (int j = 0; j < orders.size(); j++) {
@@ -466,26 +465,26 @@ namespace sp {
         rmsk.resize(cam.dsize);
 
         const double radius = (voxel.dsize[0] - 1) * voxel.unit * 0.5;
-        const Vec3 _axis[3] = { getVec(1.0, 0.0, 0.0), getVec(0.0, 1.0, 0.0), getVec(0.0, 0.0, 1.0) };
 
         struct VoxelPlane {
             Vec3 pos, axis[3];
         };
         Mem1<VoxelPlane> vps;
-
-        for (int i = 0; i < 3; i++) {
-            for (int s = -1; s <= +1; s += 2) {
-                VoxelPlane vp;
-                vp.pos = pose * (_axis[(i + 0) % 3] * s * radius);
-                for (int j = 0; j < 3; j++) {
-                    vp.axis[j] = pose.rot * (_axis[(i + j) % 3] * s);
+        {
+            const Vec3 _axis[3] = { getVec(1.0, 0.0, 0.0), getVec(0.0, 1.0, 0.0), getVec(0.0, 0.0, 1.0) };
+            
+            for (int i = 0; i < 3; i++) {
+                for (int s = -1; s <= +1; s += 2) {
+                    VoxelPlane vp;
+                    vp.pos = pose * (_axis[(i + 0) % 3] * s * radius);
+                    for (int j = 0; j < 3; j++) {
+                        vp.axis[j] = pose.rot * (_axis[(i + j + 1) % 3] * s);
+                    }
+                    vps.push(vp);
                 }
-                vps.push(vp);
             }
         }
 
-        Mem2<Byte> img(cam.dsize);
-        setElm(img, 100);
         for (int v = 0; v < rmsk.dsize[1]; v++) {
             for (int u = 0; u < rmsk.dsize[0]; u++) {
                 Vec2 &range = rmsk(u, v);
@@ -494,27 +493,26 @@ namespace sp {
                 const Vec3 vec = prjVec(invCam(cam, getVec(u, v)));
                 for (int i = 0; i < vps.size(); i++) {
                     const Vec3 &pos = vps[i].pos;
-                    const Vec3 &Z = vps[i].axis[0];
-                    const Vec3 &X = vps[i].axis[1];
-                    const Vec3 &Y = vps[i].axis[2];
+                    const Vec3 &X = vps[i].axis[0];
+                    const Vec3 &Y = vps[i].axis[1];
+                    const Vec3 &Z = vps[i].axis[2];
 
-                    const double a = dotVec(vec, Z);
-                    if (fabs(a) < SP_SMALL) continue;
+                    const double n = dotVec(vec, Z);
+                    if (fabs(n) < SP_SMALL) continue;
 
-                    const double d = dotVec(pos, Z) / a;
-                    if (d <= SP_SMALL) continue;
+                    const Vec3 crs = vec * (dotVec(pos, Z) / n);
+                    if (crs.z <= SP_SMALL) continue;
 
-                    const Vec3 crs = vec * d;
                     const double x = dotVec(crs - pos, X);
                     const double y = dotVec(crs - pos, Y);
 
-                    if (a < 0) {
+                    if (n < 0) {
                         if (maxVal(fabs(x), fabs(y)) > radius * 1.00) continue;
-                        range.x = maxVal(range.x, d);
+                        range.x = maxVal(range.x, crs.z);
                     }
                     else {
                         if (maxVal(fabs(x), fabs(y)) > radius * 1.01) continue;
-                        range.y = minVal(range.y, d);
+                        range.y = minVal(range.y, crs.z);
                     }
                 }
    
@@ -522,6 +520,8 @@ namespace sp {
         }
 
     }
+
+
     //--------------------------------------------------------------------------------
     // visual hull
     //--------------------------------------------------------------------------------
