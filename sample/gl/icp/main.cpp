@@ -101,7 +101,7 @@ private:
     }
 
     virtual void display() {
-
+        
         // render dataB
         {
             if (m_dataB.dim == 1) {
@@ -163,7 +163,6 @@ private:
 
                 ImGui::showText(strB.c_str(), ImVec2(float(pixB.x - 220.0), float(pixB.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
             }
-
             if (m_it > 0) {
                 char str[100];
                 sprintf(str, "icp iteration : %d", m_it);

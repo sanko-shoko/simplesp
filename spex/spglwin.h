@@ -258,6 +258,7 @@ namespace sp {
             ImGui::CreateContext();
             SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(m_win, true) == true);
             SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
+            ImGui::GetIO().IniFilename = NULL;
 #endif
  
             init();
@@ -409,7 +410,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
-                //ImGui_ImplGlfwGL2_MouseButtonCallback(NULL, button, action, mods);
+                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                 return;
             }
 #endif
@@ -442,7 +443,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
-                //ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
+                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
             }
@@ -467,7 +468,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (ImGui::GetIO().WantCaptureKeyboard) {
-                //ImGui_ImplGlfwGL2_KeyCallback(NULL, key, scancode, action, mods);
+                ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
                 return;
             }
 #endif
@@ -479,7 +480,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (ImGui::GetIO().WantCaptureKeyboard) {
-                //ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
+                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
                 return;
             }
 #endif

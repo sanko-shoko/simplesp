@@ -45,7 +45,7 @@ namespace ImGui {
     }
 
     SP_CPUFUNC bool showText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
-
+        
         char name[32] = { 0 };
         const int maxv = 1000;
         for (int i = 0; i < maxv; i++) {
@@ -57,22 +57,23 @@ namespace ImGui {
         }
 
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
         ImGui::PushStyleColor(ImGuiCol_Text, col);
 
-        //if (ImGui::Begin(name, NULL, ImGuiWindowFlags_Block | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs)) {
-        //    const float backup = ImGui::GetWindowFontSize();
-        //    ImGui::SetWindowFontScale(scale);
-        //    ImGui::SetWindowSize(ImVec2(400.f, 30.f));
-        //    ImGui::SetWindowPos(pos, ImGuiCond_Always);
+        {
+            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize);
+            const float backup = ImGui::GetFontSize();
+            ImGui::SetWindowFontScale(scale);
+            ImGui::SetWindowPos(pos, ImGuiCond_Always);
  
-        //    ImGui::Text(text);
+            ImGui::Text(text);
 
-        //    ImGui::SetWindowFontScale(backup);
+            ImGui::SetWindowFontScale(backup);
 
-        //    ImGui::End();
-        //}
+            ImGui::End();
+        }
 
-        ImGui::PopStyleColor(2);
+        ImGui::PopStyleColor(3);
         return true;
     }
 }
