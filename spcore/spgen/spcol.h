@@ -44,6 +44,18 @@ namespace sp{
         return dst;
     }
 
+    // multiple
+    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
+        const Byte r = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.r * val))));
+        const Byte g = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.g * val))));
+        const Byte b = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.b * val))));
+        return getCol(r, g, b);
+    }
+
+    // division
+    SP_GENFUNC Col3 divCol(const Col3 &col, const double val) {
+        return (val != 0.0) ? mulCol(col, 1.0 / val) : col;
+    }
 
     //--------------------------------------------------------------------------------
     // blend
@@ -63,10 +75,27 @@ namespace sp{
         return col;
     }
 
-
+ 
     //--------------------------------------------------------------------------------
     // color operator
     //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
+        return mulCol(col, val);
+    }
+
+    SP_GENFUNC Col3 operator / (const Col3 &col, const double val) {
+        return divCol(col, val);
+    }
+
+    SP_GENFUNC void operator *= (Col3 &col, const double val) {
+        col = mulCol(col, val);
+    }
+
+    SP_GENFUNC void operator /= (Col3 &col, const double val) {
+        col = divCol(col, val);
+    }
+
 
     SP_GENFUNC Col3 operator + (const Col3 &col0, const Col3 &col1) {
         return blendCol(col0, col1);
@@ -75,7 +104,6 @@ namespace sp{
     SP_GENFUNC void operator += (Col3 &col0, const Col3 &col1) {
         col0 = blendCol(col0, col1);
     }
-
 
 
     //--------------------------------------------------------------------------------

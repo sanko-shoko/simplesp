@@ -10,12 +10,14 @@
 #include "GL/glew.h"
 #endif
 
+#include "GLFW/glfw3.h"
+
 #if SP_USE_IMGUI
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl2.h"
 #endif
 
-#include "GLFW/glfw3.h"
 #include "spcore/spcore.h"
 #include "spex/spgltex.h"
 
@@ -238,13 +240,26 @@ namespace sp {
                 return false;
             }
 
-            // glfw make context
-            glfwMakeContextCurrent(m_win);
-
             m_wcam = getCamParam(width, height);
-
             m_parent = parent;
 
+            // glfw make context
+            glfwMakeContextCurrent(m_win);
+            glfwSwapInterval(1); // vsync
+
+#if SP_USE_GLEW
+            // glew init
+            SP_ASSERT(glewInit() == GLEW_OK);
+#endif
+
+#if SP_USE_IMGUI
+            // imgui init
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(m_win, true) == true);
+            SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
+#endif
+ 
             init();
 
             if (parent != NULL) {
@@ -261,12 +276,7 @@ namespace sp {
 
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-            if (create(name, width, height) == false) return;
-
-#if SP_USE_GLEW
-            // glew init
-            SP_ASSERT(glewInit() == GLEW_OK);
-#endif
+            SP_ASSERT(create(name, width, height) == true);
 
             while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
 
@@ -279,7 +289,9 @@ namespace sp {
             glfwTerminate();
 
 #if SP_USE_IMGUI
-            ImGui_ImplGlfwGL2_Shutdown();
+            ImGui_ImplOpenGL2_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
 #endif
         }
 
@@ -333,9 +345,9 @@ namespace sp {
             }
 
 #if SP_USE_IMGUI
-            // imgui init
-            ImGui_ImplGlfwGL2_Init(m_win, true);
-            ImGui_ImplGlfwGL2_NewFrame();
+            ImGui_ImplOpenGL2_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 #endif
 
             glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
@@ -347,6 +359,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             ImGui::Render();
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 #endif
 
             glfwSwapBuffers(m_win);
@@ -396,7 +409,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfwGL2_MouseButtonCallback(NULL, button, action, mods);
+                //ImGui_ImplGlfwGL2_MouseButtonCallback(NULL, button, action, mods);
                 return;
             }
 #endif
@@ -429,7 +442,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
+                //ImGui_ImplGlfwGL2_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
             }
@@ -454,7 +467,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (ImGui::GetIO().WantCaptureKeyboard) {
-                ImGui_ImplGlfwGL2_KeyCallback(NULL, key, scancode, action, mods);
+                //ImGui_ImplGlfwGL2_KeyCallback(NULL, key, scancode, action, mods);
                 return;
             }
 #endif
@@ -466,7 +479,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (ImGui::GetIO().WantCaptureKeyboard) {
-                ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
+                //ImGui_ImplGlfwGL2_CharCallback(NULL, charInfo);
                 return;
             }
 #endif

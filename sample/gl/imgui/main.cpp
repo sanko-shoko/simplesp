@@ -24,7 +24,8 @@ private:
     virtual void display() {
 
         // test window
-        if (ImGui::Begin("Test Window", NULL, ImGuiWindowFlags_NoResize)) {
+        {
+            ImGui::Begin("Test Window", NULL, ImGuiWindowFlags_NoResize);
 
             ImGui::SetWindowPos(ImVec2(50, 50), ImGuiCond_Once);
             ImGui::SetWindowSize(ImVec2(300, 300), ImGuiCond_Always);
