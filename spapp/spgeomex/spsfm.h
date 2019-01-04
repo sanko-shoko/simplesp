@@ -273,7 +273,7 @@ namespace sp {
                     sort(uplist, compare_min);
 
                     if (uplist[0]->upcnt == m_views.size()) uplist = shuffle(uplist, seed);
-                    uplist = uplist.slice(0, 0, MAX_UPDATE);
+                    uplist = uplist.part(0, MAX_UPDATE);
                 }
 
                 for(int i = 0; i < uplist.size(); i++){
@@ -545,12 +545,12 @@ namespace sp {
 
                 const int select = 3;
                 {
-                    hypos.push(list.slice(0, 0, select));
+                    hypos.push(list.part(0, select));
                 }
 
                 if (list.size() > select) {
-                    list = shuffle(list.slice(0, select, list.size()));
-                    hypos.push(list.slice(0, 0, select));
+                    list = shuffle(list.part(select, list.size() - select));
+                    hypos.push(list.part(0, select));
                 }
             }
 

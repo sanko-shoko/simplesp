@@ -161,31 +161,31 @@ namespace sp{
         // util
         //--------------------------------------------------------------------------------
 
-        Mem slice(const int axis, const int start, const int end) const{
-            const int s = start;
-            const int e = minVal(end, this->dsize[axis]);
-            const int num = e - s;
+        //Mem slice(const int axis, const int start, const int end) const{
+        //    const int s = start;
+        //    const int e = minVal(end, this->dsize[axis]);
+        //    const int num = e - s;
 
-            int dsize[SP_DIMMAX] = { 0 };
-            memcpy(dsize, this->dsize, SP_DIMMAX);
-            dsize[axis] = num;
+        //    int dsize[SP_DIMMAX] = { 0 };
+        //    memcpy(dsize, this->dsize, SP_DIMMAX);
+        //    dsize[axis] = num;
 
-            Mem<TYPE> ret(this->dim, dsize);
+        //    Mem<TYPE> ret(this->dim, dsize);
 
-            int block = 1;
-            for (int i = 0; i < axis; i++){
-                block *= this->dsize[i];
-            }
+        //    int block = 1;
+        //    for (int i = 0; i < axis; i++){
+        //        block *= this->dsize[i];
+        //    }
 
-            TYPE *ptr = ret.ptr;
-            for (int i = 0; i < size(); i += (block * this->dsize[axis])){
-                for (int j = i + s * block; j < i + e * block; j++){
-                    *ptr++ = this->ptr[j];
-                }
-            }
+        //    TYPE *ptr = ret.ptr;
+        //    for (int i = 0; i < size(); i += (block * this->dsize[axis])){
+        //        for (int j = i + s * block; j < i + e * block; j++){
+        //            *ptr++ = this->ptr[j];
+        //        }
+        //    }
 
-            return ret;
-        }
+        //    return ret;
+        //}
 
     };
 
@@ -343,6 +343,16 @@ namespace sp{
             return  (this->dsize[0] > 0) ? &this->ptr[this->dsize[0] - 1] : NULL;
         }
 
+        Mem1 part(const int dbase0, const int dsize0) const {
+            Mem1<TYPE> ret(minVal(dsize0, dsize[0] - dbase0));
+            TYPE *ptr = ret.ptr;
+
+            for (int d0 = 0; d0 < ret.dsize[0]; d0++){
+                *ptr++ = (*this)(dbase0 + d0);
+            }
+
+            return ret;
+        }
     };
 
 
@@ -420,6 +430,24 @@ namespace sp{
         const TYPE& operator () (const int d0, const int d1) const{
             return acs2(*this, d0, d1);
         }
+
+
+        //--------------------------------------------------------------------------------
+        // util
+        //--------------------------------------------------------------------------------
+        
+        Mem2 part(const int dbase0, const int dbase1, const int dsize0, const int dsize1) const {
+            Mem2<TYPE> ret(minVal(dsize0, dsize[0] - dbase0), minVal(dsize1, dsize[1] - dbase1));
+            TYPE *ptr = ret.ptr;
+
+            for (int d1 = 0; d1 < ret.dsize[1]; d1++) {
+                for (int d0 = 0; d0 < ret.dsize[0]; d0++) {
+                    *ptr++ = (*this)(dbase0 + d0, dbase1 + d1);
+                }
+            }
+
+            return ret;
+        }
     };
 
 
@@ -476,6 +504,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
         // operator
         //--------------------------------------------------------------------------------
+     
         Mem3& operator = (const Mem3<TYPE> &mem){
             Mem<TYPE>::resize(mem.dim, mem.dsize, mem.ptr);
             return *this;
@@ -488,16 +517,32 @@ namespace sp{
             return *this;
         }
 
-        //--------------------------------------------------------------------------------
-        // util
-        //--------------------------------------------------------------------------------
-
         TYPE& operator () (const int d0, const int d1, const int d2){
             return acs3(*this, d0, d1, d2);
         }
 
         const TYPE& operator () (const int d0, const int d1, const int d2) const{
             return acs3(*this, d0, d1, d2);
+        }
+
+
+        //--------------------------------------------------------------------------------
+        // util
+        //--------------------------------------------------------------------------------
+
+        Mem3 part(const int dbase0, const int dbase1, const int dbase2, const int dsize0, const int dsize1, const int dsize2) const {
+            Mem3<TYPE> ret(minVal(dsize0, dsize[0] - dbase0), minVal(dsize1, dsize[1] - dbase1), minVal(dsize2, dsize[2] - dbase2));
+            TYPE *ptr = ret.ptr;
+
+            for (int d2 = 0; d2 < ret.dsize[2]; d2++) {
+                for (int d1 = 0; d1 < ret.dsize[1]; d1++) {
+                    for (int d0 = 0; d0 < ret.dsize[0]; d0++) {
+                        *ptr++ = (*this)(dbase0 + d0, dbase1 + d1, dbase2 + d2);
+                    }
+                }
+            }
+
+            return ret;
         }
     };
 
@@ -578,28 +623,22 @@ namespace sp{
             return this->dsize[0];
         }
 
-        Mat part(const int rbase, const int cbase, const int rlast, const int clast) const {
-            Mat mat(rlast - rbase, clast - cbase);
-            for (int r = 0; r < rlast - rbase; r++) {
-                for (int c = 0; c < clast - cbase; c++) {
+        Mat part(const int rbase, const int cbase, const int rsize, const int csize) const {
+            Mat mat(minVal(rsize, rows() - rbase), minVal(csize, cols() - cbase));
+            for (int r = 0; r < mat.rows(); r++) {
+                for (int c = 0; c < mat.cols(); c++) {
                     mat(r, c) = (*this)(rbase + r, cbase + c);
                 }
             }
             return mat;
         }
 
-        Mat row(const int rbase) const {
-            return part(rbase, 0, rbase + 1, cols());
-        }
-        Mat row(const int rbase, const int rlast) const {
-            return part(rbase, 0, rlast, cols());
+        Mat row(const int rbase, const int rsize = 1) const {
+            return part(rbase, 0, rsize, cols());
         }
 
-        Mat col(const int cbase) const {
-            return part(0, cbase, rows(), cbase + 1);
-        }
-        Mat col(const int cbase, const int clast) const {
-            return part(0, cbase, rows(), clast);
+        Mat col(const int cbase, const int csize = 1) const {
+            return part(0, cbase, rows(), csize);
         }
 
     };
@@ -610,18 +649,30 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE, int SIZE> class MemA {
+   
     public:
         TYPE arr[SIZE];
 
+        TYPE *ptr;
+
+    protected:
+
+        void init() {
+            ptr = arr;
+        }
+
     public:
         MemA() {
+            init();
         }
 
         MemA(const MemA<TYPE, SIZE> &mem) {
+            init();
             set(mem.arr);
         }
 
         MemA(const TYPE data0, ...) {
+            init();
             va_list arg;
             va_start(arg, data0);
             arr[0] = data0;
@@ -636,6 +687,21 @@ namespace sp{
             return *this;
         }
 
+         //--------------------------------------------------------------------------------
+        // operator
+        //--------------------------------------------------------------------------------
+        
+        TYPE& operator [] (const int i) {
+            return arr[i];
+        }
+        const TYPE& operator [] (const int i) const {
+            return arr[i];
+        }
+
+        //--------------------------------------------------------------------------------
+        // util
+        //--------------------------------------------------------------------------------
+     
         void set(const TYPE data0, ...) {
             va_list arg;
             va_start(arg, data0);
@@ -652,12 +718,10 @@ namespace sp{
             }
         }
 
-        TYPE& operator [] (const int i) {
-            return arr[i];
+        int size() const {
+            return SIZE;
         }
-        const TYPE& operator [] (const int i) const {
-            return arr[i];
-        }
+
     };
 
 

@@ -252,7 +252,7 @@ namespace sp{
             Mat U, S, V;
             if (svdMat(U, S, V, Q, false) == false) return false;
 
-            EE = V.col(5, 9);
+            EE = V.col(5, 4);
 
             X = EE.col(0);
             Y = EE.col(1);
@@ -475,7 +475,7 @@ namespace sp{
 
         }
 
-        A = invMat(A.col(0, 10)) * A.col(10, 20);
+        A = invMat(A.col(0, 10)) * A.col(10, 10);
 
         Mat B(3, 13);
         for (int r = 0; r < 3; r++) {

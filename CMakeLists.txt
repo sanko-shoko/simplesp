@@ -21,7 +21,7 @@ include_directories(${SIMPLESP_DIR}/external/imgui)
 include_directories(${SIMPLESP_DIR}/external/tinyfd)
 
 link_directories(${SIMPLESP_DIR}/external)
-file(GLOB EX_LIBS ${SIMPLESP_DIR}/external/*.lib)
+file(GLOB SP_EX_LIBS ${SIMPLESP_DIR}/external/*.lib)
 
 
 ## openCV
@@ -32,7 +32,7 @@ if(SP_USE_OPENCV)
     include_directories(${OpenCV_INCLUDE_DIRS})
     link_directories(${OpenCV_LIB_DIRS})
     
-    set(EX_LIBS ${EX_LIBS} ${OpenCV_LIBS})
+    set(SP_CV_LIBS ${OpenCV_LIBS})
 endif(SP_USE_OPENCV)
 
 
@@ -44,7 +44,7 @@ if(SP_USE_OPENGL)
     
     include_directories(${GLFW_INCLUDE_DIR})
     
-    set(EX_LIBS ${EX_LIBS} ${OPENGL_LIBRARY} ${GLFW_LIB})
+    set(SP_GL_LIBS ${OPENGL_LIBRARY} ${GLFW_LIB})
 endif()
 
 

@@ -58,7 +58,7 @@ namespace sp{
             SP_ASSERT(sampleNum > 10);
 
             const int seed = m_trees.size();
-            const Mem1<int> index = shuffle(Xs.size(), seed).slice(0, 0, sampleNum);
+            const Mem1<int> index = shuffle(Xs.size(), seed).part(0, sampleNum);
 
             divTree(*m_trees.malloc(), Xs, Ys, index, 0);
         }

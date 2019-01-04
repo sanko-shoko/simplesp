@@ -94,7 +94,7 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");  
 
         Mem1<Pose> poses;
-        calcPoseP3P(poses, cam, pixs.slice(0, 0, 3), objs.slice(0, 0, 3));
+        calcPoseP3P(poses, cam, pixs.part(0, 3), objs.part(0, 3));
 
         for (int i = 0; i < poses.size(); i++) {
             print(poses[i]);
@@ -108,7 +108,7 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");
 
         Pose pose;
-        calcPoseP4P(pose, cam, pixs.slice(0, 0, 4), objs.slice(0, 0, 4));
+        calcPoseP4P(pose, cam, pixs.part(0, 4), objs.part(0, 4));
 
         print(pose);
     }

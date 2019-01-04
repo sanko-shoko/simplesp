@@ -3,5 +3,5 @@ source_group("main" FILES ${MAIN})
 
 add_executable(${target} ${MAIN})
 
-target_link_libraries(${target} ${EX_LIBS})
+target_link_libraries(${target} ${SP_EX_LIBS} ${SP_CV_LIBS} ${SP_GL_LIBS})
 
