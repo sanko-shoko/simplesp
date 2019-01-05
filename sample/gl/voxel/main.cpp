@@ -43,7 +43,7 @@ private:
         cnvModelToVoxel(m_voxel, m_model, 4.0);
 
         // Marching cubes
-        cnvVoxelToModel(m_model, m_voxel, &(getRect3(m_voxel.dsize) - 20));
+        cnvVoxelToModel(m_model, m_voxel);
         savePLY("model.ply", m_model);
 
         const double distance = getModelDistance(m_model, m_cam);
