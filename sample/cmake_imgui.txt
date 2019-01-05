@@ -1,4 +1,0 @@
-﻿include_directories("${SIMPLESP_DIR}/external/imgui")
-
-target_link_libraries(${target} imgui)
-

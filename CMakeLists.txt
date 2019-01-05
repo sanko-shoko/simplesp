@@ -17,11 +17,13 @@ include_directories(${SIMPLESP_DIR})
 
 ## external
 include_directories(${SIMPLESP_DIR}/external)
-include_directories(${SIMPLESP_DIR}/external/imgui)
-include_directories(${SIMPLESP_DIR}/external/tinyfd)
-
 link_directories(${SIMPLESP_DIR}/external)
 file(GLOB SP_EX_LIBS ${SIMPLESP_DIR}/external/*.lib)
+
+function(use_external target name)
+    include_directories("${SIMPLESP_DIR}/external/${name}")
+    target_link_libraries(${target} ${name})
+endfunction()
 
 
 ## openCV

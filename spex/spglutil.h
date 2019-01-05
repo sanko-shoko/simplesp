@@ -5,8 +5,9 @@
 #ifndef __SP_GLUTIL_H__
 #define __SP_GLUTIL_H__
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+
+#include "spcore/spcore.h"
 
 namespace sp{
 

@@ -5,8 +5,9 @@
 #ifndef __SP_GLTEX_H__
 #define __SP_GLTEX_H__
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+
+#include "spapp/spapp.h"
 
 namespace sp{
 
