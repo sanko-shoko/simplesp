@@ -22,7 +22,6 @@ int main() {
 
         Mem2<Col3> col;
         Mem2<Byte> gry;
-
         {// input
             col = neko;
             col = col.part(150, 120, 320, 240);
