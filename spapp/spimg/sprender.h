@@ -25,7 +25,7 @@ namespace sp{
 
                 const int u = round(pix.x + x);
                 const int v = round(pix.y + y);
-                if (isInRect2(dst.dsize, u, v) == true){
+                if (inRect2(dst.dsize, u, v) == true){
                     acs2(dst, u, v) = val;
                 }
             }
@@ -563,7 +563,7 @@ namespace sp{
                 const double depth = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 1) / div;
                 if (depth < ppos.z - 1.0) continue;
 
-                if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
+                if (inRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
                 const double val = acs2(ptn, ppix.x, ppix.y);
 
                 const Vec3 nrm = cam2prj.rot * cmap(u, v).nrm;
@@ -613,7 +613,7 @@ namespace sp{
                 const double depth = acs2<Double2, double>(ptmp, ppix.x, ppix.y, 1) / div;
                 if (depth < ppos.z - 1.0) continue;
 
-                if (isInRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
+                if (inRect2(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
                 dst(u, v) = ppix;
 
             }

@@ -368,7 +368,7 @@ namespace sp{
                     for (int rx = -radius; rx <= radius; rx++) {
                         const int ix = x + rx;
                         const int iy = y + ry;
-                        if (isInRect2(rect, ix, iy) == false) continue;
+                        if (inRect2(rect, ix, iy) == false) continue;
 
                         const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
                         const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
@@ -440,7 +440,7 @@ namespace sp{
                 for (int rx = -radius; rx <= radius; rx++) {
                     const int ix = round(pix.x + rx);
                     const int iy = round(pix.y + ry);
-                    if (isInRect2(rect, ix, iy) == false) continue;
+                    if (inRect2(rect, ix, iy) == false) continue;
 
                     const double tx = (tcos * rx - tsin * ry) / block;
                     const double ty = (tsin * rx + tcos * ry) / block;

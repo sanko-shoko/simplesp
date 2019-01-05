@@ -285,7 +285,7 @@ namespace sp{
                 const Rect rect = adjustRect(rects[i], 1);
 
                 // check outside area
-                if (isInRect(getRect2(labelMap.dsize), rect) == false) continue;
+                if (inRect(getRect2(labelMap.dsize), rect) == false) continue;
 
                 Vec2 sum = getVec(0, 0);
                 int cnt = 0;

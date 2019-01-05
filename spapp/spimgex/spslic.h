@@ -140,7 +140,7 @@ namespace sp{
                             const int x = u + ref[n][0];
                             const int y = v + ref[n][1];
 
-                            if (isInRect2(img.dsize, x, y) == false) continue;
+                            if (inRect2(img.dsize, x, y) == false) continue;
                             if (tmpMap(x, y) < 0) continue;
                             nearLabel = tmpMap(x, y);
                             break;
@@ -157,7 +157,7 @@ namespace sp{
                         for (int n = 0; n < 4; n++) {
                             const int x = round(list[i].x + ref[n][0]);
                             const int y = round(list[i].y + ref[n][1]);
-                            if (isInRect2(img.dsize, x, y) == false) continue;
+                            if (inRect2(img.dsize, x, y) == false) continue;
                             if (tmpMap(x, y) >= 0 || clsMap(u, v) != clsMap(x, y)) continue;
 
                             tmpMap(x, y) = crntLabel;

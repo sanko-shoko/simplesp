@@ -1,4 +1,4 @@
-﻿set(target "sp_slic")
+﻿set(target "sp_imgproc")
 message(STATUS "${target}")
 
 project(${target})

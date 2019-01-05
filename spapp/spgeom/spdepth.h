@@ -52,7 +52,7 @@ namespace sp{
                 double sum = 0.0, div = 0.0;
                 for (int ky = -size; ky <= size; ky++){
                     for (int kx = -size; kx <= size; kx++){
-                        if (isInRect2(rect, u + kx, v + ky) == false) continue;
+                        if (inRect2(rect, u + kx, v + ky) == false) continue;
 
                         const double &val = acs2(tmp, u + kx, v + ky);
                         if (val == 0.0) continue;

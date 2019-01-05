@@ -313,7 +313,7 @@ namespace sp{
                 const Rect minRect = adjustRect(rects[i], 1);
 
                 // check outside area
-                if (isInRect(getRect2(minImg.dsize), minRect) == false) continue;
+                if (inRect(getRect2(minImg.dsize), minRect) == false) continue;
 
                 // check size
                 const int maxSize = round(minVal(minImg.dsize[0], minImg.dsize[1]) * DOT_MAXSIZE);
@@ -564,7 +564,7 @@ namespace sp{
                     const Vec2 obj = map(x, y);
                     const Vec2 pix = hom * obj;
 
-                    if (isInRect2(rect, floor(pix.x), floor(pix.y)) == false){
+                    if (inRect2(rect, floor(pix.x), floor(pix.y)) == false){
                         evalMap(x, y) = 0.3;
                     }
 
@@ -653,7 +653,7 @@ namespace sp{
             for (int y = 0; y < cmap.dsize[1]; y++) {
                 for (int x = 0; x < cmap.dsize[0]; x++) {
                     const Vec2 pix = hom * (getVec(x, y) - offset);
-                    if (isInRect2(img.dsize, pix.x, pix.y) == false) continue;
+                    if (inRect2(img.dsize, pix.x, pix.y) == false) continue;
 
                     acsc(cmap, x, y) = acsc(img, pix.x, pix.y);
                     valid(x, y) = true;
