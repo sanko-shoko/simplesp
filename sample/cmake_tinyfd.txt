@@ -1,4 +1,0 @@
-﻿include_directories("${SIMPLESP_DIR}/external/tinyfd")
-
-target_link_libraries(${target} tinyfd)
-

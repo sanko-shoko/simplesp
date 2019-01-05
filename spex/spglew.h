@@ -8,8 +8,9 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+
+#include "spcore/spcore.h"
 
 namespace sp{
 

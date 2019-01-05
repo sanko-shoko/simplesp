@@ -18,8 +18,9 @@
 #include "imgui_impl_opengl2.h"
 #endif
 
-#include "spcore/spcore.h"
 #include "spex/spgltex.h"
+
+#include "spcore/spcore.h"
 
 #include <string>
 #include <map>

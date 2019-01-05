@@ -8,6 +8,7 @@
 # external files
 /external/*
 !/external/.gitkeep
+!/external/glew
 !/external/imgui
 !/external/tinyfd
 !/external/CMakeLists.txt
