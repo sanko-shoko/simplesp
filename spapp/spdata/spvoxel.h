@@ -73,7 +73,7 @@ namespace sp {
         char getv(const int x, const int y, const int z) const {
             char val = -1;
 
-            if (isInRect3(dsize, x, y, z) == true) {
+            if (inRect3(dsize, x, y, z) == true) {
                 val = vmap(x, y, z);
             }
             return val;
@@ -82,7 +82,7 @@ namespace sp {
         char getw(const int x, const int y, const int z) const {
             char wei = 0;
 
-            if (isInRect3(dsize, x, y, z) == true) {
+            if (inRect3(dsize, x, y, z) == true) {
                 wei = wmap(x, y, z);
             }
             return wei;
@@ -134,7 +134,7 @@ namespace sp {
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
-                        if (isInRect2(pnmap.dsize, pix.x, pix.y) == false) continue;
+                        if (inRect2(pnmap.dsize, pix.x, pix.y) == false) continue;
 
                         const Vec3 &pos = pnmap(round(pix.x), round(pix.y)).pos;
                         const Vec3 &nrm = pnmap(round(pix.x), round(pix.y)).nrm;
@@ -160,7 +160,7 @@ namespace sp {
     }
 
     // Marching cubes
-    SP_CPUFUNC bool cnvVoxelToModel(Mem1<Mesh3> &model, const Voxel &voxel) {
+    SP_CPUFUNC bool cnvVoxelToModel(Mem1<Mesh3> &model, const Voxel &voxel, const Rect *prect = NULL) {
 
         model.clear();
 
@@ -212,11 +212,19 @@ namespace sp {
             patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
         }
 
-        Mem3<Mem1<Mesh3> > map(voxel.dsize[0] + 1, voxel.dsize[1] + 1, voxel.dsize[2] + 1);
+        Rect crect = (prect == NULL) ? getRect3(voxel.dsize) : andRect(getRect3(voxel.dsize), *prect);
+        Rect mrect = crect + 1;
 
-        for (int z = -1; z < voxel.dsize[2]; z++) {
-            for (int y = -1; y < voxel.dsize[1]; y++) {
-                for (int x = -1; x < voxel.dsize[0]; x++) {
+        for (int i = 0; i < 3; i++) {
+            crect.dsize[i] -= 1;
+            mrect.dsize[i] -= 1;
+        }
+
+        Mem3<Mem1<Mesh3> > map(mrect.dsize);
+
+        for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
+            for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
+                for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
 
                     // pattern id
                     int pid = -1;
@@ -388,17 +396,17 @@ namespace sp {
                             swap(tmps[i].pos[1], tmps[i].pos[2]);
                         }
                     }
- 
+
                     model.push(tmps);
-                    map(x + 1, y + 1, z + 1).push(tmps);
+                    map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]).push(tmps);
                 }
             }
         }
 
         // hole filling
-        for (int z = -1; z < voxel.dsize[2]; z++) {
-            for (int y = -1; y < voxel.dsize[1]; y++) {
-                for (int x = -1; x < voxel.dsize[0]; x++) {
+        for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
+            for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
+                for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
                     for (int n = 0; n < 3; n++) {
 
                         if (n == 0 && x + 1 >= voxel.dsize[0]) continue;
@@ -406,11 +414,11 @@ namespace sp {
                         if (n == 2 && z + 1 >= voxel.dsize[2]) continue;
 
                         Mem1<Mesh3> tmps;
-                        tmps.push(map(x + 1, y + 1, z + 1));
+                        tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]));
 
-                        if (n == 0) tmps.push(map(x + 2, y + 1, z + 1));
-                        if (n == 1) tmps.push(map(x + 1, y + 2, z + 1));
-                        if (n == 2) tmps.push(map(x + 1, y + 1, z + 2));
+                        if (n == 0) tmps.push(map(x - mrect.dbase[0] + 1, y - mrect.dbase[1], z - mrect.dbase[2]));
+                        if (n == 1) tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1] + 1, z - mrect.dbase[2]));
+                        if (n == 2) tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2] + 1));
 
                         if (tmps.size() < 4) continue;
 
@@ -558,7 +566,7 @@ namespace sp {
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
-                        if (isInRect2(img.dsize, pix.x, pix.y) == false) continue;
+                        if (inRect2(img.dsize, pix.x, pix.y) == false) continue;
 
                         const Byte &val = img(round(pix.x), round(pix.y));
 
@@ -595,7 +603,7 @@ namespace sp {
                     const Vec3 cpos = pose * ((mpos - cent) * voxel.unit);
 
                     const Vec2 pix = mulCam(cam, prjVec(cpos));
-                    if (isInRect2(depth.dsize, pix.x, pix.y) == false) continue;
+                    if (inRect2(depth.dsize, pix.x, pix.y) == false) continue;
 
                     const double d = depth(round(pix.x), round(pix.y));
                     if (d == 0.0) continue;
@@ -642,7 +650,7 @@ namespace sp {
                     const int y = round(mpos.y);
                     const int z = round(mpos.z);
 
-                    if (isInRect3(voxel.dsize, x, y, z) == false) continue;
+                    if (inRect3(voxel.dsize, x, y, z) == false) continue;
 
                     const char val = voxel.vmap(x, y, z);
                     const char wei = voxel.wmap(x, y, z);

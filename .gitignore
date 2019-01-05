@@ -10,9 +10,7 @@
 !/external/.gitkeep
 !/external/imgui
 !/external/tinyfd
-!/external/libpng
-!/external/libjpeg
-!/external/libtiff
+!/external/CMakeLists.txt
 
 # database
 /dataset/*

@@ -46,7 +46,7 @@ namespace sp{
                     const int ru = u + link[i][0];
                     const int rv = v + link[i][1];
 
-                    if (isInRect2(rect, ru, rv) == false) continue;
+                    if (inRect2(rect, ru, rv) == false) continue;
                     if (pBin[rv * step + ru] == 0) continue;
 
                     const int refLabel = table[pMap[rv * step + ru]];
@@ -143,7 +143,7 @@ namespace sp{
                     const int ru = u + link[i][0];
                     const int rv = v + link[i][1];
 
-                    if (isInRect2(rect, ru, rv) == false) continue;
+                    if (inRect2(rect, ru, rv) == false) continue;
 
                     const TYPE ref = pImg[rv * step + ru];
                     if (fabs(pImg[rv * step + ru] - base) > (double)thresh) continue;
@@ -298,7 +298,7 @@ namespace sp{
             const Rect rect = rects[i];
 
             if (useImgFrame == false){
-                if (isInRect(getRect2(map.dsize) - 1, rect) == false) continue;
+                if (inRect(getRect2(map.dsize) - 1, rect) == false) continue;
             }
 
             int sx = 0;
@@ -328,7 +328,7 @@ namespace sp{
                         const int t = (s + j) % 8;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
-                        if (isInRect2(rect, x, y) == false) continue;
+                        if (inRect2(rect, x, y) == false) continue;
 
                         if (map(x, y) == i) {
                             vec[0] = x - cx;
@@ -374,7 +374,7 @@ namespace sp{
                         const int t = (s + j) % 4;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
-                        if (isInRect2(trect, x, y) == false) continue;
+                        if (inRect2(trect, x, y) == false) continue;
 
                         if (edge[t] == true) {
                             vec[0] = x - cx;
@@ -412,7 +412,7 @@ namespace sp{
             const Rect rect = rects[i];
 
             if (useImgFrame == false) {
-                if (isInRect(getRect2(map.dsize) - 1, rect) == false) continue;
+                if (inRect(getRect2(map.dsize) - 1, rect) == false) continue;
             }
 
             const Mem1<Vec2> &contour = contours[i];

@@ -37,7 +37,7 @@ namespace sp{
 
                     for (int ky = -halfY; ky <= halfY; ky++){
                         for (int kx = -halfX; kx <= halfX; kx++){
-                            if (isInRect2(rect, u + kx, v + ky) == false) continue;
+                            if (inRect2(rect, u + kx, v + ky) == false) continue;
                             
                             const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v + ky, c);
                             const double s = acs2(kernel, kx + halfX, ky + halfY);
@@ -76,7 +76,7 @@ namespace sp{
                     double sum = 0.0, div = 0.0;
 
                     for (int kx = -halfX; kx <= halfX; kx++){
-                        if (isInRect2(rect, u + kx, v) == false) continue;
+                        if (inRect2(rect, u + kx, v) == false) continue;
                         
                         const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v, c);
                         const double s = acs1(kernel, kx + halfX);
@@ -114,7 +114,7 @@ namespace sp{
                     double sum = 0.0, div = 0.0;
 
                     for (int ky = -halfY; ky <= halfY; ky++){
-                        if (isInRect2(rect, u, v + ky) == false) continue;
+                        if (inRect2(rect, u, v + ky) == false) continue;
                         
                         const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u, v + ky, c);
                         const double s = acs1(kernel, ky + halfY);
@@ -624,7 +624,7 @@ namespace sp{
                     double sum = 0.0, div = 0.0;
                     for (int ky = -half; ky < +half; ky++){
                         for (int kx = -half; kx < +half; kx++){
-                            if (isInRect2(rect, u + kx, v + ky) == false) continue;
+                            if (inRect2(rect, u + kx, v + ky) == false) continue;
 
                             const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);
 

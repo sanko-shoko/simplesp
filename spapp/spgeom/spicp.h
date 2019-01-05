@@ -111,7 +111,7 @@ namespace sp{
                 const TYEP1 vec = pose * pnts1[i];
 
                 const Vec2 pix = mulCam(cam, prjVec(getPos(vec)));
-                if (isInRect2(pnts0.dsize, pix.x, pix.y) == false) continue;
+                if (inRect2(pnts0.dsize, pix.x, pix.y) == false) continue;
 
                 const int c = acsid2(pnts0.dsize, round(pix.x), round(pix.y));
                 if (checkOutlier(vec, pnts0[c]) == false) continue;

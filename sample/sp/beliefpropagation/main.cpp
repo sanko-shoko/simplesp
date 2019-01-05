@@ -43,7 +43,7 @@ int main(){
                     const int x = u + link[d][0];
                     const int y = v + link[d][1];
 
-                    if (isInRect2(img.dsize, x, y) == true) {
+                    if (inRect2(img.dsize, x, y) == true) {
                         bp.setLink(acsid2(img.dsize, u, v), acsid2(img.dsize, x, y), kappa);
                     }
                 }

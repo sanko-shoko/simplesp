@@ -556,7 +556,7 @@ namespace sp{
                         for (int ky = 0; ky < m_kernel[1]; ky++){
                             for (int kx = 0; kx < m_kernel[0]; kx++){
                                 const double b = *(pb++);
-                                if (isInRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
+                                if (inRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
 
                                 acs3(B, u + kx - hsize, v + ky - hsize, kc) += b;
                             }
@@ -716,7 +716,7 @@ namespace sp{
                         // max pooling forward
                         for (int ky = 0; ky < m_kernel[1]; ky++){
                             for (int kx = 0; kx < m_kernel[0]; kx++){
-                                if (isInRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
+                                if (inRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
 
                                 const double val = acs3(X, u + kx - hsize, v + ky - hsize, oc);
                                 if (val > maxv){

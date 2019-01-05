@@ -448,7 +448,7 @@ namespace sp {
                 //                    const Vec2 a = tpix + v;
                 //                    const int ax = round(a.x);
                 //                    const int ay = round(a.y);
-                //                    if (isInRect2(rect, ax, ay) == false) continue;
+                //                    if (inRect2(rect, ax, ay) == false) continue;
 
                 //                    Vec2 d1, d2;
                 //                    d1.x = acs2<short2, short>(di1, a.x, a.y, 0);
@@ -482,7 +482,7 @@ namespace sp {
                         const Vec2 a = pix + v;
                         const int ax = round(a.x);
                         const int ay = round(a.y);
-                        if (isInRect2(rect, ax, ay) == false) continue;
+                        if (inRect2(rect, ax, ay) == false) continue;
 
                         Vec2 d1, d2;
                         d1.x = acs2<short2, short>(di1, a.x, a.y, 0);
@@ -534,8 +534,8 @@ namespace sp {
                         const int ay = round(a.y);
                         const int bx = round(b.x);
                         const int by = round(b.y);
-                        if (isInRect2(rect, ax, ay) == false) continue;
-                        if (isInRect2(rect, bx, by) == false) continue;
+                        if (inRect2(rect, ax, ay) == false) continue;
+                        if (inRect2(rect, bx, by) == false) continue;
 
                         Vec2 ad1, bd1;
                         ad1.x = acs2<short2, short>(di1, a.x, a.y, 0);
@@ -579,7 +579,7 @@ namespace sp {
                     for (int rx = -radius; rx <= radius; rx++) {
                         const int ix = x + rx;
                         const int iy = y + ry;
-                        if (isInRect2(rect, ix, iy) == false) continue;
+                        if (inRect2(rect, ix, iy) == false) continue;
 
                         const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
                         const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
@@ -651,7 +651,7 @@ namespace sp {
                 for (int rx = -radius; rx <= radius; rx++) {
                     const int ix = round(pix.x + rx);
                     const int iy = round(pix.y + ry);
-                    if (isInRect2(rect, ix, iy) == false) continue;
+                    if (inRect2(rect, ix, iy) == false) continue;
 
                     const double tx = (tcos * rx - tsin * ry) / block;
                     const double ty = (tsin * rx + tcos * ry) / block;
