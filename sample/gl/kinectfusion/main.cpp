@@ -62,7 +62,7 @@ private:
         }
         if (m_keyAction[GLFW_KEY_S] == 1) {
             Mem1<Mesh3> model;
-            cnvVoxelToModel(model, *m_kfusion.getMap());
+            cnvVoxelToMesh(model, *m_kfusion.getMap());
             savePLY("model.ply", model);
         }
     }

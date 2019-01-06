@@ -277,6 +277,15 @@ namespace sp{
         glVertex(mesh.pos[2]);
     }
 
+    SP_CPUFUNC void glMesh(const Mesh3 &mesh, const Vec3 *nrms) {
+        glNormal(nrms[0]);
+        glVertex(mesh.pos[0]);
+        glNormal(nrms[1]);
+        glVertex(mesh.pos[1]);
+        glNormal(nrms[2]);
+        glVertex(mesh.pos[2]);
+    }
+
     SP_CPUFUNC void glAxis(const double size){
         glColor3ub(255, 0, 0);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
@@ -346,9 +355,16 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void glModel(const Mem1<Mesh3> &model) {
-        for (int i = 0; i < model.size(); i++) {
-            glMesh(model[i]);
+    SP_CPUFUNC void glModel(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
+        if (nrms.size() == 0) {
+            for (int i = 0; i < model.size(); i++) {
+                glMesh(model[i]);
+            }
+        }
+        else {
+            for (int i = 0; i < model.size(); i++) {
+                glMesh(model[i], &nrms[i * 3]);
+            }
         }
     }
 
@@ -357,7 +373,7 @@ namespace sp{
     // render
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model) {
+    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -374,7 +390,7 @@ namespace sp{
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             glBegin(GL_TRIANGLES);
-            glModel(model);
+            glModel(model, nrms);
             glEnd();
         }
         glPopAttrib();

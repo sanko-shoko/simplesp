@@ -103,10 +103,14 @@ namespace sp{
         void makeTree() {
             if (m_stack.size() == 0) return;
 
-            shuffle(m_stack);
+            const int offset = m_size;
+
+            const Mem1<int> index = shuffle(m_stack.size());
+            m_stack = shuffle(m_stack, index);
+
             for (int i = 0; i < m_stack.size(); i++) {
                 const TYPE *data = m_stack[i];
-                addNode(&m_root, data, 0, m_size);
+                addNode(&m_root, data, 0, index[i] + offset);
 
                 for (int i = 0; i < m_dim; i++) {
                     if (m_size == 0) {

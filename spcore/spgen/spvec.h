@@ -601,11 +601,6 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     // get normal vector
-    SP_GENFUNC Vec3 getMeshNrm(const Mesh2 &mesh) {
-        return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
-    }
-
-    // get normal vector
     SP_GENFUNC Vec3 getMeshNrm(const Mesh3 &mesh) {
         return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
     }
