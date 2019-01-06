@@ -10,18 +10,12 @@
 namespace sp{
 
  
-    SP_CPUFUNC Mem<Vec2> getVtx2(const Rect &rect) {
-        Mem1<Vec2> vtxs;
-        if (rect.dim >= 2) {
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
-        }
-        return vtxs;
-    }
+ 
+    //--------------------------------------------------------------------------------
+    // 2d
+    //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem<Mesh2> divMesh(const Mem<Vec2> &vtxs) {
+    SP_CPUFUNC Mem<Mesh2> divPolygon(const Mem<Vec2> &vtxs) {
         Mem1<Mesh2> meshes;
         if (vtxs.size() < 3) return meshes;
 
