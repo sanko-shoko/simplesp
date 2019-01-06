@@ -3,7 +3,7 @@ message(STATUS "${target}")
 
 project(${target})
 
-file(GLOB MAIN ${SIMPLESP_DIR}/external/GL/*glew.h *.c)
+file(GLOB MAIN ${SIMPLESP_DIR}/external/GL/*.h *.c)
 source_group("main" FILES ${MAIN})
 
 add_compile_definitions(GLEW_STATIC)
