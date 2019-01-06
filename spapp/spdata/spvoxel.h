@@ -154,7 +154,7 @@ namespace sp {
         }
 
         for (int i = 0; i < voxel.vmap.size(); i++) {
-            //voxel.vmap[i] = (voxel.vmap[i] >= 0) ? +1 : -1;
+            voxel.vmap[i] = (voxel.vmap[i] >= 0) ? +1 : -1;
         }
         return true;
     }
@@ -403,6 +403,15 @@ namespace sp {
                             swap(tmps[i].pos[1], tmps[i].pos[2]);
                         }
                     }
+
+                    {
+                        for (int i = 0; i < tmps.size(); i++) {
+                            if (normVec(crsVec(tmps[i].pos[1] - tmps[i].pos[0], tmps[i].pos[2] - tmps[i].pos[0])) < SP_SMALL) {
+                                tmps.del(i--);
+                            }
+                        }
+                    }
+
 
                     if (inRect3(brect, x, y, z) == true) {
                         meshes.push(tmps);
