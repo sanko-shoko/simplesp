@@ -245,11 +245,13 @@ namespace sp {
         bool write(const TYPE *src, const int count) {
             if (m_fp == NULL) return false;
 
-            const bool ret = (::fwrite(src, sizeof(TYPE), count, m_fp) == count) ? true : false;
-        
-            if (ret == true && m_endian != getByteOrder()) {
-                revByteOrder(src, count);
+            Mem1<TYPE> tmp(count, src);
+            if (m_endian != getByteOrder()) {
+                revByteOrder(tmp.ptr, count);
             }
+
+            const bool ret = (::fwrite(tmp.ptr, sizeof(TYPE), count, m_fp) == count) ? true : false;
+
             return ret;
         }
 
