@@ -9,6 +9,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/)
 
+include_directories(${CMAKE_SOURCE_DIR})
+
 
 ## simplesp
 find_package(SIMPLESP REQUIRED)
@@ -20,7 +22,7 @@ include_directories(${SIMPLESP_DIR}/external)
 link_directories(${SIMPLESP_DIR}/external)
 file(GLOB SP_EX_LIBS ${SIMPLESP_DIR}/external/*.lib)
 
-function(use_external target name)
+function(use_external_library target name)
     include_directories("${SIMPLESP_DIR}/external/${name}")
     target_link_libraries(${target} ${name})
 endfunction()

@@ -4,7 +4,8 @@ message(STATUS "${target}")
 project(${target})
 
 include(../../cmake_base.txt)
-target_link_libraries(${target} glew)
+
+use_external_library(${target} glew)
 
 set_target_properties(${target} PROPERTIES
     FOLDER "gl"

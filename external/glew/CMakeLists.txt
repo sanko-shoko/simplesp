@@ -10,7 +10,7 @@ add_compile_definitions(GLEW_STATIC)
 
 add_library(${target} ${MAIN})
 
-target_link_libraries(${target} ${OpenGL_LIBS})
+target_link_libraries(${target} ${SP_GL_LIBS})
 
 set_target_properties(${target} PROPERTIES
     FOLDER "_external"
