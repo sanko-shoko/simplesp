@@ -9,12 +9,10 @@
 
 namespace sp{
 
- 
- 
     //--------------------------------------------------------------------------------
     // 2d
     //--------------------------------------------------------------------------------
-
+    
     SP_CPUFUNC Mem<Mesh2> divPolygon(const Mem<Vec2> &vtxs) {
         Mem1<Mesh2> meshes;
         if (vtxs.size() < 3) return meshes;
@@ -81,6 +79,41 @@ namespace sp{
         meshes.push(getMesh(tmps[0], tmps[1], tmps[2]));
 
         return meshes;
+    }
+
+    //--------------------------------------------------------------------------------
+    // 3d
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC bool calcVertexNormal(Mem1<Vec3> &nrms, const Mem1<Mesh3> &meshes) {
+        nrms.resize(meshes.size() * 3);
+        nrms.zero();
+
+        KdTree<double> kdtree(3);
+
+        Mem1<Vec3> mnrms(meshes.size());
+        for (int i = 0; i < meshes.size(); i++) {
+            kdtree.addData(&meshes[i].pos[0]);
+            kdtree.addData(&meshes[i].pos[1]);
+            kdtree.addData(&meshes[i].pos[2]);
+            mnrms[i] = getMeshNrm(meshes[i]);
+        }
+        kdtree.makeTree();
+
+        for (int i = 0; i < meshes.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                const Mem1<int> index = kdtree.search(&meshes[i].pos[j], 0.1);
+
+                Vec3 nrm = getVec(0.0, 0.0, 0.0);
+                for (int k = 0; k < index.size(); k++) {
+                    const int s = index[k] / 3;
+                    nrm += mnrms[s];
+                }
+                nrms[i * 3 + j] = unitVec(nrm);
+            }
+        }
+
+        return true;
     }
 
 }

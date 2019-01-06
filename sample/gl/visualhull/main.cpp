@@ -93,7 +93,7 @@ private:
 
             visualHull(m_voxel, imgs, m_cams, m_poses);
 
-            cnvVoxelToModel(m_modelR, m_voxel);
+            cnvVoxelToMesh(m_modelR, m_voxel);
 
             m_mode = 1;
         }

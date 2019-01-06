@@ -101,9 +101,9 @@ namespace sp {
     };
 
 
-    SP_CPUFUNC bool cnvModelToVoxel(Voxel &voxel, const Mem1<Mesh3> &model, const double unit = 1.0) {
+    SP_CPUFUNC bool cnvMeshToVoxel(Voxel &voxel, const Mem1<Mesh3> &meshes, const double unit = 1.0) {
 
-        const int size = (ceil(getModelRadius(model) / unit) + 2) * 2;
+        const int size = (ceil(getModelRadius(meshes) / unit) + 2) * 2;
         SP_PRINTD("voxel size %d\n", size);
 
         voxel.init(size, unit);
@@ -112,7 +112,7 @@ namespace sp {
         const double step = sqrt(3.0) * unit;
 
         const CamParam cam = getCamParam(size * 2, size * 2);
-        const double distance = sqrt(3.0) * getModelDistance(model, cam);
+        const double distance = sqrt(3.0) * getModelDistance(meshes, cam);
 
         const Vec3 cent = voxel.center();
 
@@ -122,7 +122,7 @@ namespace sp {
             const Pose pose = getGeodesicPose(level, i, distance);
 
             Mem2<VecPN3> pnmap;
-            renderVecPN(pnmap, cam, pose, model);
+            renderVecPN(pnmap, cam, pose, meshes);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -154,15 +154,15 @@ namespace sp {
         }
 
         for (int i = 0; i < voxel.vmap.size(); i++) {
-            voxel.vmap[i] = (voxel.vmap[i] >= 0) ? +1 : -1;
+            //voxel.vmap[i] = (voxel.vmap[i] >= 0) ? +1 : -1;
         }
         return true;
     }
 
     // Marching cubes
-    SP_CPUFUNC bool cnvVoxelToModel(Mem1<Mesh3> &model, const Voxel &voxel, const Rect *prect = NULL) {
+    SP_CPUFUNC bool cnvVoxelToMesh(Mem1<Mesh3> &meshes, const Voxel &voxel, const Rect *prect = NULL) {
 
-        model.clear();
+        meshes.clear();
 
         typedef MemA<int, 3> Mem3i;
         typedef MemA<int, 8> Mem8i;
@@ -212,12 +212,19 @@ namespace sp {
             patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
         }
 
-        Rect crect = (prect == NULL) ? getRect3(voxel.dsize) : andRect(getRect3(voxel.dsize), *prect);
-        Rect mrect = crect + 1;
+        Rect vrect = (prect == NULL) ? getRect3(voxel.dsize) : andRect(getRect3(voxel.dsize), *prect);
+        Rect brect = vrect;
+        Rect mrect = vrect;
 
         for (int i = 0; i < 3; i++) {
-            crect.dsize[i] -= 1;
-            mrect.dsize[i] -= 1;
+            if(brect.dbase[i] == 0){
+                brect.dbase[i] -= 1;
+                brect.dsize[i] += 1;
+            }
+            {
+                mrect.dbase[i] -= 1;
+                mrect.dsize[i] += 1;
+            }
         }
 
         Mem3<Mem1<Mesh3> > map(mrect.dsize);
@@ -397,7 +404,9 @@ namespace sp {
                         }
                     }
 
-                    model.push(tmps);
+                    if (inRect3(brect, x, y, z) == true) {
+                        meshes.push(tmps);
+                    }
                     map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]).push(tmps);
                 }
             }
@@ -456,14 +465,14 @@ namespace sp {
                         if (cmpVec(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
                         if (cmpVec(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
 
-                        model.push(getMesh(vecs[0], vecs[3], vecs[1]));
-                        model.push(getMesh(vecs[1], vecs[3], vecs[2]));
+                        meshes.push(getMesh(vecs[0], vecs[3], vecs[1]));
+                        meshes.push(getMesh(vecs[1], vecs[3], vecs[2]));
                     }
                 }
             }
         }
 
-        model = (model - voxel.center()) * voxel.unit;
+        meshes = (meshes - voxel.center()) * voxel.unit;
         return true;
     }
 

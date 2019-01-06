@@ -40,10 +40,10 @@ private:
             loadGeodesicDorm(m_model, 100.0, 1);
         }
 
-        cnvModelToVoxel(m_voxel, m_model, 4.0);
+        cnvMeshToVoxel(m_voxel, m_model, 4.0);
 
         // Marching cubes
-        cnvVoxelToModel(m_model, m_voxel);
+        cnvVoxelToMesh(m_model, m_voxel);
         savePLY("model.ply", m_model);
 
         const double distance = getModelDistance(m_model, m_cam);

@@ -144,15 +144,19 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC Mem1<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
-
-        const Mem1<int> index = shuffle(src.size(), seed);
+    SP_CPUFUNC Mem1<TYPE> shuffle(const Mem<TYPE> &src, const Mem1<int> &index) {
 
         Mem1<TYPE> ret(src.size());
         for (int i = 0; i < ret.size(); i++) {
             ret[i] = src[index[i]];
         }
         return ret;
+    }
+
+    template<typename TYPE>
+    SP_CPUFUNC Mem1<TYPE> shuffle(const Mem<TYPE> &src, const int seed = 0) {
+        const Mem1<int> index = shuffle(src.size(), seed);
+        return shuffle(src, index);
     }
 
     template<typename TYPE>
