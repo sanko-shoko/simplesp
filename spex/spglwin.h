@@ -186,9 +186,6 @@ namespace sp {
 
 #define SP_KEYMAX 400
 
-        // keybord state
-        bool m_keyState[SP_KEYMAX];
-
         // keybord action
         char m_keyAction[SP_KEYMAX];
 
@@ -220,8 +217,7 @@ namespace sp {
 
             m_bcol = getCol(24, 32, 32, 255);
 
-            memset(m_keyState, 0, SP_KEYMAX);
-            memset(m_keyAction, -1, SP_KEYMAX);
+            memset(m_keyAction, 0, SP_KEYMAX);
         }
 
 
@@ -357,8 +353,6 @@ namespace sp {
 
             display();
 
-            memset(m_keyAction, -1, SP_KEYMAX);
-
 #if SP_USE_IMGUI
             ImGui::Render();
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
@@ -410,7 +404,7 @@ namespace sp {
             m_mouse.setButton(button, action, mods);
 
 #if SP_USE_IMGUI
-            if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                 ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                 return;
             }
@@ -424,13 +418,13 @@ namespace sp {
             m_mouse.setPos(x, y);
 
 #if SP_USE_IMGUI
-            if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                 return;
             }
 #endif
 
             // control view
-            if (m_keyState[GLFW_KEY_SPACE] == true) {
+            if (m_keyAction[GLFW_KEY_SPACE] > 0) {
                 controlView(m_viewPos, m_viewScale, m_mouse);
                 return;
             }
@@ -443,7 +437,7 @@ namespace sp {
             m_mouse.setScroll(x, y);
 
 #if SP_USE_IMGUI
-            if (m_keyState[GLFW_KEY_SPACE] == false && ImGui::GetIO().WantCaptureMouse) {
+            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                 ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
@@ -451,7 +445,7 @@ namespace sp {
 #endif
 
             // control view
-            if (m_keyState[GLFW_KEY_SPACE] == true) {
+            if (m_keyAction[GLFW_KEY_SPACE] > 0) {
                 controlView(m_viewPos, m_viewScale, m_mouse);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
@@ -464,7 +458,6 @@ namespace sp {
         void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
 
-            m_keyState[key] = (action > 0) ? true : false;
             m_keyAction[key] = static_cast<char>(action);
 
 #if SP_USE_IMGUI
