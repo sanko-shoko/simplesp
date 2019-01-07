@@ -351,6 +351,8 @@ namespace sp {
             glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            glViewport(0, 0, m_wcam.dsize[0], m_wcam.dsize[1]);
+
             display();
 
 #if SP_USE_IMGUI
