@@ -10,13 +10,13 @@
 #include "GL/glew.h"
 #endif
 
-#include "GLFW/glfw3.h"
-
 #if SP_USE_IMGUI
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #endif
+
+#include "GLFW/glfw3.h"
 
 #include "spex/spgltex.h"
 
@@ -206,8 +206,6 @@ namespace sp {
 
         // background color
         Col4 m_bcol;
-
-        //std::map<std::string, Texture> m_texs;
 
     public:
 

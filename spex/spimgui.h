@@ -7,10 +7,12 @@
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl2.h"
 #include "imgui_internal.h"
 
-#include "spcore/spcore.h"
 #include "GLFW/glfw3.h"
+
+#include "spcore/spcore.h"
 
 namespace ImGui {
 
@@ -44,7 +46,7 @@ namespace ImGui {
         return ret;
     }
 
-    SP_CPUFUNC bool showText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+    SP_CPUFUNC bool exShowText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
         
         char name[32] = { 0 };
         const int maxv = 1000;
@@ -56,12 +58,10 @@ namespace ImGui {
             }
         }
 
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
         ImGui::PushStyleColor(ImGuiCol_Text, col);
 
         {
-            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
             const float backup = ImGui::GetFontSize();
             ImGui::SetWindowFontScale(scale);
             ImGui::SetWindowPos(pos, ImGuiCond_Always);
@@ -73,7 +73,7 @@ namespace ImGui {
             ImGui::End();
         }
 
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(1);
         return true;
     }
 }
