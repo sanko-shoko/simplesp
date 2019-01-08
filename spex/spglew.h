@@ -22,8 +22,6 @@ namespace sp{
         GLuint m_fb;
         GLuint m_tex[2];
         
-        // view port backup
-        GLint backup[4];
 
     private:
         void reset() {
@@ -116,8 +114,7 @@ namespace sp{
         }
 
         void bind() {
-            glGetIntegerv(GL_VIEWPORT, backup);
-
+            glPushAttrib(GL_VIEWPORT_BIT);
             glViewport(0, 0, m_dsize[0], m_dsize[1]);
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
@@ -131,7 +128,7 @@ namespace sp{
 
         void unbind() {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-            glViewport(backup[0], backup[1], backup[2], backup[3]);
+            glPopAttrib();
         }
 
         void readImg(Mem2<Col3> &img) {
