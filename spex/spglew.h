@@ -17,11 +17,11 @@ namespace sp{
     class FrameBufferObject {
 
     public:
-        int m_dsize[2];
+        int dsize[2];
 
+    public:
         GLuint m_fb;
         GLuint m_tex[2];
-        
 
     private:
         void reset() {
@@ -61,12 +61,12 @@ namespace sp{
         }
 
         void resize(const int dsize[2]) {
-            if (cmpSize(2, dsize, m_dsize) == true) return;
+            if (cmpSize(2, dsize, this->dsize) == true) return;
 
             free();
 
-            m_dsize[0] = dsize[0];
-            m_dsize[1] = dsize[1];
+            this->dsize[0] = dsize[0];
+            this->dsize[1] = dsize[1];
 
             glGenFramebuffersEXT(1, &m_fb);
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
@@ -115,7 +115,7 @@ namespace sp{
 
         void bind() {
             glPushAttrib(GL_VIEWPORT_BIT);
-            glViewport(0, 0, m_dsize[0], m_dsize[1]);
+            glViewport(0, 0, this->dsize[0], this->dsize[1]);
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
 
@@ -132,12 +132,12 @@ namespace sp{
         }
 
         void readImg(Mem2<Col3> &img) {
-            img.resize(m_dsize);
+            img.resize(dsize);
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
 
-            Mem2<Col3> tmp(m_dsize);
+            Mem2<Col3> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_RGB, GL_UNSIGNED_BYTE, tmp.ptr);
 
             for (int v = 0; v < tmp.dsize[1]; v++) {
@@ -148,12 +148,12 @@ namespace sp{
         }
 
         void readDepth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
-            depth.resize(m_dsize);
+            depth.resize(dsize);
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
 
-            Mem2<float> tmp(m_dsize);
+            Mem2<float> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
 
             for (int v = 0; v < tmp.dsize[1]; v++) {

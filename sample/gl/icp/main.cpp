@@ -155,18 +155,18 @@ private:
             if (m_dataA.size() > 0) {
                 const Vec2 pixA = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
                 const string strA = "data A (points)";
-                ImGui::exShowText(strA.c_str(), ImVec2(float(pixA.x + 100.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
+                ImGui::showText(strA.c_str(), ImVec2(float(pixA.x + 100.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
                 const Vec2 pixB = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
                 const string strB = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
 
-                ImGui::exShowText(strB.c_str(), ImVec2(float(pixB.x - 220.0), float(pixB.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
+                ImGui::showText(strB.c_str(), ImVec2(float(pixB.x - 220.0), float(pixB.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
             }
             if (m_it > 0) {
                 char str[100];
                 sprintf(str, "icp iteration : %d", m_it);
-                ImGui::exShowText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
+                ImGui::showText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
             }
 
         }

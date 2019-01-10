@@ -46,7 +46,7 @@ namespace ImGui {
         return ret;
     }
 
-    SP_CPUFUNC bool exShowText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+    SP_CPUFUNC bool showText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
         
         char name[32] = { 0 };
         const int maxv = 1000;
@@ -59,9 +59,8 @@ namespace ImGui {
         }
 
         ImGui::PushStyleColor(ImGuiCol_Text, col);
-
         {
-            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
+            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
             const float backup = ImGui::GetFontSize();
             ImGui::SetWindowFontScale(scale);
             ImGui::SetWindowPos(pos, ImGuiCond_Always);
@@ -72,7 +71,6 @@ namespace ImGui {
 
             ImGui::End();
         }
-
         ImGui::PopStyleColor(1);
         return true;
     }

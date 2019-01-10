@@ -274,6 +274,7 @@ namespace sp {
             // glfw init
             SP_ASSERT(glfwInit());
 
+            glfwWindowHint(GLFW_SAMPLES, 4);
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             SP_ASSERT(create(name, width, height) == true);
