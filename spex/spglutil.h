@@ -60,6 +60,15 @@ namespace sp{
         cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
         glColor(col);
     }
+    
+    SP_CPUFUNC void glViewport(const Rect &rect) {
+        GLFWwindow *win = glfwGetCurrentContext();
+
+        int ww, wh;
+        glfwGetWindowSize(win, &ww, &wh);
+
+        ::glViewport(rect.dbase[0], wh - (rect.dbase[1] + rect.dsize[1]), rect.dsize[0], rect.dsize[1]);
+    }
 
     //--------------------------------------------------------------------------------
     // get
