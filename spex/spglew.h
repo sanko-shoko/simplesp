@@ -89,7 +89,7 @@ namespace sp{
                 glGenTextures(1, &m_tex[1]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[1]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,7 +115,7 @@ namespace sp{
 
         void bind() {
             glPushAttrib(GL_VIEWPORT_BIT);
-            glViewport(0, 0, this->dsize[0], this->dsize[1]);
+            ::glViewport(0, 0, this->dsize[0], this->dsize[1]);
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
 
@@ -158,8 +158,13 @@ namespace sp{
 
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
-                    const float d = tmp(u, tmp.dsize[1] - 1 - v);
-                    depth(u, v) = farPlane * nearPlane / (farPlane - d * (farPlane - nearPlane));
+                    const float t = tmp(u, tmp.dsize[1] - 1 - v);
+                    const double div = (farPlane - t * (farPlane - nearPlane));
+                    if (div < SP_SMALL) continue;
+                    
+                    const double d = farPlane * nearPlane / div;
+
+                    depth(u, v) = (d > nearPlane && d < farPlane) ? d : 0.0;
                 }
             }
 

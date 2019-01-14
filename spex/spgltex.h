@@ -17,26 +17,13 @@ namespace sp{
     
     class Texture {
 
-    private:
-
-        Mem1<Byte> mem;
-
     public:
 
         // texture id
         GLuint id;
 
-        // texture size
-        GLuint w, h;
-
-        // data pointer
-        void *ptr;
-
         Texture() {
             id = 0;
-            w = 0;
-            h = 0;
-            ptr = NULL;
         }
 
         ~Texture() {
@@ -45,35 +32,13 @@ namespace sp{
             }
         }
 
-        Texture(const Texture &tex) {
-            *this = tex;
-        }
-
         template <typename TYPE>
         Texture(const Mem<TYPE> &img) {
             setImg(img);
         }
 
-        Texture& operator = (const Texture &tex) {
-            id = tex.id;
-            w = tex.w;
-            h = tex.h;
-
-            mem = tex.mem;
-            ptr = mem.ptr;
-
-            return *this;
-        }
-
         template <typename TYPE>
         bool setImg(const Mem<TYPE> &img) {
-
-            mem.resize(sizeof(TYPE) * img.size());
-            memcpy(mem.ptr, img.ptr, mem.size());
-
-            ptr = mem.ptr;
-            w = img.dsize[0];
-            h = img.dsize[1];
 
             int format;
             switch (sizeof(TYPE)) {
@@ -95,7 +60,7 @@ namespace sp{
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, format, GL_UNSIGNED_BYTE, mem.ptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.dsize[0], img.dsize[1], 0, format, GL_UNSIGNED_BYTE, img.ptr);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
