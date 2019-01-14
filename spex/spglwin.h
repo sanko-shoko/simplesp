@@ -401,7 +401,7 @@ namespace sp {
             m_mouse.setButton(button, action, mods);
 
 #if SP_USE_IMGUI
-            if (m_keyAction[GLFW_KEY_SPACE] > 0 && ImGui::GetIO().WantCaptureMouse) {
+            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                 ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                 return;
             }
@@ -434,7 +434,7 @@ namespace sp {
             m_mouse.setScroll(x, y);
 
 #if SP_USE_IMGUI
-            if (m_keyAction[GLFW_KEY_SPACE] > 0 && ImGui::GetIO().WantCaptureMouse) {
+            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                 ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
