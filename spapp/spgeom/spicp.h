@@ -86,13 +86,15 @@ namespace sp{
                 int c = -1;
                 double minNorm = SP_INFINITY;
                 for (int j = 0; j < pnts0.size(); j++){
+                    if (checkOutlier(pnts0[j], vec) == false) continue;
+
                     const double norm = normVec(getPos(pnts0[j]) - getPos(vec));
                     if (norm < minNorm){
                         minNorm = norm;
                         c = j;
                     }
                 }
-                if (c < 0 || checkOutlier(pnts1[i], pnts0[c]) == false) continue;
+                if (c < 0) continue;
 
                 cpnts0.push(pnts0[c]);
                 cpnts1.push(pnts1[i]);
