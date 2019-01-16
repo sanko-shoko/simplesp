@@ -344,7 +344,7 @@ namespace sp{
         }
 
         Mem1 part(const int dbase0, const int dsize0) const {
-            Mem1<TYPE> ret(minVal(dsize0, dsize[0] - dbase0));
+            Mem1<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0));
             TYPE *ptr = ret.ptr;
 
             for (int d0 = 0; d0 < ret.dsize[0]; d0++){
@@ -437,7 +437,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
         
         Mem2 part(const int dbase0, const int dbase1, const int dsize0, const int dsize1) const {
-            Mem2<TYPE> ret(minVal(dsize0, dsize[0] - dbase0), minVal(dsize1, dsize[1] - dbase1));
+            Mem2<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0), minVal(dsize1, this->dsize[1] - dbase1));
             TYPE *ptr = ret.ptr;
 
             for (int d1 = 0; d1 < ret.dsize[1]; d1++) {
@@ -531,7 +531,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         Mem3 part(const int dbase0, const int dbase1, const int dbase2, const int dsize0, const int dsize1, const int dsize2) const {
-            Mem3<TYPE> ret(minVal(dsize0, dsize[0] - dbase0), minVal(dsize1, dsize[1] - dbase1), minVal(dsize2, dsize[2] - dbase2));
+            Mem3<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0), minVal(dsize1, this->dsize[1] - dbase1), minVal(dsize2, this->dsize[2] - dbase2));
             TYPE *ptr = ret.ptr;
 
             for (int d2 = 0; d2 < ret.dsize[2]; d2++) {
