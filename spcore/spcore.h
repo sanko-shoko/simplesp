@@ -9,8 +9,10 @@
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
 
-#include "spcore/spdebug.h"
-#include "spcore/sptimer.h"
+// debug
+#include "spcore/spprint.h"
+#include "spcore/sptime.h"
+#include "spcore/sphold.h"
 
 // gen
 #include "spcore/spgen/spbase.h"
