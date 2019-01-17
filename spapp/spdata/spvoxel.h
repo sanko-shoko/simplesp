@@ -56,8 +56,8 @@ namespace sp {
 
         void zero() {
             setElm(vmap, SP_VOXEL_NULL);
+            setElm(cmap, getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX));
             wmap.zero();
-            cmap.zero();
         }
 
         void update(const int x, const int y, const int z, const double src) {
@@ -272,6 +272,7 @@ namespace sp {
 
                                     score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
                                 }
+                                if ((i == 7 || i == 13) && score < 0) continue;
 
                                 if (abs(score) == 8) {
                                     pid = i;
@@ -293,109 +294,78 @@ namespace sp {
                     };
 
                     switch (pid) {
-                    default:
+                    default: 
                         break;
                     case 1:
-                    {
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
                         break;
-                    }
                     case 2:
-                    {
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(7, 5)));
                         tmps.push(getMesh(m(7, 3), m(6, 2), m(7, 5)));
                         break;
-                    }
                     case 3:
-                    {
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
                         tmps.push(getMesh(m(3, 1), m(3, 2), m(3, 7)));
                         break;
-                    }
                     case 4:
-                    {
                         tmps.push(getMesh(m(4, 0), m(5, 1), m(7, 3)));
                         tmps.push(getMesh(m(4, 0), m(7, 3), m(4, 6)));
                         tmps.push(getMesh(m(7, 3), m(7, 6), m(4, 6)));
                         break;
-                    }
-
                     case 5:
-                    {
                         tmps.push(getMesh(m(4, 0), m(5, 1), m(6, 2)));
                         tmps.push(getMesh(m(5, 1), m(7, 3), m(6, 2)));
                         break;
-                    }
-
                     case 6:
-                    {
                         tmps.push(getMesh(m(2, 0), m(2, 6), m(2, 3)));
                         tmps.push(getMesh(m(4, 0), m(5, 1), m(7, 3)));
                         tmps.push(getMesh(m(4, 0), m(7, 3), m(4, 6)));
                         tmps.push(getMesh(m(7, 3), m(7, 6), m(4, 6)));
                         break;
-                    }
                     case 7:
-                    {
                         tmps.push(getMesh(m(0, 1), m(0, 4), m(0, 2)));
                         tmps.push(getMesh(m(3, 1), m(3, 2), m(3, 7)));
                         tmps.push(getMesh(m(5, 1), m(5, 7), m(5, 4)));
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
                         break;
-                    }
                     case 8:
-                    {
                         tmps.push(getMesh(m(0, 1), m(6, 2), m(0, 2)));
                         tmps.push(getMesh(m(0, 1), m(6, 7), m(6, 2)));
                         tmps.push(getMesh(m(0, 1), m(5, 1), m(6, 7)));
                         tmps.push(getMesh(m(5, 1), m(5, 7), m(6, 7)));
                         break;
-                    }
                     case 9:
-                    {
                         tmps.push(getMesh(m(0, 1), m(5, 1), m(0, 2)));
                         tmps.push(getMesh(m(5, 1), m(6, 7), m(0, 2)));
                         tmps.push(getMesh(m(0, 2), m(6, 7), m(4, 6)));
                         tmps.push(getMesh(m(5, 1), m(7, 3), m(7, 6)));
                         break;
-                    }
                     case 10:
-                    {
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
                         tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
                         break;
-                    }
                     case 11:
-                    {
                         tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
                         tmps.push(getMesh(m(6, 2), m(6, 4), m(7, 5)));
                         tmps.push(getMesh(m(7, 3), m(6, 2), m(7, 5)));
                         break;
-                    }
                     case 12:
-                    {
                         tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
                         tmps.push(getMesh(m(2, 0), m(2, 6), m(2, 3)));
                         tmps.push(getMesh(m(7, 3), m(7, 6), m(7, 5)));
                         break;
-                    }
                     case 13:
-                    {
                         tmps.push(getMesh(m(1, 0), m(1, 3), m(5, 7)));
                         tmps.push(getMesh(m(1, 0), m(5, 7), m(5, 4)));
                         tmps.push(getMesh(m(2, 0), m(6, 7), m(2, 3)));
                         tmps.push(getMesh(m(2, 0), m(6, 4), m(6, 7)));
                         break;
-                    }
                     case 14:
-                    {
                         tmps.push(getMesh(m(1, 0), m(1, 3), m(4, 0)));
                         tmps.push(getMesh(m(1, 3), m(6, 7), m(4, 0)));
                         tmps.push(getMesh(m(4, 0), m(6, 7), m(6, 2)));
                         tmps.push(getMesh(m(5, 7), m(6, 7), m(1, 3)));
                         break;
-                    }
-
                     }
 
                     if (reverse < 0) {
@@ -484,6 +454,7 @@ namespace sp {
         meshes = (meshes - voxel.center()) * voxel.unit;
         return true;
     }
+
 
     // voxel range mask
     SP_CPUFUNC void calcVoxelMask(Mem2<Vec2> &rmsk, const CamParam &cam, const Pose &pose, const Voxel &voxel) {

@@ -61,10 +61,9 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_keyAction[GLFW_KEY_A] == 1) {
-            const int dsize[1] = { m_dataA.size() };
-            m_dataB.resize(1, dsize);
+            m_dataB = Mem1<VecPN3>(m_dataA.size());
 
-            for (int i = 0; i < m_dataA.size(); i++) {
+            for (int i = 0; i < m_dataB.size(); i++) {
                 m_dataB[i] = m_poseA * m_dataA[i];
             }
             m_poseB = m_poseA;
@@ -72,7 +71,7 @@ private:
         }
         
         if (m_keyAction[GLFW_KEY_S] == 1) {
-            m_dataB.resize(2, m_cam.dsize);
+            m_dataB = Mem2<VecPN3>(m_cam.dsize);
 
             m_dataB.zero();
             renderVecPN(m_dataB, m_cam, m_poseA, m_model);
@@ -154,19 +153,18 @@ private:
 
             if (m_dataA.size() > 0) {
                 const Vec2 pixA = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
-                const string strA = "data A (points)";
-                ImGui::showText(strA.c_str(), ImVec2(float(pixA.x + 100.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
+                const string str = string("data A (points)");
+                ImGui::showText(str.c_str(), ImVec2(float(pixA.x + 100.0), float(pixA.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
                 const Vec2 pixB = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
-                const string strB = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
+                const string str = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
 
-                ImGui::showText(strB.c_str(), ImVec2(float(pixB.x - 220.0), float(pixB.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
+                ImGui::showText(str.c_str(), ImVec2(float(pixB.x - 220.0), float(pixB.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
             }
             if (m_it > 0) {
-                char str[100];
-                sprintf(str, "icp iteration : %d", m_it);
-                ImGui::showText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
+                const string str = "icp iteration :" + to_string(m_it);
+                ImGui::showText(str.c_str(), ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
             }
 
         }

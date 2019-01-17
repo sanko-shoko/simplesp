@@ -379,6 +379,29 @@ namespace sp{
 
     }
 
+    SP_CPUFUNC void loadCube(Mem1<Mesh3> &model, const double size) {
+        model.clear();
+
+        const double half = size / 2.0;
+
+        for (int z = -1; z <= +1; z += 2) {
+            for (int y = -1; y <= +1; y += 2) {
+                for (int x = -1; x <= +1; x += 2) {
+                    if ((x * y * z) > 0) continue;
+
+                    const Vec3 p0 = getVec(+x, +y, +z) * half;
+                    const Vec3 px = getVec(-x, +y, +z) * half;
+                    const Vec3 py = getVec(+x, -y, +z) * half;
+                    const Vec3 pz = getVec(+x, +y, -z) * half;
+
+                    model.push(getMesh(p0, py, px));
+                    model.push(getMesh(p0, pz, py));
+                    model.push(getMesh(p0, px, pz));
+                }
+            }
+        }
+          
+    }
 
 }
 
