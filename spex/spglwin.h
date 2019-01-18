@@ -202,6 +202,9 @@ namespace sp {
         // background color
         Col4 m_bcol;
 
+        // control view position & scale
+        bool m_actps;
+
     public:
 
         BaseWindow() {
@@ -214,6 +217,8 @@ namespace sp {
             m_bcol = getCol(24, 32, 32, 255);
 
             memset(m_keyAction, 0, sizeof(m_keyAction));
+            
+            m_actps = true;
         }
 
 
@@ -415,13 +420,13 @@ namespace sp {
             m_mouse.setPos(x, y);
 
 #if SP_USE_IMGUI
-            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+            if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
                 return;
             }
 #endif
 
             // control view
-            if (m_keyAction[GLFW_KEY_SPACE] > 0) {
+            if (m_actps == true && m_keyAction[GLFW_KEY_SPACE] > 0) {
                 controlView(m_viewPos, m_viewScale, m_mouse);
                 return;
             }
@@ -434,7 +439,7 @@ namespace sp {
             m_mouse.setScroll(x, y);
 
 #if SP_USE_IMGUI
-            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+            if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
                 ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
@@ -442,7 +447,7 @@ namespace sp {
 #endif
 
             // control view
-            if (m_keyAction[GLFW_KEY_SPACE] > 0) {
+            if (m_actps == true && m_keyAction[GLFW_KEY_SPACE] > 0) {
                 controlView(m_viewPos, m_viewScale, m_mouse);
                 m_mouse.setScroll(0.0, 0.0);
                 return;
