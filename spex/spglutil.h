@@ -245,57 +245,58 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC void glCircle(const Vec2 &pos, const double radius) {
+        glBegin(GL_LINE_LOOP);
         for (int i = 0; i < 36; i++) {
-            const double p0 = (i + 0) / 36.0 * 2.0 * SP_PI;
-            const double p1 = (i + 1) / 36.0 * 2.0 * SP_PI;
-            const Vec2 a = getVec(pos.x + radius * sin(p0), pos.y + radius * cos(p0));
-            const Vec2 b = getVec(pos.x + radius * sin(p1), pos.y + radius * cos(p1));
-            glVertex(a); glVertex(b);
+            const double p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(getVec(pos.x + radius * sin(p), pos.y + radius * cos(p)));
         }
+        glEnd();
     }
 
-    SP_CPUFUNC void glRect(const Rect &rect) {
-        if (rect.dim == 2) {
-            Vec2 pixA = getVec(rect.dbase[0], rect.dbase[1]);
-            Vec2 pixB = getVec(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
+    SP_CPUFUNC void glRect(const Rect &rect, const bool fill = false) {
+        if (rect.dim != 2) return;
 
-            glVertex(getVec(pixA.x - 0.5, pixA.y - 0.5));
-            glVertex(getVec(pixB.x + 0.5, pixA.y - 0.5));
+        const Vec2 a = getVec(rect.dbase[0], rect.dbase[1]);
+        const Vec2 b = getVec(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
 
-            glVertex(getVec(pixB.x + 0.5, pixA.y - 0.5));
-            glVertex(getVec(pixB.x + 0.5, pixB.y + 0.5));
-
-            glVertex(getVec(pixB.x + 0.5, pixB.y + 0.5));
-            glVertex(getVec(pixA.x - 0.5, pixB.y + 0.5));
-
-            glVertex(getVec(pixA.x - 0.5, pixB.y + 0.5));
-            glVertex(getVec(pixA.x - 0.5, pixA.y - 0.5));
-        }
+        glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
+        glVertex(getVec(a.x - 0.5, a.y - 0.5));
+        glVertex(getVec(b.x + 0.5, a.y - 0.5));
+        glVertex(getVec(b.x + 0.5, b.y + 0.5));
+        glVertex(getVec(a.x - 0.5, b.y + 0.5));
+        glEnd();
     }
 
     SP_CPUFUNC void glMesh(const Mesh2 &mesh) {
+        glBegin(GL_TRIANGLES);
         glVertex(mesh.pos[0]);
         glVertex(mesh.pos[1]);
         glVertex(mesh.pos[2]);
+        glEnd();
     }
 
     SP_CPUFUNC void glMesh(const Mesh3 &mesh){
+        glBegin(GL_TRIANGLES);
         glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
         glVertex(mesh.pos[1]);
         glVertex(mesh.pos[2]);
+        glEnd();
     }
 
     SP_CPUFUNC void glMesh(const Mesh3 &mesh, const Vec3 *nrms) {
+        glBegin(GL_TRIANGLES);
         glNormal(nrms[0]);
         glVertex(mesh.pos[0]);
         glNormal(nrms[1]);
         glVertex(mesh.pos[1]);
         glNormal(nrms[2]);
         glVertex(mesh.pos[2]);
+        glEnd();
     }
 
     SP_CPUFUNC void glAxis(const double size){
+        glBegin(GL_LINES);
         glColor3ub(255, 0, 0);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
 
@@ -304,9 +305,11 @@ namespace sp{
 
         glColor3ub(0, 0, 255);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(0.0, 0.0, size);
+        glEnd();
     }
 
     SP_CPUFUNC void glCube(const double size){
+        glBegin(GL_QUADS);
 
         const double s = size / 2.0;
         for(int i = 0; i < 2; i++){
@@ -329,9 +332,11 @@ namespace sp{
             glVertex3d(+s, +s, +s * v);
             glVertex3d(+s, -s, +s * v);
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glGrid(const double size, const int num){
+        glBegin(GL_LINES);
         for (int i = 0; i < num; i++){
             const double p = i * 2 * size / (num - 1);
             glVertex3d(-size, -size + p, 0.0);
@@ -340,6 +345,7 @@ namespace sp{
             glVertex3d(-size + p, -size, 0.0);
             glVertex3d(-size + p, +size, 0.0);
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glCam(const CamParam &cam, const double size) {
@@ -348,20 +354,24 @@ namespace sp{
         const double h = (cam.dsize[1] / 2.0) / f * size;
 
         const Vec2 loop[4] = { getVec(-w, -h), getVec(+w, -h), getVec(+w, +h), getVec(-w, +h) };
+        glBegin(GL_LINES);
         for (int i = 0; i < 4; i++) {
             const Vec2 a = loop[(i + 0) % 4];
             const Vec2 b = loop[(i + 1) % 4];
             glVertex3d(0.0, 0.0, 0.0); glVertex3d(a.x, a.y, size);
             glVertex3d(a.x, a.y, size); glVertex3d(b.x, b.y, size);
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glLine(const Mem1<Vec2> &vtxs, const bool loop = false) {
+        glBegin(GL_LINES);
         for (int i = 0; i < vtxs.size(); i++) {
             if (i == vtxs.size() - 1 && loop == false) break;
             glVertex(vtxs(i + 0, true));
             glVertex(vtxs(i + 1, true));
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glModel(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
@@ -398,9 +408,7 @@ namespace sp{
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glBegin(GL_TRIANGLES);
             glModel(model, nrms);
-            glEnd();
         }
         glPopAttrib();
     }
@@ -425,9 +433,7 @@ namespace sp{
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 
-                glBegin(GL_TRIANGLES);
                 glModel(model);
-                glEnd();
             }
 
             // draw outline
@@ -439,9 +445,7 @@ namespace sp{
                 glLineWidth(2.0f);
                 glColor3f(1.0f, 1.0f, 1.0f);
 
-                glBegin(GL_TRIANGLES);
                 glModel(model);
-                glEnd();
             }
         }
         glPopAttrib();
@@ -477,9 +481,7 @@ namespace sp{
                         glPushMatrix();
                         glMultMatrix(getPose(cpos));
 
-                        glBegin(GL_QUADS);
                         glCube(voxel.unit);
-                        glEnd();
 
                         glPopMatrix();
                     }

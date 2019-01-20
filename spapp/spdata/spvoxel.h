@@ -71,7 +71,7 @@ namespace sp {
         }
 
         char getv(const int x, const int y, const int z) const {
-            char val = -1;
+            char val = SP_VOXEL_NULL;
 
             if (inRect3(dsize, x, y, z) == true) {
                 val = vmap(x, y, z);
