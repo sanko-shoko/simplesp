@@ -94,8 +94,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // check nearly equal
-    SP_GENFUNC bool cmpVal(const double a, const double b){
-        return ((a - b) < +SP_SMALL && (a - b) > -SP_SMALL) ? true : false;
+    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = SP_SMALL){
+        return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 
     SP_GENFUNC bool cmpSize(const int dim, const int *dsize0, const int *dsize1){
@@ -111,27 +111,27 @@ namespace sp{
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
-    SP_GENFUNC bool cmpVec(const Vec2 &vec0, const Vec2 &vec1){
-        return cmpVal(vec0.x, vec1.x) & cmpVal(vec0.y, vec1.y);
+    SP_GENFUNC bool cmpVec(const Vec2 &vec0, const Vec2 &vec1, const double t = SP_SMALL){
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
     }
 
-    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1){
-        return cmpVal(vec0.x, vec1.x) & cmpVal(vec0.y, vec1.y) & cmpVal(vec0.z, vec1.z);
+    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL){
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
-    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1){
+    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const double t = SP_SMALL){
         bool ret = true;
-        ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw));
-        ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw));
-        ret &= cmpVal(rot0.qz * sign(rot0.qw), rot1.qz * sign(rot1.qw));
-        ret &= cmpVal(rot0.qw * sign(rot0.qw), rot1.qw * sign(rot1.qw));
+        ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qz * sign(rot0.qw), rot1.qz * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qw * sign(rot0.qw), rot1.qw * sign(rot1.qw), t);
         return ret;
     }
 
-    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1){
+    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const double tr = SP_SMALL, const double tt = SP_SMALL){
         bool ret = true;
-        ret &= cmpRot(pose0.rot, pose1.rot);
-        ret &= cmpVec(pose0.trn, pose1.trn);
+        ret &= cmpRot(pose0.rot, pose1.rot, tr);
+        ret &= cmpVec(pose0.trn, pose1.trn, tt);
         return ret;
     }
 

@@ -46,10 +46,10 @@ namespace ImGui {
         return ret;
     }
 
-    SP_CPUFUNC bool showText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+    SP_CPUFUNC bool showText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
         
         char name[32] = { 0 };
-        const int maxv = 1000;
+        const int maxv = 100;
         for (int i = 0; i < maxv; i++) {
             sprintf(name, "showtext%04d", i);
             const ImGuiWindow* window = ImGui::FindWindowByName(name);
@@ -65,7 +65,7 @@ namespace ImGui {
             ImGui::SetWindowFontScale(scale);
             ImGui::SetWindowPos(pos, ImGuiCond_Always);
  
-            ImGui::Text(text);
+            ImGui::Text(text.c_str());
 
             ImGui::SetWindowFontScale(backup);
 
