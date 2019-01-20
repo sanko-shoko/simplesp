@@ -180,9 +180,7 @@ private:
                 }
                 glEnd();
 
-                glBegin(GL_LINES);
                 glAxis(50.0);
-                glEnd();
             }
 
             // render cam
@@ -201,18 +199,14 @@ private:
                         glColor3d(0.2, 0.2, 0.4);
                     }
 
-                    glBegin(GL_LINES);
                     glCam(m_cam, 50);
-                    glEnd();
                 }
 
                 for (int i = 0; i < m_ests.size(); i++) {
                     glLoadMatrix(m_view * invPose(m_ests[i]));
 
                     glColor3d(0.5, 0.8, 0.5);
-                    glBegin(GL_LINES);
                     glCam(m_cam, 50);
-                    glEnd();
                 }
             }
         }

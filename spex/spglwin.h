@@ -23,6 +23,7 @@
 #include "spcore/spcore.h"
 
 #include <string>
+#include <chrono>
 #include <map>
 
 namespace sp {
@@ -31,7 +32,11 @@ namespace sp {
     // mouse
     //--------------------------------------------------------------------------------
 
-    struct Mouse {
+#define GLFW_DOUBLECLICK 3
+
+    class Mouse {
+
+    public:
 
         // cursor position and move
         Vec2 pos, move;
@@ -45,6 +50,7 @@ namespace sp {
         // button
         int bDownL, bDownR, bDownM;
 
+ 
         Mouse() {
             reset();
         }
@@ -54,18 +60,31 @@ namespace sp {
         }
 
         void setButton(const int button, const int action, const int mods) {
+            int _action = action;
+
+            if (_action == GLFW_PRESS) {
+                using namespace std::chrono;
+
+                static system_clock::time_point prev = system_clock::now();
+                const system_clock::time_point crnt = system_clock::now();
+                const double diff = duration <double, std::milli>(crnt - prev).count();
+                if (diff > 10.0 && diff < 200.0) {
+                    _action = GLFW_DOUBLECLICK;
+                }
+                prev = crnt;
+            }
 
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                bDownL = action;
+                bDownL = _action;
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                bDownR = action;
+                bDownR = _action;
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-                bDownM = action;
+                bDownM = _action;
             }
 
-            if (action == 0) {
+            if (_action == 0) {
                 drag = getVec(0.0, 0.0);
             }
         }
@@ -273,7 +292,7 @@ namespace sp {
             // glfw init
             SP_ASSERT(glfwInit());
 
-            glfwWindowHint(GLFW_SAMPLES, 4);
+            glfwWindowHint(GLFW_SAMPLES, 8);
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             SP_ASSERT(create(name, width, height) == true);

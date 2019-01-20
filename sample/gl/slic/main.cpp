@@ -57,10 +57,8 @@ private:
 
         for (int i = 0; i < m_vtxsList.size(); i++) {
             glLineWidth(3);
-            glBegin(GL_LINES);
             glColor(getCol(0, 0, 0));
             glLine(m_vtxsList[i], true);
-            glEnd();
         }
     }
 

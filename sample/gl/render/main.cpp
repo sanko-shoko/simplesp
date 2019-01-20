@@ -149,9 +149,7 @@ private:
         glLoadMatrix(m_pose);
 
         glLineWidth(2.f);
-        glBegin(GL_LINES);
         glAxis(100.0);
-        glEnd();
 
         glEnable(GL_DEPTH_TEST);
     }

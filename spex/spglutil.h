@@ -296,6 +296,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void glAxis(const double size){
+        glBegin(GL_LINES);
         glColor3ub(255, 0, 0);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
 
@@ -304,6 +305,7 @@ namespace sp{
 
         glColor3ub(0, 0, 255);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(0.0, 0.0, size);
+        glEnd();
     }
 
     SP_CPUFUNC void glCube(const double size){
@@ -334,6 +336,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void glGrid(const double size, const int num){
+        glBegin(GL_LINES);
         for (int i = 0; i < num; i++){
             const double p = i * 2 * size / (num - 1);
             glVertex3d(-size, -size + p, 0.0);
@@ -342,6 +345,7 @@ namespace sp{
             glVertex3d(-size + p, -size, 0.0);
             glVertex3d(-size + p, +size, 0.0);
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glCam(const CamParam &cam, const double size) {
@@ -350,20 +354,24 @@ namespace sp{
         const double h = (cam.dsize[1] / 2.0) / f * size;
 
         const Vec2 loop[4] = { getVec(-w, -h), getVec(+w, -h), getVec(+w, +h), getVec(-w, +h) };
+        glBegin(GL_LINES);
         for (int i = 0; i < 4; i++) {
             const Vec2 a = loop[(i + 0) % 4];
             const Vec2 b = loop[(i + 1) % 4];
             glVertex3d(0.0, 0.0, 0.0); glVertex3d(a.x, a.y, size);
             glVertex3d(a.x, a.y, size); glVertex3d(b.x, b.y, size);
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glLine(const Mem1<Vec2> &vtxs, const bool loop = false) {
+        glBegin(GL_LINES);
         for (int i = 0; i < vtxs.size(); i++) {
             if (i == vtxs.size() - 1 && loop == false) break;
             glVertex(vtxs(i + 0, true));
             glVertex(vtxs(i + 1, true));
         }
+        glEnd();
     }
 
     SP_CPUFUNC void glModel(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
@@ -425,9 +433,7 @@ namespace sp{
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 
-                glBegin(GL_TRIANGLES);
                 glModel(model);
-                glEnd();
             }
 
             // draw outline
@@ -439,9 +445,7 @@ namespace sp{
                 glLineWidth(2.0f);
                 glColor3f(1.0f, 1.0f, 1.0f);
 
-                glBegin(GL_TRIANGLES);
                 glModel(model);
-                glEnd();
             }
         }
         glPopAttrib();

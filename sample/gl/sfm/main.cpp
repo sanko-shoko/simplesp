@@ -131,9 +131,7 @@ private:
                 if (view == NULL || view->valid == false) continue;
                 glLoadMatrix(m_pose * invPose(view->pose));
 
-                glBegin(GL_LINES);
                 glCam(view->cam, m_cscale * m_pose.trn.z);
-                glEnd();
             }
         }
 
@@ -142,9 +140,7 @@ private:
             glLoadMatrix(invPose(m_axis) * m_pose.rot);
 
             glLineWidth(2.f);
-            glBegin(GL_LINES);
             glAxis(0.05 * m_pose.trn.z);
-            glEnd();
         }
     }
 
