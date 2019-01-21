@@ -68,7 +68,7 @@ namespace sp {
                 static system_clock::time_point prev = system_clock::now();
                 const system_clock::time_point crnt = system_clock::now();
                 const double diff = duration <double, std::milli>(crnt - prev).count();
-                if (diff > 10.0 && diff < 200.0) {
+                if (diff > 10.0 && diff < 400.0) {
                     _action = GLFW_DOUBLECLICK;
                 }
                 prev = crnt;
@@ -270,12 +270,14 @@ namespace sp {
 #endif
 
 #if SP_USE_IMGUI
-            // imgui init
-            IMGUI_CHECKVERSION();
-            ImGui::CreateContext();
-            SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(m_win, true) == true);
-            SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
-            ImGui::GetIO().IniFilename = NULL;
+            if (m_parent == NULL) {
+                // imgui init
+                IMGUI_CHECKVERSION();
+                ImGui::CreateContext();
+                SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(m_win, true) == true);
+                SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
+                ImGui::GetIO().IniFilename = NULL;
+            }
 #endif
  
             init();
@@ -308,9 +310,11 @@ namespace sp {
             glfwTerminate();
 
 #if SP_USE_IMGUI
-            ImGui_ImplOpenGL2_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
+            if (m_parent == NULL) {
+                ImGui_ImplOpenGL2_Shutdown();
+                ImGui_ImplGlfw_Shutdown();
+                ImGui::DestroyContext();
+            }
 #endif
         }
 
@@ -364,9 +368,11 @@ namespace sp {
             }
 
 #if SP_USE_IMGUI
-            ImGui_ImplOpenGL2_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
+            if (m_parent == NULL) {
+                ImGui_ImplOpenGL2_NewFrame();
+                ImGui_ImplGlfw_NewFrame();
+                ImGui::NewFrame();
+            }
 #endif
 
             glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
@@ -375,8 +381,10 @@ namespace sp {
             display();
 
 #if SP_USE_IMGUI
-            ImGui::Render();
-            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+            if (m_parent == NULL) {
+                ImGui::Render();
+                ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+            }
 #endif
 
             glfwSwapBuffers(m_win);
@@ -425,9 +433,11 @@ namespace sp {
             m_mouse.setButton(button, action, mods);
 
 #if SP_USE_IMGUI
-            if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
-                return;
+            if (m_parent == NULL) {
+                if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                    ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
+                    return;
+                }
             }
 #endif
 
@@ -439,8 +449,10 @@ namespace sp {
             m_mouse.setPos(x, y);
 
 #if SP_USE_IMGUI
-            if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
-                return;
+            if (m_parent == NULL) {
+                if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                    return;
+                }
             }
 #endif
 
@@ -458,10 +470,12 @@ namespace sp {
             m_mouse.setScroll(x, y);
 
 #if SP_USE_IMGUI
-            if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
-                m_mouse.setScroll(0.0, 0.0);
-                return;
+            if (m_parent == NULL) {
+                if ((m_actps == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                    ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
+                    m_mouse.setScroll(0.0, 0.0);
+                    return;
+                }
             }
 #endif
 
@@ -494,9 +508,11 @@ namespace sp {
         void _charFun(unsigned int charInfo) {
 
 #if SP_USE_IMGUI
-            if (ImGui::GetIO().WantCaptureKeyboard) {
-                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
-                return;
+            if (m_parent == NULL) {
+                if (ImGui::GetIO().WantCaptureKeyboard) {
+                    ImGui_ImplGlfw_CharCallback(NULL, charInfo);
+                    return;
+                }
             }
 #endif
 
