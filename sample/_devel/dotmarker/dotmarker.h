@@ -19,6 +19,8 @@ class DotMarkerGUI : public BaseWindow{
 
     Mem2<Col3> m_crntImg;
 
+    Mem1<Mem2<Col3> > m_addImg;
+
     // calib data
     Mem1<Mem1<Vec2> > m_pixPntsList;
     Mem1<Mem1<Vec2> > m_objPntsList;
@@ -59,6 +61,7 @@ private:
     // estimate marker pose
     void calcOne();
 
+    virtual void keyFun(int key, int scancode, int action, int mods);
     virtual void display();
 };
 

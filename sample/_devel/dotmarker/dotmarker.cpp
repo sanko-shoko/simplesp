@@ -22,6 +22,23 @@ void DotMarkerGUI::calcOne(){
     remap<Col3, Byte>(m_crntImg, m_crntImg, table);
 }
 
+void DotMarkerGUI::keyFun(int key, int scancode, int action, int mods) {
+
+    static CalibTool ctool;
+    if (m_keyAction[GLFW_KEY_A] == 1) {
+        ctool.addImg(m_dotMarker.getMrk(), m_crntImg);
+
+        Mem2<Col3> min;
+        rescale<Col3, Byte>(min, m_crntImg, 0.3, 0.3);
+        m_addImg.push(min);
+    }
+    if (m_keyAction[GLFW_KEY_C] == 1 && ctool.execute() == true) {
+        ctool.save("cam.txt");
+        const CamParam cam = *ctool.getCam();
+        m_dotMarker.setCam(cam);
+    }
+}
+
 void DotMarkerGUI::display(){
 
     if (ImGui::Begin("gui", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -50,6 +67,22 @@ void DotMarkerGUI::display(){
     if (m_ui.start){
         nextImg();
         calcOne();
+    }
+    if (m_addImg.size() > 0) {
+        const int w = m_addImg[0].dsize[0] * 3;
+        const int h = m_addImg[0].dsize[1] * ((m_addImg.size() + 2) / 3 );
+        Mem2<Col3> mimg(w, h);
+        for (int i = 0; i < m_addImg.size(); i++) {
+            const int ix = i % 3;
+            const int iy = i / 3;
+            for (int v = 0; v < m_addImg[i].dsize[1]; v++) {
+                for (int u = 0; u < m_addImg[i].dsize[0]; u++) {
+                    mimg(ix * m_addImg[0].dsize[0] + u, iy * m_addImg[0].dsize[1] + v) = m_addImg[i](u, v);
+                }
+            }
+        }
+
+        glShowImg(this, "addImg", mimg);
     }
 
     {
@@ -179,5 +212,4 @@ void DotMarkerGUI::display(){
     }
 
 #endif
-
 }
