@@ -154,17 +154,17 @@ private:
             if (m_dataA.size() > 0) {
                 const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
                 const string str = string("data A (points)");
-                ImGui::showText(str, ImVec2(float(pix.x + 100.0), float(pix.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
+                ImGui::ShowText(str, ImVec2(float(pix.x + 100.0), float(pix.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
                 const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
                 const string str = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
 
-                ImGui::showText(str, ImVec2(float(pix.x - 220.0), float(pix.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
+                ImGui::ShowText(str, ImVec2(float(pix.x - 220.0), float(pix.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
             }
             if (m_it > 0) {
                 const string str = "icp iteration :" + to_string(m_it);
-                ImGui::showText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
+                ImGui::ShowText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
             }
 
         }
