@@ -289,7 +289,7 @@ namespace sp {
 
                     Mem1<Mesh3> tmps;
 
-                    auto m = [p, v](const int i, const int j)-> Vec3 {
+                    auto m = [&](const int i, const int j)-> Vec3 {
                         return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
                     };
 

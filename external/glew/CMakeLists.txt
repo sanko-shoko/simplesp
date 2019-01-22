@@ -8,7 +8,7 @@ include_directories(./)
 file(GLOB MAIN GL/*.h *.c)
 source_group("main" FILES ${MAIN})
 
-add_compile_definitions(GLEW_STATIC)
+add_compile_options(-D GLEW_STATIC)
 
 add_library(${target} ${MAIN})
 
