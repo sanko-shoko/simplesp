@@ -14,9 +14,9 @@
 
 #include "spcore/spcore.h"
 
-namespace ImGui {
+#include <string>
 
-#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
+namespace ImGui {
 
     SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
         SP_ASSERT(rect.dim == 2);
@@ -25,28 +25,7 @@ namespace ImGui {
         ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
     }
 
-    SP_CPUFUNC bool ButtonPopup(const char *name, const char *popup) {
-        if (ImGui::Button(name)) {
-            ImGui::OpenPopup(popup);
-        }
-
-        bool ret = false;
-        if (ImGui::BeginPopupModal(popup, NULL, ImGuiWindowFlags_AlwaysAutoResize)){
-            if (ImGui::Button("ok", ImVec2(80, 0))) {
-                ImGui::CloseCurrentPopup();
-                ret = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("cancel", ImVec2(80, 0))) {
-                ImGui::CloseCurrentPopup();
-                ret = false;
-            }
-            ImGui::EndPopup();
-        }
-        return ret;
-    }
-
-    SP_CPUFUNC bool showText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+    SP_CPUFUNC bool ShowText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
         
         char name[32] = { 0 };
         const int maxv = 100;

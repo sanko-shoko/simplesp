@@ -41,10 +41,10 @@ namespace sp {
             unit = 0.0;
         }
 
-        void init(const int size, const double unit) {
-            dsize[0] = size;
-            dsize[1] = size;
-            dsize[2] = size;
+        void init(const int *dsize, const double unit) {
+            this->dsize[0] = dsize[0];
+            this->dsize[1] = dsize[1];
+            this->dsize[2] = dsize[2];
             this->unit = unit;
 
             vmap.resize(dsize);
@@ -53,7 +53,13 @@ namespace sp {
 
             zero();
         }
+        
+        void init(const int size, const double unit) {
+            const int dsize[3] = { size, size, size };
+            init(dsize, unit);
+        }
 
+ 
         void zero() {
             setElm(vmap, SP_VOXEL_NULL);
             setElm(cmap, getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX));
