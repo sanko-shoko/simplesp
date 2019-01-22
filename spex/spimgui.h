@@ -16,7 +16,30 @@
 
 #include <string>
 
+namespace sp {
+    using namespace ImGui;
+
+    SP_CPUFUNC Col4 getCol(const ImVec4 &imvec) {
+        const Col4 col = getCol(static_cast<Byte>(imvec.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imvec.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imvec.z * SP_BYTEMAX + 0.5), static_cast<Byte>(imvec.w * SP_BYTEMAX + 0.5));
+        return col;
+    }
+}
+
 namespace ImGui {
+
+#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
+    
+    using namespace sp;
+
+    SP_CPUFUNC ImVec4 getImVec4(const Col3 &col) {
+        const ImVec4 imvec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, 1.f);
+        return imvec;
+    }
+
+    SP_CPUFUNC ImVec4 getImVec4(const Col4 &col) {
+        const ImVec4 imvec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX);
+        return imvec;
+    }
 
     SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
         SP_ASSERT(rect.dim == 2);
