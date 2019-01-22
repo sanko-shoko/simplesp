@@ -208,8 +208,8 @@ namespace sp{
         Byte r, g, b;
     };
 
-    struct Col4 {
-        Byte r, g, b, a;
+    struct Col4 : public Col3 {
+        Byte a;
     };
 
 
