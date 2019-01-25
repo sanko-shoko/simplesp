@@ -17,6 +17,10 @@ namespace sp{
     
     class Texture {
 
+    private:
+
+        Mem1<char> mem;
+
     public:
 
         // texture id
@@ -26,6 +30,20 @@ namespace sp{
             id = 0;
         }
 
+        template <typename TYPE>
+        Texture(const Mem<TYPE> &img) {
+            setImg(img);
+        }
+
+        Texture(const Texture &texture) {
+            *this = texture;
+        }
+
+        Texture& operator = (const Texture &texture) {
+            mem = texture.mem;
+            setImg(mem);
+            return *this;
+        }
         ~Texture() {
             if (id > 0) {
                 glDeleteTextures(1, &id);
@@ -33,21 +51,25 @@ namespace sp{
         }
 
         template <typename TYPE>
-        Texture(const Mem<TYPE> &img) {
-            setImg(img);
+        bool setImg(const Mem<TYPE> &img) {
+            return setImg(img.ptr, img.dsize, sizeof(TYPE));
         }
 
-        template <typename TYPE>
-        bool setImg(const Mem<TYPE> &img) {
+        bool setImg(const void *img, const int *dsize, const int ch) {
 
             int format;
-            switch (sizeof(TYPE)) {
+            switch (ch) {
             case 1: format = GL_LUMINANCE; break;
             case 3: format = GL_RGB; break;
             case 4: format = GL_RGBA; break;
             default: return false;
             }
 
+            mem.resize(dsize[0] * dsize[1] * ch, img);
+          
+            if (id > 0) {
+                glDeleteTextures(1, &id);
+            }
             glGenTextures(1, &id);
 
             glBindTexture(GL_TEXTURE_2D, id);
@@ -60,7 +82,7 @@ namespace sp{
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.dsize[0], img.dsize[1], 0, format, GL_UNSIGNED_BYTE, img.ptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, format, GL_UNSIGNED_BYTE, mem.ptr);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
