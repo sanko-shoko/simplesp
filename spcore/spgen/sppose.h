@@ -8,8 +8,8 @@
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/spvec.h"
 #include "spcore/spgen/spmath.h"
+#include "spcore/spgen/spvec.h"
 
 namespace sp{
 

@@ -60,7 +60,17 @@ namespace sp{
         cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
         glColor(col);
     }
-    
+
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 col) {
+        GLfloat param[4] = { static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, 1.f };
+        glMaterialfv(face, pname, param);
+    }
+
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4 col) {
+        GLfloat param[4] = { static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX };
+        glMaterialfv(face, pname, param);
+    }
+
     SP_CPUFUNC void glViewport(const Rect &rect) {
         GLFWwindow *win = glfwGetCurrentContext();
 

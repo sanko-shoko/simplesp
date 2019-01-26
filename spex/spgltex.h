@@ -32,6 +32,7 @@ namespace sp{
 
         template <typename TYPE>
         Texture(const Mem<TYPE> &img) {
+            id = 0;
             setImg(img);
         }
 
