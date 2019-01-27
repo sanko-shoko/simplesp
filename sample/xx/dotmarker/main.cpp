@@ -31,11 +31,8 @@ private:
 
         help();
 
-        if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false) {
-
-            // if could not find stanford bunny, load dummy model
-            loadGeodesicDorm(m_model, 100.0, 1);
-        }
+        m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
+        SP_ASSERT(m_model.size() > 0);
 
         m_dotMarker.setMrk(DotMarkerParam(MARKER_DSIZE0, MARKER_DSIZE1, MARKER_DISTANCE));
 

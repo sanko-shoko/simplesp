@@ -343,8 +343,9 @@ namespace sp{
     // sample model
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool loadBunny(const char *path, Mem1<Mesh3> &model) {
-        if (loadPLY(path, model) == false) return false;
+    SP_CPUFUNC Mem1<Mesh3> loadBunny(const char *path) {
+        Mem1<Mesh3> model;
+        if (loadPLY(path, model) == false) return model;
 
         Vec3 center = getModelCenter(model);
         for (int i = 0; i < model.size(); i++) {
@@ -353,12 +354,11 @@ namespace sp{
             // m -> mm
             model[i] *= 1000.0;
         }
-        return true;
+        return model;
     }
 
-    SP_CPUFUNC void loadPlane(Mem1<Mesh3> &model, const double size) {
-        model.clear();
-
+    SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size) {
+        Mem1<Mesh3> model;
         const double hs = size * 0.5;
         const Vec3 a = getVec(-hs, -hs, 0.0);
         const Vec3 b = getVec(+hs, -hs, 0.0);
@@ -367,20 +367,23 @@ namespace sp{
 
         model.push(getMesh(a, b, c));
         model.push(getMesh(a, c, d));
+        
+        return model;
     }
 
-    SP_CPUFUNC void loadGeodesicDorm(Mem1<Mesh3> &model, const double size, const int div) {
-        model.clear();
+    SP_CPUFUNC Mem1<Mesh3> loadGeodesicDorm(const double size, const int div) {
+        Mem1<Mesh3> model;
 
         const int num = getGeodesicMeshNum(div);
         for (int i = 0; i < num; i++) {
             model.push(getGeodesicMesh(div, i) * size);
         }
 
+        return model;
     }
 
-    SP_CPUFUNC void loadCube(Mem1<Mesh3> &model, const double size) {
-        model.clear();
+    SP_CPUFUNC Mem1<Mesh3> loadCube(const double size) {
+        Mem1<Mesh3> model;
 
         const double half = size / 2.0;
 
@@ -401,6 +404,7 @@ namespace sp{
             }
         }
           
+        return model;
     }
 
 }
