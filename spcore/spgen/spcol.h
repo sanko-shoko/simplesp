@@ -29,6 +29,13 @@ namespace sp{
     }
 
     // get color
+    SP_GENFUNC Col4 getCol(const Col3 &col, const Byte a) {
+        Col4 dst;
+        dst.r = col.r; dst.g = col.g; dst.b = col.b; dst.a = a;
+        return dst;
+    }
+
+    // get color
     SP_GENFUNC Col3 getCol(const Vec3 &vec) {
         Col3 dst;
         cnvVal(dst.r, vec.x * SP_BYTEMAX);
@@ -38,12 +45,12 @@ namespace sp{
     }
 
     // get color
-    SP_GENFUNC Col4 getCol(const Col3 &col, const Byte a) {
-        Col4 dst;
-        dst.r = col.r; dst.g = col.g; dst.b = col.b; dst.a = a;
+    SP_GENFUNC Col4 getCol(const Vec3 &vec, const double a) {
+        Col4 dst = getCol(getCol(vec), 0);
+        cnvVal(dst.a, a * SP_BYTEMAX);
         return dst;
     }
-
+    
     // multiple
     SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
         const Byte r = static_cast<Byte>(maxVal(0, minVal(255, static_cast<int>(col.r * val))));

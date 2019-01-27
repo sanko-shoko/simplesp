@@ -41,6 +41,22 @@ namespace sp {
             unit = 0.0;
         }
 
+        Voxel(const Voxel &voxel) {
+            *this = voxel;
+        }
+
+        Voxel& operator = (const Voxel &voxel) {
+            dsize[0] = voxel.dsize[0];
+            dsize[1] = voxel.dsize[1];
+            dsize[2] = voxel.dsize[2];
+            unit = voxel.unit;
+
+            vmap = voxel.vmap;
+            wmap = voxel.wmap;
+            cmap = voxel.cmap;
+            return *this;
+        }
+
         void init(const int *dsize, const double unit) {
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];

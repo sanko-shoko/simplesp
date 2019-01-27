@@ -8,6 +8,7 @@
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
 #include "spcore/spgen/spbase.h"
+#include "spcore/spgen/spmath.h"
 
 namespace sp {
 
@@ -18,14 +19,17 @@ namespace sp {
     // get vector
     SP_GENFUNC Vec2 getVec(const double x, const double y) {
         Vec2 dst;
-        dst.x = x, dst.y = y;
+        dst.x = x;
+        dst.y = y;
         return dst;
     }
 
     // get vector
     SP_GENFUNC Vec3 getVec(const double x, const double y, const double z) {
         Vec3 dst;
-        dst.x = x, dst.y = y, dst.z = z;
+        dst.x = x;
+        dst.y = y;
+        dst.z = z;
         return dst;
     }
 
@@ -37,7 +41,9 @@ namespace sp {
     // get vector
     SP_GENFUNC Vec3 getVec(const Col3 &col) {
         Vec3 dst;
-        dst.x = col.r, dst.y = col.g, dst.z = col.b;
+        dst.x = static_cast<double>(col.r) / SP_BYTEMAX;
+        dst.y = static_cast<double>(col.g) / SP_BYTEMAX;
+        dst.z = static_cast<double>(col.b) / SP_BYTEMAX;
         return dst;
     }
 
@@ -615,6 +621,27 @@ namespace sp {
         return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
     }
 
+    // get cross depth
+    SP_GENFUNC double getMeshCrs(const Mesh3 &mesh, const Vec3 &vec) {
+        const Vec3 nrm = getMeshNrm(mesh);
+        if (dotVec(nrm, vec) >= 0.0) return -1.0;
+
+        const Vec3 A = mesh.pos[1] - mesh.pos[0];
+        const Vec3 B = mesh.pos[2] - mesh.pos[0];
+        double mat[3 * 3] = { -A.x, -B.x, vec.x, -A.y, -B.y, vec.y, -A.z, -B.z, vec.z };
+        double val[3] = { mesh.pos[0].x,  mesh.pos[0].y,  mesh.pos[0].z };
+
+        double inv[3 * 3];
+        if (invMat33(inv, mat) == false) return -1.0;
+
+        double dst[3];
+        mulMat(dst, 3, 1, inv, 3, 3, val, 3, 1);
+
+        if (dst[0] < 0.0 || dst[1] < 0.0 || dst[0] + dst[1] > 1.0) return -1.0;
+        if (dst[2] < SP_SMALL) return -1.0;
+
+        return dst[2];
+    }
 
     //--------------------------------------------------------------------------------
     // geodesic dorm
