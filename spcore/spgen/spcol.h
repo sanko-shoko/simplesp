@@ -150,6 +150,7 @@ namespace sp{
         case 4: col = getCol(uc, ua, uv); break;
         case 5: col = getCol(uv, ua, ub); break;
         }
+
     }
 
     // convert col3 to hsv, hsv = Vec3(h = [0, 2 * PI], s = [0, 1], v = [0, 1])
@@ -168,15 +169,14 @@ namespace sp{
             h = 0.0;
         }
         else if (col.r == maxv) {
-            h = (col.b - col.g) / subv + 0.0;
+            h = (col.g - col.b) / subv + 0.0;
         }
         else if (col.g == maxv) {
-            h = (col.r - col.b) / subv + 2.0;
+            h = (col.b - col.r) / subv + 2.0;
         }
         else if (col.b == maxv) {
-            h = (col.g - col.r) / subv + 4.0;
+            h = (col.r - col.g) / subv + 4.0;
         }
-        
         h *= SP_PI / 3.0;
         if (h < 0.0) {
             h += 2 * SP_PI;
