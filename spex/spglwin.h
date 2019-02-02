@@ -14,6 +14,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
+#include "imgui_internal.h"
 #endif
 
 #include "GLFW/glfw3.h"
@@ -496,9 +497,11 @@ namespace sp {
             m_keyAction[key] = static_cast<char>(action);
 
 #if SP_USE_IMGUI
-            if (ImGui::GetIO().WantCaptureKeyboard) {
-                ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
-                return;
+            if (m_parent == NULL) {
+                if (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetFocusID() > 0) {
+                    ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
+                    return;
+                }
             }
 #endif
 
@@ -509,7 +512,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if (ImGui::GetIO().WantCaptureKeyboard) {
+                if (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetFocusID() > 0) {
                     ImGui_ImplGlfw_CharCallback(NULL, charInfo);
                     return;
                 }
