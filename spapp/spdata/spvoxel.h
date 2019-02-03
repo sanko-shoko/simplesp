@@ -405,8 +405,9 @@ namespace sp {
                         const int nx = mx + ((n == 0) ? 1 : 0);
                         const int ny = my + ((n == 1) ? 1 : 0);
                         const int nz = mz + ((n == 2) ? 1 : 0);
-                        if (nx >= voxel.dsize[0] || ny >= voxel.dsize[1] || nz >= voxel.dsize[2]) continue;
-
+                        if (n == 0 && x + 1 >= voxel.dsize[0]) continue;
+                        if (n == 1 && y + 1 >= voxel.dsize[1]) continue;
+                        if (n == 2 && z + 1 >= voxel.dsize[2]) continue;
                         const Mem1<Mesh3> &m0 = map(mx, my, mz);
                         const Mem1<Mesh3> &m1 = map(nx, ny, nz);
                         
@@ -444,7 +445,7 @@ namespace sp {
                 }
             }
         }
-
+       
 #if 1
         {
             Mem1<Mesh3> tmps;
