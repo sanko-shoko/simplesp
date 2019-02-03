@@ -498,10 +498,13 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetFocusID() > 0) {
+                static bool prev = false;
+                if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
+                    prev = ImGui::GetIO().WantCaptureKeyboard;
                     ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
                     return;
                 }
+                prev = false;
             }
 #endif
 
@@ -512,7 +515,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetFocusID() > 0) {
+                if (ImGui::GetIO().WantCaptureKeyboard == true) {
                     ImGui_ImplGlfw_CharCallback(NULL, charInfo);
                     return;
                 }

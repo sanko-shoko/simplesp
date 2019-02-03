@@ -25,6 +25,7 @@ namespace sp{
 
         // texture id
         GLuint id;
+        int dsize[2];
 
         Texture() {
             id = 0;
@@ -65,6 +66,9 @@ namespace sp{
             case 4: format = GL_RGBA; break;
             default: return false;
             }
+            
+            this->dsize[0] = dsize[0];
+            this->dsize[1] = dsize[1];
 
             mem.resize(dsize[0] * dsize[1] * ch, img);
           

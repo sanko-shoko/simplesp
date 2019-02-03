@@ -29,9 +29,6 @@ namespace sp {
         // weight map
         Mem3<char> wmap;
 
-        // color map
-        Mem3<Col4> cmap;
-
     public:
 
         Voxel() {
@@ -53,7 +50,6 @@ namespace sp {
 
             vmap = voxel.vmap;
             wmap = voxel.wmap;
-            cmap = voxel.cmap;
             return *this;
         }
 
@@ -65,7 +61,6 @@ namespace sp {
 
             vmap.resize(dsize);
             wmap.resize(dsize);
-            cmap.resize(dsize);
 
             zero();
         }
@@ -78,7 +73,6 @@ namespace sp {
  
         void zero() {
             setElm(vmap, SP_VOXEL_NULL);
-            setElm(cmap, getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX));
             wmap.zero();
         }
 
@@ -215,23 +209,23 @@ namespace sp {
         Mem1<int> pcnts;
         {
             // 15 patterns
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, +1, +1)); pcnts.push(0);
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, +1)); pcnts.push(1);
-            patterns.push(Mem8i(+1, +1, +1, +1, +1, +1, -1, -1)); pcnts.push(2);
-            patterns.push(Mem8i(+1, +1, +1, -1, +1, +1, -1, +1)); pcnts.push(2);
-            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, +1, -1)); pcnts.push(3);
+            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, -1, -1)); pcnts.push(0);
+            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, +1, -1)); pcnts.push(1);
+            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, +1, +1)); pcnts.push(2);
+            patterns.push(Mem8i(-1, -1, -1, +1, -1, -1, +1, -1)); pcnts.push(2);
+            patterns.push(Mem8i(-1, -1, -1, -1, +1, +1, -1, +1)); pcnts.push(3);
 
-            patterns.push(Mem8i(+1, +1, +1, +1, -1, -1, -1, -1)); pcnts.push(4);
-            patterns.push(Mem8i(+1, +1, -1, +1, -1, -1, +1, -1)); pcnts.push(4);
-            patterns.push(Mem8i(-1, +1, +1, -1, +1, -1, -1, +1)); pcnts.push(4);
-            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
-            patterns.push(Mem8i(-1, +1, +1, +1, -1, -1, +1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, -1, -1, -1, +1, +1, +1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, -1, +1, -1, +1, +1, -1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(+1, -1, -1, +1, -1, +1, +1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(+1, -1, -1, -1, +1, +1, +1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(+1, -1, -1, -1, +1, +1, -1, +1)); pcnts.push(4);
 
-            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, +1)); pcnts.push(2);
-            patterns.push(Mem8i(+1, -1, +1, +1, +1, +1, -1, -1)); pcnts.push(3);
-            patterns.push(Mem8i(+1, -1, -1, +1, +1, +1, +1, -1)); pcnts.push(3);
-            patterns.push(Mem8i(+1, -1, -1, +1, +1, -1, -1, +1)); pcnts.push(4);
-            patterns.push(Mem8i(+1, -1, +1, +1, -1, -1, -1, +1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, +1, -1, -1, -1, -1, +1, -1)); pcnts.push(2);
+            patterns.push(Mem8i(-1, +1, -1, -1, -1, -1, +1, +1)); pcnts.push(3);
+            patterns.push(Mem8i(-1, +1, +1, -1, -1, -1, -1, +1)); pcnts.push(3);
+            patterns.push(Mem8i(-1, +1, +1, -1, -1, +1, +1, -1)); pcnts.push(4);
+            patterns.push(Mem8i(-1, +1, -1, -1, +1, +1, +1, -1)); pcnts.push(4);
         }
 
         Rect vrect = (prect == NULL) ? getRect3(voxel.dsize) : andRect(getRect3(voxel.dsize), *prect);
@@ -251,17 +245,20 @@ namespace sp {
 
         Mem3<Mem1<Mesh3> > map(mrect.dsize);
 
+        Mem1<char> dpids;
+
         for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
             for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
                 for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
 
+                    Mem1<Mesh3> &ms = map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]);
+
+
                     // pattern id
-                    int pid = -1;
+                    int pid = 0;
                     
                     Vec3 p[8];
                     char v[8];
-
-                    int reverse = 0;
 
                     {
                         Mem3<char> vmap(2, 2, 2);
@@ -294,121 +291,105 @@ namespace sp {
 
                                     score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
                                 }
-                                if ((i == 7 || i == 13) && score < 0) continue;
+                                if ((i == 7 || i == 13) && score > 0) continue;
 
                                 if (abs(score) == 8) {
-                                    pid = i;
-                                    reverse = sign(score);
+                                    pid = i * sign(score);
                                     goto _match;
                                 }
                             }
                         }
 
                     _match:;
+                        if (pid == 0) continue;
                     }
 
-                    if (pid < 1) continue;
-
-                    Mem1<Mesh3> tmps;
-
-                    auto m = [&](const int i, const int j)-> Vec3 {
+                    auto f = [&](const int i, const int j)-> Vec3 {
                         return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
                     };
+                    auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
+                        return (pid > 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                    };
 
-                    switch (pid) {
+                    switch (abs(pid)) {
                     default: 
                         break;
                     case 1:
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
+                        ms.push(h(f(6, 2), f(6, 7), f(6, 4)));
                         break;
                     case 2:
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(7, 5)));
-                        tmps.push(getMesh(m(7, 3), m(6, 2), m(7, 5)));
+                        ms.push(h(f(6, 2), f(7, 3), f(7, 5)));
+                        ms.push(h(f(6, 2), f(7, 5), f(6, 4)));
                         break;
                     case 3:
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
-                        tmps.push(getMesh(m(3, 1), m(3, 2), m(3, 7)));
+                        ms.push(h(f(3, 1), f(3, 7), f(3, 2)));
+                        ms.push(h(f(6, 2), f(6, 7), f(6, 4)));
                         break;
                     case 4:
-                        tmps.push(getMesh(m(4, 0), m(5, 1), m(7, 3)));
-                        tmps.push(getMesh(m(4, 0), m(7, 3), m(4, 6)));
-                        tmps.push(getMesh(m(7, 3), m(7, 6), m(4, 6)));
+                        ms.push(h(f(4, 0), f(7, 3), f(5, 1)));
+                        ms.push(h(f(4, 0), f(4, 6), f(7, 3)));
+                        ms.push(h(f(4, 6), f(7, 6), f(7, 3)));
                         break;
                     case 5:
-                        tmps.push(getMesh(m(4, 0), m(5, 1), m(6, 2)));
-                        tmps.push(getMesh(m(5, 1), m(7, 3), m(6, 2)));
+                        ms.push(h(f(4, 0), f(6, 2), f(5, 1)));
+                        ms.push(h(f(5, 1), f(6, 2), f(7, 3)));
                         break;
                     case 6:
-                        tmps.push(getMesh(m(2, 0), m(2, 6), m(2, 3)));
-                        tmps.push(getMesh(m(4, 0), m(5, 1), m(7, 3)));
-                        tmps.push(getMesh(m(4, 0), m(7, 3), m(4, 6)));
-                        tmps.push(getMesh(m(7, 3), m(7, 6), m(4, 6)));
+                        ms.push(h(f(2, 0), f(2, 3), f(2, 6)));
+                        ms.push(h(f(4, 0), f(7, 3), f(5, 1)));
+                        ms.push(h(f(4, 0), f(4, 6), f(7, 3)));
+                        ms.push(h(f(4, 6), f(7, 6), f(7, 3)));
                         break;
                     case 7:
-                        tmps.push(getMesh(m(0, 1), m(0, 4), m(0, 2)));
-                        tmps.push(getMesh(m(3, 1), m(3, 2), m(3, 7)));
-                        tmps.push(getMesh(m(5, 1), m(5, 7), m(5, 4)));
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
+                        ms.push(h(f(0, 1), f(0, 2), f(0, 4)));
+                        ms.push(h(f(3, 1), f(3, 7), f(3, 2)));
+                        ms.push(h(f(5, 1), f(5, 4), f(5, 7)));
+                        ms.push(h(f(6, 2), f(6, 7), f(6, 4)));
                         break;
                     case 8:
-                        tmps.push(getMesh(m(0, 1), m(6, 2), m(0, 2)));
-                        tmps.push(getMesh(m(0, 1), m(6, 7), m(6, 2)));
-                        tmps.push(getMesh(m(0, 1), m(5, 1), m(6, 7)));
-                        tmps.push(getMesh(m(5, 1), m(5, 7), m(6, 7)));
+                        ms.push(h(f(0, 1), f(0, 2), f(6, 2)));
+                        ms.push(h(f(0, 1), f(6, 2), f(6, 7)));
+                        ms.push(h(f(0, 1), f(6, 7), f(5, 1)));
+                        ms.push(h(f(5, 1), f(6, 7), f(5, 7)));
                         break;
                     case 9:
-                        tmps.push(getMesh(m(0, 1), m(5, 1), m(0, 2)));
-                        tmps.push(getMesh(m(5, 1), m(6, 7), m(0, 2)));
-                        tmps.push(getMesh(m(0, 2), m(6, 7), m(4, 6)));
-                        tmps.push(getMesh(m(5, 1), m(7, 3), m(7, 6)));
+                        ms.push(h(f(0, 1), f(0, 2), f(5, 1)));
+                        ms.push(h(f(0, 2), f(6, 7), f(5, 1)));
+                        ms.push(h(f(0, 2), f(4, 6), f(7, 6)));
+                        ms.push(h(f(5, 1), f(7, 6), f(7, 3)));
                         break;
                     case 10:
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(6, 7)));
-                        tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
+                        ms.push(h(f(1, 0), f(1, 5), f(1, 3)));
+                        ms.push(h(f(6, 2), f(6, 7), f(6, 4)));
                         break;
                     case 11:
-                        tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
-                        tmps.push(getMesh(m(6, 2), m(6, 4), m(7, 5)));
-                        tmps.push(getMesh(m(7, 3), m(6, 2), m(7, 5)));
+                        ms.push(h(f(1, 0), f(1, 5), f(1, 3)));
+                        ms.push(h(f(6, 2), f(7, 5), f(6, 4)));
+                        ms.push(h(f(7, 3), f(7, 5), f(6, 2)));
                         break;
                     case 12:
-                        tmps.push(getMesh(m(1, 0), m(1, 3), m(1, 5)));
-                        tmps.push(getMesh(m(2, 0), m(2, 6), m(2, 3)));
-                        tmps.push(getMesh(m(7, 3), m(7, 6), m(7, 5)));
+                        ms.push(h(f(1, 0), f(1, 5), f(1, 3)));
+                        ms.push(h(f(2, 0), f(2, 3), f(2, 6)));
+                        ms.push(h(f(7, 3), f(7, 5), f(7, 6)));
                         break;
                     case 13:
-                        tmps.push(getMesh(m(1, 0), m(1, 3), m(5, 7)));
-                        tmps.push(getMesh(m(1, 0), m(5, 7), m(5, 4)));
-                        tmps.push(getMesh(m(2, 0), m(6, 7), m(2, 3)));
-                        tmps.push(getMesh(m(2, 0), m(6, 4), m(6, 7)));
+                        ms.push(h(f(1, 0), f(5, 7), f(1, 3)));
+                        ms.push(h(f(1, 0), f(5, 4), f(5, 7)));
+                        ms.push(h(f(2, 0), f(2, 3), f(6, 7)));
+                        ms.push(h(f(2, 0), f(6, 7), f(6, 4)));
                         break;
                     case 14:
-                        tmps.push(getMesh(m(1, 0), m(1, 3), m(4, 0)));
-                        tmps.push(getMesh(m(1, 3), m(6, 7), m(4, 0)));
-                        tmps.push(getMesh(m(4, 0), m(6, 7), m(6, 2)));
-                        tmps.push(getMesh(m(5, 7), m(6, 7), m(1, 3)));
+                        ms.push(h(f(1, 0), f(4, 0), f(1, 3)));
+                        ms.push(h(f(1, 3), f(4, 0), f(6, 7)));
+                        ms.push(h(f(4, 0), f(6, 2), f(6, 7)));
+                        ms.push(h(f(5, 7), f(1, 3), f(6, 7)));
                         break;
                     }
 
-                    if (reverse < 0) {
-                        for (int i = 0; i < tmps.size(); i++) {
-                            swap(tmps[i].pos[1], tmps[i].pos[2]);
-                        }
-                    }
-
-                    {
-                        for (int i = 0; i < tmps.size(); i++) {
-                            if (normVec(crsVec(tmps[i].pos[1] - tmps[i].pos[0], tmps[i].pos[2] - tmps[i].pos[0])) < SP_SMALL) {
-                                tmps.del(i--);
-                            }
-                        }
-                    }
-
-
                     if (inRect3(brect, x, y, z) == true) {
-                        meshes.push(tmps);
+                        meshes.push(ms);
+                        dpids.push(pid);
                     }
-                    map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]).push(tmps);
                 }
             }
         }
@@ -418,48 +399,38 @@ namespace sp {
             for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
                 for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
                     for (int n = 0; n < 3; n++) {
+                        const int mx = x - mrect.dbase[0];
+                        const int my = y - mrect.dbase[1];
+                        const int mz = z - mrect.dbase[2];
+                        const int nx = mx + ((n == 0) ? 1 : 0);
+                        const int ny = my + ((n == 1) ? 1 : 0);
+                        const int nz = mz + ((n == 2) ? 1 : 0);
+                        if (nx >= voxel.dsize[0] || ny >= voxel.dsize[1] || nz >= voxel.dsize[2]) continue;
 
-                        if (n == 0 && x + 1 >= voxel.dsize[0]) continue;
-                        if (n == 1 && y + 1 >= voxel.dsize[1]) continue;
-                        if (n == 2 && z + 1 >= voxel.dsize[2]) continue;
-
-                        Mem1<Mesh3> tmps;
-                        tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2]));
-
-                        if (n == 0) tmps.push(map(x - mrect.dbase[0] + 1, y - mrect.dbase[1], z - mrect.dbase[2]));
-                        if (n == 1) tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1] + 1, z - mrect.dbase[2]));
-                        if (n == 2) tmps.push(map(x - mrect.dbase[0], y - mrect.dbase[1], z - mrect.dbase[2] + 1));
-
-                        if (tmps.size() < 4) continue;
+                        const Mem1<Mesh3> &m0 = map(mx, my, mz);
+                        const Mem1<Mesh3> &m1 = map(nx, ny, nz);
+                        
+                        if (m0.size() < 2 || m1.size() < 2) continue;
 
                         Mem1<Vec3> vecs;
-                        for (int i = 0; i < tmps.size(); i++) {
+                        for (int i = 0; i < m0.size() + m1.size(); i++) {
+                            const Mesh3 &mesh = (i < m0.size()) ? m0[i] : m1[i - m0.size()];
+
                             bool check = false;
                             for (int j = 0; j < 3 && check == false; j++) {
-                                const Vec3 &a = tmps[i].pos[(j + 0) % 3];
-                                const Vec3 &b = tmps[i].pos[(j + 1) % 3];
+                                const Vec3 &a = mesh.pos[(j + 0) % 3];
+                                const Vec3 &b = mesh.pos[(j + 1) % 3];
                                 const Vec3 v = b - a;
-                                if (n == 0 && cmpVal(a.x, x + 1.0) == true && cmpVal(v.x, 0.0) == true) {
+                                if ((n == 0 && cmpVal(a.x, x + 1.0) == true && cmpVal(v.x, 0.0) == true) ||
+                                    (n == 1 && cmpVal(a.y, y + 1.0) == true && cmpVal(v.y, 0.0) == true) ||
+                                    (n == 2 && cmpVal(a.z, z + 1.0) == true && cmpVal(v.z, 0.0) == true)) {
                                     check = true;
                                     vecs.push(a);
                                     vecs.push(b);
                                 }
-                                if (n == 1 && cmpVal(a.y, y + 1.0) == true && cmpVal(v.y, 0.0) == true) {
-                                    check = true;
-                                    vecs.push(a);
-                                    vecs.push(b);
-                                }
-                                if (n == 2 && cmpVal(a.z, z + 1.0) == true && cmpVal(v.z, 0.0) == true) {
-                                    check = true;
-                                    vecs.push(a);
-                                    vecs.push(b);
-                                }
-                            }
-                            if (check == false) {
-                                tmps.del(i--);
                             }
                         }
-                        if (tmps.size() != 4) continue;
+                        if (vecs.size() != 8) continue;
 
                         if (cmpVec(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
                         if (cmpVec(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
@@ -468,7 +439,158 @@ namespace sp {
 
                         meshes.push(getMesh(vecs[0], vecs[3], vecs[1]));
                         meshes.push(getMesh(vecs[1], vecs[3], vecs[2]));
+                        dpids.push(15);
                     }
+                }
+            }
+        }
+
+#if 0
+        {
+            Mem1<Mesh3> tmps;
+            int cnt = 0;
+            for (int i = 0; i < dpids.size(); i++) {
+                const int pid = dpids[i];
+                auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
+                    return (pid < 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                };
+                auto div3 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c){
+                    const Vec3 s = (a + b + c) / 3.0;
+                    const Vec3 ab = (a + b) / 2.0;
+                    const Vec3 bc = (b + c) / 2.0;
+                    const Vec3 ca = (c + a) / 2.0;
+                    tmps.push(h(a, s, ab));
+                    tmps.push(h(a, ca, s));
+                    tmps.push(h(b, s, bc));
+                    tmps.push(h(b, ab, s));
+                    tmps.push(h(c, s, ca));
+                    tmps.push(h(c, bc, s));
+                };
+                auto div4 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d) {
+                    const Vec3 s = (a + b + c + d) / 4.0;
+                    const Vec3 ab = (a + b) / 2.0;
+                    const Vec3 bc = (b + c) / 2.0;
+                    const Vec3 cd = (c + d) / 2.0;
+                    const Vec3 da = (d + a) / 2.0;
+                    tmps.push(h(a, s, ab));
+                    tmps.push(h(a, da, s));
+                    tmps.push(h(b, s, bc));
+                    tmps.push(h(b, ab, s));
+                    tmps.push(h(c, s, cd));
+                    tmps.push(h(c, bc, s));
+                    tmps.push(h(d, s, da));
+                    tmps.push(h(d, cd, s));
+                };
+                auto div6 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const Vec3 &e, const Vec3 &f) {
+                    const Vec3 s = (a + b + c + d + e + f) / 6.0;
+                    const Vec3 ab = (a + b) / 2.0;
+                    const Vec3 bc = (b + c) / 2.0;
+                    const Vec3 cd = (c + d) / 2.0;
+                    const Vec3 de = (d + e) / 2.0;
+                    const Vec3 ef = (e + f) / 2.0;
+                    const Vec3 fa = (f + a) / 2.0;
+                    tmps.push(h(a, s, ab));
+                    tmps.push(h(a, fa, s));
+                    tmps.push(h(b, s, bc));
+                    tmps.push(h(b, ab, s));
+                    tmps.push(h(c, s, cd));
+                    tmps.push(h(c, bc, s));
+                    tmps.push(h(d, s, de));
+                    tmps.push(h(d, cd, s));
+                    tmps.push(h(e, s, ef));
+                    tmps.push(h(e, de, s));
+                    tmps.push(h(f, s, fa));
+                    tmps.push(h(f, ef, s));
+                };
+                const int i1 = (pid > 0) ? 1 : 2;
+                const int i2 = (pid > 0) ? 2 : 1;
+                switch (abs(pid)) {
+                case 1:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    cnt += 1;
+                    break;
+                case 2:
+                    div4(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2], meshes[cnt + 1].pos[i2]);
+                    cnt += 2;
+                    break;
+                case 3:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
+                    cnt += 2;
+                    break;
+                case 4:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div4(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 2].pos[i1], meshes[cnt + 1].pos[i2]);
+                    cnt += 3;
+                    break;
+                case 5:
+                    div4(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 0].pos[i2]);
+                    cnt += 2;
+                    break;
+                case 6:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
+                    div4(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 2].pos[i2], meshes[cnt + 3].pos[1]);
+                    cnt += 4;
+                    break;
+                case 7:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
+                    div3(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 2].pos[i2]);
+                    div3(meshes[cnt + 3].pos[0], meshes[cnt + 3].pos[i1], meshes[cnt + 3].pos[i2]);
+                    cnt += 4;
+                    break;
+                case 8:
+                    div6(
+                        meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2],
+                        meshes[cnt + 1].pos[i2], meshes[cnt + 3].pos[i2], meshes[cnt + 3].pos[0]);
+                    cnt += 4;
+                    break;
+                case 9:
+                    /*                   div6(
+                    meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2],
+                    meshes[cnt + 1].pos[2], meshes[cnt + 3].pos[i1], meshes[cnt + 1].pos[0]);*/
+                    cnt += 4;
+                    break;
+                case 10:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
+                    cnt += 2;
+                    break;
+                case 11:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div4(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 2].pos[2]);
+                    cnt += 3;
+                    break;
+                case 12:
+                    div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
+                    div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
+                    div3(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 2].pos[i2]);
+                    cnt += 3;
+                    break;
+                case 13:
+                    cnt += 4;
+                    break;
+                case 14:
+                    cnt += 4;
+                    break;
+                case 15:
+                    cnt += 2;
+                    break;
+                }
+            }
+
+            meshes = tmps;
+        }
+#endif
+        {
+            Mem1<Mesh3> tmps = meshes;
+            meshes.clear();
+            meshes.reserve(tmps.size());
+            for (int i = 0; i < tmps.size(); i++) {
+                const Mesh3 &m = tmps[i];
+                if (normVec(crsVec(m.pos[1] - m.pos[0], m.pos[2] - m.pos[0])) > SP_SMALL) {
+                    meshes.push(m);
                 }
             }
         }

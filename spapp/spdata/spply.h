@@ -263,6 +263,35 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Mesh3> &meshes, const Mem1<Col3> &cols) {
+        File file;
+        if (file.open(path, "w") == false) return false;
+
+        file.printf("ply\n");
+        file.printf("format ascii 1.0\n");
+        file.printf("element vertex %d\n", meshes.size() * 3);
+        file.printf("property float x\n");
+        file.printf("property float y\n");
+        file.printf("property float z\n");
+        file.printf("property uchar red\n");
+        file.printf("property uchar green\n");
+        file.printf("property uchar blue\n");
+        file.printf("element face %d\n", meshes.size());
+        file.printf("property list uchar int vertex_indices\n");
+        file.printf("end_header\n");
+
+        for (int i = 0; i < meshes.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                file.printf("%lf %lf %lf ", meshes[i].pos[j].x, meshes[i].pos[j].y, meshes[i].pos[j].z);
+                file.printf("%d %d %d\n", cols[i * 3 + j].r, cols[i * 3 + j].g, cols[i * 3 + j].b);
+            }
+        }
+        for (int i = 0; i < meshes.size(); i++) {
+            file.printf("3 %d %d %d\n", 3 * i + 0, 3 * i + 1, 3 * i + 2);
+        }
+        return true;
+    }
+
     SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &pnts){
         File file;
         if (file.open(path, "w") == false) return false;
@@ -276,8 +305,7 @@ namespace sp{
         file.printf("end_header\n");
 
         for (int i = 0; i < pnts.size(); i++){
-            file.printf("%lf %lf %lf ", pnts[i].x, pnts[i].y, pnts[i].z);
-            file.printf("\n");
+            file.printf("%lf %lf %lf\n", pnts[i].x, pnts[i].y, pnts[i].z);
         }
 
         return true;
@@ -301,8 +329,7 @@ namespace sp{
 
         for (int i = 0; i < pnts.size(); i++){
             file.printf("%lf %lf %lf ", pnts[i].x, pnts[i].y, pnts[i].z);
-            file.printf("%d %d %d ", cols[i].r, cols[i].g, cols[i].b);
-            file.printf("\n");
+            file.printf("%d %d %d\n", cols[i].r, cols[i].g, cols[i].b);
         }
 
         return true;
