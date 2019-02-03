@@ -72,7 +72,7 @@ namespace sp {
 
  
         void zero() {
-            setElm(vmap, SP_VOXEL_NULL);
+            setElm(vmap, -SP_VOXEL_VMAX);
             wmap.zero();
         }
 
@@ -364,8 +364,8 @@ namespace sp {
                         break;
                     case 11:
                         ms.push(h(f(1, 0), f(1, 5), f(1, 3)));
+                        ms.push(h(f(6, 2), f(7, 3), f(7, 5)));
                         ms.push(h(f(6, 2), f(7, 5), f(6, 4)));
-                        ms.push(h(f(7, 3), f(7, 5), f(6, 2)));
                         break;
                     case 12:
                         ms.push(h(f(1, 0), f(1, 5), f(1, 3)));
@@ -445,7 +445,7 @@ namespace sp {
             }
         }
 
-#if 0
+#if 1
         {
             Mem1<Mesh3> tmps;
             int cnt = 0;
@@ -459,12 +459,16 @@ namespace sp {
                     const Vec3 ab = (a + b) / 2.0;
                     const Vec3 bc = (b + c) / 2.0;
                     const Vec3 ca = (c + a) / 2.0;
-                    tmps.push(h(a, s, ab));
-                    tmps.push(h(a, ca, s));
-                    tmps.push(h(b, s, bc));
-                    tmps.push(h(b, ab, s));
-                    tmps.push(h(c, s, ca));
-                    tmps.push(h(c, bc, s));
+                    //tmps.push(h(a, s, ab));
+                    //tmps.push(h(a, ca, s));
+                    //tmps.push(h(b, s, bc));
+                    //tmps.push(h(b, ab, s));
+                    //tmps.push(h(c, s, ca));
+                    //tmps.push(h(c, bc, s));
+                    tmps.push(h(a, ca, ab));
+                    tmps.push(h(b, ab, bc));
+                    tmps.push(h(c, bc, ca));
+                    tmps.push(h(ab, ca, bc));
                 };
                 auto div4 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d) {
                     const Vec3 s = (a + b + c + d) / 4.0;
@@ -472,14 +476,22 @@ namespace sp {
                     const Vec3 bc = (b + c) / 2.0;
                     const Vec3 cd = (c + d) / 2.0;
                     const Vec3 da = (d + a) / 2.0;
-                    tmps.push(h(a, s, ab));
-                    tmps.push(h(a, da, s));
-                    tmps.push(h(b, s, bc));
-                    tmps.push(h(b, ab, s));
-                    tmps.push(h(c, s, cd));
-                    tmps.push(h(c, bc, s));
-                    tmps.push(h(d, s, da));
-                    tmps.push(h(d, cd, s));
+                    //tmps.push(h(a, s, ab));
+                    //tmps.push(h(a, da, s));
+                    //tmps.push(h(b, s, bc));
+                    //tmps.push(h(b, ab, s));
+                    //tmps.push(h(c, s, cd));
+                    //tmps.push(h(c, bc, s));
+                    //tmps.push(h(d, s, da));
+                    //tmps.push(h(d, cd, s));
+                    tmps.push(h(a, da, ab));
+                    tmps.push(h(s, ab, da));
+                    tmps.push(h(b, ab, bc));
+                    tmps.push(h(s, bc, ab));
+                    tmps.push(h(c, bc, cd));
+                    tmps.push(h(s, cd, bc));
+                    tmps.push(h(d, cd, da));
+                    tmps.push(h(s, da, cd));
                 };
                 auto div6 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const Vec3 &e, const Vec3 &f) {
                     const Vec3 s = (a + b + c + d + e + f) / 6.0;
@@ -530,7 +542,7 @@ namespace sp {
                 case 6:
                     div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
                     div3(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2]);
-                    div4(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 2].pos[i2], meshes[cnt + 3].pos[1]);
+                    div4(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 3].pos[i1], meshes[cnt + 2].pos[i2]);
                     cnt += 4;
                     break;
                 case 7:
@@ -547,9 +559,9 @@ namespace sp {
                     cnt += 4;
                     break;
                 case 9:
-                    /*                   div6(
-                    meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2],
-                    meshes[cnt + 1].pos[2], meshes[cnt + 3].pos[i1], meshes[cnt + 1].pos[0]);*/
+                    div6(
+                        meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 2].pos[i1],
+                        meshes[cnt + 2].pos[i2], meshes[cnt + 3].pos[i2], meshes[cnt + 3].pos[0]);
                     cnt += 4;
                     break;
                 case 10:
@@ -559,7 +571,7 @@ namespace sp {
                     break;
                 case 11:
                     div3(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 0].pos[i2]);
-                    div4(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 2].pos[2]);
+                    div4(meshes[cnt + 1].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 2].pos[i2]);
                     cnt += 3;
                     break;
                 case 12:
@@ -569,12 +581,18 @@ namespace sp {
                     cnt += 3;
                     break;
                 case 13:
+                    div4(meshes[cnt + 0].pos[0], meshes[cnt + 1].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 0].pos[i2]);
+                    div4(meshes[cnt + 2].pos[0], meshes[cnt + 2].pos[i1], meshes[cnt + 2].pos[i2], meshes[cnt + 3].pos[i2]);
                     cnt += 4;
                     break;
                 case 14:
+                    div6(
+                        meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 2].pos[i1],
+                        meshes[cnt + 2].pos[i2], meshes[cnt + 3].pos[0], meshes[cnt + 3].pos[i1]);
                     cnt += 4;
                     break;
                 case 15:
+                    div4(meshes[cnt + 0].pos[0], meshes[cnt + 0].pos[i1], meshes[cnt + 1].pos[i2], meshes[cnt + 0].pos[i2]);
                     cnt += 2;
                     break;
                 }
