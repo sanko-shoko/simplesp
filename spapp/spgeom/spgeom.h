@@ -277,10 +277,9 @@ namespace sp {
 
             int cnt = 0;
             for (int i = 0; i < npxs0.size(); i++) {
-                if (calcPnt3d(pnts[i], test, npxs0[i], zeroPose(), npxs1[i]) == false) continue;
+                if (calcPnt3d(pnts[i], zeroPose(), npxs0[i], test, npxs1[i]) == false) continue;
                 cnt++;
             }
-
             if (cnt > maxv) {
                 maxv = cnt;
                 pose = test;
@@ -393,13 +392,13 @@ namespace sp {
 
             for (int i = 0; i < num; i++) {
                 Vec3 obj;
-                if (calcPnt3d(obj, pose, cam0, pixs0[i], zeroPose(), cam1, pixs1[i]) == false) continue;
+                if (calcPnt3d(obj, zeroPose(), cam0, pixs0[i], pose, cam1, pixs1[i]) == false) continue;
               
-                pixs.push(pixs0[i]);
+                pixs.push(pixs1[i]);
                 objs.push(obj);
             }
 
-            if (refinePose(pose, cam0, pixs, objs, 1) == false) return false;
+            if (refinePose(pose, cam1, pixs, objs, 1) == false) return false;
             
             const double d = normVec(pose.trn);
             if (d < SP_SMALL) return false;
@@ -924,7 +923,6 @@ namespace sp {
 
         Mat E;
         if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
-
         const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
 
         const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth * 2);
@@ -934,7 +932,6 @@ namespace sp {
         const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth * 2);
         const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth * 2);
         if (refinePose(pose, cam0, dpixs0, cam1, dpixs1) == false) return false;
-
         return true;
     }
 
@@ -951,7 +948,7 @@ namespace sp {
         Mem1<Vec3> pnts;
         {
             Mem1<bool> mask;
-            if (calcPnt3d(pnts, mask, pose, cam0, pixs0, zeroPose(), cam1, pixs1) == false) return 0.0;
+            if (calcPnt3d(pnts, mask, zeroPose(), cam0, pixs0, pose, cam1, pixs1) == false) return 0.0;
             pnts = filter(pnts, mask);
         }
 

@@ -318,7 +318,7 @@ namespace sp{
 
             {
                 Pose delta = zeroPose();
-                calcPoseRANSAC(delta, view.cam, pixs1, view.cam, pixs0);
+                calcPoseRANSAC(delta, view.cam, pixs0, view.cam, pixs1);
                 pose = delta * view.pose;
             }
 

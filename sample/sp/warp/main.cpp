@@ -91,10 +91,10 @@ int main(){
         {
             Pose pose;
             Mat hom;
-            if (calcPoseRANSAC(pose, cam, pixs1, cam, pixs0) == true) {
+            if (calcPoseRANSAC(pose, cam, pixs0, cam, pixs1) == true) {
                 Mem1<Vec3> pnts;
                 Mem1<bool> mask;
-                calcPnt3d(pnts, mask, pose, cam, pixs0, zeroPose(), cam, pixs1);
+                calcPnt3d(pnts, mask, zeroPose(), cam, pixs0, pose, cam, pixs1);
                 pnts = filter(pnts, mask);
 
                 Mem1<double> zlist;
