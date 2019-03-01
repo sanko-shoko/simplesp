@@ -43,10 +43,10 @@ private:
         m_img.resize(m_cam.dsize);
         m_img.zero();
 
-        if (loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply", m_model) == false) {
-
+        m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
+        if (m_model.size() == 0) {
             // if could not find stanford bunny, load dummy model
-            loadGeodesicDorm(m_model, 100.0, 1);
+            m_model = loadGeodesicDorm(100.0, 1);
         }
 
         m_pnts = getModelPoint(m_model);

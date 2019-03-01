@@ -651,39 +651,28 @@ namespace sp{
     template<typename TYPE, int SIZE> class MemA {
    
     public:
-        TYPE arr[SIZE];
-
-        TYPE *ptr;
-
-    protected:
-
-        void init() {
-            ptr = arr;
-        }
+        TYPE ptr[SIZE];
 
     public:
         MemA() {
-            init();
         }
 
         MemA(const MemA<TYPE, SIZE> &mem) {
-            init();
-            set(mem.arr);
+            set(mem.ptr);
         }
 
         MemA(const TYPE data0, ...) {
-            init();
             va_list arg;
             va_start(arg, data0);
-            arr[0] = data0;
+            ptr[0] = data0;
             for (int i = 1; i < SIZE; i++) {
-                arr[i] = va_arg(arg, TYPE);
+                ptr[i] = va_arg(arg, TYPE);
             }
             va_end(arg);
         }
 
         MemA& operator = (const MemA<TYPE, SIZE> &mem) {
-            set(mem.arr);
+            set(mem.ptr);
             return *this;
         }
 
@@ -692,10 +681,10 @@ namespace sp{
         //--------------------------------------------------------------------------------
         
         TYPE& operator [] (const int i) {
-            return arr[i];
+            return ptr[i];
         }
         const TYPE& operator [] (const int i) const {
-            return arr[i];
+            return ptr[i];
         }
 
         //--------------------------------------------------------------------------------
@@ -705,16 +694,16 @@ namespace sp{
         void set(const TYPE data0, ...) {
             va_list arg;
             va_start(arg, data0);
-            arr[0] = data0;
+            ptr[0] = data0;
             for (int i = 1; i < SIZE; i++) {
-                arr[i] = va_arg(arg, TYPE);
+                ptr[i] = va_arg(arg, TYPE);
             }
             va_end(arg);
         }
 
         void set(const TYPE *ptr) {
             for (int i = 0; i < SIZE; i++) {
-                arr[i] = ptr[i];
+                this->ptr[i] = ptr[i];
             }
         }
 

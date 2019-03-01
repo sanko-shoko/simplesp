@@ -22,7 +22,7 @@ namespace sp{
 
         const double div = sqrt(rot.qx * rot.qx + rot.qy * rot.qy + rot.qz * rot.qz + rot.qw * rot.qw);
         if (div > SP_SMALL){
-            const double s = sign(rot.qw);
+            const double s = (sign(rot.qw) >= 0.0) ? +1 : -1;
 
             dst.qx = rot.qx / div * s;
             dst.qy = rot.qy / div * s;

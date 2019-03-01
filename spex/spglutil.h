@@ -249,6 +249,48 @@ namespace sp{
         glLoadIdentity();
     }
 
+    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const double z, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        glEnable(GL_DEPTH_TEST);
+
+        Mat mat = zeroMat(4, 4);
+        {
+            Vec2 cDispPos;
+            cDispPos.x = viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale;
+            cDispPos.y = viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale;
+
+            const double nx = z / cam.fx;
+            const double ny = z / cam.fy;
+
+            const double sw = (viewport[2] - 1) / viewScale;
+            const double sh = (viewport[3] - 1) / viewScale;
+
+            const double l = (-cDispPos.x / viewScale) * nx;
+            const double r = (-cDispPos.x / viewScale + sw) * nx;
+            const double t = (-cDispPos.y / viewScale) * ny;
+            const double b = (-cDispPos.y / viewScale + sh) * ny;
+            const double n = nearPlane;
+            const double f = farPlane;
+
+            mat(0, 0) = 2 / (r - l);
+            mat(1, 1) = 2 / (t - b);
+            mat(2, 2) = 2 / (f - n);
+
+            mat(0, 3) = -(r + l) / (r - l);
+            mat(1, 3) = -(t + b) / (t - b);
+            mat(2, 3) = -(f + n) / (f - n);
+
+            mat(3, 3) = 1.0;
+        }
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrix(mat);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
 
     //--------------------------------------------------------------------------------
     // util

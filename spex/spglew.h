@@ -75,13 +75,15 @@ namespace sp{
                 glGenTextures(1, &m_tex[0]);
                 glBindTexture(GL_TEXTURE_2D, m_tex[0]);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+                glPixelStorei(GL_PACK_ALIGNMENT, 1);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 
                 glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_tex[0], 0);
             }
@@ -137,11 +139,15 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
 
-            Mem2<Col3> tmp(dsize);
-            glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_RGB, GL_UNSIGNED_BYTE, tmp.ptr);
+            Mem2<Col4> tmp(dsize);
+            glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_RGBA, GL_UNSIGNED_BYTE, tmp.ptr);
 
+            Mem2<Col4> col(dsize);
             for (int v = 0; v < tmp.dsize[1]; v++) {
-                memcpy(&img(0, v), &tmp(0, tmp.dsize[1] - 1 - v), tmp.dsize[0] * 3);
+                memcpy(&col(0, v), &tmp(0, tmp.dsize[1] - 1 - v), tmp.dsize[0] * 4);
+            }
+            for (int i = 0; i < col.size(); i++) {
+                img[i] = col[i];
             }
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -149,6 +155,7 @@ namespace sp{
 
         void readDepth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             depth.resize(dsize);
+            depth.zero();
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
@@ -170,6 +177,30 @@ namespace sp{
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
+
+        void readDepthOrth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+            depth.resize(dsize);
+            depth.zero();
+
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
+            glFlush();
+
+            Mem2<float> tmp(dsize);
+            glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
+
+            for (int v = 0; v < tmp.dsize[1]; v++) {
+                for (int u = 0; u < tmp.dsize[0]; u++) {
+                    const float t = tmp(u, tmp.dsize[1] - 1 - v);
+                    const double p2 = 2.0 / (farPlane - nearPlane);
+                    const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+                    const double d = (t * 2 - 1 - p3) / p2;
+                    depth(u, v) = (d > nearPlane && d < farPlane) ? d : 0.0;
+                }
+            }
+
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
     };
 
     class Shader {
