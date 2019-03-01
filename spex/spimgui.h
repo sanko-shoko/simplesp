@@ -36,13 +36,26 @@ namespace ImGui {
     using namespace sp;
 
     SP_CPUFUNC ImVec4 getImVec4(const Col3 &col, const Byte a = SP_BYTEMAX) {
-        const ImVec4 imvec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
-        return imvec;
+        const ImVec4 vec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
+        return vec;
     }
 
     SP_CPUFUNC ImVec4 getImVec4(const Col4 &col) {
-        const ImVec4 imvec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX);
-        return imvec;
+        const ImVec4 vec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX);
+        return vec;
+    }
+
+    SP_CPUFUNC bool operator == (ImVec4 &vec0, ImVec4 &vec1) {
+        bool ret = true;
+        ret &= (vec0.x == vec1.x);
+        ret &= (vec0.y == vec1.y);
+        ret &= (vec0.z == vec1.z);
+        ret &= (vec0.w == vec1.w);
+        return ret;
+    }
+
+    SP_CPUFUNC bool operator != (ImVec4 &vec0, ImVec4 &vec1) {
+        return !(vec0 == vec1);
     }
 
     SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {

@@ -155,6 +155,7 @@ namespace sp{
 
         void readDepth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             depth.resize(dsize);
+            depth.zero();
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
@@ -176,6 +177,30 @@ namespace sp{
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
+
+        void readDepthOrth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+            depth.resize(dsize);
+            depth.zero();
+
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
+            glFlush();
+
+            Mem2<float> tmp(dsize);
+            glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
+
+            for (int v = 0; v < tmp.dsize[1]; v++) {
+                for (int u = 0; u < tmp.dsize[0]; u++) {
+                    const float t = tmp(u, tmp.dsize[1] - 1 - v);
+                    const double p2 = 2.0 / (farPlane - nearPlane);
+                    const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+                    const double d = (t * 2 - 1 - p3) / p2;
+                    depth(u, v) = (d > nearPlane && d < farPlane) ? d : 0.0;
+                }
+            }
+
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
     };
 
     class Shader {

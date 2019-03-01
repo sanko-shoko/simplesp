@@ -249,7 +249,7 @@ namespace sp{
         glLoadIdentity();
     }
 
-    SP_CPUFUNC void glLoadViewOrth(const CamParam &cam, const double z, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const double z, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -261,9 +261,8 @@ namespace sp{
             cDispPos.x = viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale;
             cDispPos.y = viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale;
 
-            const double s = (cam.dsize[0] + cam.dsize[1]) * 0.5;
-            const double nx = (z * s / cam.fx) / s;
-            const double ny = (z * s / cam.fy) / s;
+            const double nx = z / cam.fx;
+            const double ny = z / cam.fy;
 
             const double sw = (viewport[2] - 1) / viewScale;
             const double sh = (viewport[3] - 1) / viewScale;
