@@ -114,9 +114,15 @@ namespace sp{
     SP_GENFUNC bool cmpVec(const Vec2 &vec0, const Vec2 &vec1, const double t = SP_SMALL){
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
     }
-
-    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL){
+    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL) {
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
+    }
+
+    SP_GENFUNC bool cmpCol(const Col3 &col0, const Col3 &col1) {
+        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
+    }
+    SP_GENFUNC bool cmpCol(const Col4 &col0, const Col4 &col1) {
+        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
     }
 
     SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const double t = SP_SMALL){

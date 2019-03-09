@@ -112,6 +112,14 @@ namespace sp{
         col0 = blendCol(col0, col1);
     }
 
+    SP_GENFUNC bool operator == (Col3 &col0, const Col3 &col1) {
+        return cmpCol(col0, col1);
+    }
+
+    SP_GENFUNC bool operator != (Col3 &col0, const Col3 &col1) {
+        return !cmpCol(col0, col1);
+    }
+
 
     //--------------------------------------------------------------------------------
     // color space

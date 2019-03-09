@@ -19,17 +19,17 @@ namespace sp{
         char buf[54];
         file.read(buf, 54);
 
-        int sizeW, sizeH;
-        memcpy(&sizeW, &buf[18], sizeof(int));
-        memcpy(&sizeH, &buf[22], sizeof(int));
-        sizeW = getLittleEndian(sizeW);
-        sizeH = getLittleEndian(sizeH);
+        int w, h;
+        memcpy(&w, &buf[18], sizeof(int));
+        memcpy(&h, &buf[22], sizeof(int));
+        w = getLittleEndian(w);
+        h = getLittleEndian(h);
 
         int bit;
         memcpy(&bit, &buf[28], sizeof(int));
         bit = getLittleEndian(bit);
 
-        const int dsize[2] = { sizeW, sizeH };
+        const int dsize[2] = { w, h };
         dst.resize(2, dsize);
 
         int ch = 0;
@@ -38,15 +38,16 @@ namespace sp{
         
         if (ch == 0) return false;
 
-        Mem1<Byte> line(sizeW * ch + (sizeW * ch) % 4);
-        for (int v = 0; v < sizeH; v++) {
+        const int lsize = (w * ch) % 4 == 0 ? (w * ch) : ((w * ch) / 4 + 1) * 4;
+        Mem1<Byte> line(lsize);
+        for (int v = 0; v < h; v++) {
             file.read(line.ptr, line.size());
-            for (int u = 0; u < sizeW; u++) {
+            for (int u = 0; u < w; u++) {
                 if (ch == 1) {
-                    acs2(dst, u, sizeH - 1 - v) = getCol(line[u], line[u], line[u]);
+                    acs2(dst, u, h - 1 - v) = getCol(line[u], line[u], line[u]);
                 }
                 if (ch == 3) {
-                    acs2(dst, u, sizeH - 1 - v) = getCol(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
+                    acs2(dst, u, h - 1 - v) = getCol(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
                 }
             }
         }
@@ -92,7 +93,8 @@ namespace sp{
 
         file.write(buf, 54);
 
-        Mem1<Byte> line(w * 3 + w % 4);
+        const int lsize = (w * 3) % 4 == 0 ? (w * 3) : ((w * 3) / 4 + 1) * 4;
+        Mem1<Byte> line(lsize);
         for (int v = 0; v < h; v++){
             line.zero();
             for (int u = 0; u < w; u++){
