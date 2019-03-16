@@ -1,5 +1,4 @@
-function(pch_setup h_file cpp_file)
-add_compile_options(/Yu\"${h_file}\")
-
-set_source_files_properties(${cpp_file} PROPERTIES COMPILE_FLAGS /Yc\"${h_file}\")
+function(pch_setup folder h_file cpp_file)
+    add_compile_options(/Yu\"${h_file}\")
+    set_source_files_properties(${folder}/${cpp_file} PROPERTIES COMPILE_FLAGS /Yc\"${h_file}\")
 endfunction()
