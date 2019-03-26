@@ -28,12 +28,12 @@
 
 // cpu function
 #ifndef SP_CPUFUNC
-#define SP_CPUFUNC inline
+#define SP_CPUFUNC static
 #endif
 
 // cpu/gpu function
 #ifndef SP_GENFUNC
-#define SP_GENFUNC inline
+#define SP_GENFUNC static
 #endif
 
 
