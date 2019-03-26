@@ -90,28 +90,36 @@ namespace sp{
     SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
         return mulCol(col, val);
     }
-
     SP_GENFUNC Col3 operator / (const Col3 &col, const double val) {
         return divCol(col, val);
     }
-
     SP_GENFUNC void operator *= (Col3 &col, const double val) {
         col = mulCol(col, val);
     }
-
     SP_GENFUNC void operator /= (Col3 &col, const double val) {
         col = divCol(col, val);
     }
 
-
     SP_GENFUNC Col3 operator + (const Col3 &col0, const Col3 &col1) {
         return blendCol(col0, col1);
     }
-
     SP_GENFUNC void operator += (Col3 &col0, const Col3 &col1) {
         col0 = blendCol(col0, col1);
     }
 
+    SP_GENFUNC bool operator == (const Col3 &col0, const Col3 &col1) {
+        return cmpCol(col0, col1);
+    }
+    SP_GENFUNC bool operator != (const Col3 &col0, const Col3 &col1) {
+        return !cmpCol(col0, col1);
+    }
+
+    SP_GENFUNC bool operator == (const Col4 &col0, const Col4 &col1) {
+        return cmpCol(col0, col1);
+    }
+    SP_GENFUNC bool operator != (const Col4 &col0, const Col4 &col1) {
+        return !cmpCol(col0, col1);
+    }
 
     //--------------------------------------------------------------------------------
     // color space

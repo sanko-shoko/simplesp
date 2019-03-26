@@ -65,17 +65,17 @@ namespace sp{
         jacob[1 * 12 + 11] = -vec0[1] * 1.0;
     }
 
-    // (vec0_3)^T * (M_3x3) * (vec1_3) = 0 -> (J_1x9) * (M_9) = 0
+    // (vec1_3)^T * (M_3x3) * (vec0_3) = 0 -> (J_1x9) * (M_9) = 0
     SP_GENFUNC void jacobMatType2(double *jacob, const double *vec0, const double *vec1) {
-        jacob[0] = vec1[0] * vec0[0];
-        jacob[1] = vec1[1] * vec0[0];
-        jacob[2] = vec1[2] * vec0[0];
-        jacob[3] = vec1[0] * vec0[1];
-        jacob[4] = vec1[1] * vec0[1];
-        jacob[5] = vec1[2] * vec0[1];
-        jacob[6] = vec1[0] * vec0[2];
-        jacob[7] = vec1[1] * vec0[2];
-        jacob[8] = vec1[2] * vec0[2];
+        jacob[0] = vec0[0] * vec1[0];
+        jacob[1] = vec0[1] * vec1[0];
+        jacob[2] = vec0[2] * vec1[0];
+        jacob[3] = vec0[0] * vec1[1];
+        jacob[4] = vec0[1] * vec1[1];
+        jacob[5] = vec0[2] * vec1[1];
+        jacob[6] = vec0[0] * vec1[2];
+        jacob[7] = vec0[1] * vec1[2];
+        jacob[8] = vec0[2] * vec1[2];
     }
 
     SP_GENFUNC void jacobHMat(double *jacob, const double *pix, const double *obj) {
@@ -188,12 +188,12 @@ namespace sp{
         const Vec3 n0 = getVec(vec0, 1.0);
         const Vec3 n1 = getVec(vec1, 1.0);
 
-        const Vec3 M0 = M * n1;
-        const Vec3 M1 = trnMat(M) * n0;
+        const Vec3 M0 = M * n0;
+        const Vec3 M1 = trnMat(M) * n1;
 
         // |a*x + b*y + c| / sqrt(a*a + b*b)
-        const double err0 = fabs(dotVec(n0, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
-        const double err1 = fabs(dotVec(n1, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
+        const double err0 = fabs(dotVec(n1, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
+        const double err1 = fabs(dotVec(n0, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
         return maxVal(err0, err1);
     }
 
@@ -621,7 +621,7 @@ namespace sp{
             S(2, 2) = 0.0;
 
             E = U * S * trnMat(V);
-            E = trnMat(T0) * E * T1;
+            E = trnMat(T1) * E * T0;
         }
         E /= normMat(E);
 

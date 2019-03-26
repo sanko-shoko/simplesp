@@ -30,8 +30,7 @@ int main() {
         const Mem1<Vec2> pixs0 = getMatchPixs(ftrs0, matches, true);
         const Mem1<Vec2> pixs1 = getMatchPixs(ftrs1, matches, false);
 
-        //                     [stereo pose]   [zero pose] 
-        calcPoseRANSAC(stereo, cam[1], pixs1, cam[0], pixs0);
+        calcPoseRANSAC(stereo, cam[0], pixs0, cam[1], pixs1);
 
         print(stereo);
     }

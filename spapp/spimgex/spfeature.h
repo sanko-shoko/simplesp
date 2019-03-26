@@ -223,7 +223,7 @@ namespace sp {
                 vec += getVec(acsc(views[i]->img, pix.x, pix.y));
             }
 
-            col = getCol(vec / (num * SP_BYTEMAX));
+            col = getCol(vec / (num));
         }
     };
 

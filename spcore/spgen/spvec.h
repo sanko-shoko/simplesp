@@ -180,6 +180,22 @@ namespace sp {
         vec = divVec(vec, val);
     }
 
+    SP_GENFUNC bool operator == (const Vec2 &vec0, const Vec2 &vec1) {
+        return cmpVec(vec0, vec1);
+    }
+
+    SP_GENFUNC bool operator != (const Vec2 &vec0, const Vec2 &vec1) {
+        return !cmpVec(vec0, vec1);
+    }
+
+    SP_GENFUNC bool operator == (const Vec3 &vec0, const Vec3 &vec1) {
+        return cmpVec(vec0, vec1);
+    }
+
+    SP_GENFUNC bool operator != (const Vec3 &vec0, const Vec3 &vec1) {
+        return !cmpVec(vec0, vec1);
+    }
+
 
     //--------------------------------------------------------------------------------
     // vector util

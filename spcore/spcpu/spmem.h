@@ -284,8 +284,9 @@ namespace sp{
         //--------------------------------------------------------------------------------
         
         void reserve(const int msize) {
+            this->dsize[0] = 0;
             if (msize > this->msize) {
-                Mem<TYPE>::malloc(msize, this->ptr);
+                Mem<TYPE>::malloc(msize, NULL);
             }
         }
 

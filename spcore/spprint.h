@@ -85,6 +85,15 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
+    SP_CPUFUNC void _print(const Col4 &col) {
+        SP_PRINTF("[ %d %d %d %d ]", col.r, col.g, col.b, col.a);
+    }
+    SP_CPUFUNC void print(const Col4 &col) {
+        SP_PRINTF("Col4 ");
+        _print(col);
+        SP_PRINTF("\n");
+    }
+    
     SP_CPUFUNC void _print(const VecPN2 &vec) {
         SP_PRINTF("[ ");
         _print(vec.pos);
