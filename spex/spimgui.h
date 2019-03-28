@@ -17,7 +17,6 @@
 #include <string>
 
 namespace sp {
-    using namespace ImGui;
 
     SP_CPUFUNC Col4 getCol(const ImVec4 &imv) {
         const Col4 col = getCol(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.w * SP_BYTEMAX + 0.5));
@@ -27,6 +26,19 @@ namespace sp {
     SP_CPUFUNC void glColor(const ImVec4 &vec) {
         glColor4d(vec.x, vec.y, vec.z, vec.w);
     }
+}
+
+SP_CPUFUNC bool operator == (ImVec4 &vec0, ImVec4 &vec1) {
+    bool ret = true;
+    ret &= (vec0.x == vec1.x);
+    ret &= (vec0.y == vec1.y);
+    ret &= (vec0.z == vec1.z);
+    ret &= (vec0.w == vec1.w);
+    return ret;
+}
+
+SP_CPUFUNC bool operator != (ImVec4 &vec0, ImVec4 &vec1) {
+    return !(vec0 == vec1);
 }
 
 namespace ImGui {
@@ -45,18 +57,6 @@ namespace ImGui {
         return vec;
     }
 
-    SP_CPUFUNC bool operator == (ImVec4 &vec0, ImVec4 &vec1) {
-        bool ret = true;
-        ret &= (vec0.x == vec1.x);
-        ret &= (vec0.y == vec1.y);
-        ret &= (vec0.z == vec1.z);
-        ret &= (vec0.w == vec1.w);
-        return ret;
-    }
-
-    SP_CPUFUNC bool operator != (ImVec4 &vec0, ImVec4 &vec1) {
-        return !(vec0 == vec1);
-    }
 
     SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
         SP_ASSERT(rect.dim == 2);
