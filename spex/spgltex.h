@@ -93,6 +93,35 @@ namespace sp{
 
             return (id > 0) ? true : false;
         }
+
+        //bool setDepth(const float *depth, const int *dsize) {
+
+        //    this->dsize[0] = dsize[0];
+        //    this->dsize[1] = dsize[1];
+
+        //    mem.resize(dsize[0] * dsize[1] * sizeof(float), depth);
+
+        //    if (id > 0) {
+        //        glDeleteTextures(1, &id);
+        //    }
+        //    glGenTextures(1, &id);
+
+        //    glBindTexture(GL_TEXTURE_2D, id);
+
+        //    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+        //    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, mem.ptr);
+
+        //    glBindTexture(GL_TEXTURE_2D, 0);
+
+        //    return (id > 0) ? true : false;
+        //}
     };
 
     template<typename TYPE>

@@ -133,8 +133,7 @@ namespace sp{
             glPopAttrib();
         }
 
-        void readImg(Mem2<Col3> &img) {
-            img.resize(dsize);
+        void readImg(Mem2<Col4> &img) {
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
             glFlush();
@@ -142,17 +141,26 @@ namespace sp{
             Mem2<Col4> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_RGBA, GL_UNSIGNED_BYTE, tmp.ptr);
 
-            Mem2<Col4> col(dsize);
+            img.resize(dsize);
             for (int v = 0; v < tmp.dsize[1]; v++) {
-                memcpy(&col(0, v), &tmp(0, tmp.dsize[1] - 1 - v), tmp.dsize[0] * 4);
-            }
-            for (int i = 0; i < col.size(); i++) {
-                img[i] = col[i];
+                memcpy(&img(0, v), &tmp(0, tmp.dsize[1] - 1 - v), tmp.dsize[0] * 4);
             }
 
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
+        
+        void readImg(Mem2<Col3> &img) {
 
+            Mem2<Col4> tmp(dsize);
+            readImg(tmp);
+
+            img.resize(dsize);
+            for (int i = 0; i < tmp.size(); i++) {
+                img[i] = tmp[i];
+            }
+        }
+
+ 
         void readDepth(Mem2<float> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             depth.resize(dsize);
             depth.zero();
