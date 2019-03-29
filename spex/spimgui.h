@@ -57,12 +57,24 @@ namespace ImGui {
         return vec;
     }
 
+    SP_CPUFUNC void SetNextWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
+        SP_ASSERT(rect.dim == 2);
 
+        ImGui::SetNextWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
+    }
     SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
         SP_ASSERT(rect.dim == 2);
 
         ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
         ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
+    }
+
+    SP_CPUFUNC void Spacing(const float space) {
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, space));
+        ImGui::Spacing();
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        ImGui::PopStyleVar();
     }
 
     SP_CPUFUNC bool ShowText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
