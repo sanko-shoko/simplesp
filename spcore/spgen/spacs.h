@@ -36,7 +36,7 @@ namespace sp{
     }
 
     SP_GENFUNC Rect getRect2(const Vec2 &vec) {
-        return getRect2(round(vec.x), round(vec.y), 0, 0);
+        return getRect2(round(vec.x), round(vec.y), 1, 1);
     }
 
     SP_GENFUNC Rect getRect3(const int dbase0, const int dbase1, const int dbase2, const int dsize0, const int dsize1, const int dsize2){
@@ -50,7 +50,7 @@ namespace sp{
     }
 
     SP_GENFUNC Rect getRect3(const Vec3 &vec) {
-        return getRect3(round(vec.x), round(vec.y), round(vec.z), 0, 0, 0);
+        return getRect3(round(vec.x), round(vec.y), round(vec.z), 1, 1, 1);
     }
 
 

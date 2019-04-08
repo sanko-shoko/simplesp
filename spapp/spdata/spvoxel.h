@@ -12,7 +12,7 @@ namespace sp {
 
 #define SP_VOXEL_VMAX 127
 #define SP_VOXEL_WMAX 20
-#define SP_VOXEL_NULL -128
+#define SP_VOXEL_NULL -127
 
     class Voxel {
 

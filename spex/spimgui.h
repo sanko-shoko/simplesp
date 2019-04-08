@@ -23,12 +23,17 @@ namespace sp {
         return col;
     }
 
-    SP_CPUFUNC void glColor(const ImVec4 &vec) {
-        glColor4d(vec.x, vec.y, vec.z, vec.w);
+    SP_CPUFUNC void glColor(const ImVec4 &imv) {
+        glColor4d(imv.x, imv.y, imv.z, imv.w);
     }
+
+    SP_CPUFUNC Vec2 getVec(const ImVec2 &imv) {
+        return getVec(imv.x, imv.y);
+    }
+
 }
 
-SP_CPUFUNC bool operator == (ImVec4 &vec0, ImVec4 &vec1) {
+SP_CPUFUNC bool operator == (const ImVec4 &vec0, const ImVec4 &vec1) {
     bool ret = true;
     ret &= (vec0.x == vec1.x);
     ret &= (vec0.y == vec1.y);
@@ -37,8 +42,23 @@ SP_CPUFUNC bool operator == (ImVec4 &vec0, ImVec4 &vec1) {
     return ret;
 }
 
-SP_CPUFUNC bool operator != (ImVec4 &vec0, ImVec4 &vec1) {
+SP_CPUFUNC bool operator != (const ImVec4 &vec0, const ImVec4 &vec1) {
     return !(vec0 == vec1);
+}
+
+SP_CPUFUNC ImVec2 getImVec2(const sp::Vec2 &spvec) {
+    const ImVec2 vec(static_cast<float>(spvec.x), static_cast<float>(spvec.y));
+    return vec;
+}
+
+SP_CPUFUNC ImVec4 getImVec4(const sp::Col3 &spcol, const sp::Byte a = SP_BYTEMAX) {
+    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
+    return vec;
+}
+
+SP_CPUFUNC ImVec4 getImVec4(const sp::Col4 &spcol) {
+    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(spcol.a) / SP_BYTEMAX);
+    return vec;
 }
 
 namespace ImGui {
@@ -47,15 +67,6 @@ namespace ImGui {
     
     using namespace sp;
 
-    SP_CPUFUNC ImVec4 getImVec4(const Col3 &col, const Byte a = SP_BYTEMAX) {
-        const ImVec4 vec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
-        return vec;
-    }
-
-    SP_CPUFUNC ImVec4 getImVec4(const Col4 &col) {
-        const ImVec4 vec(static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX);
-        return vec;
-    }
 
     SP_CPUFUNC void SetNextWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
         SP_ASSERT(rect.dim == 2);

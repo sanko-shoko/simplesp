@@ -222,11 +222,14 @@ namespace sp {
         // background color
         Col4 m_bcol;
 
-        // control view position & scale
+        // control view flag
         bool m_space;
 
-        // control view position & scale
+        // gl clear flag
         bool m_clear;
+
+        // escape flag
+        bool m_escape;
 
     public:
 
@@ -243,6 +246,7 @@ namespace sp {
             
             m_space = true;
             m_clear = true;
+            m_escape = true;
         }
 
 
@@ -304,7 +308,7 @@ namespace sp {
 
             SP_ASSERT(create(name, width, height) == true);
 
-            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+            while (!glfwWindowShouldClose(m_win) && (m_escape == false || !glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
 
                 if (main() == false) break;
 
@@ -355,7 +359,7 @@ namespace sp {
 
         bool main() {
 
-            if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+            if (glfwWindowShouldClose(m_win) || (m_escape == true && glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
                 glfwDestroyWindow(m_win);
                 m_win = NULL;
                 return false;
@@ -444,7 +448,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                if ((m_space == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                     return;
                 }
