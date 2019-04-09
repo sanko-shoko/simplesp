@@ -219,14 +219,11 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
-        // background color
-        Col4 m_bcol;
+        // back gournd color
+        const Col4 *m_bgcol;
 
         // control view flag
         bool m_space;
-
-        // gl clear flag
-        bool m_clear;
 
         // escape flag
         bool m_escape;
@@ -240,12 +237,12 @@ namespace sp {
             m_viewPos = getVec(0.0, 0.0);
             m_viewScale = 1.0;
 
-            m_bcol = getCol(24, 32, 32, 255);
+            const static Col4 col = getCol(24, 32, 32, 255);
+            m_bgcol = &col;
 
             memset(m_keyAction, 0, sizeof(m_keyAction));
             
             m_space = true;
-            m_clear = true;
             m_escape = true;
         }
 
@@ -383,8 +380,8 @@ namespace sp {
                 ImGui::NewFrame();
             }
 #endif
-            if (m_clear) {
-                glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
+            if (m_bgcol != NULL) {
+                glClearColor(m_bgcol->r / 255.f, m_bgcol->g / 255.f, m_bgcol->b / 255.f, m_bgcol->a / 255.f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
             
