@@ -70,6 +70,8 @@ private:
         {
             fbo.resize(m_wcam.dsize);
             fbo.bind();
+            glClearColor(0.0, 0.0, 0.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glLoadView3D(m_wcam, m_viewPos, m_viewScale);
 
             glLoadMatrix(m_pose);

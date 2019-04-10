@@ -124,8 +124,8 @@ namespace sp{
             const GLenum buffer = GL_COLOR_ATTACHMENT0_EXT;
             glDrawBuffers(1, &buffer);
 
-            glClearColor(0.0, 0.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //glClearColor(0.0, 0.0, 0.0, 1.0);
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void unbind() {
