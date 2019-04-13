@@ -41,7 +41,7 @@ namespace sp{
             Col3 col;
 
             Vertex() {
-                pos = getVec(0.0, 0.0, 0.0);
+                pos = getVec3(0.0, 0.0, 0.0);
                 col = getCol(0, 0, 0);
             }
             Vertex(const Vertex &vtx) {
@@ -195,11 +195,11 @@ namespace sp{
         for (int i = 0; i < idxs.size(); i++){
             const Mem1<int> &idx = idxs[i];
             if (idx.size() == 3) {
-                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
             }
             if (idx.size() == 4) {
-                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
-                meshes.push(getMesh(vtxs[idx[0]].pos, vtxs[idx[2]].pos, vtxs[idx[3]].pos));
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[2]].pos, vtxs[idx[3]].pos));
             }
         }
         return true;

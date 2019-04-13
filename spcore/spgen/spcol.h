@@ -190,13 +190,13 @@ namespace sp{
             h += 2 * SP_PI;
         }
 
-        hsv = getVec(h, s, v);
+        hsv = getVec3(h, s, v);
     }
 
     
     SP_GENFUNC void cnvXYZToLab(Vec3 &lab, const Vec3 &xyz){
 
-        const Vec3 w = getVec(0.95047, 1.00000, 1.0883); // D65
+        const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const SP_REAL v)-> SP_REAL {
             return (v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0);
@@ -211,13 +211,13 @@ namespace sp{
         const SP_REAL a = 500.0 * (val.x - val.y);
         const SP_REAL b = 200.0 * (val.y - val.z);
 
-        lab = getVec(l, a, b);
+        lab = getVec3(l, a, b);
     }
 
     
     SP_GENFUNC void cnvLabToXYZ(Vec3 &xyz, const Vec3 &lab) {
 
-        const Vec3 w = getVec(0.95047, 1.00000, 1.0883); // D65
+        const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const SP_REAL v)-> SP_REAL {
             return (v > 0.206897) ? pow(v, 3.0) : 0.001107 * (116.0 * v - 16.0);
@@ -358,7 +358,7 @@ namespace sp{
     SP_GENFUNC Col3 getCol(const int label) {
         srand(maxVal(label + 1, 0));
         Col3 col;
-        cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+        cnvHSVToCol(col, getVec3((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
         return col;
     }
 

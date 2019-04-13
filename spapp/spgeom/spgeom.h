@@ -29,7 +29,7 @@ namespace sp {
     }
 
     SP_CPUFUNC SP_REAL calcPrjErr(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
-        return calcPrjErr(pose, cam, pix, getVec(obj.x, obj.y, 0.0));
+        return calcPrjErr(pose, cam, pix, getVec3(obj.x, obj.y, 0.0));
     }
 
     SP_CPUFUNC Mem1<SP_REAL> calcPrjErr(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
@@ -86,7 +86,7 @@ namespace sp {
             Mat result;
             if (solver::solveAX_B(result, J, E, solver::calcW(errs, 2)) == false) return false;
 
-            pnt += getVec(result[0], result[1], result[2]);
+            pnt += getVec3(result[0], result[1], result[2]);
         }
 
         for (int i = 0; i < poses.size(); i++) {
@@ -134,7 +134,7 @@ namespace sp {
         Mat result;
         if (solver::solveAX_B(result, M, V) == false) return false;
 
-        pnt = getVec(result[0], result[1], result[2]);
+        pnt = getVec3(result[0], result[1], result[2]);
 
         for (int i = 0; i < poses.size(); i++) {
             if ((poses[i] * pnt).z <= 0.0) return false;
@@ -201,7 +201,7 @@ namespace sp {
 
         const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
 
-        const Vec3 epi = E * getVec(npx0.x, npx0.y, 1.0);
+        const Vec3 epi = E * getVec3(npx0.x, npx0.y, 1.0);
         const Vec2 npx1 = npxUndistX(cam1, epi, (pix1x - cam1.cx) / cam1.fx);
 
         const SP_REAL div
@@ -213,7 +213,7 @@ namespace sp {
 
         const SP_REAL depth = (npx1.x * mat(2, 3) - mat(0, 3)) / div;
 
-        pnt = pose0 * (getVec(npx0.x, npx0.y, 1.0) * depth);
+        pnt = pose0 * (getVec3(npx0.x, npx0.y, 1.0) * depth);
         return true;
     }
 
@@ -225,7 +225,7 @@ namespace sp {
 
         const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
 
-        const Vec3 epi = E * getVec(npx0.x, npx0.y, 1.0);
+        const Vec3 epi = E * getVec3(npx0.x, npx0.y, 1.0);
         const Vec2 npx1 = npxUndistY(cam1, epi, (pix1y - cam1.cy) / cam1.fy);
 
         const SP_REAL div
@@ -236,7 +236,7 @@ namespace sp {
         if (fabs(div) < SP_SMALL) return false;
 
         const SP_REAL depth = (npx1.y * mat(2, 3) - mat(1, 3)) / div;
-        pnt = pose0 * (getVec(npx0.x, npx0.y, 1.0) * depth);
+        pnt = pose0 * (getVec3(npx0.x, npx0.y, 1.0) * depth);
         return true;
     }
 
@@ -265,8 +265,8 @@ namespace sp {
             R[0] = getRot((U * W * trnMat(V)).ptr, 3, 3);
             R[1] = getRot((U * trnMat(W) * trnMat(V)).ptr, 3, 3);
 
-            T[0] = getVec(U(0, 2), U(1, 2), U(2, 2));
-            T[1] = getVec(U(0, 2), U(1, 2), U(2, 2)) * (-1);
+            T[0] = getVec3(U(0, 2), U(1, 2), U(2, 2));
+            T[1] = getVec3(U(0, 2), U(1, 2), U(2, 2)) * (-1);
         }
 
         int maxv = 0;
@@ -467,7 +467,7 @@ namespace sp {
         Mem1<Vec3> nrms;
         for (int i = 0; i < 3; i++) {
             const Vec2 npx = invCamD(cam, pixs[i]);
-            const Vec3 vec = getVec(npx.x, npx.y, 1.0);
+            const Vec3 vec = getVec3(npx.x, npx.y, 1.0);
             const Vec3 nrm = vec / normVec(vec);
             nrms.push(nrm);
         }
@@ -573,7 +573,7 @@ namespace sp {
                     R(r, c) = U(r * 4 + c, 0);
                 }
             }
-            Vec3 T = getVec(U(3, 0), U(7, 0), U(11, 0));
+            Vec3 T = getVec3(U(3, 0), U(7, 0), U(11, 0));
 
             const Vec3 pos = R * meanVec(objs) + T;
             if (pos.z < 0.0) {
@@ -628,19 +628,19 @@ namespace sp {
 
         const Mat mat = invMat(getMat(cam)) * h;
 
-        const Vec3 m0 = getVec(mat(0, 0), mat(1, 0), mat(2, 0));
-        const Vec3 m1 = getVec(mat(0, 1), mat(1, 1), mat(2, 1));
-        const Vec3 m2 = getVec(mat(0, 2), mat(1, 2), mat(2, 2));
+        const Vec3 m0 = getVec3(mat(0, 0), mat(1, 0), mat(2, 0));
+        const Vec3 m1 = getVec3(mat(0, 1), mat(1, 1), mat(2, 1));
+        const Vec3 m2 = getVec3(mat(0, 2), mat(1, 2), mat(2, 2));
 
         const Vec3 n0 = unitVec(m0);
         const Vec3 n1 = unitVec(m1);
 
         const Vec3 Z = unitVec(crsVec(n0, n1));
-        const Vec3 A = unitVec(addVec(n0, n1));
+        const Vec3 A = unitVec(addVec3(n0, n1));
         const Vec3 B = unitVec(crsVec(A, Z));
 
-        const Vec3 X = unitVec(addVec(A, B));
-        const Vec3 Y = unitVec(subVec(A, B));
+        const Vec3 X = unitVec(addVec3(A, B));
+        const Vec3 Y = unitVec(subVec3(A, B));
 
         pose = getPose(getRotAxis(X, Y, Z), m2 / sqrt(normVec(m0) * normVec(m1)));
         return true;

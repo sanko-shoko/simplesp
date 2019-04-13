@@ -90,7 +90,7 @@ namespace sp{
                 }
             }
             m_dpose.rot = getRot(rot, 3, 3);
-            m_dpose.trn = getVec(dex.translation[0], dex.translation[1], dex.translation[2]) * 1000.0;
+            m_dpose.trn = getVec3(dex.translation[0], dex.translation[1], dex.translation[2]) * 1000.0;
         }
 
         void start(){

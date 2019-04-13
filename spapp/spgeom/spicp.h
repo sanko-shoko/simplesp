@@ -131,7 +131,7 @@ namespace sp{
             Mat E(1 * cpnts0.size(), 1);
             Mem1<SP_REAL> errs(cpnts0.size());
 
-            Vec3 mvec = getVec(0.0, 0.0, 0.0);
+            Vec3 mvec = getVec3(0.0, 0.0, 0.0);
             for (int i = 0; i < cpnts1.size(); i++) {
                 mvec += getPos(cpnts1[i]);
             }

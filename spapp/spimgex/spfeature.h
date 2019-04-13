@@ -76,8 +76,8 @@ namespace sp {
     public:
 
         Ftr() {
-            pix = getVec(0.0, 0.0);
-            drc = getVec(0.0, 0.0);
+            pix = getVec2(0.0, 0.0);
+            drc = getVec2(0.0, 0.0);
             scl = 0.0;
             mpnt = NULL;
         }
@@ -166,8 +166,8 @@ namespace sp {
         MapPnt() {
             valid = false;
 
-            pos = getVec(0.0, 0.0, 0.0);
-            nrm = getVec(0.0, 0.0, 0.0);
+            pos = getVec3(0.0, 0.0, 0.0);
+            nrm = getVec3(0.0, 0.0, 0.0);
             col = getCol(0, 0, 0);
             err = SP_INFINITY;
         }
@@ -214,13 +214,13 @@ namespace sp {
         void updateCol() {
             if (valid == false) return;
 
-            Vec3 vec = getVec(0.0, 0.0, 0.0);
+            Vec3 vec = getVec3(0.0, 0.0, 0.0);
 
             const int num = views.size();
 
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = ftrs[i]->pix;
-                vec += getVec(acsc(views[i]->img, pix.x, pix.y));
+                vec += getVec3(acsc(views[i]->img, pix.x, pix.y));
             }
 
             col = getCol(vec / (num));

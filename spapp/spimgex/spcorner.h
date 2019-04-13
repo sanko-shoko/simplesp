@@ -94,7 +94,7 @@ namespace sp{
                         for (int u = x * block; u < eu; u++){
                             if (rmap(u, v) < maxv) continue;
                         
-                            pixs.push(getVec(u, v));
+                            pixs.push(getVec2(u, v));
                             goto _exit;
                         }
                     }

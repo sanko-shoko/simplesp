@@ -111,10 +111,10 @@ namespace sp{
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
-    SP_GENFUNC bool cmpVec(const Vec2 &vec0, const Vec2 &vec1, const SP_REAL t = SP_SMALL){
+    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const SP_REAL t = SP_SMALL){
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
     }
-    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1, const SP_REAL t = SP_SMALL) {
+    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const SP_REAL t = SP_SMALL) {
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
@@ -137,7 +137,7 @@ namespace sp{
     SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL){
         bool ret = true;
         ret &= cmpRot(pose0.rot, pose1.rot, tr);
-        ret &= cmpVec(pose0.trn, pose1.trn, tt);
+        ret &= cmpVec3(pose0.trn, pose1.trn, tt);
         return ret;
     }
 

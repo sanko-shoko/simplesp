@@ -95,7 +95,7 @@ namespace sp{
                 img(u, v) = getCol(val, val, val);
             }
         }
-        renderPoint(img, getVec(-0.5, _SP_BITMARKERSIZE / 2.0 - 0.5), getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX), _SP_BITMARKERSIZE / 20.0);
+        renderPoint(img, getVec2(-0.5, _SP_BITMARKERSIZE / 2.0 - 0.5), getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX), _SP_BITMARKERSIZE / 20.0);
 
         return BitMarkerParam(img, length, offset);
     }
@@ -107,7 +107,7 @@ namespace sp{
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
                 const SP_REAL distance = length + interval;
-                const Pose offset = getPose(getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance);
+                const Pose offset = getPose(getVec3((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance);
                 
                 mrks.push(getBitMarkerParam(id + mrks.size(), block, length, offset));
             }
@@ -122,12 +122,12 @@ namespace sp{
         const SP_REAL distance = length + interval;
         const SP_REAL unit = length / (block + 2);
 
-        const Vec2 base = (getVec(w, h) - getVec(length + distance * (dsize0 - 1), length + distance * (dsize1 - 1))) / 2.0;
+        const Vec2 base = (getVec2(w, h) - getVec2(length + distance * (dsize0 - 1), length + distance * (dsize1 - 1))) / 2.0;
 
         string str;
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
-                const Vec2 pos = getVec(x, y) * distance + getVec(round(base.x), round(base.y));
+                const Vec2 pos = getVec2(x, y) * distance + getVec2(round(base.x), round(base.y));
                 str += _svg::rect(pos.x, pos.y, length, length, "fill='#000000'");
 
                 str += _svg::rect(pos.x + unit, pos.y + unit, unit * block, unit * block, "fill='#FFFFFF'");
@@ -452,7 +452,7 @@ namespace sp{
                     const Vec2 a = unitVec(corner[(c + 4 - 1) % 4] - corner[c]);
                     const Vec2 b = unitVec(corner[(c + 4 + 1) % 4] - corner[c]);
 
-                    Vec2 pos = getVec(0.0, 0.0);
+                    Vec2 pos = getVec2(0.0, 0.0);
                     for (int it = 0; it < maxit; it++){
                         Vec2 delta = unitVec(cent - corner[c]);
 
@@ -463,7 +463,7 @@ namespace sp{
                                 const int yy = round(pos.y) + y + WIN_SIZE;
                                 if (bin(xx, yy) > 0) continue;
 
-                                const Vec2 crnt = getVec(x, y);
+                                const Vec2 crnt = getVec2(x, y);
                                 const SP_REAL val = dotVec(crnt, a) + dotVec(crnt, b);
                                 if (val < maxv){
                                     maxv = val;
@@ -475,7 +475,7 @@ namespace sp{
                         pos += delta;
                     }
 
-                    corner[c] = getVec(u, v) + pos;
+                    corner[c] = getVec2(u, v) + pos;
                 }
             }
 
@@ -486,7 +486,7 @@ namespace sp{
 
             // calc pose
             {
-                const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
+                const Vec2 _unit[4] = { getVec2(-0.5, -0.5), getVec2(+0.5, -0.5), getVec2(+0.5, +0.5), getVec2(-0.5, +0.5) };
                 const Mem1<Vec2> unit(4, _unit);
 
                 Mem1<Vec2> objs, drcs;
@@ -527,15 +527,15 @@ namespace sp{
                 const int CHECK_SIZE = 5;
 
                 Mem1<Vec2> objs, drcs;
-                objs.push(getVec(-0.5, 0.0));
-                objs.push(getVec(0.0, -0.5));
-                objs.push(getVec(+0.5, 0.0));
-                objs.push(getVec(0.0, +0.5));
+                objs.push(getVec2(-0.5, 0.0));
+                objs.push(getVec2(0.0, -0.5));
+                objs.push(getVec2(+0.5, 0.0));
+                objs.push(getVec2(0.0, +0.5));
 
-                drcs.push(getVec(0.0, -1.0));
-                drcs.push(getVec(+1.0, 0.0));
-                drcs.push(getVec(0.0, +1.0));
-                drcs.push(getVec(-1.0, 0.0));
+                drcs.push(getVec2(0.0, -1.0));
+                drcs.push(getVec2(+1.0, 0.0));
+                drcs.push(getVec2(0.0, +1.0));
+                drcs.push(getVec2(-1.0, 0.0));
 
                 for (int i = 0; i < poses.size(); i++) {
                     const Pose pose = poses[i];
@@ -543,14 +543,14 @@ namespace sp{
                     int id = 0;
                     SP_REAL maxv = 0.0;
                     for (int j = 0; j < 4; j++){
-                        const Vec3 pos = poses[i] * getVec(objs[j].x, objs[j].y, 0.0);
-                        const Vec3 drc = poses[i].rot * getVec(drcs[j].x, drcs[j].y, 0.0);
+                        const Vec3 pos = poses[i] * getVec3(objs[j].x, objs[j].y, 0.0);
+                        const Vec3 drc = poses[i].rot * getVec3(drcs[j].x, drcs[j].y, 0.0);
 
                         SP_REAL jNpxToDist[2 * 2];
                         jacobNpxToDist(jNpxToDist, m_cam, prjVec(pos));
 
-                        const Vec2 drc2 = mulMat(jNpxToDist, 2, 2, getVec(drc.x, drc.y));
-                        const Vec2 nrm = unitVec(getVec(-drc2.y, drc2.x));
+                        const Vec2 drc2 = mulMat(jNpxToDist, 2, 2, getVec2(drc.x, drc.y));
+                        const Vec2 nrm = unitVec(getVec2(-drc2.y, drc2.x));
 
                         const Vec2 pixA = mulCamD(m_cam, prjVec(pos + drc * 0.1));
                         const Vec2 pixB = mulCamD(m_cam, prjVec(pos - drc * 0.1));
@@ -596,11 +596,11 @@ namespace sp{
                 const CamParam &cam = m_cam;
                 const Pose &pose = poses[p];
 
-                const Vec2 offset = getVec(dsize[0] - 1, dsize[1] - 1) * 0.5;
+                const Vec2 offset = getVec2(dsize[0] - 1, dsize[1] - 1) * 0.5;
                 for (int v = 0; v < dsize[1]; v++){
                     for (int u = 0; u < dsize[0]; u++){
-                        const Vec2 vec = getVec(u, v) - offset;
-                        const Vec3 obj = getVec(vec.x / dsize[0], vec.y / dsize[1], 0.0);
+                        const Vec2 vec = getVec2(u, v) - offset;
+                        const Vec3 obj = getVec3(vec.x / dsize[0], vec.y / dsize[1], 0.0);
 
                         const Vec2 pix = mulCamD(cam, prjVec(pose * obj));
 
@@ -706,7 +706,7 @@ namespace sp{
             cpixs.resize(mrks.size());
             cobjs.resize(mrks.size());
 
-            const Vec2 _unit[4] = { getVec(-0.5, -0.5), getVec(+0.5, -0.5), getVec(+0.5, +0.5), getVec(-0.5, +0.5) };
+            const Vec2 _unit[4] = { getVec2(-0.5, -0.5), getVec2(+0.5, -0.5), getVec2(+0.5, +0.5), getVec2(-0.5, +0.5) };
             const Mem1<Vec2> unit(4, _unit);
 
             for (int i = 0; i < mrks.size(); i++) {

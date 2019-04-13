@@ -88,7 +88,7 @@ void sample(cv::Mat &cvimg, const int key){
                 const double norm = normVec(flow) / 50.0;
 
                 Col3 col;
-                cnvHSVToCol(col, getVec(angle + SP_PI, minVal(1.0, norm), 1.0));
+                cnvHSVToCol(col, getVec3(angle + SP_PI, minVal(1.0, norm), 1.0));
 
                 renderLine(img, pix0, pix1, col, 2);
             }
@@ -97,7 +97,7 @@ void sample(cv::Mat &cvimg, const int key){
 
     if (tracker.getPose() != NULL) {
 
-        const Pose base = getPose(getVec(0.0, 0.0, 20.0));
+        const Pose base = getPose(getVec3(0.0, 0.0, 20.0));
 
         renderAxis(img, cam, *tracker.getPose() * base, 2.0, 2);
         renderGrid3d(img, cam, *tracker.getPose() * base, 6.0, 2, getCol(100, 200, 200), 2);

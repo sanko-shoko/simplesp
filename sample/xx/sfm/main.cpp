@@ -59,8 +59,8 @@ private:
         m_sfm.clear();
 
         const double distance = 20.0;
-        m_pose = getPose(getVec(0.0, 0.0, +distance));
-        m_axis = getPose(getVec(0.0, 0.0, -distance));
+        m_pose = getPose(getVec3(0.0, 0.0, +distance));
+        m_axis = getPose(getVec3(0.0, 0.0, -distance));
 
         m_err = 3.0f;
 
@@ -138,7 +138,7 @@ private:
         }
         //{
         //    const double scale = 0.3 * m_wcam.dsize[0] / m_img.dsize[0];
-        //    const Vec2 offset = getVec(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
+        //    const Vec2 offset = getVec3(m_wcam.dsize[0], m_wcam.dsize[1]) * (scale * 0.5 - 0.5);
         //    glLoadView2D(m_wcam, offset, scale);
 
         //    glTexImg(m_img);

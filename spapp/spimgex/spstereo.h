@@ -206,11 +206,11 @@ namespace sp{
 
             for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
                 for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
-                    const Vec2 npx = invCam(cam, getVec(u, v));
+                    const Vec2 npx = invCam(cam, getVec2(u, v));
                     const Disp disp = src(u, v);
                     if (disp.eval > 0.0) {
                         const SP_REAL depth = f * b / (disp.disp - (cx0 - cx1));
-                        dst(u, v) = getVec(npx.x, npx.y, 1.0) * depth;
+                        dst(u, v) = getVec3(npx.x, npx.y, 1.0) * depth;
                     }
                 }
             }

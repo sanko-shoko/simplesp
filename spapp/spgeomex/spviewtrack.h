@@ -259,7 +259,7 @@ namespace sp{
             scls.zero();
 
             {
-                const Vec3 h2 = getVec(hom(2, 0), hom(2, 1), hom(2, 2));
+                const Vec3 h2 = getVec3(hom(2, 0), hom(2, 1), hom(2, 2));
                 const Mem1<Ftr> &ftrs = view.ftrs;
                 for (int i = 0; i < num; i++) {
                     const Vec2 pix1 = ftrs[i].pix;

@@ -25,7 +25,7 @@ int main(){
         const double x = randValUnif() * 10;
         const double y = a * x + b + noise;
 
-        data.push(getVec(x, y));
+        data.push(getVec2(x, y));
     }
 
     // lsm
@@ -62,7 +62,7 @@ int main(){
         const double x = randValUnif() * 10;
         const double y = randValUnif() * 10;
 
-        data.push(getVec(x, y));
+        data.push(getVec2(x, y));
     }
 
     // lsm

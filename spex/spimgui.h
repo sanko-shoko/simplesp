@@ -27,8 +27,8 @@ namespace sp {
         glColor4d(imv.x, imv.y, imv.z, imv.w);
     }
 
-    SP_CPUFUNC Vec2 getVec(const ImVec2 &imv) {
-        return getVec(imv.x, imv.y);
+    SP_CPUFUNC Vec2 getVec2(const ImVec2 &imv) {
+        return getVec2(imv.x, imv.y);
     }
 
 }

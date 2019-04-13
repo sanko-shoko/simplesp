@@ -643,7 +643,7 @@ namespace sp{
     SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec2> &vecs) {
         Mem1<Vec3> dst(vecs.size());
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = pose * getVec(vecs[i].x, vecs[i].y, 0.0);
+            dst[i] = pose * getVec3(vecs[i].x, vecs[i].y, 0.0);
         }
         return dst;
     }
@@ -661,19 +661,19 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     template<typename TYPE>
-    SP_CPUFUNC Vec2 getVec(const MemA<TYPE, 2> &vec) {
-        return getVec(vec[0], vec[1]);
+    SP_CPUFUNC Vec2 getVec3(const MemA<TYPE, 2> &vec) {
+        return getVec3(vec[0], vec[1]);
     }
 
     template<typename TYPE>
-    SP_CPUFUNC Vec3 getVec(const MemA<TYPE, 3> &vec) {
-        return getVec(vec[0], vec[1], vec[2]);
+    SP_CPUFUNC Vec3 getVec3(const MemA<TYPE, 3> &vec) {
+        return getVec3(vec[0], vec[1], vec[2]);
     }
 
     SP_CPUFUNC Mem1<Vec3> extVec(const Mem1<Vec2> &vec, const SP_REAL z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = getVec(vec[i].x, vec[i].y, z);
+            dst[i] = getVec3(vec[i].x, vec[i].y, z);
         }
         return dst;
     }
@@ -683,7 +683,7 @@ namespace sp{
 
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
-                map(x, y) = getVec(x, y);
+                map(x, y) = getVec2(x, y);
             }
         }
 

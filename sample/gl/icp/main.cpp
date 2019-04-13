@@ -45,7 +45,7 @@ private:
         m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
         SP_ASSERT(m_model.size() > 0);
 
-        m_poseA = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_poseA = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
         m_dataA = getModelPoint(m_model);
 
         reset();

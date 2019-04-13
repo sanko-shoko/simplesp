@@ -37,7 +37,7 @@ private:
 
         m_view = zeroPose();
         
-        m_base = getPose(getVec(0.0, 0.0, -500.0));
+        m_base = getPose(getVec3(0.0, 0.0, -500.0));
 
         help();
     }
@@ -92,7 +92,7 @@ private:
                         cnvDepthToCol(col, d, nearPlane, farPlane);
                         glColor(col);
 
-                        const Vec3 pnt = prjVec(invCam(*m_rs.getDepthCam(), getVec(u, v))) * d;
+                        const Vec3 pnt = prjVec(invCam(*m_rs.getDepthCam(), getVec2(u, v))) * d;
                         glVertex(pnt);
                     }
                 }

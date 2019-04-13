@@ -243,7 +243,7 @@ namespace sp{
                         _exit:;
 
                             if (npeak || ppeak){
-                                Vec3 vec = getVec(x, y, s);
+                                Vec3 vec = getVec3(x, y, s);
 
                                 if (calcFtrRefine(vec, imgsets[p].dogs) == false) continue;
 
@@ -251,7 +251,7 @@ namespace sp{
 
                                 MyFtr ftr;
 
-                                ftr.pix = getVec(vec.x, vec.y) * (1 << p);
+                                ftr.pix = getVec2(vec.x, vec.y) * (1 << p);
                                 ftr.scl = SIG_FCTR * BASE_SIGMA * pow(LAYER_STEP, vec.z) * (1 << p);
                                 ftr.cst = dogs[s](x, y);
 
@@ -409,7 +409,7 @@ namespace sp{
                     const SP_REAL finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
                     const SP_REAL angle = finei * (2.0 * SP_PI / BINS);
 
-                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    const Vec2 drc = getVec2(cos(angle), sin(angle));
                     drcs.push(drc);
                 }
             }

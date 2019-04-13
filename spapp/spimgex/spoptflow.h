@@ -188,7 +188,7 @@ namespace sp{
                                 const int k = y * wsize + x;
                                 if (M[k] == false) continue;
 
-                                const Vec2 p0 = pix0 + getVec(x - whalf, y - whalf);
+                                const Vec2 p0 = pix0 + getVec2(x - whalf, y - whalf);
 
                                 const SP_REAL gx = A(k, 0);
                                 const SP_REAL gy = A(k, 1);
@@ -205,7 +205,7 @@ namespace sp{
 
                         const Mat result = invAtA * AtB;
 
-                        Vec2 delta = getVec(result[0], result[1]);
+                        Vec2 delta = getVec2(result[0], result[1]);
                         const SP_REAL norm = normVec(delta);
 
                         const SP_REAL limit = 2.0;
@@ -231,7 +231,7 @@ namespace sp{
             for (int i = 0; i < mask.size(); i++) {
                 if (errs[i] > 3.0 * sigma) mask[i] = false;
              
-                if (mask[i] == false) flows[i] = getVec(0.0, 0.0);
+                if (mask[i] == false) flows[i] = getVec2(0.0, 0.0);
             }
         }
 

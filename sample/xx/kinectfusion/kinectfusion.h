@@ -77,7 +77,7 @@ private:
 
                 const double mean = meanVal(zlist);
 
-                m_kfusion.init(120, mean / 100.0, minCam, getPose(getVec(0.0, 0.0, mean)));
+                m_kfusion.init(120, mean / 100.0, minCam, getPose(getVec3(0.0, 0.0, mean)));
             }
             else {
                 m_kfusion.execute(minDepth);

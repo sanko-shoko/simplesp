@@ -224,11 +224,11 @@ private:
         {
             glLoadView2D(dsize, m_viewPos, m_viewScale);
             glTexImg(m_imgs[0]);
-            glLoadView2D(dsize, m_viewPos + getVec(img.dsize[0], 0.0)*m_viewScale, m_viewScale);
+            glLoadView2D(dsize, m_viewPos + getVec2(img.dsize[0], 0.0) * m_viewScale, m_viewScale);
             glTexImg(m_imgs[1]);
         }
         for(int p = 0; p < 2; p++){
-            glLoadView2D(dsize, m_viewPos + getVec(img.dsize[0] * p, 0.0)*m_viewScale, m_viewScale);
+            glLoadView2D(dsize, m_viewPos + getVec2(img.dsize[0] * p, 0.0) * m_viewScale, m_viewScale);
             glBegin(GL_LINES);
 
             glColor(1);
@@ -272,7 +272,7 @@ private:
     void dispSIFT(){
         if (m_matches.size() > 0) {
 
-            const Vec2 offset = getVec(m_imgs[0].dsize[0], 0.0);
+            const Vec2 offset = getVec2(m_imgs[0].dsize[0], 0.0);
             const CamParam cam = getCamParam(m_imgs[0].dsize[0] + m_imgs[1].dsize[0], m_imgs[0].dsize[1]);
 
             {

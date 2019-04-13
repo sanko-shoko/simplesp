@@ -41,7 +41,7 @@ private:
             const double time = cnt * dt;
 
             const double angle = time * SP_PI / 180.0;
-            const Vec2 pos = getVec(::cos(angle), ::sin(angle)) * radius + getVec(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
+            const Vec2 pos = getVec2(::cos(angle), ::sin(angle)) * radius + getVec2(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
 
             Z(0, 0) = pos.x + randValGauss() * onoize;
             Z(1, 0) = pos.y + randValGauss() * onoize;
@@ -130,8 +130,8 @@ private:
         }
 
         setElm(img, getCol(255, 255, 255));
-        renderPoint(img, getVec(Z[0], Z[1]), getCol(0, 0, 0), 3);
-        renderPoint(img, getVec(X[0], X[1]), getCol(0, 0, 255), 5);
+        renderPoint(img, getVec2(Z[0], Z[1]), getCol(0, 0, 0), 3);
+        renderPoint(img, getVec2(X[0], X[1]), getCol(0, 0, 255), 5);
 
         glLoadView2D(img.dsize[0], img.dsize[1], m_viewPos, m_viewScale);
         glTexImg(img);

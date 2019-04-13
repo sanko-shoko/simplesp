@@ -117,7 +117,7 @@ namespace sp{
     }
 
     SP_GENFUNC Vec3 mulRot(const Rot &rot, const Vec2 &vec){
-        return mulRot(rot, getVec(vec.x, vec.y, 0.0));
+        return mulRot(rot, getVec3(vec.x, vec.y, 0.0));
     }
 
 
@@ -242,19 +242,19 @@ namespace sp{
     }
 
     SP_GENFUNC Rot getRotAngleX(const SP_REAL angle) {
-        return getRotAngle(getVec(1.0, 0.0, 0.0), angle);
+        return getRotAngle(getVec3(1.0, 0.0, 0.0), angle);
     }
 
     SP_GENFUNC Rot getRotAngleY(const SP_REAL angle) {
-        return getRotAngle(getVec(0.0, 1.0, 0.0), angle);
+        return getRotAngle(getVec3(0.0, 1.0, 0.0), angle);
     }
 
     SP_GENFUNC Rot getRotAngleZ(const SP_REAL angle) {
-        return getRotAngle(getVec(0.0, 0.0, 1.0), angle);
+        return getRotAngle(getVec3(0.0, 0.0, 1.0), angle);
     }
 
     SP_GENFUNC Vec3 getAngle(const Rot &rot) {
-        Vec3 vec = getVec(0.0, 0.0, 0.0);
+        Vec3 vec = getVec3(0.0, 0.0, 0.0);
 
         if (cmpRot(rot, getRot(0.0, 0.0, 0.0, 1.0)) == false) {
             const SP_REAL angle = acos(rot.qw) * 2.0;
@@ -272,7 +272,7 @@ namespace sp{
     SP_GENFUNC SP_REAL getAngle(const Rot &rot, const int axis) {
         SP_ASSERT(axis >= 0 && axis < 3);
 
-        const Vec3 v0 = getVec(axis == 0 ? 1.0 : 0.0, axis == 1 ? 1.0 : 0.0, axis == 2 ? 1.0 : 0.0);
+        const Vec3 v0 = getVec3(axis == 0 ? 1.0 : 0.0, axis == 1 ? 1.0 : 0.0, axis == 2 ? 1.0 : 0.0);
         const Vec3 v1 = rot * v0;
         const SP_REAL angle = acos(dotVec(v0, v1));
         return angle;
@@ -286,11 +286,11 @@ namespace sp{
             return getRotAngleX(angle);
         }
         else{
-            const Vec3 v0 = crsVec(getVec(0.0, 1.0, 0.0), getVec(nrm.x, nrm.y, 0.0));
+            const Vec3 v0 = crsVec(getVec3(0.0, 1.0, 0.0), getVec3(nrm.x, nrm.y, 0.0));
             const SP_REAL a0 = acos(nrm.y / sqrt(nrm.x * nrm.x + nrm.y * nrm.y));
             const Rot rot0 = getRotAngle(v0, a0);
 
-            const Vec3 v1 = crsVec(getVec(0.0, 0.0, 1.0), nrm);
+            const Vec3 v1 = crsVec(getVec3(0.0, 0.0, 1.0), nrm);
             const SP_REAL a1 = acos(nrm.z);
             const Rot rot1 = getRotAngle(v1, a1);
 
@@ -344,7 +344,7 @@ namespace sp{
 
     // update
     SP_GENFUNC Rot updateRot(const Rot &rot, const SP_REAL *delta){
-        return getRotAngle(getVec(delta[0], delta[1], delta[2])) * rot;
+        return getRotAngle(getVec3(delta[0], delta[1], delta[2])) * rot;
     }
 
     // dif
@@ -371,7 +371,7 @@ namespace sp{
     }
 
     SP_GENFUNC Pose getPose(const Rot &rot){
-        return getPose(rot, getVec(0.0, 0.0, 0.0));
+        return getPose(rot, getVec3(0.0, 0.0, 0.0));
     }
 
     SP_GENFUNC Pose getPose(const Vec3 &trn){
@@ -382,12 +382,12 @@ namespace sp{
         Pose dst;
         if ((rows == 3 || rows == 4) && cols == 4) {
             dst.rot = getRot(mat, rows, cols);
-            dst.trn = getVec(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
+            dst.trn = getVec3(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
         }
         if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
-            Vec3 euler = getVec(mat[0], mat[1], mat[2]);
+            Vec3 euler = getVec3(mat[0], mat[1], mat[2]);
             dst.rot = getRotEuler(euler);
-            dst.trn = getVec(mat[3], mat[4], mat[5]);
+            dst.trn = getVec3(mat[3], mat[4], mat[5]);
         }
         return dst;
     }
@@ -413,13 +413,13 @@ namespace sp{
     }
 
     SP_GENFUNC Pose zeroPose(){
-        return getPose(zeroRot(), getVec(0.0, 0.0, 0.0));
+        return getPose(zeroRot(), getVec3(0.0, 0.0, 0.0));
     }
 
     SP_GENFUNC Pose invPose(const Pose &pose){
         Pose dst;
         dst.rot = invRot(pose.rot);
-        dst.trn = mulVec(mulRot(dst.rot, pose.trn), -1.0);
+        dst.trn = mulVec3(mulRot(dst.rot, pose.trn), -1.0);
 
         return dst;
     }
@@ -427,7 +427,7 @@ namespace sp{
     SP_GENFUNC Pose mulPose(const Pose &pose0, const Pose &pose1){
         Pose dst;
         dst.rot = mulRot(pose0.rot, pose1.rot);
-        dst.trn = addVec(mulRot(pose0.rot, pose1.trn), pose0.trn);
+        dst.trn = addVec3(mulRot(pose0.rot, pose1.trn), pose0.trn);
 
         return dst;
     }
@@ -440,7 +440,7 @@ namespace sp{
     }
 
     SP_GENFUNC Vec3 mulPose(const Pose &pose, const Vec2 &vec){
-        return mulPose(pose, getVec(vec.x, vec.y, 0.0));
+        return mulPose(pose, getVec3(vec.x, vec.y, 0.0));
     }
 
     SP_GENFUNC VecPN3 mulPose(const Pose &pose, const VecPN3 &vec){
@@ -504,14 +504,14 @@ namespace sp{
     SP_GENFUNC Pose updatePose(const Pose &pose, const SP_REAL *delta){
         Pose dst;
         dst.rot = updateRot(pose.rot, &delta[0]);
-        dst.trn = pose.trn + getVec(delta[3], delta[4], delta[5]);
+        dst.trn = pose.trn + getVec3(delta[3], delta[4], delta[5]);
         return dst;
     }
 
 
     SP_GENFUNC Pose getGeodesicPose(const int level, const int id, const SP_REAL distance = 0.0) {
         const Vec3 v = getMeshPos(getGeodesicMesh(level, id)) * (-1.0);
-        const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+        const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
         return pose;
     }
 

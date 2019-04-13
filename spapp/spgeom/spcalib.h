@@ -22,7 +22,7 @@ namespace sp{
 
             // set valid data
             for (int i = 0; i < pixs.size(); i++){
-                const Mem1<Vec2> &tpixs = pixs[i] -(getVec(dsize[0] - 1, dsize[1] - 1) * 0.5);
+                const Mem1<Vec2> &tpixs = pixs[i] -(getVec2(dsize[0] - 1, dsize[1] - 1) * 0.5);
                 const Mem1<Vec2> &tobjs = objs[i];
 
                 Mat hom;
@@ -38,8 +38,8 @@ namespace sp{
             for (int i = 0; i < homs.size(); i++){
                 const Mat &hom = homs[i];
                 Vec3 v[4];
-                v[0] = getVec(hom(0, 0), hom(1, 0), hom(2, 0));
-                v[1] = getVec(hom(0, 1), hom(1, 1), hom(2, 1));
+                v[0] = getVec3(hom(0, 0), hom(1, 0), hom(2, 0));
+                v[1] = getVec3(hom(0, 1), hom(1, 1), hom(2, 1));
                 v[2] = v[0] + v[1];
                 v[3] = v[0] - v[1];
 
@@ -113,7 +113,7 @@ namespace sp{
                     const Mem1<Vec2> &tobjs = vobjs[i];
                     for (int p = 0; p < tpixs.size(); p++){
                         const Vec2 pix = tpixs[p];
-                        const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
+                        const Vec3 obj = getVec3(tobjs[p].x, tobjs[p].y, 0.0);
 
                         jacobCamToPix(jCamToPix.ptr, cam, prjVec(pose * obj));
                         jacobPoseToPix(jPoseToPix.ptr, cam, pose, obj);
@@ -220,7 +220,7 @@ namespace sp{
                     const Mat sR = getMat(stereo.rot);
 
                     for (int p = 0; p < vobjs[i].size(); p++){
-                        const Vec3 obj = getVec(vobjs[i][p].x, vobjs[i][p].y, 0.0);
+                        const Vec3 obj = getVec3(vobjs[i][p].x, vobjs[i][p].y, 0.0);
 
                         SP_REAL jPoseToPos0[3 * 6] = { 0 };
                         SP_REAL jPoseToPos1[3 * 6] = { 0 };
@@ -267,7 +267,7 @@ namespace sp{
                         const Mem1<Vec2> &tobjs = vobjs[i];
                         for (int p = 0; p < tpixs.size(); p++){
                             const Vec2 pix = tpixs[p];
-                            const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
+                            const Vec3 obj = getVec3(tobjs[p].x, tobjs[p].y, 0.0);
 
                             const Vec2 vec = mulCamD(cam1, prjVec(stereo * pose * obj));
 
@@ -455,7 +455,7 @@ namespace sp{
                     for (int j = 0; j < cnum; j++) {
                         for (int k = 0; k < vpixs[i][j].size(); k++) {
                             const Vec2 pix = vpixs[i][j][k];
-                            const Vec3 obj = getVec(vobjs[i][j][k].x, vobjs[i][j][k].y, 0.0);
+                            const Vec3 obj = getVec3(vobjs[i][j][k].x, vobjs[i][j][k].y, 0.0);
 
                             SP_REAL tmp[3 * 6] = { 0 };
                             jacobPoseToPos(tmp, vposes[i], obj);
@@ -501,7 +501,7 @@ namespace sp{
                         for (int j = 0; j < vposes.size(); j++) {
                             for (int k = 0; k < vpixs[j][i].size(); k++) {
                                 const Vec2 pix = vpixs[j][i][k];
-                                const Vec3 obj = getVec(vobjs[j][i][k], 0.0);
+                                const Vec3 obj = getVec3(vobjs[j][i][k], 0.0);
 
                                 const Pose pose = poses[i] * vposes[j];
 
@@ -530,7 +530,7 @@ namespace sp{
                         for (int j = 0; j < vposes.size(); j++) {
                             for (int k = 0; k < vpixs[j][i].size(); k++) {
                                 const Vec2 pix = vpixs[j][i][k];
-                                const Vec3 obj = getVec(vobjs[j][i][k].x, vobjs[j][i][k].y, 0.0);
+                                const Vec3 obj = getVec3(vobjs[j][i][k].x, vobjs[j][i][k].y, 0.0);
 
                                 const Pose pose = poses[i] * vposes[j];
 
@@ -655,8 +655,8 @@ namespace sp{
             }
             const Mat txy = invMat(trnMat(mat1) * mat1) * trnMat(mat1) * mat0;
 
-            X = getPose(xrot, getVec(txy[0], txy[1], txy[2]));
-            Z = getPose(zrot, getVec(txy[3], txy[4], txy[5]));
+            X = getPose(xrot, getVec3(txy[0], txy[1], txy[2]));
+            Z = getPose(zrot, getVec3(txy[3], txy[4], txy[5]));
 
             return true;
         }
@@ -695,7 +695,7 @@ namespace sp{
                         }
                         {
                             Mat J1_6D3D(3, 6);
-                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(tobjs[j].x, tobjs[j].y, 0.0));
+                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec3(tobjs[j].x, tobjs[j].y, 0.0));
 
                             Mat J1_3D2D(2, 3);
                             jacobPosToPix(J1_3D2D.ptr, cam, iZ * tobjs[j]);
@@ -794,7 +794,7 @@ namespace sp{
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int j = 0; j < pixs0[i].size(); j++) {
                 for (int k = 0; k < pixs1[i].size(); k++) {
-                    if (cmpVec(objs0[i][j], objs1[i][k]) == true) {
+                    if (cmpVec2(objs0[i][j], objs1[i][k]) == true) {
                         tpixs0.push(pixs0[i][j]);
                         tpixs1.push(pixs1[i][k]);
                         tobjs.push(objs0[i][j]);
@@ -893,7 +893,7 @@ namespace sp{
             Vec3 vecx, vecy, vecz;
             vecx = unitVec((invRot(stereo.rot) * stereo.trn) * -1.0);
 
-            const Vec3 uz = getVec(0.0, 0.0, 1.0);
+            const Vec3 uz = getVec3(0.0, 0.0, 1.0);
             const Vec3 mz = unitVec(uz + invRot(stereo.rot) * uz);
 
             vecy = unitVec(crsVec(mz, vecx));
@@ -910,7 +910,7 @@ namespace sp{
             const int dsize[2] = { cam1.dsize[0], cam1.dsize[1] };
             
             const SP_REAL f = (fixFocal > 0) ? fixFocal : (cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0;
-            const Vec2 cent = getVec(dsize[0] - 1, dsize[1] - 1) * 0.5;
+            const Vec2 cent = getVec2(dsize[0] - 1, dsize[1] - 1) * 0.5;
 
             RectParam *pRect[2] = { &rect0, &rect1 };
         
@@ -942,7 +942,7 @@ namespace sp{
 
         for (int v = 0; v < table.dsize[1]; v++){
             for (int u = 0; u < table.dsize[0]; u++){
-                const Vec2 src = getVec(u, v);
+                const Vec2 src = getVec2(u, v);
                 const Vec2 dst = pixDist(cam, src);
                 table(u, v) = dst - src;
             }
@@ -956,7 +956,7 @@ namespace sp{
         const Rot rot = invRot(rect.rot);
         for (int v = 0; v < table.dsize[1]; v++){
             for (int u = 0; u < table.dsize[0]; u++){
-                const Vec2 src = getVec(u, v);
+                const Vec2 src = getVec2(u, v);
                 const Vec2 npx = invCamD(rect.cam, src);
                 const Vec2 wrp = prjVec(rot * prjVec(npx));
 

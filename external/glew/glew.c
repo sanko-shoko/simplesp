@@ -3188,7 +3188,7 @@ PFNGLSPRITEPARAMETERIVSGIXPROC __glewSpriteParameterivSGIX = NULL;
 
 PFNGLTAGSAMPLEBUFFERSGIXPROC __glewTagSampleBufferSGIX = NULL;
 
-PFNGLGETVECTOROPERATIONSGIXPROC __glewGetVectorOperationSGIX = NULL;
+PFNGLgetVec3TOROPERATIONSGIXPROC __glewgetVec3torOperationSGIX = NULL;
 PFNGLVECTOROPERATIONSGIXPROC __glewVectorOperationSGIX = NULL;
 
 PFNGLAREVERTEXARRAYSRESIDENTSGIXPROC __glewAreVertexArraysResidentSGIX = NULL;
@@ -15887,7 +15887,7 @@ static GLboolean _glewInit_GL_SGIX_vector_ops ()
 {
   GLboolean r = GL_FALSE;
 
-  r = ((glGetVectorOperationSGIX = (PFNGLGETVECTOROPERATIONSGIXPROC)glewGetProcAddress((const GLubyte*)"glGetVectorOperationSGIX")) == NULL) || r;
+  r = ((glgetVec3torOperationSGIX = (PFNGLgetVec3TOROPERATIONSGIXPROC)glewGetProcAddress((const GLubyte*)"glgetVec3torOperationSGIX")) == NULL) || r;
   r = ((glVectorOperationSGIX = (PFNGLVECTOROPERATIONSGIXPROC)glewGetProcAddress((const GLubyte*)"glVectorOperationSGIX")) == NULL) || r;
 
   return r;

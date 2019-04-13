@@ -108,11 +108,11 @@ namespace sp {
             const SP_REAL vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
             const SP_REAL vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
             const SP_REAL vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
-            return unitVec(getVec(-vx, -vy, -vz));
+            return unitVec(getVec3(-vx, -vy, -vz));
         }
 
         Vec3 center() const {
-            return getVec(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
+            return getVec3(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
         }
     };
 
@@ -146,7 +146,7 @@ namespace sp {
             for (int z = 0; z < voxel.dsize[2]; z++) {
                 for (int y = 0; y < voxel.dsize[1]; y++) {
                     for (int x = 0; x < voxel.dsize[0]; x++) {
-                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 mpos = getVec3(x, y, z);
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
@@ -293,7 +293,7 @@ namespace sp {
 
                                 int score = 0;
                                 for (int k = 0; k < 8; k++) {
-                                    p[k] = getVec(x, y, z) + getVec(order[k]);
+                                    p[k] = getVec3(x, y, z) + getVec3(order[k]);
                                     v[k] = vmap(order[k][0], order[k][1], order[k][2]);
 
                                     score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
@@ -315,7 +315,7 @@ namespace sp {
                         return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
                     };
                     auto g = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                        return (pid > 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                        return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
                     };
                     auto h = [&](const int a0, const int a1, const int b0, const int b1, const int c0, const int c1) {
                         ms.push(g(f(a0, a1), f(b0, b1), f(c0, c1)));
@@ -446,13 +446,13 @@ namespace sp {
                         }
                         if (vecs.size() != 8) continue;
 
-                        if (cmpVec(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
-                        if (cmpVec(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
+                        if (cmpVec3(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
+                        if (cmpVec3(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
+                        if (cmpVec3(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
+                        if (cmpVec3(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
 
-                        zms[mz].push(getMesh(vecs[0], vecs[3], vecs[1]));
-                        zms[mz].push(getMesh(vecs[1], vecs[3], vecs[2]));
+                        zms[mz].push(getMesh3(vecs[0], vecs[3], vecs[1]));
+                        zms[mz].push(getMesh3(vecs[1], vecs[3], vecs[2]));
                         dpids[mz].push(15);
                     }
                 }
@@ -472,7 +472,7 @@ namespace sp {
             for (int i = 0; i < dpids[mz].size(); i++) {
                 const int pid = dpids[mz][i];
                 auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                    return (pid < 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                    return (pid < 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
                 };
                 auto div3 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const int type){
                     const Vec3 s = (a + b + c) / 3.0;
@@ -660,7 +660,7 @@ namespace sp {
         };
         Mem1<VoxelPlane> vps;
         {
-            const Vec3 _axis[3] = { getVec(1.0, 0.0, 0.0), getVec(0.0, 1.0, 0.0), getVec(0.0, 0.0, 1.0) };
+            const Vec3 _axis[3] = { getVec3(1.0, 0.0, 0.0), getVec3(0.0, 1.0, 0.0), getVec3(0.0, 0.0, 1.0) };
             
             for (int i = 0; i < 3; i++) {
                 for (int s = -1; s <= +1; s += 2) {
@@ -677,9 +677,9 @@ namespace sp {
         for (int v = 0; v < rmsk.dsize[1]; v++) {
             for (int u = 0; u < rmsk.dsize[0]; u++) {
                 Vec2 &range = rmsk(u, v);
-                range = getVec(0.0, SP_INFINITY);
+                range = getVec2(0.0, SP_INFINITY);
 
-                const Vec3 vec = prjVec(invCam(cam, getVec(u, v)));
+                const Vec3 vec = prjVec(invCam(cam, getVec2(u, v)));
                 for (int i = 0; i < vps.size(); i++) {
                     const Vec3 &pos = vps[i].pos;
                     const Vec3 &X = vps[i].axis[0];
@@ -743,7 +743,7 @@ namespace sp {
             for (int z = 0; z < voxel.dsize[2]; z++) {
                 for (int y = 0; y < voxel.dsize[1]; y++) {
                     for (int x = 0; x < voxel.dsize[0]; x++) {
-                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 mpos = getVec3(x, y, z);
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
@@ -780,7 +780,7 @@ namespace sp {
         for (int z = 0; z < voxel.dsize[2]; z++) {
             for (int y = 0; y < voxel.dsize[1]; y++) {
                 for (int x = 0; x < voxel.dsize[0]; x++) {
-                    const Vec3 mpos = getVec(x, y, z);
+                    const Vec3 mpos = getVec3(x, y, z);
                     const Vec3 cpos = pose * ((mpos - cent) * voxel.unit);
 
                     const Vec2 pix = mulCam(cam, prjVec(cpos));
@@ -817,7 +817,7 @@ namespace sp {
                 const SP_REAL maxv = rmsk(u, v).y;
                 if (minv <= SP_SMALL) continue;
 
-                const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
+                const Vec3 cvec = prjVec(invCam(cam, getVec2(u, v)));
                 const Vec3 mvec = ipose.rot * cvec;
 
                 SP_REAL detect = minv;
@@ -865,7 +865,7 @@ namespace sp {
                     const Vec3 cpos = cvec * detect;
                     const Vec3 cnrm = pose.rot * mnrm;
 
-                    map(u, v) = getVecPN(cpos, cnrm);
+                    map(u, v) = getVecPN3(cpos, cnrm);
                 }
             }
         }

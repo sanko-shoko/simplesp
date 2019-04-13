@@ -126,7 +126,7 @@ namespace sp{
                         SP_REAL d = depth(round(pix.x), round(pix.y));
                         d = (d > 0.0) ? d : (1.0 + 0.1 * randValUnif()) * pose.trn.z;
 
-                        const Vec3 v = getVec(npx.x, npx.y, 1.0) * d;
+                        const Vec3 v = getVec3(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);
                     }
 
@@ -201,17 +201,17 @@ namespace sp{
 
             Mem1<Tmp> tmps;
             const SP_REAL angle = randValUnif() * SP_PI;
-            const Vec2 nl = getVec(cos(angle), sin(angle));
+            const Vec2 nl = getVec2(cos(angle), sin(angle));
 
             for (int v = 0; v < cam.dsize[1]; v++) {
                 for (int u = 0; u < cam.dsize[0]; u++) {
                     const SP_REAL d = depth(u, v);
                     if (d > 0.0) {
-                        const Vec2 npx = invCam(cam, getVec(u, v));
+                        const Vec2 npx = invCam(cam, getVec2(u, v));
 
                         Tmp tmp;
-                        tmp.pos = getVec(npx.x, npx.y, 1.0) * d;
-                        tmp.eval = dotVec(nl, getVec(u, v));
+                        tmp.pos = getVec3(npx.x, npx.y, 1.0) * d;
+                        tmp.eval = dotVec(nl, getVec2(u, v));
                         tmps.push(tmp);
                     }
                 }
@@ -246,7 +246,7 @@ namespace sp{
                     SP_REAL d = depth(round(pix.x), round(pix.y));
                     d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
 
-                    const Vec3 vec = getVec(npx.x, npx.y, 1.0) * d;
+                    const Vec3 vec = getVec3(npx.x, npx.y, 1.0) * d;
                     const Vec3 vec1 = invPose(tpose) * vec;
                     const Vec3 vec2 = pnts[p];
                     const Vec3 dif = vec1 - vec2;

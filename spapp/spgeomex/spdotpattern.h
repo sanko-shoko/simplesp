@@ -100,7 +100,7 @@ namespace sp{
                     const int u = (x + 1) * distance;
                     const int v = (y + 1) * distance;
 
-                    const Vec2 prj = getVec(u, v);
+                    const Vec2 prj = getVec2(u, v);
                     const Byte bit = rand() % 2;
 
                     renderPoint<Byte>(img, prj, val, (bit == 0) ? radius : 2 * radius);
@@ -287,18 +287,18 @@ namespace sp{
                 // check outside area
                 if (inRect(getRect2(labelMap.dsize), rect) == false) continue;
 
-                Vec2 sum = getVec(0, 0);
+                Vec2 sum = getVec2(0.0, 0.0);
                 int cnt = 0;
                 for (int y = 0; y < rect.dsize[1]; y++) {
                     for (int x = 0; x < rect.dsize[0]; x++) {
                         if (labelMap(x + rect.dbase[0], y + rect.dbase[1]) > 0) continue;
 
-                        sum += getVec(x, y);
+                        sum += getVec2(x, y);
                         cnt++;
                     }
                 }
                 if (cnt > 0) {
-                    pixs.push(sum / cnt + getVec(rect.dbase[0], rect.dbase[1]));
+                    pixs.push(sum / cnt + getVec2(rect.dbase[0], rect.dbase[1]));
                     scales.push(cnt);
                 }
             }
@@ -308,9 +308,9 @@ namespace sp{
         SP_REAL recog(Mat &hom, const DotPatternParam &ptn, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales, const KdTree<SP_REAL> &kdtree) {
 
             const Mem2<Vec2> ext = grid(2 * (ptn.map.dsize[0] - 1), 2 * (ptn.map.dsize[1] - 1));
-            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec(0.5, 0.5);
-            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec(1.5, 1.5);
-            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec(2.5, 2.5);
+            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
+            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec2(1.5, 1.5);
+            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec2(2.5, 2.5);
 
             const int maxn = 10;
             const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
@@ -454,10 +454,10 @@ namespace sp{
                         // align pixs
                         Vec2 v[4] = { pixs[s0], pixs[s1], pixs[s2], pixs[s3] };
                         {
-                            const Vec2 direct = getVec(1.0, 0.0);
+                            const Vec2 direct = getVec2(1.0, 0.0);
 
                             const Vec2 xdirect = direct;
-                            const Vec2 ydirect = getVec(-direct.y, direct.x);
+                            const Vec2 ydirect = getVec2(-direct.y, direct.x);
 
                             for (int i = 0; i < 4; i++) {
                                 for (int j = i + 1; j < 4; j++) {
@@ -513,7 +513,7 @@ namespace sp{
                     }
                     if (eval > maxEval) {
                         maxEval = eval;
-                        offset = getVec(x, y);
+                        offset = getVec2(x, y);
                     }
                 }
             }
@@ -581,7 +581,7 @@ namespace sp{
                     }
                     if (eval > maxEval) {
                         maxEval = eval;
-                        peak = getVec(x, y);
+                        peak = getVec2(x, y);
                     }
                 }
             }

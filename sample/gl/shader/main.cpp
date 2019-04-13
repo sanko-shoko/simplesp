@@ -42,7 +42,7 @@ private:
             m_model = loadGeodesicDorm(100.0, 1);
         }
 
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
     }
     

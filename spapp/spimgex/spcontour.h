@@ -74,10 +74,10 @@ namespace sp{
   
                 SP_REAL eval = SP_INFINITY;
 
-                Vec2 vec = getVec(0.0, 0.0);
+                Vec2 vec = getVec2(0.0, 0.0);
                 for (int v = -w0; v <= +w0; v++) {
                     for (int u = -w0; u <= +w0; u++) {
-                        const Vec2 tA = A + getVec(u, v);
+                        const Vec2 tA = A + getVec2(u, v);
                         const int ix = round(tA.x);
                         const int iy = round(tA.y);
 
@@ -102,7 +102,7 @@ namespace sp{
                         const SP_REAL e = a * e_len + b * e_crv + c * e_img;
                         if (e < eval) {
                             eval = e;
-                            vec = getVec(u, v);
+                            vec = getVec2(u, v);
                         }
                     }
                 }

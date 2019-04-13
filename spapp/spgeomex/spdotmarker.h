@@ -39,7 +39,7 @@ namespace sp{
         }
 
         void setParam(const int dsize0, const int dsize1, const SP_REAL distance){
-            map = grid(dsize0, dsize1) - getVec(dsize0 - 1, dsize1 - 1) * 0.5;
+            map = grid(dsize0, dsize1) - getVec2(dsize0 - 1, dsize1 - 1) * 0.5;
 
             this->distance = distance;
         }
@@ -241,7 +241,7 @@ namespace sp{
         }
 
         // marker direction (backup)
-        Vec2 m_direct = getVec(1.0, 0.0);
+        Vec2 m_direct = getVec2(1.0, 0.0);
 
         void estimate(const Mem2<Byte> &img, const Mem1<Vec2> &pixs){
 
@@ -286,7 +286,7 @@ namespace sp{
 
                 m_hom = (trkEval > 0.95 * rcgEval) ? trkHom : rcgHom;
 
-                m_direct = unitVec(m_hom * getVec(1.0, 0.0) - m_hom * getVec(0.0, 0.0));
+                m_direct = unitVec(m_hom * getVec2(1.0, 0.0) - m_hom * getVec2(0.0, 0.0));
             }
 
             {
@@ -344,13 +344,13 @@ namespace sp{
                 }
 
                 int cnt = 0;
-                Vec2 sum = getVec(0.0, 0.0);
+                Vec2 sum = getVec2(0.0, 0.0);
                 for (int v = orgRect.dbase[1]; v < orgRect.dbase[1] + orgRect.dsize[1]; v++) {
                     for (int u = orgRect.dbase[0]; u < orgRect.dbase[0] + orgRect.dsize[0]; u++) {
                         const Byte val = orgImg(u, v);
                         if (val >= thresh) continue;
                         
-                        sum += getVec(u, v);
+                        sum += getVec2(u, v);
                         cnt++;
                     }
                 }
@@ -413,13 +413,13 @@ namespace sp{
         SP_REAL recog(Mat &hom, const DotMarkerParam &mrk, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree){
 
             const Mem2<Vec2> ext = grid(2 * (mrk.map.dsize[0] - 1), 2 * (mrk.map.dsize[1] - 1));
-            const Mem2<Vec2> unit = grid(2, 2) + meanVec(ext) - getVec(0.5, 0.5);
+            const Mem2<Vec2> unit = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
 
             const int maxn = 10;
             const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
 
             Mat H = eyeMat(3, 3);
-            Vec2 V = getVec(0.0, 0.0);
+            Vec2 V = getVec2(0.0, 0.0);
 
             SP_REAL maxv = 0.0;
             for (int n = 0; n < maxn; n++){
@@ -531,7 +531,7 @@ namespace sp{
                         Vec2 v[4] = { pixs[s0], pixs[s1], pixs[s2], pixs[s3] };
                         {
                             const Vec2 xdirect = direct;
-                            const Vec2 ydirect = getVec(-direct.y, direct.x);
+                            const Vec2 ydirect = getVec2(-direct.y, direct.x);
 
                             for (int i = 0; i < 4; i++){
                                 for (int j = i + 1; j < 4; j++){
@@ -596,7 +596,7 @@ namespace sp{
                     }
                     if (eval > maxEval){
                         maxEval = eval;
-                        peak = getVec(x, y);
+                        peak = getVec2(x, y);
                     }
                 }
             }
@@ -644,7 +644,7 @@ namespace sp{
 
         Mem2<Col3> cmap(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1);
         {
-            const Vec2 offset = getVec(mrk.map.dsize[0], mrk.map.dsize[1]) * 0.5;
+            const Vec2 offset = getVec2(mrk.map.dsize[0], mrk.map.dsize[1]) * 0.5;
 
             Mem2<bool> valid(cmap.dsize);
             valid.zero();
@@ -652,7 +652,7 @@ namespace sp{
             SP_REAL sum[3] = { 0 };
             for (int y = 0; y < cmap.dsize[1]; y++) {
                 for (int x = 0; x < cmap.dsize[0]; x++) {
-                    const Vec2 pix = hom * (getVec(x, y) - offset);
+                    const Vec2 pix = hom * (getVec2(x, y) - offset);
                     if (inRect2(img.dsize, pix.x, pix.y) == false) continue;
 
                     acsc(cmap, x, y) = acsc(img, pix.x, pix.y);
@@ -692,7 +692,7 @@ namespace sp{
 
             for (int v = 0; v < img.dsize[1]; v++) {
                 for (int u = 0; u < img.dsize[0]; u++) {
-                    const Vec2 vec = mulMat(ihom.ptr, 3, 3, getVec(u, v));
+                    const Vec2 vec = mulMat(ihom.ptr, 3, 3, getVec2(u, v));
 
                     const SP_REAL dw = mrk.map.dsize[0] / 2.0;
                     const SP_REAL dh = mrk.map.dsize[1] / 2.0;
@@ -702,7 +702,7 @@ namespace sp{
                     const SP_REAL rh = maxVal(0.0, fabs(vec.y) - dh);
                     const SP_REAL rate = 2 * maxVal(rw, rh);
 
-                    const Vec2 pos = vec + getVec(dw, dh);
+                    const Vec2 pos = vec + getVec2(dw, dh);
 
                     img(u, v) = blendCol(img(u, v), acsc(cmap, pos.x, pos.y), rate);
                 }

@@ -105,7 +105,7 @@ private:
 
             const Pose boardToCamPose = *m_dotMarker.getPose();
             const Pose worldToBoardPose = getPose(getRotAngleX(5 * SP_PI / 180.0));
-            const Pose worldToModelPose = getPose(getRotAngleX(180 * SP_PI / 180.0), getVec(0.0, 30.0, 0.0));
+            const Pose worldToModelPose = getPose(getRotAngleX(180 * SP_PI / 180.0), getVec3(0.0, 30.0, 0.0));
 
             const Pose modelToCamPose = boardToCamPose * worldToBoardPose * invPose(worldToModelPose);
 

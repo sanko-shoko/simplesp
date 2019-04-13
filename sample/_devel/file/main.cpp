@@ -18,9 +18,9 @@ int main(){
         loadText("pose.txt", pose);
         print(pose);
 
-        Vec3 vec = getVec(0.0, 0.0, 0.0);
+        Vec3 vec = getVec3(0.0, 0.0, 0.0);
         saveText("vec.txt", vec);
-        vec = getVec(2.0, 2.0, 3.0);
+        vec = getVec3(2.0, 2.0, 3.0);
         loadText("vec.txt", vec);
         print(vec);
 

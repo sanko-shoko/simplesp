@@ -58,7 +58,7 @@ namespace sp{
         const int num = getGeodesicMeshNum(0);
         for (int i = 0; i < num; i++){
             const Vec3 v = getMeshPos(getGeodesicMesh(0, i)) * (-1.0);
-            const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+            const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
             Mem2<VecPN3> map;
             renderVecPN(map, cam, pose, model);
 
@@ -203,7 +203,7 @@ namespace sp{
 
             for (int i = 0; i < num; i++) {
                 const Vec3 v = getMeshPos(getGeodesicMesh(level, i)) * (-1.0);
-                const Pose pose = getPose(getRotDirection(v), getVec(0.0, 0.0, distance));
+                const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
                
                 pmodels[i].pose = pose;
             }
@@ -360,13 +360,13 @@ namespace sp{
     SP_CPUFUNC Mem1<Mesh3> loadPlane(const SP_REAL size) {
         Mem1<Mesh3> model;
         const SP_REAL hs = size * 0.5;
-        const Vec3 a = getVec(-hs, -hs, 0.0);
-        const Vec3 b = getVec(+hs, -hs, 0.0);
-        const Vec3 c = getVec(+hs, +hs, 0.0);
-        const Vec3 d = getVec(-hs, +hs, 0.0);
+        const Vec3 a = getVec3(-hs, -hs, 0.0);
+        const Vec3 b = getVec3(+hs, -hs, 0.0);
+        const Vec3 c = getVec3(+hs, +hs, 0.0);
+        const Vec3 d = getVec3(-hs, +hs, 0.0);
 
-        model.push(getMesh(a, b, c));
-        model.push(getMesh(a, c, d));
+        model.push(getMesh3(a, b, c));
+        model.push(getMesh3(a, c, d));
         
         return model;
     }
@@ -392,14 +392,14 @@ namespace sp{
                 for (int x = -1; x <= +1; x += 2) {
                     if ((x * y * z) > 0) continue;
 
-                    const Vec3 p0 = getVec(+x, +y, +z) * half;
-                    const Vec3 px = getVec(-x, +y, +z) * half;
-                    const Vec3 py = getVec(+x, -y, +z) * half;
-                    const Vec3 pz = getVec(+x, +y, -z) * half;
+                    const Vec3 p0 = getVec3(+x, +y, +z) * half;
+                    const Vec3 px = getVec3(-x, +y, +z) * half;
+                    const Vec3 py = getVec3(+x, -y, +z) * half;
+                    const Vec3 pz = getVec3(+x, +y, -z) * half;
 
-                    model.push(getMesh(p0, py, px));
-                    model.push(getMesh(p0, pz, py));
-                    model.push(getMesh(p0, px, pz));
+                    model.push(getMesh3(p0, py, px));
+                    model.push(getMesh3(p0, pz, py));
+                    model.push(getMesh3(p0, px, pz));
                 }
             }
         }

@@ -86,17 +86,17 @@ namespace sp {
             }
 
             if (_action == 0) {
-                drag = getVec(0.0, 0.0);
+                drag = getVec2(0.0, 0.0);
             }
         }
 
         void setPos(const double x, const double y) {
 
             if (bDownL || bDownR || bDownM) {
-                move = getVec(x, y) - pos;
+                move = getVec2(x, y) - pos;
                 drag += move;
             }
-            pos = getVec(x, y);
+            pos = getVec2(x, y);
         }
 
         void setScroll(const double x, const double y) {
@@ -138,7 +138,7 @@ namespace sp {
         }
 
         if (mouse.bDownL && normVec(mouse.move) > 0.0) {
-            cpose.rot = getRotAngle(getVec(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
+            cpose.rot = getRotAngle(getVec3(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
             ret = true;
         }
 
@@ -234,7 +234,7 @@ namespace sp {
             m_win = NULL;
             m_parent = NULL;
 
-            m_viewPos = getVec(0.0, 0.0);
+            m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
 
             const static Col4 col = getCol(24, 32, 32, 255);

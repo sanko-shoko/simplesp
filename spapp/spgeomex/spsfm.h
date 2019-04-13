@@ -692,7 +692,7 @@ namespace sp {
                         cams[i] = mviews[i]->cam;
                         pixs[i] = mfts[i]->pix;
                     }
-                    Vec3 pos = getVec(0.0, 0.0, 0.0);
+                    Vec3 pos = getVec3(0.0, 0.0, 0.0);
                     if (calcPnt3dRANSAC(pos, poses, cams, pixs) == false) continue;
 
                     const Mem1<SP_REAL> errs = calcPrjErr(poses, cams, pixs, pos);

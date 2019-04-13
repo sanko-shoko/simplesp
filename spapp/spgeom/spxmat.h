@@ -171,8 +171,8 @@ namespace sp{
             if (norm < SP_SMALL) return false;
             H /= norm;
 
-            const Vec2 rx = getVec(H(0, 0), H(1, 0));
-            const Vec2 ry = getVec(H(0, 1), H(1, 1));
+            const Vec2 rx = getVec2(H(0, 0), H(1, 0));
+            const Vec2 ry = getVec2(H(0, 1), H(1, 1));
             if (normVec(rx) < SP_SMALL || normVec(ry) < SP_SMALL) return false;
         }
 
@@ -185,8 +185,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     SP_CPUFUNC SP_REAL errMatType2(const Mat &M, const Vec2 &vec0, const Vec2 &vec1) {
-        const Vec3 n0 = getVec(vec0.x, vec0.y, 1.0);
-        const Vec3 n1 = getVec(vec1.x, vec1.y, 1.0);
+        const Vec3 n0 = getVec3(vec0.x, vec0.y, 1.0);
+        const Vec3 n1 = getVec3(vec1.x, vec1.y, 1.0);
 
         const Vec3 M0 = M * n0;
         const Vec3 M1 = trnMat(M) * n1;

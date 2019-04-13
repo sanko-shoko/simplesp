@@ -135,8 +135,8 @@ namespace sp{
                 const SP_REAL val2 = acs2(src, u, v + 1);
                 if (val1 == 0.0 || val2 == 0.0) continue;
 
-                const Vec2 npx0 = invCam(cam, getVec(u, v));
-                const Vec3 vec0 = getVec(npx0.x, npx0.y, 1.0) * val0;
+                const Vec2 npx0 = invCam(cam, getVec2(u, v));
+                const Vec3 vec0 = getVec3(npx0.x, npx0.y, 1.0) * val0;
 
                 acs2(dst, u, v) = vec0;
             }
@@ -159,17 +159,17 @@ namespace sp{
                 const SP_REAL val2 = acs2(src, u, v + 1);
                 if (val1 == 0.0 || val2 == 0.0) continue;
 
-                const Vec2 npx0 = invCam(cam, getVec(u, v));
-                const Vec2 npx1 = invCam(cam, getVec(u + 1, v));
-                const Vec2 npx2 = invCam(cam, getVec(u, v + 1));
+                const Vec2 npx0 = invCam(cam, getVec2(u, v));
+                const Vec2 npx1 = invCam(cam, getVec2(u + 1, v));
+                const Vec2 npx2 = invCam(cam, getVec2(u, v + 1));
 
-                const Vec3 vec0 = getVec(npx0.x, npx0.y, 1.0) * val0;
-                const Vec3 vec1 = getVec(npx1.x, npx1.y, 1.0) * val1;
-                const Vec3 vec2 = getVec(npx2.x, npx2.y, 1.0) * val2;
+                const Vec3 vec0 = getVec3(npx0.x, npx0.y, 1.0) * val0;
+                const Vec3 vec1 = getVec3(npx1.x, npx1.y, 1.0) * val1;
+                const Vec3 vec2 = getVec3(npx2.x, npx2.y, 1.0) * val2;
 
                 const Vec3 nrm = unitVec(crsVec(vec2 - vec0, vec1 - vec0));
 
-                acs2(dst, u, v) = getVecPN(vec0, nrm);
+                acs2(dst, u, v) = getVecPN3(vec0, nrm);
             }
         }
     }

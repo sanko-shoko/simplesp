@@ -254,7 +254,7 @@ namespace sp{
             if (fabs(j) < SP_SMALL) break;
             x += err / j;
         }
-        return getVec(x, a * x + b);
+        return getVec2(x, a * x + b);
     }
 
     // undistortion y
@@ -290,7 +290,7 @@ namespace sp{
             if (fabs(j) < SP_SMALL) break;
             y += err / j;
         }
-        return getVec(a * y + b, y);
+        return getVec2(a * y + b, y);
     }
 
     // update

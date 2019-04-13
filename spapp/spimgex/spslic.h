@@ -46,7 +46,7 @@ namespace sp{
                             }
                         }
                     }
-                    pixs.push(getVec(su, sv));
+                    pixs.push(getVec2(su, sv));
                     labs.push(labImg(su, sv));
                 }
             }
@@ -78,7 +78,7 @@ namespace sp{
 
                 for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++){
                     for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++){
-                        const Vec2 pix = getVec(u, v);
+                        const Vec2 pix = getVec2(u, v);
                         const Vec3 lab = labImg(u, v);
                         const SP_REAL d = sqVec((lab - labs[i]) / Nc) + sqVec((pix - pixs[i]) / Ns);
                         if (d < dstMap(u, v)){
@@ -102,7 +102,7 @@ namespace sp{
                         const int label = map(u, v);
                         cnts[label]++;
                         labs[label] += labImg(u, v);
-                        pixs[label] += getVec(u, v);
+                        pixs[label] += getVec2(u, v);
                     }
                 }
 
@@ -149,7 +149,7 @@ namespace sp{
 
                     Mem1<Vec2> list;
                     {
-                        list.push(getVec(u, v));
+                        list.push(getVec2(u, v));
                         tmpMap(u, v) = crntLabel;
                     }
 
@@ -161,7 +161,7 @@ namespace sp{
                             if (tmpMap(x, y) >= 0 || clsMap(u, v) != clsMap(x, y)) continue;
 
                             tmpMap(x, y) = crntLabel;
-                            list.push(getVec(x, y));
+                            list.push(getVec2(x, y));
                         }
                     }
 

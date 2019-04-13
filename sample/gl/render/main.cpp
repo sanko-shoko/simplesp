@@ -50,7 +50,7 @@ private:
         }
 
         m_pnts = getModelPoint(m_model);
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {

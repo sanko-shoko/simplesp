@@ -396,7 +396,7 @@ namespace sp {
 
                         if (cst != 0 && fabs(d) > thresh) {
                             MyFtr *ftr = ftrs.extend();
-                            ftr->pix = getVec(u, v) * 2.0;
+                            ftr->pix = getVec2(u, v) * 2.0;
                             ftr->scl = 2.0;
                             ftr->cst = cst;
                             ftr->pyid = p;
@@ -421,7 +421,7 @@ namespace sp {
                 Mem1<Vec2> rvec;
                 for (int r = 0; r < rdiv; r++) {
                     const SP_REAL p = r * 2.0 * SP_PI / rdiv;
-                    const Vec2 v = getVec(cos(p), sin(p));
+                    const Vec2 v = getVec2(cos(p), sin(p));
                     rvec.push(v);
                 }
 
@@ -438,7 +438,7 @@ namespace sp {
                 //        for (int y = -1; y <= +1; y++) {
                 //            for (int x = -1; x <= +1; x++) {
 
-                //                const Vec2 tpix = pix + getVec(x, y) * 0.5;
+                //                const Vec2 tpix = pix + getVec3(x, y) * 0.5;
                 //                const SP_REAL tscl = scl + s * 0.5;
 
                 //                SP_REAL mm = 0.0;
@@ -459,12 +459,12 @@ namespace sp {
                 //                }
                 //                if (mm > maxv) {
                 //                    maxv = mm;
-                //                    result = getVec(x * 0.5, y * 0.5, s * 0.5);
+                //                    result = getVec3(x * 0.5, y * 0.5, s * 0.5);
                 //                }
                 //            }
                 //        }
                 //    }
-                //    ftrs[i].pix += getVec(result.x, result.y);
+                //    ftrs[i].pix += getVec3(result.x, result.y);
                 //    ftrs[i].scl += result.z;
                 //}
 
@@ -472,7 +472,7 @@ namespace sp {
                     const Vec2 pix = ftrs[i].pix;
                     const SP_REAL scl = ftrs[i].scl;
 
-                    Vec2 ap = getVec(0.0, 0.0);
+                    Vec2 ap = getVec2(0.0, 0.0);
                     SP_REAL as = 0.0;
 
                     int cnt = 0;
@@ -518,7 +518,7 @@ namespace sp {
                     const Vec2 pix = ftrs[i].pix;
                     const SP_REAL scl = ftrs[i].scl;
 
-                    Vec2 ap = getVec(0.0, 0.0);
+                    Vec2 ap = getVec2(0.0, 0.0);
                     SP_REAL as = 0.0;
 
                     SP_REAL minv = SP_INFINITY;
@@ -620,7 +620,7 @@ namespace sp {
                     const SP_REAL finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
                     const SP_REAL angle = finei * (2.0 * SP_PI / BINS);
 
-                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    const Vec2 drc = getVec2(cos(angle), sin(angle));
                     drcs.push(drc);
                 }
             }

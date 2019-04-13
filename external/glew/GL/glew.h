@@ -19362,10 +19362,10 @@ typedef void (GLAPIENTRY * PFNGLTAGSAMPLEBUFFERSGIXPROC) (void);
 #ifndef GL_SGIX_vector_ops
 #define GL_SGIX_vector_ops 1
 
-typedef void (GLAPIENTRY * PFNGLGETVECTOROPERATIONSGIXPROC) (GLenum operation);
+typedef void (GLAPIENTRY * PFNGLgetVec3TOROPERATIONSGIXPROC) (GLenum operation);
 typedef void (GLAPIENTRY * PFNGLVECTOROPERATIONSGIXPROC) (GLenum operation);
 
-#define glGetVectorOperationSGIX GLEW_GET_FUN(__glewGetVectorOperationSGIX)
+#define glgetVec3torOperationSGIX GLEW_GET_FUN(__glewgetVec3torOperationSGIX)
 #define glVectorOperationSGIX GLEW_GET_FUN(__glewVectorOperationSGIX)
 
 #define GLEW_SGIX_vector_ops GLEW_GET_VAR(__GLEW_SGIX_vector_ops)
@@ -22725,7 +22725,7 @@ GLEW_FUN_EXPORT PFNGLSPRITEPARAMETERIVSGIXPROC __glewSpriteParameterivSGIX;
 
 GLEW_FUN_EXPORT PFNGLTAGSAMPLEBUFFERSGIXPROC __glewTagSampleBufferSGIX;
 
-GLEW_FUN_EXPORT PFNGLGETVECTOROPERATIONSGIXPROC __glewGetVectorOperationSGIX;
+GLEW_FUN_EXPORT PFNGLgetVec3TOROPERATIONSGIXPROC __glewgetVec3torOperationSGIX;
 GLEW_FUN_EXPORT PFNGLVECTOROPERATIONSGIXPROC __glewVectorOperationSGIX;
 
 GLEW_FUN_EXPORT PFNGLAREVERTEXARRAYSRESIDENTSGIXPROC __glewAreVertexArraysResidentSGIX;

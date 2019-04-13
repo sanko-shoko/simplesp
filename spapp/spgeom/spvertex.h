@@ -67,7 +67,7 @@ namespace sp{
                 }
 
                 if (check == false) {
-                    meshes.push(getMesh(A, B, C));
+                    meshes.push(getMesh2(A, B, C));
                     p = pi % tmps.size();
                     break;
                 }
@@ -76,7 +76,7 @@ namespace sp{
             tmps.del(p);
         }
 
-        meshes.push(getMesh(tmps[0], tmps[1], tmps[2]));
+        meshes.push(getMesh2(tmps[0], tmps[1], tmps[2]));
 
         return meshes;
     }
@@ -104,7 +104,7 @@ namespace sp{
             for (int j = 0; j < 3; j++) {
                 const Mem1<int> index = kdtree.search(&meshes[i].pos[j], 0.1);
 
-                Vec3 nrm = getVec(0.0, 0.0, 0.0);
+                Vec3 nrm = getVec3(0.0, 0.0, 0.0);
                 for (int k = 0; k < index.size(); k++) {
                     const int s = index[k] / 3;
                     nrm += mnrms[s];
