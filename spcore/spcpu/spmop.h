@@ -670,7 +670,7 @@ namespace sp{
         return getVec(vec[0], vec[1], vec[2]);
     }
 
-    SP_CPUFUNC Mem1<Vec3> getVec(const Mem1<Vec2> &vec, const SP_REAL z) {
+    SP_CPUFUNC Mem1<Vec3> extVec(const Mem1<Vec2> &vec, const SP_REAL z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = getVec(vec[i].x, vec[i].y, z);
