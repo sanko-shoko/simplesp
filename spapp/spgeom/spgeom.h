@@ -29,7 +29,7 @@ namespace sp {
     }
 
     SP_CPUFUNC SP_REAL calcPrjErr(const Pose &pose, const CamParam &cam, const Vec2 &pix, const Vec2 &obj) {
-        return calcPrjErr(pose, cam, pix, getVec(obj, 0.0));
+        return calcPrjErr(pose, cam, pix, getVec(obj.x, obj.y, 0.0));
     }
 
     SP_CPUFUNC Mem1<SP_REAL> calcPrjErr(const Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec3> &objs) {
@@ -467,7 +467,7 @@ namespace sp {
         Mem1<Vec3> nrms;
         for (int i = 0; i < 3; i++) {
             const Vec2 npx = invCamD(cam, pixs[i]);
-            const Vec3 vec = getVec(npx, 1.0);
+            const Vec3 vec = getVec(npx.x, npx.y, 1.0);
             const Vec3 nrm = vec / normVec(vec);
             nrms.push(nrm);
         }

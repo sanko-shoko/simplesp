@@ -273,7 +273,7 @@ namespace sp{
         const int w = dst.dsize[0];
         const int h = dst.dsize[1];
 
-        const Vec3 line = F * getVec(pix, 1.0);
+        const Vec3 line = F * getVec(pix.x, pix.y, 1.0);
         if (fabs(line.y) > fabs(line.x)){
             const Vec2 pix0 = getVec(0, -(0 * line.x + line.z) / line.y);
             const Vec2 pix1 = getVec(w, -(w * line.x + line.z) / line.y);
@@ -318,7 +318,7 @@ namespace sp{
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
                 const Vec2 npx = npxUndist(cam, invCam(cam, getVec(u, v)));
-                const Vec3 vec = getVec(npx, 1.0);
+                const Vec3 vec = getVec(npx.x, npx.y, 1.0);
 
                 dst(u, v) = 255;
 

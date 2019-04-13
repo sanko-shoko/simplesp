@@ -33,11 +33,6 @@ namespace sp {
         return dst;
     }
 
-    // get vector (extend)
-    SP_GENFUNC Vec3 getVec(const Vec2 &vec, const SP_REAL z) {
-        return getVec(vec.x, vec.y, z);
-    }
-
     // get vector
     SP_GENFUNC Vec3 getVec(const Col3 &col) {
         Vec3 dst;

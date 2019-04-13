@@ -46,7 +46,7 @@ namespace sp {
         Vec2 drag;
 
         // scroll value
-        SP_REAL scroll;
+        double scroll;
 
         // button
         int bDownL, bDownR, bDownM;
@@ -68,7 +68,7 @@ namespace sp {
 
                 static system_clock::time_point prev = system_clock::now();
                 const system_clock::time_point crnt = system_clock::now();
-                const SP_REAL diff = duration <SP_REAL, std::milli>(crnt - prev).count();
+                const double diff = duration <double, std::milli>(crnt - prev).count();
                 if (diff > 10.0 && diff < 400.0) {
                     _action = GLFW_DOUBLECLICK;
                 }
@@ -90,7 +90,7 @@ namespace sp {
             }
         }
 
-        void setPos(const SP_REAL x, const SP_REAL y) {
+        void setPos(const double x, const double y) {
 
             if (bDownL || bDownR || bDownM) {
                 move = getVec(x, y) - pos;
@@ -99,7 +99,7 @@ namespace sp {
             pos = getVec(x, y);
         }
 
-        void setScroll(const SP_REAL x, const SP_REAL y) {
+        void setScroll(const double x, const double y) {
             scroll = y;
         }
 
@@ -110,7 +110,7 @@ namespace sp {
     // control
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool controlView(Vec2 &viewpPos, SP_REAL &viewScale, const Mouse &mouse) {
+    SP_CPUFUNC bool controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse) {
         bool ret = false;
         if (mouse.bDownL && normVec(mouse.move) > 0.0) {
             viewpPos += mouse.move;
@@ -125,7 +125,7 @@ namespace sp {
         return ret;
     }
 
-    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const SP_REAL viewScale, const Pose base = zeroPose()) {
+    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
         bool ret = false;
 
         Pose cpose = pose * invPose(base);
@@ -166,10 +166,10 @@ namespace sp {
         virtual void mouseButton(int button, int action, int mods) {
         }
 
-        virtual void mousePos(SP_REAL x, SP_REAL y) {
+        virtual void mousePos(double x, double y) {
         }
 
-        virtual void mouseScroll(SP_REAL x, SP_REAL y) {
+        virtual void mouseScroll(double x, double y) {
         }
 
         virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -211,7 +211,7 @@ namespace sp {
         Vec2 m_viewPos;
 
         // view scale
-        SP_REAL m_viewScale;
+        double m_viewScale;
 
         // mouse event class
         Mouse m_mouse;
@@ -455,7 +455,7 @@ namespace sp {
             mouseButton(button, action, mods);
         }
 
-        void _mousePos(SP_REAL x, SP_REAL y) {
+        void _mousePos(double x, double y) {
 
             m_mouse.setPos(x, y);
 
@@ -476,7 +476,7 @@ namespace sp {
             mousePos(x, y);
         }
 
-        void _mouseScroll(SP_REAL x, SP_REAL y) {
+        void _mouseScroll(double x, double y) {
 
             m_mouse.setScroll(x, y);
 
@@ -576,10 +576,10 @@ namespace sp {
         static void mouseButtonCB(GLFWwindow *window, int button, int action, int mods) {
             getThisPtr(window)->_mouseButton(button, action, mods);
         }
-        static void mousePosCB(GLFWwindow *window, SP_REAL x, SP_REAL y) {
+        static void mousePosCB(GLFWwindow *window, double x, double y) {
             getThisPtr(window)->_mousePos(x, y);
         }
-        static void mouseScrollCB(GLFWwindow *window, SP_REAL x, SP_REAL y) {
+        static void mouseScrollCB(GLFWwindow *window, double x, double y) {
             getThisPtr(window)->_mouseScroll(x, y);
         }
         static void keyFunCB(GLFWwindow* window, int key, int scancode, int action, int mods) {

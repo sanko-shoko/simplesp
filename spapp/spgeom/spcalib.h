@@ -113,7 +113,7 @@ namespace sp{
                     const Mem1<Vec2> &tobjs = vobjs[i];
                     for (int p = 0; p < tpixs.size(); p++){
                         const Vec2 pix = tpixs[p];
-                        const Vec3 obj = getVec(tobjs[p], 0.0);
+                        const Vec3 obj = getVec(tobjs[p].x, tobjs[p].y, 0.0);
 
                         jacobCamToPix(jCamToPix.ptr, cam, prjVec(pose * obj));
                         jacobPoseToPix(jPoseToPix.ptr, cam, pose, obj);
@@ -455,7 +455,7 @@ namespace sp{
                     for (int j = 0; j < cnum; j++) {
                         for (int k = 0; k < vpixs[i][j].size(); k++) {
                             const Vec2 pix = vpixs[i][j][k];
-                            const Vec3 obj = getVec(vobjs[i][j][k], 0.0);
+                            const Vec3 obj = getVec(vobjs[i][j][k].x, vobjs[i][j][k].y, 0.0);
 
                             SP_REAL tmp[3 * 6] = { 0 };
                             jacobPoseToPos(tmp, vposes[i], obj);
@@ -530,7 +530,7 @@ namespace sp{
                         for (int j = 0; j < vposes.size(); j++) {
                             for (int k = 0; k < vpixs[j][i].size(); k++) {
                                 const Vec2 pix = vpixs[j][i][k];
-                                const Vec3 obj = getVec(vobjs[j][i][k], 0.0);
+                                const Vec3 obj = getVec(vobjs[j][i][k].x, vobjs[j][i][k].y, 0.0);
 
                                 const Pose pose = poses[i] * vposes[j];
 
@@ -695,7 +695,7 @@ namespace sp{
                         }
                         {
                             Mat J1_6D3D(3, 6);
-                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(tobjs[j], 0.0));
+                            jacobPoseToPos(J1_6D3D.ptr, iZ, getVec(tobjs[j].x, tobjs[j].y, 0.0));
 
                             Mat J1_3D2D(2, 3);
                             jacobPosToPix(J1_3D2D.ptr, cam, iZ * tobjs[j]);

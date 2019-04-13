@@ -185,8 +185,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     SP_CPUFUNC SP_REAL errMatType2(const Mat &M, const Vec2 &vec0, const Vec2 &vec1) {
-        const Vec3 n0 = getVec(vec0, 1.0);
-        const Vec3 n1 = getVec(vec1, 1.0);
+        const Vec3 n0 = getVec(vec0.x, vec0.y, 1.0);
+        const Vec3 n1 = getVec(vec1.x, vec1.y, 1.0);
 
         const Vec3 M0 = M * n0;
         const Vec3 M1 = trnMat(M) * n1;

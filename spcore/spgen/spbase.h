@@ -14,17 +14,17 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // get round (ex. 1.5 -> 2)
-    SP_GENFUNC int round(const SP_REAL val){
+    SP_GENFUNC int round(const double val){
         return static_cast<int>((val > 0) ? (val + 0.5) : (val - 0.5));
     }
 
     // get ceil (ex. 1.5 -> 2)
-    SP_GENFUNC int ceil(const SP_REAL val) {
+    SP_GENFUNC int ceil(const double val) {
         return static_cast<int>((val > 0) ? (val + 1.0) : (val - 1.0));
     }
 
     // get floor (ex. 1.5 -> 1)
-    SP_GENFUNC int floor(const SP_REAL val){
+    SP_GENFUNC int floor(const double val){
         return static_cast<int>(val);
     }
 
@@ -61,7 +61,7 @@ namespace sp{
     }
 
     // get max value
-    SP_GENFUNC const SP_REAL maxVal(const SP_REAL a, const SP_REAL b){
+    SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
         return (a > b) ? a : b;
     }
 
@@ -71,7 +71,7 @@ namespace sp{
     }
 
     // get min value
-    SP_GENFUNC const SP_REAL minVal(const SP_REAL a, const SP_REAL b){
+    SP_GENFUNC const SP_REAL minVal(const double a, const double b){
         return (a < b) ? a : b;
     }
 
@@ -174,7 +174,7 @@ namespace sp{
         dst = static_cast<float>(src);
     }
 
-    template<typename TYPE> SP_GENFUNC void cnvVal(SP_REAL &dst, const TYPE &src){
+    template<typename TYPE> SP_GENFUNC void cnvVal(double &dst, const TYPE &src){
         dst = static_cast<SP_REAL>(src);
     }
 

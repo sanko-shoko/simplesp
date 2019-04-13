@@ -643,7 +643,7 @@ namespace sp{
     SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec2> &vecs) {
         Mem1<Vec3> dst(vecs.size());
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = pose * getVec(vecs[i], 0.0);
+            dst[i] = pose * getVec(vecs[i].x, vecs[i].y, 0.0);
         }
         return dst;
     }
@@ -673,7 +673,7 @@ namespace sp{
     SP_CPUFUNC Mem1<Vec3> getVec(const Mem1<Vec2> &vec, const SP_REAL z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = getVec(vec[i], z);
+            dst[i] = getVec(vec[i].x, vec[i].y, z);
         }
         return dst;
     }

@@ -9,20 +9,33 @@
 
 #include "spcore/spcore.h"
 
-namespace sp{
+namespace sp {
 
     //--------------------------------------------------------------------------------
     // overwrap
     //--------------------------------------------------------------------------------
+    
+    SP_CPUFUNC void _glLoadMatrix(const float *mat) {
+        glLoadMatrixf(mat);
+    }
+    SP_CPUFUNC void _glLoadMatrix(const double *mat) {
+        glLoadMatrixd(mat);
+    }
+    SP_CPUFUNC void _glMultMatrix(const float *mat) {
+        glMultMatrixf(mat);
+    }
+    SP_CPUFUNC void _glMultMatrix(const double *mat) {
+        glMultMatrixd(mat);
+    }
 
     SP_CPUFUNC void glLoadMatrix(const Mat &mat){
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
-        glLoadMatrixd(m4x4t.ptr);
+        _glLoadMatrix(m4x4t.ptr);
     }
 
     SP_CPUFUNC void glMultMatrix(const Mat &mat){
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
-        glMultMatrixd(m4x4t.ptr);
+        _glMultMatrix(m4x4t.ptr);
     }
 
     SP_CPUFUNC void glLoadMatrix(const Pose &pose){
@@ -88,11 +101,15 @@ namespace sp{
         Mat mat(4, 4);
 
         // GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
-        glGetDoublev(type, mat.ptr);
+        double t[4 * 4];
+        glGetDoublev(type, t);
+        for (int i = 0; i < 4 * 4; i++) {
+            mat[i] = SP_CAST(t[i]);
+        }
         return trnMat(mat);
     }
 
-	SP_CPUFUNC SP_REAL glGetPixelScale() {
+	SP_CPUFUNC double glGetPixelScale() {
 		GLFWwindow *win = glfwGetCurrentContext();
 
 		int fw, fh;
@@ -100,7 +117,7 @@ namespace sp{
 
 		int ww, wh;
 		glfwGetWindowSize(win, &ww, &wh);
-		const SP_REAL pixScale = (static_cast<SP_REAL>(fw) / ww + static_cast<SP_REAL>(fh) / wh) / 2.0;
+		const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
 
 		return pixScale;
 	}
@@ -153,8 +170,8 @@ namespace sp{
 			const SP_REAL pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = 1.0 / pixScale;
-            pmat(1, 1) = 1.0 / pixScale;
+            pmat(0, 0) = SP_CAST(1.0 / pixScale);
+            pmat(1, 1) = SP_CAST(1.0 / pixScale);
 
             _vmat = pmat * vmat;
         }
