@@ -27,7 +27,7 @@ namespace sp{
 
     // convert mem type [dst = (src - base) * scale)
     template<typename TYPE, typename TYPE0>
-    SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const double scale = 1.0, const double base = 0.0){
+    SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0){
         dst.resize(mem0.dim, mem0.dsize);
         for (int i = 0; i < mem0.size(); i++){
             cnvVal(dst[i], (mem0[i] - base) * scale);
@@ -317,21 +317,21 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mat getMatAngleX(const double angle) {
+    SP_CPUFUNC Mat getMatAngleX(const SP_REAL angle) {
         Mat dst(3, 3);
 
         getMatAngleX(dst.ptr, dst.rows(), dst.cols(), angle);
         return dst;
     }
 
-    SP_CPUFUNC Mat getMatAngleY(const double angle) {
+    SP_CPUFUNC Mat getMatAngleY(const SP_REAL angle) {
         Mat dst(3, 3);
 
         getMatAngleY(dst.ptr, dst.rows(), dst.cols(), angle);
         return dst;
     }
 
-    SP_CPUFUNC Mat getMatAngleZ(const double angle) {
+    SP_CPUFUNC Mat getMatAngleZ(const SP_REAL angle) {
         Mat dst(3, 3);
 
         getMatAngleZ(dst.ptr, dst.rows(), dst.cols(), angle);
@@ -353,7 +353,7 @@ namespace sp{
         return dst;
     }
 
-    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const double angle) {
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const SP_REAL angle) {
         Mat dst(3, 3);
 
         getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec, angle);
@@ -405,11 +405,11 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC double normMat(const Mat &mat){
+    SP_CPUFUNC SP_REAL normMat(const Mat &mat){
         return normMat(mat.ptr, mat.rows(), mat.cols());
     }
 
-    SP_CPUFUNC double detMat(const Mat &mat){
+    SP_CPUFUNC SP_REAL detMat(const Mat &mat){
         Mat buf(mat.dsize);
         return detMat(mat.ptr, mat.rows(), mat.cols(), buf.ptr);
     }
@@ -458,7 +458,7 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC int eqn(Mem1<Cmp> &xs, const Mem1<double> cs, const int maxit = 20, const double eps = 1.0e-10) {
+    SP_GENFUNC int eqn(Mem1<Cmp> &xs, const Mem1<SP_REAL> cs, const int maxit = 20, const SP_REAL eps = 1.0e-10) {
         Mem1<Cmp> tmp(cs.size() - 1);
         const int n = eqn(tmp.ptr, cs.size(), cs.ptr, maxit, eps);
 
@@ -554,43 +554,43 @@ namespace sp{
         subMat(dst, dst, mat0);
     }
 
-    SP_CPUFUNC Mat operator + (const Mat &mat0, const double val){
+    SP_CPUFUNC Mat operator + (const Mat &mat0, const SP_REAL val){
         Mat dst;
         addElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator - (const Mat &mat0, const double val){
+    SP_CPUFUNC Mat operator - (const Mat &mat0, const SP_REAL val){
         Mat dst;
         subElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator * (const Mat &mat0, const double val){
+    SP_CPUFUNC Mat operator * (const Mat &mat0, const SP_REAL val){
         Mat dst;
         mulElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator / (const Mat &mat0, const double val){
+    SP_CPUFUNC Mat operator / (const Mat &mat0, const SP_REAL val){
         Mat dst;
         divElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC void operator += (Mat &dst, const double val){
+    SP_CPUFUNC void operator += (Mat &dst, const SP_REAL val){
         addElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator -= (Mat &dst, const double val){
+    SP_CPUFUNC void operator -= (Mat &dst, const SP_REAL val){
         subElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator *= (Mat &dst, const double val){
+    SP_CPUFUNC void operator *= (Mat &dst, const SP_REAL val){
         mulElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator /= (Mat &dst, const double val){
+    SP_CPUFUNC void operator /= (Mat &dst, const SP_REAL val){
         divElm(dst, dst, val);
     }
 
@@ -670,7 +670,7 @@ namespace sp{
         return getVec(vec[0], vec[1], vec[2]);
     }
 
-    SP_CPUFUNC Mem1<Vec3> getVec(const Mem1<Vec2> &vec, const double z) {
+    SP_CPUFUNC Mem1<Vec3> getVec(const Mem1<Vec2> &vec, const SP_REAL z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = getVec(vec[i], z);

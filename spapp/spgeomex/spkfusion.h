@@ -35,7 +35,7 @@ namespace sp{
             init(100, 2.0, getCamParam(0, 0), zeroPose());
         }
 
-        void init(const int size, const double unit, const CamParam &cam, const Pose &base) {
+        void init(const int size, const SP_REAL unit, const CamParam &cam, const Pose &base) {
             m_tsdf.init(size, unit);
 
             m_cast.resize(cam.dsize);
@@ -80,14 +80,14 @@ namespace sp{
         // execute 
         //--------------------------------------------------------------------------------
     
-        bool execute(const Mem2<double> &depth){
+        bool execute(const Mem2<SP_REAL> &depth){
 
             return _execute(depth);
         }
 
     private:
 
-        bool _execute(const Mem2<double> &depth){
+        bool _execute(const Mem2<SP_REAL> &depth){
             SP_LOGGER_SET("KinectFusion::execute");
 
             if (cmpSize(2, m_cam.dsize, depth.dsize) == false) {
@@ -105,7 +105,7 @@ namespace sp{
 
                 if (m_track == true){
                     SP_LOGGER_SET("KinectFusion::bilateralFilter");
-                    Mem2<double> bilateral;
+                    Mem2<SP_REAL> bilateral;
                     bilateralFilterDepth(bilateral, depth, 0.8, 10.0);
                         
                     cnvDepthToVecPN(pnmap, m_cam, bilateral);

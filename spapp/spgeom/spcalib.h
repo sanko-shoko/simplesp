@@ -69,7 +69,7 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
+        SP_CPUFUNC SP_REAL optCam(CamParam &cam, const int *dsize, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
 
             Mem1<Pose> vposes;
             Mem1<Mem1<Vec2> > vpixs;
@@ -91,7 +91,7 @@ namespace sp{
                 pmax += vpixs[i].size();
             }
 
-            double ret = -1.0;
+            SP_REAL ret = -1.0;
 
             // gauss-newton
             for (int it = 0; it < maxit; it++){
@@ -99,7 +99,7 @@ namespace sp{
                 J.zero();
 
                 Mat E(pmax * 2, 1);
-                Mem1<double> errs(pmax);
+                Mem1<SP_REAL> errs(pmax);
 
                 int cnt = 0;
                 for (int i = 0; i < vposes.size(); i++){
@@ -136,9 +136,9 @@ namespace sp{
                     }
                 }
 
-                const double mean = meanVal(errs);
-                const double median = medianVal(errs);
-                const double rms = sqrt(meanSq(errs));
+                const SP_REAL mean = meanVal(errs);
+                const SP_REAL median = medianVal(errs);
+                const SP_REAL rms = sqrt(meanSq(errs));
 
                 Mat delta;
                 if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return ret;
@@ -159,7 +159,7 @@ namespace sp{
 
         SP_CPUFUNC bool initStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs){
     
-            double minv = SP_INFINITY;
+            SP_REAL minv = SP_INFINITY;
 
             for (int i = 0; i < objs.size(); i++){
 
@@ -167,10 +167,10 @@ namespace sp{
                 if (calcPose(pose0, cam0, pixs0[i], objs[i]) == false) continue;
                 if (calcPose(pose1, cam1, pixs1[i], objs[i]) == false) continue;
 
-                const Mem1<double> errs0 = calcPrjErr(pose0, cam0, pixs0[i], getVec(objs[i], 0.0));
-                const Mem1<double> errs1 = calcPrjErr(pose1, cam1, pixs1[i], getVec(objs[i], 0.0));
+                const Mem1<SP_REAL> errs0 = calcPrjErr(pose0, cam0, pixs0[i], getVec(objs[i], 0.0));
+                const Mem1<SP_REAL> errs1 = calcPrjErr(pose1, cam1, pixs1[i], getVec(objs[i], 0.0));
 
-                const double err = medianVal(errs0) + medianVal(errs1);
+                const SP_REAL err = medianVal(errs0) + medianVal(errs1);
                 if (err < minv){
                     minv = err;
                     stereo = pose0 * invPose(pose1);
@@ -180,7 +180,7 @@ namespace sp{
             return (minv < SP_INFINITY) ? true : false;
         }
 
-        SP_CPUFUNC double optStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, int maxit = 20){
+        SP_CPUFUNC SP_REAL optStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, int maxit = 20){
             
             Mem1<Pose> vposes;
             Mem1<Mem1<Vec2> > vpixs0, vpixs1;
@@ -204,7 +204,7 @@ namespace sp{
                 pmax += vpixs0[i].size();
             }
 
-            double rms = -1.0;
+            SP_REAL rms = -1.0;
 
             // gauss-newton
             for (int it = 0; it < maxit; it++){
@@ -222,13 +222,13 @@ namespace sp{
                     for (int p = 0; p < vobjs[i].size(); p++){
                         const Vec3 obj = getVec(vobjs[i][p].x, vobjs[i][p].y, 0.0);
 
-                        double jPoseToPos0[3 * 6] = { 0 };
-                        double jPoseToPos1[3 * 6] = { 0 };
+                        SP_REAL jPoseToPos0[3 * 6] = { 0 };
+                        SP_REAL jPoseToPos1[3 * 6] = { 0 };
                         jacobPoseToPos(jPoseToPos1, pose1, obj);
                         mulMat(jPoseToPos0, 3, 6, sR.ptr, 3, 3, jPoseToPos1, 3, 6);
 
-                        double jPosToPix0[2 * 3] = { 0 };
-                        double jPosToPix1[2 * 3] = { 0 };
+                        SP_REAL jPosToPix0[2 * 3] = { 0 };
+                        SP_REAL jPosToPix1[2 * 3] = { 0 };
                         jacobPosToPix(jPosToPix0, cam0, pose0 * obj);
                         jacobPosToPix(jPosToPix1, cam1, pose1 * obj);
 
@@ -256,7 +256,7 @@ namespace sp{
                     J.zero();
 
                     Mat E(pmax * 2, 1);
-                    Mem1<double> errs(pmax);
+                    Mem1<SP_REAL> errs(pmax);
 
                     int cnt = 0;
                     for (int i = 0; i < vposes.size(); i++){
@@ -288,14 +288,14 @@ namespace sp{
                     stereo = updatePose(stereo, delta.ptr);
                 }
 
-                Mem1<double> errs;
+                Mem1<SP_REAL> errs;
                 for (int i = 0; i < vposes.size(); i++){
                     errs.push(calcPrjErr(stereo * vposes[i], cam0, vpixs0[i], getVec(vobjs[i], 0.0)));
                     errs.push(calcPrjErr(vposes[i], cam1, vpixs1[i], getVec(vobjs[i], 0.0)));
                 }
 
-                const double mean = meanVal(errs);
-                const double median = medianVal(errs);
+                const SP_REAL mean = meanVal(errs);
+                const SP_REAL median = medianVal(errs);
                 rms = sqrt(meanSq(errs));
 
                 SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
@@ -311,7 +311,7 @@ namespace sp{
             poses.resize(cnum);
 
             Mem2<Pose> mem(cnum, bnum);
-            Mem2<double> eval(cnum, bnum);
+            Mem2<SP_REAL> eval(cnum, bnum);
 
             for (int i = 0; i < cnum; i++) {
                 Mem1<Mem1<Vec2> > vpixs;
@@ -355,7 +355,7 @@ namespace sp{
             for (int it = 0; it < cnum - 1; it++) {
                 Pose pose;
                 int id = - 1;
-                double maxe = 0.0;
+                SP_REAL maxe = 0.0;
                 for (int i = 0; i < cnum; i++) {
                     if (valid[i] == true) continue;
 
@@ -363,7 +363,7 @@ namespace sp{
                         if (valid[j] == false) continue;
 
                         for (int k = 0; k < bnum; k++) {
-                            const double e = eval(i, k) * eval(j, k);
+                            const SP_REAL e = eval(i, k) * eval(j, k);
                             if (e > maxe) {
                                 id = i;
                                 maxe = e;
@@ -384,7 +384,7 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, int maxit = 40) {
+        SP_CPUFUNC SP_REAL optMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, int maxit = 40) {
             const int cnum = pixs.size();
             const int onum = pixs[0].size();
 
@@ -395,12 +395,12 @@ namespace sp{
             // set valid data
             for (int i = 0; i < onum; i++) {
                 Pose pose;
-                double maxe = 0.0;
+                SP_REAL maxe = 0.0;
                 for (int j = 0; j < cnum; j++) {
                     Pose tmp;
                     if (calcPose(tmp, cams[j], pixs[j][i], objs[j][i]) == false) continue;
 
-                    const double e = evalErr(calcPrjErr(tmp, cams[j], pixs[j][i], getVec(objs[j][i], 0.0)));
+                    const SP_REAL e = evalErr(calcPrjErr(tmp, cams[j], pixs[j][i], getVec(objs[j][i], 0.0)));
                     if (e > maxe) {
                         maxe = e;
                         pose = invPose(poses[j]) * tmp;
@@ -428,7 +428,7 @@ namespace sp{
                 }
             }
 
-            double rms = -1.0;
+            SP_REAL rms = -1.0;
 
             // gauss-newton
             for (int it = 0; it < maxit; it++) {
@@ -441,7 +441,7 @@ namespace sp{
 
                     Mat J(2 * cnt, 6);
                     Mat E(2 * cnt, 1);
-                    Mem1<double> errs(cnt);
+                    Mem1<SP_REAL> errs(cnt);
 
                     Mem1<Pose> rposes;
                     Mem1<Mat> Rs;
@@ -457,13 +457,13 @@ namespace sp{
                             const Vec2 pix = vpixs[i][j][k];
                             const Vec3 obj = getVec(vobjs[i][j][k], 0.0);
 
-                            double tmp[3 * 6] = { 0 };
+                            SP_REAL tmp[3 * 6] = { 0 };
                             jacobPoseToPos(tmp, vposes[i], obj);
 
-                            double jPoseToPos[3 * 6] = { 0 };
+                            SP_REAL jPoseToPos[3 * 6] = { 0 };
                             mulMat(jPoseToPos, 3, 6, Rs[j].ptr, 3, 3, tmp, 3, 6);
 
-                            double jPosToPix[2 * 3] = { 0 };
+                            SP_REAL jPosToPix[2 * 3] = { 0 };
                             jacobPosToPix(jPosToPix, cams[j], rposes[j] * obj);
 
                             mulMat(&J(cnt * 2 + 0, 0), 2, 6, jPosToPix, 2, 3, jPoseToPos, 3, 6);
@@ -495,7 +495,7 @@ namespace sp{
                     {
                         Mat J(cnt * 2, 9);
                         Mat E(cnt * 2, 1);
-                        Mem1<double> errs(cnt);
+                        Mem1<SP_REAL> errs(cnt);
 
                         cnt = 0;
                         for (int j = 0; j < vposes.size(); j++) {
@@ -525,7 +525,7 @@ namespace sp{
                     {
                         Mat J(cnt * 2, 6);
                         Mat E(cnt * 2, 1);
-                        Mem1<double> errs(cnt);
+                        Mem1<SP_REAL> errs(cnt);
                         cnt = 0;
                         for (int j = 0; j < vposes.size(); j++) {
                             for (int k = 0; k < vpixs[j][i].size(); k++) {
@@ -560,15 +560,15 @@ namespace sp{
 
                 }
                 {
-                    Mem1<double> errs;
+                    Mem1<SP_REAL> errs;
                     for (int i = 0; i < vposes.size(); i++) {
                         for (int j = 0; j < cnum; j++) {
                             errs.push(calcPrjErr(poses[j] * vposes[i], cams[j], vpixs[i][j], getVec(vobjs[i][j], 0.0)));
                         }
                     }
 
-                    const double mean = meanVal(errs);
-                    const double median = medianVal(errs);
+                    const SP_REAL mean = meanVal(errs);
+                    const SP_REAL median = medianVal(errs);
                     rms = sqrt(meanSq(errs));
 
                     SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
@@ -583,7 +583,7 @@ namespace sp{
             const int num = As.size();
 
             auto calcQ = [](const Rot &rot)-> Mat {
-                double m[4 * 4] = {
+                SP_REAL m[4 * 4] = {
                     +rot.qw, -rot.qx, -rot.qy, -rot.qz,
                     +rot.qx, +rot.qw, -rot.qz, +rot.qy,
                     +rot.qy, +rot.qz, +rot.qw, -rot.qx,
@@ -592,7 +592,7 @@ namespace sp{
                 return Mat(4, 4, m);
             };
             auto calcW = [](const Rot &rot)-> Mat {
-                double m[4 * 4] = {
+                SP_REAL m[4 * 4] = {
                     +rot.qw, -rot.qx, -rot.qy, -rot.qz,
                     +rot.qx, +rot.qw, +rot.qz, -rot.qy,
                     +rot.qy, -rot.qz, +rot.qw, +rot.qx,
@@ -613,13 +613,13 @@ namespace sp{
             if(eigMat(eigVec, eigVal, covMat(C)) == false) return false;
 
             int id = -1;
-            double minv = SP_INFINITY;
+            SP_REAL minv = SP_INFINITY;
 
             for (int i = 0; i < 4; i++) {
-                const double lambda1 = num - sqrt(eigVal(i, i));
-                const double lambda2 = num + sqrt(eigVal(i, i));
+                const SP_REAL lambda1 = num - sqrt(eigVal(i, i));
+                const SP_REAL lambda2 = num + sqrt(eigVal(i, i));
 
-                const double v = (lambda1 > SP_SMALL) ? lambda1 : lambda2;
+                const SP_REAL v = (lambda1 > SP_SMALL) ? lambda1 : lambda2;
                 if (v < minv) {
                     minv = v;
                     id = i;
@@ -627,7 +627,7 @@ namespace sp{
             }
             if (id < 0) return false;
 
-            const double q[4] = { eigVec(0, id), eigVec(1, id), eigVec(2, id), eigVec(3, id) };
+            const SP_REAL q[4] = { eigVec(0, id), eigVec(1, id), eigVec(2, id), eigVec(3, id) };
 
             const Mat zmat(4, 1, q);
             const Rot zrot = getRot(zmat[1], zmat[2], zmat[3], zmat[0]);
@@ -661,7 +661,7 @@ namespace sp{
             return true;
         }
 
-        SP_CPUFUNC double optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, int maxit = 20) {
+        SP_CPUFUNC SP_REAL optRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, int maxit = 20) {
             const int num = Bs.size();
 
             Pose iZ = invPose(Z);
@@ -671,13 +671,13 @@ namespace sp{
                 pmax += pixs[i].size();
             }
 
-            double rms = -1.0;
+            SP_REAL rms = -1.0;
 
             for (int it = 0; it < maxit; it++) {
             
                 Mat J(2 * pmax, 6 + 6);
                 Mat E(2 * pmax, 1);
-                Mem1<double> errs(pmax);
+                Mem1<SP_REAL> errs(pmax);
 
                 int cnt = 0;
 
@@ -727,8 +727,8 @@ namespace sp{
                 iZ = updatePose(iZ, &delta[6]);
                 Z = invPose(iZ);
 
-                const double mean = meanVal(errs);
-                const double median = medianVal(errs);
+                const SP_REAL mean = meanVal(errs);
+                const SP_REAL median = medianVal(errs);
                 rms = sqrt(meanSq(errs));
 
                 SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
@@ -745,8 +745,8 @@ namespace sp{
     // calibrate camera parameter
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibCam(CamParam &cam, const int dsize0, const int dsize1, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
-        double rms = -1.0;
+    SP_CPUFUNC SP_REAL calibCam(CamParam &cam, const int dsize0, const int dsize1, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
+        SP_REAL rms = -1.0;
 
         try{
             if (pixs.size() < 3 || pixs.size() != objs.size()) throw "data size";
@@ -768,9 +768,9 @@ namespace sp{
     // calibrate stereo pose
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
+    SP_CPUFUNC SP_REAL calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs, const int maxit = 20){
 
-        double rms = -1.0;
+        SP_REAL rms = -1.0;
 
         try{
             if (pixs0.size() < 3 || pixs0.size() != pixs1.size() || pixs0.size() != objs.size()) throw "data size";
@@ -786,7 +786,7 @@ namespace sp{
         return rms;
     }
     
-    SP_CPUFUNC double calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &objs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs1, const int maxit = 20){
+    SP_CPUFUNC SP_REAL calibStereo(Pose &stereo, const CamParam &cam0, const Mem1<Mem1<Vec2> > &pixs0, const Mem1<Mem1<Vec2> > &objs0, const CamParam &cam1, const Mem1<Mem1<Vec2> > &pixs1, const Mem1<Mem1<Vec2> > &objs1, const int maxit = 20){
 
         Mem1<Mem1<Vec2> > cpixs0, cpixs1, cobjs;
         for (int i = 0; i < pixs0.size(); i++) {
@@ -815,9 +815,9 @@ namespace sp{
     // calibrate multi camera
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, const int maxit = 40) {
+    SP_CPUFUNC SP_REAL calibMultiCam(Mem1<Pose> &poses, const Mem1<CamParam> &cams, const Mem1<Mem1<Mem1<Vec2> > > &pixs, const Mem1<Mem1<Mem1<Vec2> > > &objs, const int maxit = 40) {
 
-        double rms = -1.0;
+        SP_REAL rms = -1.0;
 
         try {
             if (initMultiCam(poses, cams, pixs, objs) == false) throw "initCam";
@@ -836,7 +836,7 @@ namespace sp{
     // calibrate robot to cam
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs) {
+    SP_CPUFUNC SP_REAL calibRobotCam(Pose &X, Pose &Z, const Mem1<Pose> &Bs, const CamParam &cam, const Mem1<Mem1<Vec2> > &pixs, const Mem1<Mem1<Vec2> > &objs) {
 
         Mem1<Pose> As;
 
@@ -850,7 +850,7 @@ namespace sp{
             }
         }
 
-        double rms = -1.0;
+        SP_REAL rms = -1.0;
 
         try {
             if (Bs.size() < 5 || Bs.size() != pixs.size() || Bs.size() != objs.size()) throw "data size";
@@ -877,7 +877,7 @@ namespace sp{
         Rot rot;
     };
     
-    SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const Pose &pose0, const CamParam &cam1, const Pose &pose1, const double fixFocal = 0.0){
+    SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const Pose &pose0, const CamParam &cam1, const Pose &pose1, const SP_REAL fixFocal = 0.0){
         SP_ASSERT(cmpSize(2, cam0.dsize, cam1.dsize));
 
         // pre parameter
@@ -909,7 +909,7 @@ namespace sp{
         {
             const int dsize[2] = { cam1.dsize[0], cam1.dsize[1] };
             
-            const double f = (fixFocal > 0) ? fixFocal : (cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0;
+            const SP_REAL f = (fixFocal > 0) ? fixFocal : (cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0;
             const Vec2 cent = getVec(dsize[0] - 1, dsize[1] - 1) * 0.5;
 
             RectParam *pRect[2] = { &rect0, &rect1 };
@@ -927,7 +927,7 @@ namespace sp{
                 pRect[i]->cam.cy += dif.y;
             }
 
-            const double cy = (rect0.cam.cy + rect1.cam.cy) / 2.0;
+            const SP_REAL cy = (rect0.cam.cy + rect1.cam.cy) / 2.0;
             rect0.cam.cy = cy;
             rect1.cam.cy = cy;
         }

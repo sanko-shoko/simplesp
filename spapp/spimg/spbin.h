@@ -35,28 +35,28 @@ namespace sp{
         }
 
         int thresh = 0;
-        double maxEval = 0.0;
+        SP_REAL maxEval = 0.0;
         for (int t = 1; t < 256; t++) {
-            double cnt0 = 0.0;
-            double sum0 = 0.0;
+            SP_REAL cnt0 = 0.0;
+            SP_REAL sum0 = 0.0;
             for (int i = 0; i < t; i++) {
                 cnt0 += hist[i];
                 sum0 += i * hist[i];
             }
             if (cnt0 == 0) continue;
 
-            double cnt1 = 0.0;
-            double sum1 = 0.0;
+            SP_REAL cnt1 = 0.0;
+            SP_REAL sum1 = 0.0;
             for (int i = t; i < 256; i++) {
                 cnt1 += hist[i];
                 sum1 += i * hist[i];
             }
             if (cnt1 == 0) continue;
 
-            const double mean0 = sum0 / cnt0;
-            const double mean1 = sum1 / cnt1;
+            const SP_REAL mean0 = sum0 / cnt0;
+            const SP_REAL mean1 = sum1 / cnt1;
 
-            const double eval = cnt0 * cnt1 * (mean0 - mean1) * (mean0 - mean1);
+            const SP_REAL eval = cnt0 * cnt1 * (mean0 - mean1) * (mean0 - mean1);
             if (eval > maxEval) {
                 maxEval = eval;
                 thresh = t;

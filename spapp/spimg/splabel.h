@@ -390,11 +390,11 @@ namespace sp{
 
                     const Vec2 t = getVec(1.0, 1.0);
 
-                    double maxv = 0.0;
+                    SP_REAL maxv = 0.0;
                     int id = -1;
 
-                    const double dA = dotVec(A, t);
-                    const double dB = dotVec(B, t);
+                    const SP_REAL dA = dotVec(A, t);
+                    const SP_REAL dB = dotVec(B, t);
 
                     if (dA < dB || (cmpVal(dA, dB) && (A.y < B.y)) ) {
                         for (int k = a + 1; ; k++) {
@@ -403,7 +403,7 @@ namespace sp{
 
                             const Vec2 C = tmps[c];
 
-                            const double len = fabs(dotVec(n, A - C));
+                            const SP_REAL len = fabs(dotVec(n, A - C));
 
                             if (len > maxv) {
                                 maxv = len;
@@ -418,7 +418,7 @@ namespace sp{
 
                             const Vec2 C = tmps[c];
 
-                            const double len = fabs(dotVec(n, B - C));
+                            const SP_REAL len = fabs(dotVec(n, B - C));
 
                             if (len > maxv) {
                                 maxv = len;

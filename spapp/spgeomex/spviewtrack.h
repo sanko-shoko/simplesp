@@ -36,7 +36,7 @@ namespace sp{
         // estimated parameter
         Pose m_pose;
 
-        double m_meanZ;
+        SP_REAL m_meanZ;
 
         // image points
         Mem1<Vec2> m_bases;
@@ -197,8 +197,8 @@ namespace sp{
             return cnt;
         }
 
-        double calcMeanZ(const View &view) {
-            Mem1<double> zlist;
+        SP_REAL calcMeanZ(const View &view) {
+            Mem1<SP_REAL> zlist;
 
             const Mem1<Ftr> &ftrs = view.ftrs;
             for (int i = 0; i < ftrs.size(); i++) {
@@ -210,14 +210,14 @@ namespace sp{
             sort(zlist);
             zlist = zlist.part(round(0.1 * zlist.size()), round(0.8 * zlist.size()));
 
-            const double meanZ = meanVal(zlist);
+            const SP_REAL meanZ = meanVal(zlist);
 
             return meanZ;
         }
 
         bool calcFlow(Mem1<Vec2> &flows, Mem1<bool> &mask, const View &view, const Mem2<Col3> &img) {
             Mem1<Vec2> pixs;
-            Mem1<double> scls;
+            Mem1<SP_REAL> scls;
 
             const Mem1<Ftr> &ftrs = view.ftrs;
             for (int i = 0; i < ftrs.size(); i++) {
@@ -229,7 +229,7 @@ namespace sp{
             return true;
         }
 
-        bool calcFlow(Mem1<Vec2> &flows, Mem1<bool> &mask, const View &view, const Mem2<Col3> &img, const Pose &pose, const double meanZ) {
+        bool calcFlow(Mem1<Vec2> &flows, Mem1<bool> &mask, const View &view, const Mem2<Col3> &img, const Pose &pose, const SP_REAL meanZ) {
 
             const Pose stereo = pose * invPose(view.pose);
             
@@ -254,7 +254,7 @@ namespace sp{
             flows.zero();
 
             Mem1<Vec2> pixs(num);
-            Mem1<double> scls(num);
+            Mem1<SP_REAL> scls(num);
             pixs.zero();
             scls.zero();
 
@@ -263,10 +263,10 @@ namespace sp{
                 const Mem1<Ftr> &ftrs = view.ftrs;
                 for (int i = 0; i < num; i++) {
                     const Vec2 pix1 = ftrs[i].pix;
-                    const double s = ftrs[i].scl;
+                    const SP_REAL s = ftrs[i].scl;
 
                     const Vec2 pix0 = hom * pix1;
-                    const double t = h2.x * pix1.x + h2.y * pix1.y + h2.z;
+                    const SP_REAL t = h2.x * pix1.x + h2.y * pix1.y + h2.z;
                     if (fabs(t - 1.0) > 0.5) return false;
 
                     pixs[i] = pix1;
@@ -311,7 +311,7 @@ namespace sp{
             }
 
             {
-                const double eval = evalStereo(view.cam, pixs0, view.cam, pixs1);
+                const SP_REAL eval = evalStereo(view.cam, pixs0, view.cam, pixs1);
                 //SP_PRINTD("eval %lf\n", eval);
                 if (eval < 0.4) return false;
             }
@@ -341,7 +341,7 @@ namespace sp{
             return true;
         }
 
-        bool track(Pose &pose, Mem1<Vec2> &crsps, Mem1<Vec2> &bases, Mem1<bool> &mask, const View &view, const Mem2<Col3> &img, const double meanZ) {
+        bool track(Pose &pose, Mem1<Vec2> &crsps, Mem1<Vec2> &bases, Mem1<bool> &mask, const View &view, const Mem2<Col3> &img, const SP_REAL meanZ) {
 
             Mem1<Vec2> flows;
             calcFlow(flows, mask, view, img, pose, meanZ);

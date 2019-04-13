@@ -51,7 +51,7 @@ namespace sp {
         typedef std::chrono::system_clock::time_point tpoint;
 #endif
 #else
-        typedef double tpoint;
+        typedef SP_REAL tpoint;
 #endif
 
 
@@ -72,17 +72,17 @@ namespace sp {
             return n;
         }
 
-        static double dif(const tpoint &tp0, const tpoint &tp1) {
+        static SP_REAL dif(const tpoint &tp0, const tpoint &tp1) {
 
-            double ms = 0.0;
+            SP_REAL ms = 0.0;
 #if SP_USE_TIMER
 #if WIN32
             tpoint freq;
             QueryPerformanceFrequency(&freq);
 
-            ms = static_cast<double>((tp1.QuadPart - tp0.QuadPart) * 1000.0 / freq.QuadPart);
+            ms = static_cast<SP_REAL>((tp1.QuadPart - tp0.QuadPart) * 1000.0 / freq.QuadPart);
 #else
-            ms = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(tp1 - tp0).count() / 1000.0);
+            ms = static_cast<SP_REAL>(std::chrono::duration_cast<std::chrono::microseconds>(tp1 - tp0).count() / 1000.0);
 #endif
 #endif
             return (ms > 0) ? +ms : -ms;
@@ -103,7 +103,7 @@ namespace sp {
             tp[1] = now();
         }
 
-        double getms() {
+        SP_REAL getms() {
             return dif(tp[0], tp[1]);
         }
 
@@ -148,7 +148,7 @@ namespace sp {
 
         vector<Timer::tpoint> tpnts;
 
-        vector<double> times;
+        vector<SP_REAL> times;
         vector<bool> flags;
 #endif
 

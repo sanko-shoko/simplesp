@@ -17,14 +17,14 @@
 namespace sp{
 
 
-    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
+    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &mask, const Mem2<Byte> &img0, const Mem2<Byte> &img1, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scls = Mem1<SP_REAL>()) {
 
         const int wsize = 15;
         const int whalf = wsize / 2;
 
-        const double EIG_THRESH = 0.01 * SP_BYTEMAX;
+        const SP_REAL EIG_THRESH = 0.01 * SP_BYTEMAX;
 
-        Mem1<double> errs;
+        Mem1<SP_REAL> errs;
 
         // clear
         if (flows.size() != pixs.size()) {
@@ -78,7 +78,7 @@ namespace sp{
                 }
 
                 for (int p = pynum - 1; p >= stop; p--) {
-                    const double scale = pow(0.5, p);
+                    const SP_REAL scale = pow(0.5, p);
 
                     const Mem2<Byte> &pyimg0 = pyimgs0[p];
                     const Mem2<Byte> &pyimg1 = pyimgs1[p];
@@ -137,8 +137,8 @@ namespace sp{
                                 const int i1y = ipix1y + (y - whalf);
                                 if (inRect2(rect0, i0x, i0y) == false || inRect2(rect1, i1x, i1y) == false) continue;
 
-                                const double gx = acs2(dX, i1x, i1y);
-                                const double gy = acs2(dY, i1x, i1y);
+                                const SP_REAL gx = acs2(dX, i1x, i1y);
+                                const SP_REAL gy = acs2(dY, i1x, i1y);
 
                                 A(k, 0) = gx;
                                 A(k, 1) = gy;
@@ -159,12 +159,12 @@ namespace sp{
                             break;
                         }
 
-                        const double a = AtA(0, 0);
-                        const double b = AtA(0, 1);
-                        const double c = AtA(1, 1);
-                        const double D = a * c - b * b;
+                        const SP_REAL a = AtA(0, 0);
+                        const SP_REAL b = AtA(0, 1);
+                        const SP_REAL c = AtA(1, 1);
+                        const SP_REAL D = a * c - b * b;
 
-                        const double mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
+                        const SP_REAL mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
 
                         if (mineig / area < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
                             if(p == stop) mask[i] = false;
@@ -181,7 +181,7 @@ namespace sp{
 
                         const Vec2 pix0 = pix1 + flows[i] * scale;
 
-                        double esum = 0.0;
+                        SP_REAL esum = 0.0;
 
                         for (int y = 0; y < wsize; y++) {
                             for (int x = 0; x < wsize; x++) {
@@ -190,10 +190,10 @@ namespace sp{
 
                                 const Vec2 p0 = pix0 + getVec(x - whalf, y - whalf);
 
-                                const double gx = A(k, 0);
-                                const double gy = A(k, 1);
+                                const SP_REAL gx = A(k, 0);
+                                const SP_REAL gy = A(k, 1);
 
-                                const double d = I(k, 0) - acs2(pyimg0, p0.x, p0.y);
+                                const SP_REAL d = I(k, 0) - acs2(pyimg0, p0.x, p0.y);
                                 AtB(0, 0) += gx * d;
                                 AtB(1, 0) += gy * d;
 
@@ -206,9 +206,9 @@ namespace sp{
                         const Mat result = invAtA * AtB;
 
                         Vec2 delta = getVec(result[0], result[1]);
-                        const double norm = normVec(delta);
+                        const SP_REAL norm = normVec(delta);
 
-                        const double limit = 2.0;
+                        const SP_REAL limit = 2.0;
                         if (norm > limit) delta *= limit / norm;
 
                         flows[i] += delta / scale;
@@ -226,7 +226,7 @@ namespace sp{
         }
 
         if (cntVal(mask, true) > 0) {
-            const double sigma = 1.4826 * medianVal(filter(errs, mask));
+            const SP_REAL sigma = 1.4826 * medianVal(filter(errs, mask));
 
             for (int i = 0; i < mask.size(); i++) {
                 if (errs[i] > 3.0 * sigma) mask[i] = false;
@@ -237,7 +237,7 @@ namespace sp{
 
    }
 
-    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs, const Mem1<double> &scls = Mem1<double>()) {
+    SP_CPUFUNC void opticalFlowLK(Mem1<Vec2> &flows, Mem1<bool> &masks, const Mem2<Col3> &img0, const Mem2<Col3> &img1, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scls = Mem1<SP_REAL>()) {
         Mem2<Byte> gry0, gry1;
         cnvImg(gry0, img0);
         cnvImg(gry1, img1);

@@ -74,7 +74,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC int maxArg(const Mem<TYPE> &mem){
-        double maxv = -SP_INFINITY;
+        SP_REAL maxv = -SP_INFINITY;
         int ret = -1;
         for (int i = 0; i < mem.size(); i++){
             if (mem[i] > maxv){
@@ -87,7 +87,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC int minArg(const Mem<TYPE> &mem){
-        double minv = +SP_INFINITY;
+        SP_REAL minv = +SP_INFINITY;
         int ret = -1;
         for (int i = 0; i < mem.size(); i++){
             if (mem[i] < minv){
@@ -142,8 +142,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC double sumVal(const Mem<TYPE> &mem){
-        double sum = 0.0;
+    SP_CPUFUNC SP_REAL sumVal(const Mem<TYPE> &mem){
+        SP_REAL sum = 0.0;
 
         for (int i = 0; i < mem.size(); i++){
             sum += mem[i];
@@ -152,14 +152,14 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC double meanVal(const Mem<TYPE> &mem){
+    SP_CPUFUNC SP_REAL meanVal(const Mem<TYPE> &mem){
         return sumVal(mem) / mem.size();
     }
 
 
     template<typename TYPE>
-    SP_CPUFUNC double sumSq(const Mem<TYPE> &mem){
-        double sum = 0.0;
+    SP_CPUFUNC SP_REAL sumSq(const Mem<TYPE> &mem){
+        SP_REAL sum = 0.0;
 
         for (int i = 0; i < mem.size(); i++){
             sum += square(mem[i]);
@@ -168,14 +168,14 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC double meanSq(const Mem<TYPE> &mem){
+    SP_CPUFUNC SP_REAL meanSq(const Mem<TYPE> &mem){
         return sumSq(mem) / mem.size();
     }
 
 
     template<typename TYPE>
-    SP_CPUFUNC double sumSqrt(const Mem<TYPE> &mem){
-        double sum = 0.0;
+    SP_CPUFUNC SP_REAL sumSqrt(const Mem<TYPE> &mem){
+        SP_REAL sum = 0.0;
 
         for (int i = 0; i < mem.size(); i++){
             sum += sqrt(mem[i]);
@@ -184,23 +184,23 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC double meanSqrt(const Mem<TYPE> &mem){
+    SP_CPUFUNC SP_REAL meanSqrt(const Mem<TYPE> &mem){
         return sumSqrt(mem) / mem.size();
     }
 
 
     template<typename TYPE>
-    SP_CPUFUNC double sumAbs(const Mem<TYPE> &mem){
-        double sum = 0.0;
+    SP_CPUFUNC SP_REAL sumAbs(const Mem<TYPE> &mem){
+        SP_REAL sum = 0.0;
 
         for (int i = 0; i < mem.size(); i++){
-            sum += fabs(static_cast<double>(mem[i]));
+            sum += fabs(static_cast<SP_REAL>(mem[i]));
         }
         return sum;
     }
 
     template<typename TYPE>
-    SP_CPUFUNC double meanAbs(const Mem<TYPE> &mem){
+    SP_CPUFUNC SP_REAL meanAbs(const Mem<TYPE> &mem){
         return sumAbs(mem) / mem.size();
     }
 
@@ -232,7 +232,7 @@ namespace sp{
         Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
         sum.zero();
 
-        const double *pMat = mat.ptr;
+        const SP_REAL *pMat = mat.ptr;
 
         for (int r = 0; r < mat.rows(); r++) {
             for (int c = 0; c < mat.cols(); c++) {
@@ -253,7 +253,7 @@ namespace sp{
         Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
         sum.zero();
 
-        const double *pMat = mat.ptr;
+        const SP_REAL *pMat = mat.ptr;
 
         for (int r = 0; r < mat.rows(); r++){
             for (int c = 0; c < mat.cols(); c++){
@@ -274,7 +274,7 @@ namespace sp{
         Mat sum((axis == 1) ? mat.rows() : 1, (axis == 0) ? mat.cols() : 1);
         sum.zero();
 
-        const double *pMat = mat.ptr;
+        const SP_REAL *pMat = mat.ptr;
 
         for (int r = 0; r < mat.rows(); r++){
             for (int c = 0; c < mat.cols(); c++){
@@ -310,8 +310,8 @@ namespace sp{
     }
 
     template<typename VEC>
-    SP_CPUFUNC Mem<double> normVec(const Mem<VEC> &vecs){
-        Mem<double> dst(vecs.dim, vecs.dsize);
+    SP_CPUFUNC Mem<SP_REAL> normVec(const Mem<VEC> &vecs){
+        Mem<SP_REAL> dst(vecs.dim, vecs.dsize);
 
         for (int i = 0; i < dst.size(); i++){
             dst[i] = normVec(vecs[i]);
@@ -324,21 +324,21 @@ namespace sp{
     // eval
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC double evalErr(const Mem1<double> &errs, const double thresh = 5.0) {
-        double eval = 0.0;
+    SP_CPUFUNC SP_REAL evalErr(const Mem1<SP_REAL> &errs, const SP_REAL thresh = 5.0) {
+        SP_REAL eval = 0.0;
         for (int i = 0; i < errs.size(); i++) {
             if (errs[i] < thresh) eval += 1.0;
         }
         return eval / errs.size();
     }
 
-    SP_CPUFUNC double evalErr(const double err, const double thresh = 5.0) {
+    SP_CPUFUNC SP_REAL evalErr(const SP_REAL err, const SP_REAL thresh = 5.0) {
         return (err < thresh) ? 1.0 : 0.0;
     }
 
     
     template<typename TYPE>
-    SP_CPUFUNC Mem1<TYPE> denoise(const Mem<TYPE> &src, const Mem<double> &errs, const double thresh = 5.0) {
+    SP_CPUFUNC Mem1<TYPE> denoise(const Mem<TYPE> &src, const Mem<SP_REAL> &errs, const SP_REAL thresh = 5.0) {
         Mem1<TYPE> dst;
         dst.reserve(src.size());
         for (int i = 0; i < src.size(); i++) {

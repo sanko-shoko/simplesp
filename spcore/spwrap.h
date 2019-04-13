@@ -62,7 +62,7 @@ namespace sp{
         return ::abs(x);
     }
 
-    SP_GENFUNC SP_REAL fabs(const double x){
+    SP_GENFUNC SP_REAL fabs(const SP_REAL x){
         return SP_CAST(::fabs(x));
     }
 
@@ -122,56 +122,56 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // math double
+    // math SP_REAL
     //--------------------------------------------------------------------------------
     
-    SP_GENFUNC SP_REAL pow(const double x, const double y){
+    SP_GENFUNC SP_REAL pow(const SP_REAL x, const SP_REAL y){
         return static_cast<SP_REAL>(::pow(x, y));
     }
 
-    SP_GENFUNC SP_REAL sin(const double x){
+    SP_GENFUNC SP_REAL sin(const SP_REAL x){
         return static_cast<SP_REAL>(::sin(x));
     }
 
-    SP_GENFUNC SP_REAL asin(const double x){
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+    SP_GENFUNC SP_REAL asin(const SP_REAL x){
+        const SP_REAL t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
         return static_cast<SP_REAL>(::asin(t));
     }
 
-    SP_GENFUNC SP_REAL cos(const double x){
+    SP_GENFUNC SP_REAL cos(const SP_REAL x){
         return static_cast<SP_REAL>(::cos(x));
     }
 
-    SP_GENFUNC SP_REAL acos(const double x){
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+    SP_GENFUNC SP_REAL acos(const SP_REAL x){
+        const SP_REAL t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
         return static_cast<SP_REAL>(::acos(t));
     }
 
-    SP_GENFUNC SP_REAL tan(const double x){
+    SP_GENFUNC SP_REAL tan(const SP_REAL x){
         return static_cast<SP_REAL>(::tan(x));
     }
 
-    SP_GENFUNC SP_REAL atan(const double x){
+    SP_GENFUNC SP_REAL atan(const SP_REAL x){
         return static_cast<SP_REAL>(::atan(x));
     }
 
-    SP_GENFUNC SP_REAL atan2(const double y, const double x){
+    SP_GENFUNC SP_REAL atan2(const SP_REAL y, const SP_REAL x){
         return static_cast<SP_REAL>(::atan2(y, x));
     }
 
-    SP_GENFUNC SP_REAL sqrt(const double x){
+    SP_GENFUNC SP_REAL sqrt(const SP_REAL x){
         return static_cast<SP_REAL>(::sqrt(x));
     }
 
-    SP_GENFUNC SP_REAL exp(const double x){
+    SP_GENFUNC SP_REAL exp(const SP_REAL x){
         return static_cast<SP_REAL>(::exp(x));
     }
 
-    SP_GENFUNC SP_REAL log(const double x){
+    SP_GENFUNC SP_REAL log(const SP_REAL x){
         return static_cast<SP_REAL>(::log(x));
     }
 
-    SP_GENFUNC SP_REAL log2(const double x){
+    SP_GENFUNC SP_REAL log2(const SP_REAL x){
         return static_cast<SP_REAL>(::log(x) / ::log(2.0));
     }
 

@@ -26,7 +26,7 @@ namespace sp{
 
     public:
         // marker size [mm]
-        double length;
+        SP_REAL length;
 
         // marker image
         Mem2<Byte> img;
@@ -36,7 +36,7 @@ namespace sp{
         BitMarkerParam() {
         }
 
-        BitMarkerParam(const Mem2<Col3> &img, const double length, const Pose &offset = zeroPose()){
+        BitMarkerParam(const Mem2<Col3> &img, const SP_REAL length, const Pose &offset = zeroPose()){
             setImg(img);
             this->length = length;
             this->offset = offset;
@@ -54,7 +54,7 @@ namespace sp{
         }
 
         void setImg(const Mem2<Col3> &img){
-            const double sigma = static_cast<double>(img.dsize[0]) / _SP_BITMARKERSIZE;
+            const SP_REAL sigma = static_cast<SP_REAL>(img.dsize[0]) / _SP_BITMARKERSIZE;
 
             Mem2<Col3> tmp;
             gaussianFilter<Col3, Byte>(tmp, img, sigma / 2.0);
@@ -65,14 +65,14 @@ namespace sp{
 
             const Byte minv = minVal(gry);
             const Byte maxv = maxVal(gry);
-            const double rate = SP_BYTEMAX / maxVal(static_cast<double>(maxv - minv), 1.0);
+            const SP_REAL rate = SP_BYTEMAX / maxVal(static_cast<SP_REAL>(maxv - minv), 1.0);
 
             cnvMem(this->img, gry, rate, minv);
         }
 
     };
 
-    SP_CPUFUNC BitMarkerParam getBitMarkerParam(const int id, const int block, const double length, const Pose &offset = zeroPose()) {
+    SP_CPUFUNC BitMarkerParam getBitMarkerParam(const int id, const int block, const SP_REAL length, const Pose &offset = zeroPose()) {
 
         Mem2<Col3> img(_SP_BITMARKERSIZE, _SP_BITMARKERSIZE);
         img.zero();
@@ -101,12 +101,12 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerParam(const int id, const int block, const double length, const int dsize0, const int dsize1, const double interval) {
+    SP_CPUFUNC Mem1<BitMarkerParam> getBitMarkerParam(const int id, const int block, const SP_REAL length, const int dsize0, const int dsize1, const SP_REAL interval) {
         Mem1<BitMarkerParam> mrks;
 
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
-                const double distance = length + interval;
+                const SP_REAL distance = length + interval;
                 const Pose offset = getPose(getVec((dsize0 - 1) / 2.0 - x, (dsize1 - 1) / 2.0 - y, 0.0) * distance);
                 
                 mrks.push(getBitMarkerParam(id + mrks.size(), block, length, offset));
@@ -117,10 +117,10 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC bool saveBitMarkerParamSVG(const char *path, const int id, const int block, const double length, const int dsize0, const int dsize1, const double interval, const int w = 297, const int h = 210) {
+    SP_CPUFUNC bool saveBitMarkerParamSVG(const char *path, const int id, const int block, const SP_REAL length, const int dsize0, const int dsize1, const SP_REAL interval, const int w = 297, const int h = 210) {
 
-        const double distance = length + interval;
-        const double unit = length / (block + 2);
+        const SP_REAL distance = length + interval;
+        const SP_REAL unit = length / (block + 2);
 
         const Vec2 base = (getVec(w, h) - getVec(length + distance * (dsize0 - 1), length + distance * (dsize1 - 1))) / 2.0;
 
@@ -278,16 +278,16 @@ namespace sp{
         //--------------------------------------------------------------------------------
         int MIN_IMGSIZE = 320;
 
-        double BIN_BLOCKSIZE = 0.05;
+        SP_REAL BIN_BLOCKSIZE = 0.05;
 
-        double MRK_MINSIZE = 0.01;
-        double MRK_CONTRAST = 0.05;
+        SP_REAL MRK_MINSIZE = 0.01;
+        SP_REAL MRK_CONTRAST = 0.05;
 
-        double MRK_MATCHRATE = 0.75;
+        SP_REAL MRK_MATCHRATE = 0.75;
 
     private:
-        double getMinScale(){
-            return static_cast<double>(MIN_IMGSIZE) / maxVal(m_cam.dsize[0], m_cam.dsize[1]);
+        SP_REAL getMinScale(){
+            return static_cast<SP_REAL>(MIN_IMGSIZE) / maxVal(m_cam.dsize[0], m_cam.dsize[1]);
         }
 
         //--------------------------------------------------------------------------------
@@ -371,11 +371,11 @@ namespace sp{
 
                 // tracing contour and count good contrast
                 int cnt = 0;
-                double minLng = SP_INFINITY;
+                SP_REAL minLng = SP_INFINITY;
                 for (int j = 0; j < contour.size(); j++) {
                     const Vec2 crnt = contour[j];
                     const Vec2 side = crnt + unitVec(crnt - cent) * 2.0;
-                    const double contrast = img(round(side.x), round(side.y)) - img(round(crnt.x), round(crnt.y));
+                    const SP_REAL contrast = img(round(side.x), round(side.y)) - img(round(crnt.x), round(crnt.y));
                     if (contrast > SP_BYTEMAX * MRK_CONTRAST) {
                         cnt++;
                     }
@@ -384,7 +384,7 @@ namespace sp{
                 }
 
                 // check contrast
-                if (static_cast<double>(cnt) / contour.size() < 0.8) continue;
+                if (static_cast<SP_REAL>(cnt) / contour.size() < 0.8) continue;
 
                 // check size
                 if (minLng < minVal(img.dsize[0], img.dsize[1]) * MRK_MINSIZE) continue;
@@ -407,7 +407,7 @@ namespace sp{
                 Mem1<Vec2> corner(4);
                 for (int c = 0; c < 4; c++){
 
-                    double maxv = 0.0;
+                    SP_REAL maxv = 0.0;
                     for (int p = 0; p < contour.size(); p++) {
                         const Vec2 crnt = contour[p];
                         const Vec2 prev = contour[(p + contour.size() - CORNER_SIDE) % contour.size()];
@@ -415,9 +415,9 @@ namespace sp{
 
                         if (c > 0 && normVec(crnt - corner[c - 1]) < CORNER_SIDE) continue;
 
-                        const double crs = (c > 0) ? crsVec(crnt - corner[c - 1], cent - corner[c - 1]).z : 1.0;
+                        const SP_REAL crs = (c > 0) ? crsVec(crnt - corner[c - 1], cent - corner[c - 1]).z : 1.0;
 
-                        const double val = crs * dotVec(unitVec(prev - crnt) + unitVec(next - crnt), unitVec(cent - crnt));
+                        const SP_REAL val = crs * dotVec(unitVec(prev - crnt) + unitVec(next - crnt), unitVec(cent - crnt));
                         if (val > maxv) {
                             maxv = val;
                             corner[c] = crnt;
@@ -456,7 +456,7 @@ namespace sp{
                     for (int it = 0; it < maxit; it++){
                         Vec2 delta = unitVec(cent - corner[c]);
 
-                        double maxv = SP_INFINITY;
+                        SP_REAL maxv = SP_INFINITY;
                         for (int y = -step; y <= step; y++){
                             for (int x = -step; x <= step; x++){
                                 const int xx = round(pos.x) + x + WIN_SIZE;
@@ -464,7 +464,7 @@ namespace sp{
                                 if (bin(xx, yy) > 0) continue;
 
                                 const Vec2 crnt = getVec(x, y);
-                                const double val = dotVec(crnt, a) + dotVec(crnt, b);
+                                const SP_REAL val = dotVec(crnt, a) + dotVec(crnt, b);
                                 if (val < maxv){
                                     maxv = val;
                                     delta = crnt;
@@ -490,7 +490,7 @@ namespace sp{
                 const Mem1<Vec2> unit(4, _unit);
 
                 Mem1<Vec2> objs, drcs;
-                const double step = 0.1;
+                const SP_REAL step = 0.1;
                 for (int c = 0; c < 4; c++){
                     const Vec2 pos = unit[c];
                     const Vec2 drc = unit[(c + 1) % 4] - unit[c];
@@ -541,12 +541,12 @@ namespace sp{
                     const Pose pose = poses[i];
 
                     int id = 0;
-                    double maxv = 0.0;
+                    SP_REAL maxv = 0.0;
                     for (int j = 0; j < 4; j++){
                         const Vec3 pos = poses[i] * getVec(objs[j].x, objs[j].y, 0.0);
                         const Vec3 drc = poses[i].rot * getVec(drcs[j].x, drcs[j].y, 0.0);
 
-                        double jNpxToDist[2 * 2];
+                        SP_REAL jNpxToDist[2 * 2];
                         jacobNpxToDist(jNpxToDist, m_cam, prjVec(pos));
 
                         const Vec2 drc2 = mulMat(jNpxToDist, 2, 2, getVec(drc.x, drc.y));
@@ -556,7 +556,7 @@ namespace sp{
                         const Vec2 pixB = mulCamD(m_cam, prjVec(pos - drc * 0.1));
                         const Vec2 pixC = mulCamD(m_cam, prjVec(pos));
 
-                        double sum = 0.0;
+                        SP_REAL sum = 0.0;
                         for (int k = -CHECK_SIZE; k <= CHECK_SIZE; k++){
                             const Vec2 a = pixA + nrm * k;
                             const Vec2 b = pixB + nrm * k;
@@ -625,11 +625,11 @@ namespace sp{
                     pimg[s] = maxVal(pimg[s], minv);
                 }
 
-                const double rate = SP_BYTEMAX / maxVal(static_cast<double>(maxv - minv), 1.0);
+                const SP_REAL rate = SP_BYTEMAX / maxVal(static_cast<SP_REAL>(maxv - minv), 1.0);
                 cnvMem(pimg, pimg, rate, minv);
             }
 
-            Mem1<Mem1<Mem1<double> > > evals(mrks.size());
+            Mem1<Mem1<Mem1<SP_REAL> > > evals(mrks.size());
             for (int i = 0; i < mrks.size(); i++) {
                 evals[i].resize(mrks[i].size());
 
@@ -640,7 +640,7 @@ namespace sp{
                         const Mem2<Byte> &pimg = pimgs[p];
 
                         int cnt = 0;
-                        double sqsum = 0.0;
+                        SP_REAL sqsum = 0.0;
 
                         for (int v = margin; v < mimg.dsize[1] - margin; v++) {
                             for (int u = margin; u < mimg.dsize[0] - margin; u++) {
@@ -648,7 +648,7 @@ namespace sp{
                                 cnt++;
                             }
                         }
-                        const double eval = 1.0 - 1.0 * sqrt(sqsum / cnt) / SP_BYTEMAX;
+                        const SP_REAL eval = 1.0 - 1.0 * sqrt(sqsum / cnt) / SP_BYTEMAX;
                         evals[i][j].push(eval);
                     }
                 }
@@ -667,11 +667,11 @@ namespace sp{
                 int id[2] = { -1, -1 };
                 int c = -1;
 
-                double maxEval = -1.0;
+                SP_REAL maxEval = -1.0;
                 for (int i = 0; i < mrks.size(); i++){
                     for (int j = 0; j < mrks[i].size(); j++) {
                         for (int q = 0; q < pimgs.size(); q++) {
-                            const double eval = evals[i][j][q];
+                            const SP_REAL eval = evals[i][j][q];
 
                             if (eval > maxEval) {
                                 maxEval = eval;
@@ -741,12 +741,12 @@ namespace sp{
 
                     Pose pose;
 
-                    double minv = SP_INFINITY;
+                    SP_REAL minv = SP_INFINITY;
                     for (int j = 0; j < tposes.size(); j++) {
                         Pose &tmp = tposes[j];
                         if (refinePose(tmp, m_cam, tcpixs, tcobjs) == false) continue;
 
-                        const double err = medianVal(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
+                        const SP_REAL err = medianVal(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
 
                         if (err < minv) {
                             minv = err;
@@ -755,7 +755,7 @@ namespace sp{
                     }
                     if (minv == SP_INFINITY) continue;
 
-                    const Mem1<double> errs = calcPrjErr(pose, m_cam, tcpixs, tcobjs);
+                    const Mem1<SP_REAL> errs = calcPrjErr(pose, m_cam, tcpixs, tcobjs);
                     poses[i] = pose;
                     cpixs[i] = denoise(tcpixs, errs, minv * 3.0);
                     cobjs[i] = denoise(tcobjs, errs, minv * 3.0);

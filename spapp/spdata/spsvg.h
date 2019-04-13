@@ -18,12 +18,12 @@ namespace sp {
 
     namespace _svg {
 
-        SP_CPUFUNC string rect(const double x, const double y, const double w, const double h, const char *option) {
+        SP_CPUFUNC string rect(const SP_REAL x, const SP_REAL y, const SP_REAL w, const SP_REAL h, const char *option) {
             char str[SP_STRMAX];
             sprintf(str, "<rect x='%.1lfmm' y='%.1lfmm' width='%.1lfmm' height='%.1lfmm' %s/>\n", x, y, w, h, option);
             return str;
         }
-        SP_CPUFUNC string circle(const double x, const double y, const double r, const char *option) {
+        SP_CPUFUNC string circle(const SP_REAL x, const SP_REAL y, const SP_REAL r, const char *option) {
             char str[SP_STRMAX];
             sprintf(str, "<circle cx='%.1lfmm' cy='%.1lfmm' r='%.1lfmm' %s/>", x, y, r, option);
             return str;

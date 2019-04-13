@@ -84,11 +84,11 @@ namespace sp{
                 const TYEP1 vec = pose * pnts1[i];
 
                 int c = -1;
-                double minNorm = SP_INFINITY;
+                SP_REAL minNorm = SP_INFINITY;
                 for (int j = 0; j < pnts0.size(); j++){
                     if (checkOutlier(pnts0[j], vec) == false) continue;
 
-                    const double norm = normVec(getPos(pnts0[j]) - getPos(vec));
+                    const SP_REAL norm = normVec(getPos(pnts0[j]) - getPos(vec));
                     if (norm < minNorm){
                         minNorm = norm;
                         c = j;
@@ -129,7 +129,7 @@ namespace sp{
         SP_CPUFUNC bool update(Pose &pose, const Mem1<TYEP0> &cpnts0, const Mem1<TYEP1> &cpnts1){
             Mat J(1 * cpnts0.size(), 6);
             Mat E(1 * cpnts0.size(), 1);
-            Mem1<double> errs(cpnts0.size());
+            Mem1<SP_REAL> errs(cpnts0.size());
 
             Vec3 mvec = getVec(0.0, 0.0, 0.0);
             for (int i = 0; i < cpnts1.size(); i++) {
@@ -145,10 +145,10 @@ namespace sp{
                 const Vec3 err = getPos(cpnts0[i]) - getPos(vec);
                 const Vec3 drc = getDrc(vec, cpnts0[i]);
 
-                double jPoseToPos[3 * 6] = { 0 };
+                SP_REAL jPoseToPos[3 * 6] = { 0 };
                 jacobPoseToPos(jPoseToPos, mpose, getPos(cpnts1[i]) - mvec);
 
-                double jDrc[3] = { drc.x, drc.y, drc.z };
+                SP_REAL jDrc[3] = { drc.x, drc.y, drc.z };
                 mulMat(&J(i, 0), 1, 6, jDrc, 1, 3, jPoseToPos, 3, 6);
 
                 E(i, 0) = dotVec(err, drc);

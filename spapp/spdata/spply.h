@@ -102,7 +102,7 @@ namespace sp{
             const Mem1<string> words = strSplit(line);
 
             for (int p = 0; p < elem.prop.size(); p++){
-                const double val = atof(words[p].c_str());
+                const SP_REAL val = atof(words[p].c_str());
 
                 if (elem.prop[p] == "x") vtx.pos.x = val;
                 if (elem.prop[p] == "y") vtx.pos.y = val;

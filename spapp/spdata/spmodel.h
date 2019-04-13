@@ -33,8 +33,8 @@ namespace sp{
         return sum / model.size();
     }
 
-    SP_CPUFUNC double getModelRadius(const Mem1<Mesh3> &model){
-        Mem1<double> mem(model.size());
+    SP_CPUFUNC SP_REAL getModelRadius(const Mem1<Mesh3> &model){
+        Mem1<SP_REAL> mem(model.size());
         for (int i = 0; i < mem.size(); i++){
             mem[i] = normVec(getMeshPos(model[i]));
         }
@@ -42,17 +42,17 @@ namespace sp{
         return maxVal(mem);
     }
 
-    SP_CPUFUNC double getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
+    SP_CPUFUNC SP_REAL getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
 
-        const double radius = getModelRadius(model);
-        const double distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
+        const SP_REAL radius = getModelRadius(model);
+        const SP_REAL distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
     
         return distance;
     }
 
     SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){
         const CamParam cam = getCamParam(density, density);
-        const double distance = getModelDistance(model, cam);
+        const SP_REAL distance = getModelDistance(model, cam);
         
         Mem1<VecPN3> tmp;
         const int num = getGeodesicMeshNum(0);
@@ -73,7 +73,7 @@ namespace sp{
         tmp = shuffle(tmp);
 
         Mem1<VecPN3> pnts;
-        const double unit = 2 * distance / (cam.fx + cam.fy);
+        const SP_REAL unit = 2 * distance / (cam.fx + cam.fy);
 
         for (int i = 0; i < tmp.size(); i++){
             bool check = true;
@@ -93,7 +93,7 @@ namespace sp{
 
     SP_CPUFUNC Mem1<Edge> getModelEdge(const Mem1<Mesh3> &model, const int density = 50) {
 
-        KdTree<double> kdtree;
+        KdTree<SP_REAL> kdtree;
         kdtree.init(3);
         for (int i = 0; i < model.size(); i++) {
             for (int j = 0; j < 3; j++) {
@@ -104,8 +104,8 @@ namespace sp{
 
         Mem1<Edge> edges;
 
-        const double radius = getModelRadius(model);
-        const double unit = 2.0 * radius / density;
+        const SP_REAL radius = getModelRadius(model);
+        const SP_REAL unit = 2.0 * radius / density;
 
         for (int i = 0; i < model.size(); i++) {
 
@@ -185,13 +185,13 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const double distance, const int level = 2, const int density = 50) {
+    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const SP_REAL distance, const int level = 2, const int density = 50) {
 
-        const double radius = getModelRadius(model);
-        const double unit = 2.0 * radius / density;
+        const SP_REAL radius = getModelRadius(model);
+        const SP_REAL unit = 2.0 * radius / density;
 
         const int size = 300;
-        const double f = distance * size / (1.2 * 2.0 * radius);
+        const SP_REAL f = distance * size / (1.2 * 2.0 * radius);
         const CamParam cam = getCamParam(size, size, f, f);
 
         Mem1<PoseModel> pmodels;
@@ -213,7 +213,7 @@ namespace sp{
         {
             const Mem1<Edge> &edges = getModelEdge(model, density);
   
-            KdTree<double> kdtree;
+            KdTree<SP_REAL> kdtree;
             kdtree.init(3);
             for (int i = 0; i < edges.size(); i++) {
                 kdtree.addData(&edges[i].pos);
@@ -324,13 +324,13 @@ namespace sp{
 
     SP_CPUFUNC int findPoseModel(const Mem1<PoseModel> &pmodels, const Pose &pose) {
         int id = -1;
-        double minv = SP_INFINITY;
+        SP_REAL minv = SP_INFINITY;
         for (int i = 0; i < pmodels.size(); i++) {
             Vec3 vec0 = getEuler(pose.rot);
             Vec3 vec1 = getEuler(pmodels[i].pose.rot);
             vec0.z = 0.0;
             vec1.z = 0.0;
-            const double dif = difRot(getRotEuler(vec0), getRotEuler(vec1));
+            const SP_REAL dif = difRot(getRotEuler(vec0), getRotEuler(vec1));
             if (dif < minv) {
                 minv = dif;
                 id = i;
@@ -357,9 +357,9 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size) {
+    SP_CPUFUNC Mem1<Mesh3> loadPlane(const SP_REAL size) {
         Mem1<Mesh3> model;
-        const double hs = size * 0.5;
+        const SP_REAL hs = size * 0.5;
         const Vec3 a = getVec(-hs, -hs, 0.0);
         const Vec3 b = getVec(+hs, -hs, 0.0);
         const Vec3 c = getVec(+hs, +hs, 0.0);
@@ -371,7 +371,7 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadGeodesicDorm(const double size, const int div) {
+    SP_CPUFUNC Mem1<Mesh3> loadGeodesicDorm(const SP_REAL size, const int div) {
         Mem1<Mesh3> model;
 
         const int num = getGeodesicMeshNum(div);
@@ -382,10 +382,10 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadCube(const double size) {
+    SP_CPUFUNC Mem1<Mesh3> loadCube(const SP_REAL size) {
         Mem1<Mesh3> model;
 
-        const double half = size / 2.0;
+        const SP_REAL half = size / 2.0;
 
         for (int z = -1; z <= +1; z += 2) {
             for (int y = -1; y <= +1; y += 2) {

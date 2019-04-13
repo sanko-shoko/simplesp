@@ -140,10 +140,10 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // double
+    // SP_REAL
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const double *val, const int num) {
+    SP_CPUFUNC bool ftext(FILE *fp, const char *mode, const SP_REAL *val, const int num) {
         const char *format = (*mode == 'w') ? "%e" : "%lf";
         return ftextf(fp, mode, format, val, num, "\n");
     }

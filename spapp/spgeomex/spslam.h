@@ -125,9 +125,9 @@ namespace sp {
                 const int i = m_sfm.vsize() - 1;
                 const Pose prePose = m_sfm.getView(i)->pose;
 
-                double move = SP_INFINITY;
-                double norm = SP_INFINITY;
-                double angle = SP_INFINITY;
+                SP_REAL move = SP_INFINITY;
+                SP_REAL norm = SP_INFINITY;
+                SP_REAL angle = SP_INFINITY;
 
                 if (m_sfm.msize() == 0) {
                     const Pose nearPose = m_sfm.getView(i)->pose;
@@ -147,10 +147,10 @@ namespace sp {
 
                 }
 
-                const double nThresh = 0.5;
-                const double aThresh = 5.0 * SP_PI / 180.0;
+                const SP_REAL nThresh = 0.5;
+                const SP_REAL aThresh = 5.0 * SP_PI / 180.0;
 
-                const double t = norm / nThresh + angle / aThresh;
+                const SP_REAL t = norm / nThresh + angle / aThresh;
 
                 if (t > 1.0) {
                     m_sfm.addView(m_vtrack.getCam(), img, m_vtrack.getPose());

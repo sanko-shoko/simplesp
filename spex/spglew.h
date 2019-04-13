@@ -161,7 +161,7 @@ namespace sp{
         }
 
  
-        void readDepth(Mem2<float> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readDepth(Mem2<float> &depth, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0) {
             depth.resize(dsize);
             depth.zero();
 
@@ -177,10 +177,10 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
-                    const double div = (farPlane - t * (farPlane - nearPlane));
+                    const SP_REAL div = (farPlane - t * (farPlane - nearPlane));
                     if (div < SP_SMALL) continue;
 
-                    const double d = farPlane * nearPlane / div;
+                    const SP_REAL d = farPlane * nearPlane / div;
 
                     depth(u, v) = static_cast<float>((d > nearPlane && d < farPlane) ? d : 0.0);
                 }
@@ -189,7 +189,7 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        void readDepth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readDepth(Mem2<SP_REAL> &depth, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0) {
             depth.resize(dsize);
             depth.zero();
 
@@ -205,10 +205,10 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
-                    const double div = (farPlane - t * (farPlane - nearPlane));
+                    const SP_REAL div = (farPlane - t * (farPlane - nearPlane));
                     if (div < SP_SMALL) continue;
                     
-                    const double d = farPlane * nearPlane / div;
+                    const SP_REAL d = farPlane * nearPlane / div;
 
                     depth(u, v) = (d > nearPlane && d < farPlane) ? d : 0.0;
                 }
@@ -217,7 +217,7 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        void readDepthOrth(Mem2<float> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readDepthOrth(Mem2<float> &depth, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0) {
             depth.resize(dsize);
             depth.zero();
 
@@ -233,9 +233,9 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
-                    const double p2 = 2.0 / (farPlane - nearPlane);
-                    const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
-                    const double d = (t * 2 - 1 - p3) / p2;
+                    const SP_REAL p2 = 2.0 / (farPlane - nearPlane);
+                    const SP_REAL p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+                    const SP_REAL d = (t * 2 - 1 - p3) / p2;
                     depth(u, v) = static_cast<float>((d > nearPlane && d < farPlane) ? d : 0.0);
                 }
             }
@@ -243,7 +243,7 @@ namespace sp{
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
         
-        void readDepthOrth(Mem2<double> &depth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readDepthOrth(Mem2<SP_REAL> &depth, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0) {
             depth.resize(dsize);
             depth.zero();
 
@@ -259,9 +259,9 @@ namespace sp{
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
-                    const double p2 = 2.0 / (farPlane - nearPlane);
-                    const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
-                    const double d = (t * 2 - 1 - p3) / p2;
+                    const SP_REAL p2 = 2.0 / (farPlane - nearPlane);
+                    const SP_REAL p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+                    const SP_REAL d = (t * 2 - 1 - p3) / p2;
                     depth(u, v) = (d > nearPlane && d < farPlane) ? d : 0.0;
                 }
             }
@@ -385,7 +385,7 @@ namespace sp{
             glUniform1i(location, val);
         }
         
-        void setUniform(const char *name, const double &val) {
+        void setUniform(const char *name, const SP_REAL &val) {
             const GLint location = glGetUniformLocation(m_program, name);
             glUniform1f(location, static_cast<float>(val));
         }

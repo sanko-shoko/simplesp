@@ -99,7 +99,7 @@ namespace sp {
                 return false;
             }
 
-            const double rms = calibCam(m_cam, m_cam.dsize[0], m_cam.dsize[1], m_pixs, m_objs);
+            const SP_REAL rms = calibCam(m_cam, m_cam.dsize[0], m_cam.dsize[1], m_pixs, m_objs);
             if (rms >= 0.0) {
                 m_est = true;
                 SP_PRINTF("calibration was successful : rms %lf \n", rms);

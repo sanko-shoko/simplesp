@@ -24,14 +24,14 @@ namespace sp{
             TYPE val;
 
             // node deviation
-            double dev;
+            SP_REAL dev;
 
 
             // div parameter
             int param;
 
             // div thresh
-            double thresh;
+            SP_REAL thresh;
             
             // next node ptr (X[i] < thresh) ? next[0] : next[1]
             Node *next[2];
@@ -54,7 +54,7 @@ namespace sp{
             m_trees.clear();
         }
 
-        void train(const Mem1<Mem<double> >& Xs, Mem1<TYPE> &Ys, const int sampleNum = 100) {
+        void train(const Mem1<Mem<SP_REAL> >& Xs, Mem1<TYPE> &Ys, const int sampleNum = 100) {
             SP_ASSERT(sampleNum > 10);
 
             const int seed = m_trees.size();
@@ -63,7 +63,7 @@ namespace sp{
             divTree(*m_trees.malloc(), Xs, Ys, index, 0);
         }
 
-        Mem1<TYPE> execute(const Mem<double> &X){
+        Mem1<TYPE> execute(const Mem<SP_REAL> &X){
             SP_ASSERT(m_trees.size() > 0);
 
             Mem1<TYPE> results;
@@ -75,7 +75,7 @@ namespace sp{
             return results;
         }
 
-        Mem1<const Node*> execute2(const Mem<double> &X) {
+        Mem1<const Node*> execute2(const Mem<SP_REAL> &X) {
             SP_ASSERT(m_trees.size() > 0);
 
             Mem1<const Node*> results;
@@ -89,11 +89,11 @@ namespace sp{
 
     private:
 
-        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) = 0;
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) = 0;
 
-        virtual double calcGain(const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) = 0;
 
-        Node* divTree(MemP<Node> &tree, const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
+        Node* divTree(MemP<Node> &tree, const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
 
             Node *node = getNode(tree, Xs, Ys, index);
 
@@ -108,25 +108,25 @@ namespace sp{
                     return node;
                 }
 
-                const double minv = 0.01;
+                const SP_REAL minv = 0.01;
                 if (tree.size() > 1 && (tree[0].dev == 0.0 || node->dev / tree[0].dev < minv)) {
                     return node;
                 }
             }
             
-            double maxg = -SP_INFINITY;
+            SP_REAL maxg = -SP_INFINITY;
 
             // calc gain & thresh
             {
                 const int dim = Xs[0].size();
 
-                Mem1<double> maxvs(dim);
-                Mem1<double> minvs(dim);
+                Mem1<SP_REAL> maxvs(dim);
+                Mem1<SP_REAL> minvs(dim);
                 for (int s = 0; s < dim; s++) {
-                    double maxv = -SP_INFINITY;
-                    double minv = +SP_INFINITY;
+                    SP_REAL maxv = -SP_INFINITY;
+                    SP_REAL minv = +SP_INFINITY;
                     for (int n = 0; n < index.size(); n++) {
-                        const double v = Xs[index[n]][s];
+                        const SP_REAL v = Xs[index[n]][s];
                         maxv = maxVal(maxv, v);
                         minv = minVal(minv, v);
                     }
@@ -138,9 +138,9 @@ namespace sp{
 
                     const int param = rand() % Xs[0].size();
 
-                    const double thresh = randValUnif() * (maxvs[param] - minvs[param]) + minvs[param];
+                    const SP_REAL thresh = randValUnif() * (maxvs[param] - minvs[param]) + minvs[param];
 
-                    const double gain = calcGain(Xs, Ys, index, param, thresh);
+                    const SP_REAL gain = calcGain(Xs, Ys, index, param, thresh);
 
                     if (gain > maxg) {
                         maxg = gain;
@@ -166,7 +166,7 @@ namespace sp{
             return node;
         }
 
-        const Node* traceNode(const MemP<Node> &tree, const Mem<double> &X) {
+        const Node* traceNode(const MemP<Node> &tree, const Mem<SP_REAL> &X) {
 
             const Node *node = &tree[0];
             while (node != NULL && node->next[0] != NULL && node->next[1] != NULL) {
@@ -185,19 +185,19 @@ namespace sp{
     // random forest regression
     //--------------------------------------------------------------------------------
 
-    class RandomForestReg : public RandomForest<double> {
+    class RandomForestReg : public RandomForest<SP_REAL> {
     private:
-        typedef double TYPE;
+        typedef SP_REAL TYPE;
 
 
     public:
 
-        RandomForestReg() : RandomForest<double>() {
+        RandomForestReg() : RandomForest<SP_REAL>() {
         }
 
     private:
 
-        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
             SP_ASSERT(index.size() > 0);
 
             Node *node = tree.malloc();
@@ -207,8 +207,8 @@ namespace sp{
                 tmp[i] = Ys[index[i]];
             }
 
-            const double mean = meanVal(tmp);
-            const double sigma = sqrt(meanSq(tmp - mean));
+            const SP_REAL mean = meanVal(tmp);
+            const SP_REAL sigma = sqrt(meanSq(tmp - mean));
 
             node->val = mean;
             node->dev = sigma;
@@ -217,9 +217,9 @@ namespace sp{
         }
 
 
-        virtual double calcGain(const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) {
 
-            double sum[2] = { 0 };
+            SP_REAL sum[2] = { 0 };
             int cnt[2] = { 0 };
 
             for (int n = 0; n < index.size(); n++) {
@@ -230,11 +230,11 @@ namespace sp{
 
             if (cnt[0] * cnt[1] == 0) return -SP_INFINITY;
 
-            double mean[2];
+            SP_REAL mean[2];
             mean[0] = sum[0] / cnt[0];
             mean[1] = sum[1] / cnt[1];
 
-            double gain = 0.0;
+            SP_REAL gain = 0.0;
             for (int n = 0; n < index.size(); n++) {
                 const int s = Xs[index[n]][param] < thresh ? 0 : 1;
                 gain -= square(Ys[index[n]] - mean[s]);
@@ -262,7 +262,7 @@ namespace sp{
 
     private:
 
-        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<double> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
+        virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) {
             Node *node = tree.malloc();
 
             Mem1<int> hist(m_classNum);
@@ -273,12 +273,12 @@ namespace sp{
             }
 
             node->val = maxArg(hist);
-            node->dev = 1.0 - static_cast<double>(maxVal(hist)) / index.size();
+            node->dev = 1.0 - static_cast<SP_REAL>(maxVal(hist)) / index.size();
 
             return node;
         }
 
-        virtual double calcGain(const Mem1<Mem<double> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) {
             
             int cnt[2] = { 0 };
             Mem2<int> hist(2, m_classNum);
@@ -292,11 +292,11 @@ namespace sp{
 
             if (cnt[0] * cnt[1] == 0) return -SP_INFINITY;
     
-            double gain = 0.0;
+            SP_REAL gain = 0.0;
             for (int s = 0; s < 2; s++) {
-                double sum = 0.0;
+                SP_REAL sum = 0.0;
                 for (int c = 0; c < m_classNum; c++) {
-                    const double p = hist(s, c) / cnt[s];
+                    const SP_REAL p = hist(s, c) / cnt[s];
                     sum += (p != 0.0) ? p * log(p) : 0.0;
                 }
                 gain -= sum * cnt[s] / index.size();
