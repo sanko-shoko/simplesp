@@ -275,8 +275,8 @@ namespace sp {
         switch (ftr.dsc.type) {
         case Dsc::Type::DSC_SIFT:
         {
-            const SP_REAL MIN_NCC = 0.9;
-            const SP_REAL MIN_BIN = MIN_NCC * 0.9;
+            const SP_REAL MIN_NCC = 0.9f;
+            const SP_REAL MIN_BIN = MIN_NCC * 0.9f;
 
             SP_REAL maxv = MIN_NCC;
 
@@ -308,8 +308,8 @@ namespace sp {
         }
         case Dsc::Type::DSC_CFBlob:
         {
-            const SP_REAL MIN_NCC = 0.9;
-            const SP_REAL MIN_BIN = MIN_NCC * 0.9;
+            const SP_REAL MIN_NCC = 0.9f;
+            const SP_REAL MIN_BIN = MIN_NCC * 0.9f;
 
             SP_REAL maxv = MIN_NCC;
 

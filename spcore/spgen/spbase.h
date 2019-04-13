@@ -62,7 +62,7 @@ namespace sp{
 
     // get max value
     SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
-        return (a > b) ? a : b;
+        return SP_CAST((a > b) ? a : b);
     }
 
     // get min value
@@ -72,19 +72,19 @@ namespace sp{
 
     // get min value
     SP_GENFUNC const SP_REAL minVal(const double a, const double b){
-        return (a < b) ? a : b;
+        return SP_CAST((a < b) ? a : b);
     }
 
     // get uniform random value (-1.0, 1.0)
     SP_GENFUNC SP_REAL randValUnif(){
         const int maxv = 2000;
-        return 2.0 * (rand() % (maxv + 1) + 1) / (maxv + 2) - 1.0;
+        return SP_CAST(2.0 * (rand() % (maxv + 1) + 1) / (maxv + 2) - 1.0);
     }
 
     // get gauss random value
     SP_GENFUNC SP_REAL randValGauss(){
-        const SP_REAL a = (randValUnif() + 1.0) / 2.0;
-        const SP_REAL b = (randValUnif() + 1.0) / 2.0;
+        const double a = (randValUnif() + 1.0) / 2.0;
+        const double b = (randValUnif() + 1.0) / 2.0;
         return sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
     }
 
@@ -94,7 +94,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // check nearly equal
-    SP_GENFUNC bool cmpVal(const SP_REAL a, const SP_REAL b, const SP_REAL t = SP_SMALL){
+    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = SP_SMALL){
         return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 

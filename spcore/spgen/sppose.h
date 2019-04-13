@@ -194,17 +194,17 @@ namespace sp{
         const SP_REAL c = cos(angle);
         const SP_REAL s = sin(angle);
 
-        dst[0 * 3 + 0] = nrm.x * nrm.x * (1.0 - c) + c;
-        dst[0 * 3 + 1] = nrm.x * nrm.y * (1.0 - c) - nrm.z * s;
-        dst[0 * 3 + 2] = nrm.x * nrm.z * (1.0 - c) + nrm.y * s;
+        dst[0 * 3 + 0] = SP_CAST(nrm.x * nrm.x * (1.0 - c) + c);
+        dst[0 * 3 + 1] = SP_CAST(nrm.x * nrm.y * (1.0 - c) - nrm.z * s);
+        dst[0 * 3 + 2] = SP_CAST(nrm.x * nrm.z * (1.0 - c) + nrm.y * s);
 
-        dst[1 * 3 + 0] = nrm.y * nrm.x * (1.0 - c) + nrm.z * s;
-        dst[1 * 3 + 1] = nrm.y * nrm.y * (1.0 - c) + c;
-        dst[1 * 3 + 2] = nrm.y * nrm.z * (1.0 - c) - nrm.x * s;
+        dst[1 * 3 + 0] = SP_CAST(nrm.y * nrm.x * (1.0 - c) + nrm.z * s);
+        dst[1 * 3 + 1] = SP_CAST(nrm.y * nrm.y * (1.0 - c) + c);
+        dst[1 * 3 + 2] = SP_CAST(nrm.y * nrm.z * (1.0 - c) - nrm.x * s);
 
-        dst[2 * 3 + 0] = nrm.z * nrm.x * (1.0 - c) - nrm.y * s;
-        dst[2 * 3 + 1] = nrm.z * nrm.y * (1.0 - c) + nrm.x * s;
-        dst[2 * 3 + 2] = nrm.z * nrm.z * (1.0 - c) + c;
+        dst[2 * 3 + 0] = SP_CAST(nrm.z * nrm.x * (1.0 - c) - nrm.y * s);
+        dst[2 * 3 + 1] = SP_CAST(nrm.z * nrm.y * (1.0 - c) + nrm.x * s);
+        dst[2 * 3 + 2] = SP_CAST(nrm.z * nrm.z * (1.0 - c) + c);
     }
 
     SP_GENFUNC void getMatRodrigues(SP_REAL *dst, const int rows, const int cols, const Vec3 &vec, const SP_REAL angle) {
@@ -237,19 +237,19 @@ namespace sp{
         }
     }
 
-    SP_GENFUNC Rot getRotAngle(const Vec3 &vec, const SP_REAL angle) {
+    SP_GENFUNC Rot getRotAngle(const Vec3 &vec, const double angle) {
         return getRotAngle(unitVec(vec) * angle);
     }
 
-    SP_GENFUNC Rot getRotAngleX(const SP_REAL angle) {
+    SP_GENFUNC Rot getRotAngleX(const double angle) {
         return getRotAngle(getVec3(1.0, 0.0, 0.0), angle);
     }
 
-    SP_GENFUNC Rot getRotAngleY(const SP_REAL angle) {
+    SP_GENFUNC Rot getRotAngleY(const double angle) {
         return getRotAngle(getVec3(0.0, 1.0, 0.0), angle);
     }
 
-    SP_GENFUNC Rot getRotAngleZ(const SP_REAL angle) {
+    SP_GENFUNC Rot getRotAngleZ(const double angle) {
         return getRotAngle(getVec3(0.0, 0.0, 1.0), angle);
     }
 

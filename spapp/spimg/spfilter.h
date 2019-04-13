@@ -448,8 +448,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const SP_REAL dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
-                const SP_REAL dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
+                const double dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
+                const double dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
 
                 cnvVal(*pdx++, dx);
                 cnvVal(*pdy++, dy);
@@ -502,8 +502,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const SP_REAL dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
-                const SP_REAL dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
+                const double dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
+                const double dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
 
                 cnvVal(*pdx++, dx);
                 cnvVal(*pdy++, dy);

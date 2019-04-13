@@ -357,7 +357,7 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadPlane(const SP_REAL size) {
+    SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size) {
         Mem1<Mesh3> model;
         const SP_REAL hs = size * 0.5;
         const Vec3 a = getVec3(-hs, -hs, 0.0);
@@ -371,7 +371,7 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadGeodesicDorm(const SP_REAL size, const int div) {
+    SP_CPUFUNC Mem1<Mesh3> loadGeodesicDorm(const double size, const int div) {
         Mem1<Mesh3> model;
 
         const int num = getGeodesicMeshNum(div);

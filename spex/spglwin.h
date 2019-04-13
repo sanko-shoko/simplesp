@@ -132,8 +132,8 @@ namespace sp {
         if (cpose.trn.z < 0.0) return false;
 
         if (mouse.bDownM && normVec(mouse.move) > 0.0) {
-            cpose.trn.x += mouse.move.x * cpose.trn.z / (cam.fx * viewScale);
-            cpose.trn.y += mouse.move.y * cpose.trn.z / (cam.fy * viewScale);
+            cpose.trn.x += SP_CAST(mouse.move.x * cpose.trn.z / (cam.fx * viewScale));
+            cpose.trn.y += SP_CAST(mouse.move.y * cpose.trn.z / (cam.fy * viewScale));
             ret = true;
         }
 

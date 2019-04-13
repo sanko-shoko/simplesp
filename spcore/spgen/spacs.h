@@ -58,8 +58,15 @@ namespace sp{
     // check in rect
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC bool inRect(const Rect &rect, const SP_REAL *d){
+    SP_GENFUNC bool inRect(const Rect &rect, const float *d){
         for (int i = 0; i < rect.dim; i++){
+            if (d[i] < static_cast<float>(rect.dbase[i])) return false;
+            if (d[i] > static_cast<float>(rect.dbase[i] + rect.dsize[i] - 1)) return false;
+        }
+        return true;
+    }
+    SP_GENFUNC bool inRect(const Rect &rect, const double *d) {
+        for (int i = 0; i < rect.dim; i++) {
             if (d[i] < rect.dbase[i]) return false;
             if (d[i] > rect.dbase[i] + rect.dsize[i] - 1) return false;
         }
@@ -76,23 +83,23 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC bool inRect2(const Rect &rect, const SP_REAL d0, const SP_REAL d1){
-        const SP_REAL d[] = { d0, d1 };
+    SP_GENFUNC bool inRect2(const Rect &rect, const double d0, const double d1){
+        const double d[] = { d0, d1 };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect2(const int *dsize, const SP_REAL d0, const SP_REAL d1){
-        const SP_REAL d[] = { d0, d1 };
+    SP_GENFUNC bool inRect2(const int *dsize, const double d0, const double d1){
+        const double d[] = { d0, d1 };
         return inRect(getRect2(dsize), d);
     }
 
-    SP_GENFUNC bool inRect3(const Rect &rect, const SP_REAL d0, const SP_REAL d1, const SP_REAL d2){
-        const SP_REAL d[] = { d0, d1, d2 };
+    SP_GENFUNC bool inRect3(const Rect &rect, const double d0, const double d1, const double d2){
+        const double d[] = { d0, d1, d2 };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect3(const int *dsize, const SP_REAL d0, const SP_REAL d1, const SP_REAL d2){
-        const SP_REAL d[] = { d0, d1, d2 };
+    SP_GENFUNC bool inRect3(const int *dsize, const double d0, const double d1, const double d2){
+        const double d[] = { d0, d1, d2 };
         return inRect(getRect3(dsize), d);
     }
 

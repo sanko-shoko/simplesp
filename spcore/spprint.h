@@ -239,7 +239,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC char* progressBar(const SP_REAL crnt, const SP_REAL size){
-        const SP_REAL rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
+        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
 
         static char bar[11] = { 0 };
         for (int i = 0; i < 10; i++){

@@ -17,19 +17,19 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     // get vector
-    SP_GENFUNC Vec2 getVec2(const SP_REAL x, const SP_REAL y) {
+    SP_GENFUNC Vec2 getVec2(const double x, const double y) {
         Vec2 dst;
-        dst.x = x;
-        dst.y = y;
+        dst.x = SP_CAST(x);
+        dst.y = SP_CAST(y);
         return dst;
     }
 
     // get vector
-    SP_GENFUNC Vec3 getVec3(const SP_REAL x, const SP_REAL y, const SP_REAL z) {
+    SP_GENFUNC Vec3 getVec3(const double x, const double y, const double z) {
         Vec3 dst;
-        dst.x = x;
-        dst.y = y;
-        dst.z = z;
+        dst.x = SP_CAST(x);
+        dst.y = SP_CAST(y);
+        dst.z = SP_CAST(z);
         return dst;
     }
 
@@ -63,22 +63,22 @@ namespace sp {
     }
 
     // multiple
-    SP_GENFUNC Vec2 mulVec2(const Vec2 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec2 mulVec2(const Vec2 &vec, const double val) {
         return getVec2(vec.x * val, vec.y * val);
     }
 
     // multiple
-    SP_GENFUNC Vec3 mulVec3(const Vec3 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec3 mulVec3(const Vec3 &vec, const double val) {
         return getVec3(vec.x * val, vec.y * val, vec.z * val);
     }
 
     // division
-    SP_GENFUNC Vec2 divVec2(const Vec2 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec2 divVec2(const Vec2 &vec, const double val) {
         return (val != 0.0) ? mulVec2(vec, 1.0 / val) : vec;
     }
 
     // division
-    SP_GENFUNC Vec3 divVec3(const Vec3 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec3 divVec3(const Vec3 &vec, const double val) {
         return (val != 0.0) ? mulVec3(vec, 1.0 / val) : vec;
     }
 
@@ -119,27 +119,27 @@ namespace sp {
         return mulVec3(vec, -1.0);
     }
 
-    SP_GENFUNC Vec2 operator * (const Vec2 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec2 operator * (const Vec2 &vec, const double val) {
         return mulVec2(vec, val);
     }
 
-    SP_GENFUNC Vec3 operator * (const Vec3 &vec, const SP_REAL val) {
+    SP_GENFUNC Vec3 operator * (const Vec3 &vec, const double val) {
         return mulVec3(vec, val);
     }
 
-    SP_GENFUNC Vec2 operator * (const SP_REAL val, const Vec2 &vec) {
+    SP_GENFUNC Vec2 operator * (const double val, const Vec2 &vec) {
         return mulVec2(vec, val);
     }
 
-    SP_GENFUNC Vec3 operator * (const SP_REAL val, const Vec3 &vec) {
+    SP_GENFUNC Vec3 operator * (const double val, const Vec3 &vec) {
         return mulVec3(vec, val);
     }
 
-    SP_GENFUNC Vec2 operator / (const Vec2 &vec, const SP_REAL val){
+    SP_GENFUNC Vec2 operator / (const Vec2 &vec, const double val){
         return divVec2(vec, val);
     }
 
-    SP_GENFUNC Vec3 operator / (const Vec3 &vec, const SP_REAL val){
+    SP_GENFUNC Vec3 operator / (const Vec3 &vec, const double val){
         return divVec3(vec, val);
     }
 
@@ -159,19 +159,19 @@ namespace sp {
         vec0 = subVec3(vec0, vec1);
     }
 
-    SP_GENFUNC void operator *= (Vec2 &vec, const SP_REAL val) {
+    SP_GENFUNC void operator *= (Vec2 &vec, const double val) {
         vec = mulVec2(vec, val);
     }
 
-    SP_GENFUNC void operator *= (Vec3 &vec, const SP_REAL val) {
+    SP_GENFUNC void operator *= (Vec3 &vec, const double val) {
         vec = mulVec3(vec, val);
     }
 
-    SP_GENFUNC void operator /= (Vec2 &vec, const SP_REAL val) {
+    SP_GENFUNC void operator /= (Vec2 &vec, const double val) {
         vec = divVec2(vec, val);
     }
 
-    SP_GENFUNC void operator /= (Vec3 &vec, const SP_REAL val) {
+    SP_GENFUNC void operator /= (Vec3 &vec, const double val) {
         vec = divVec3(vec, val);
     }
 
@@ -275,6 +275,15 @@ namespace sp {
         return getVec3(randValGauss() * x, randValGauss() * y, randValGauss() * z);
     }
 
+    // round
+    SP_GENFUNC Vec2 round(const Vec2 &vec) {
+        return getVec2(round(vec.x), round(vec.y));
+    }
+
+    // round
+    SP_GENFUNC Vec3 round(const Vec3 &vec) {
+        return getVec3(round(vec.x), round(vec.y), round(vec.z));
+    }
 
     //--------------------------------------------------------------------------------
     // matrix * vector
@@ -487,7 +496,7 @@ namespace sp {
     }
 
     // multiple
-    SP_GENFUNC Mesh2 mulMesh2(const Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh2 mulMesh2(const Mesh2 &mesh, const double val) {
         Mesh2 dst;
         dst.pos[0] = mesh.pos[0] * val;
         dst.pos[1] = mesh.pos[1] * val;
@@ -496,7 +505,7 @@ namespace sp {
     }
 
     // multiple
-    SP_GENFUNC Mesh3 mulMesh3(const Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh3 mulMesh3(const Mesh3 &mesh, const double val) {
         Mesh3 dst;
         dst.pos[0] = mesh.pos[0] * val;
         dst.pos[1] = mesh.pos[1] * val;
@@ -505,7 +514,7 @@ namespace sp {
     }
 
     // division
-    SP_GENFUNC Mesh2 divMesh2(const Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh2 divMesh2(const Mesh2 &mesh, const double val) {
         Mesh2 dst;
         dst.pos[0] = mesh.pos[0] / val;
         dst.pos[1] = mesh.pos[1] / val;
@@ -514,7 +523,7 @@ namespace sp {
     }
 
     // division
-    SP_GENFUNC Mesh3 divMesh3(const Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh3 divMesh3(const Mesh3 &mesh, const double val) {
         Mesh3 dst;
         dst.pos[0] = mesh.pos[0] / val;
         dst.pos[1] = mesh.pos[1] / val;
@@ -543,19 +552,19 @@ namespace sp {
         return subMesh3(mesh, vec);
     }
 
-    SP_GENFUNC Mesh2 operator * (const Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh2 operator * (const Mesh2 &mesh, const double val) {
         return mulMesh2(mesh, val);
     }
 
-    SP_GENFUNC Mesh3 operator * (const Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh3 operator * (const Mesh3 &mesh, const double val) {
         return mulMesh3(mesh, val);
     }
 
-    SP_GENFUNC Mesh2 operator / (const Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh2 operator / (const Mesh2 &mesh, const double val) {
         return divMesh2(mesh, val);
     }
 
-    SP_GENFUNC Mesh3 operator / (const Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC Mesh3 operator / (const Mesh3 &mesh, const double val) {
         return divMesh3(mesh, val);
     }
 
@@ -575,19 +584,19 @@ namespace sp {
         mesh = subMesh3(mesh, vec);
     }
 
-    SP_GENFUNC void operator *= (Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC void operator *= (Mesh2 &mesh, const double val) {
         mesh = mulMesh2(mesh, val);
     }
 
-    SP_GENFUNC void operator *= (Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC void operator *= (Mesh3 &mesh, const double val) {
         mesh = mulMesh3(mesh, val);
     }
 
-    SP_GENFUNC void operator /= (Mesh2 &mesh, const SP_REAL val) {
+    SP_GENFUNC void operator /= (Mesh2 &mesh, const double val) {
         mesh = divMesh2(mesh, val);
     }
 
-    SP_GENFUNC void operator /= (Mesh3 &mesh, const SP_REAL val) {
+    SP_GENFUNC void operator /= (Mesh3 &mesh, const double val) {
         mesh = divMesh3(mesh, val);
     }
 
@@ -682,8 +691,8 @@ namespace sp {
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 2; j++) {
                     for (int k = 0; k < 2; k++) {
-                        const SP_REAL s[2] = { -1.0, +1.0 };
-                        const SP_REAL v[3] = { 0.0, s[j], s[k] * u };
+                        const double s[2] = { -1.0, +1.0 };
+                        const double v[3] = { 0.0, s[j], s[k] * u };
                         p[cnt++] = getVec3(v[(i + 0) % 3], v[(i + 1) % 3], v[(i + 2) % 3]);
                     }
                 }
@@ -693,9 +702,9 @@ namespace sp {
             for (int i = 0; i < 12; i++) {
                 for (int j = i + 1; j < 12; j++) {
                     for (int k = j + 1; k < 12; k++) {
-                        if (cmpVal(dotVec(p[i], p[j]), u) == false) continue;
-                        if (cmpVal(dotVec(p[j], p[k]), u) == false) continue;
-                        if (cmpVal(dotVec(p[k], p[i]), u) == false) continue;
+                        if (cmpVal(dotVec(p[i], p[j]), u, SP_CAST(0.001)) == false) continue;
+                        if (cmpVal(dotVec(p[j], p[k]), u, SP_CAST(0.001)) == false) continue;
+                        if (cmpVal(dotVec(p[k], p[i]), u, SP_CAST(0.001)) == false) continue;
                         model[cnt++] = getMesh3(unitVec(p[i]), unitVec(p[j]), unitVec(p[k]));
                     }
                 }
