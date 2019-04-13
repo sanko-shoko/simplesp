@@ -35,8 +35,8 @@ namespace sp{
         Mem1<GeoNode> m_nodes;
 
         // random range
-        double m_randTrn;
-        double m_randRot;
+        SP_REAL m_randTrn;
+        SP_REAL m_randRot;
 
     public:
 
@@ -53,8 +53,8 @@ namespace sp{
 
             const CamParam cam = getCamParam(300, 300);
 
-            const double radius = getModelRadius(model);
-            const double distance = getModelDistance(model, cam);
+            const SP_REAL radius = getModelRadius(model);
+            const SP_REAL distance = getModelDistance(model, cam);
 
             m_randTrn = radius * 0.1;
             m_randRot = 10.0 * SP_PI / 180.0;
@@ -78,20 +78,20 @@ namespace sp{
 
                 const Pose pose = getGeodesicPose(div, i, distance);
 
-                Mem2<double> depth;
+                Mem2<SP_REAL> depth;
                 renderDepth(depth, cam, pose, model);
 
                 makeTree(m_nodes[i], cam, pose, depth, i);
             }
         }
 
-        void makeTree(GeoNode &gnode, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const int seed) {
+        void makeTree(GeoNode &gnode, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const int seed) {
             gnode.pose = pose;
 
             genSamplePnts(gnode.pnts, cam, pose, depth, seed);
 
-            Mem1<Mem<double> > Xs;
-            Mem1<double> Ys[6];
+            Mem1<Mem<SP_REAL> > Xs;
+            Mem1<SP_REAL> Ys[6];
 
             genDataset(Xs, Ys, gnode.pnts, cam, pose, depth, seed);
             
@@ -100,9 +100,9 @@ namespace sp{
             }
         }
 
-        bool execute(Pose &pose, const CamParam &cam, const Mem2<double> &depth) {
+        bool execute(Pose &pose, const CamParam &cam, const Mem2<SP_REAL> &depth) {
 
-            const double maxAngle = 35.0 * SP_PI / 180.0;
+            const SP_REAL maxAngle = 35.0 * SP_PI / 180.0;
  
             Mem1<Mat> vals;
             Mem1<Mat> devs;
@@ -114,19 +114,19 @@ namespace sp{
                 const Vec3 ref = getDirect(node.pose);
                 const Vec3 vec = getDirect(pose);
 
-                const double angle = acos(dotVec(vec, ref));
+                const SP_REAL angle = acos(dotVec(vec, ref));
                 if (fabs(angle) < maxAngle) {
 
-                    Mem<double> data = Mem1<double>(POINT_NUM);
+                    Mem<SP_REAL> data = Mem1<SP_REAL>(POINT_NUM);
                     for (int p = 0; p < POINT_NUM; p++) {
                         const Vec3 pos = pose * node.pnts[p];
                         const Vec2 npx = prjVec(pos);
                         const Vec2 pix = mulCam(cam, npx);
 
-                        double d = depth(round(pix.x), round(pix.y));
+                        SP_REAL d = depth(round(pix.x), round(pix.y));
                         d = (d > 0.0) ? d : (1.0 + 0.1 * randValUnif()) * pose.trn.z;
 
-                        const Vec3 v = getVec(npx.x, npx.y, 1.0) * d;
+                        const Vec3 v = getVec3(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);
                     }
 
@@ -146,8 +146,8 @@ namespace sp{
 
             {
                 struct Tmp {
-                    double v;
-                    double eval;
+                    SP_REAL v;
+                    SP_REAL eval;
                     bool operator > (const Tmp t) const { return this->eval > t.eval; }
                     bool operator < (const Tmp t) const { return this->eval < t.eval; }
                 };
@@ -178,7 +178,7 @@ namespace sp{
             return true;
         }
 
-        bool execute(Pose &pose, const CamParam &cam, const Mem2<double> &depth, const int itmax) {
+        bool execute(Pose &pose, const CamParam &cam, const Mem2<SP_REAL> &depth, const int itmax) {
             bool ret = true;
             for (int it = 0; ret && it < itmax; it++) {
                 ret = execute(pose, cam, depth);
@@ -188,30 +188,30 @@ namespace sp{
 
     private:
 
-        void genSamplePnts(Mem1<Vec3> &pnts, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const int seed) {
+        void genSamplePnts(Mem1<Vec3> &pnts, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const int seed) {
             srand(seed);
 
             struct Tmp {
                 Vec3 pos;
-                double eval;
+                SP_REAL eval;
 
                 bool operator > (const Tmp &pd) const { return eval > pd.eval; }
                 bool operator < (const Tmp &pd) const { return eval < pd.eval; }
             };
 
             Mem1<Tmp> tmps;
-            const double angle = randValUnif() * SP_PI;
-            const Vec2 nl = getVec(cos(angle), sin(angle));
+            const SP_REAL angle = randValUnif() * SP_PI;
+            const Vec2 nl = getVec2(cos(angle), sin(angle));
 
             for (int v = 0; v < cam.dsize[1]; v++) {
                 for (int u = 0; u < cam.dsize[0]; u++) {
-                    const double d = depth(u, v);
+                    const SP_REAL d = depth(u, v);
                     if (d > 0.0) {
-                        const Vec2 npx = invCam(cam, getVec(u, v));
+                        const Vec2 npx = invCam(cam, getVec2(u, v));
 
                         Tmp tmp;
-                        tmp.pos = getVec(npx.x, npx.y, 1.0) * d;
-                        tmp.eval = dotVec(nl, getVec(u, v));
+                        tmp.pos = getVec3(npx.x, npx.y, 1.0) * d;
+                        tmp.eval = dotVec(nl, getVec2(u, v));
                         tmps.push(tmp);
                     }
                 }
@@ -220,7 +220,7 @@ namespace sp{
             sort(tmps);
             pnts.clear();
 
-            const double rate = 0.3 * randValUnif() + 0.4; // (0.1, 0.7)
+            const SP_REAL rate = 0.3 * randValUnif() + 0.4; // (0.1, 0.7)
             for (int p = 0; p < POINT_NUM; p++) {
                 const int i = rand() % round(rate * tmps.size());
                 const Vec3 vec = invPose(pose) * tmps[i].pos;
@@ -228,7 +228,7 @@ namespace sp{
             }
         }
 
-        void genDataset(Mem1<Mem<double> > &Xs, Mem1<double> *Ys, const Mem1<Vec3> &pnts, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const int seed) {
+        void genDataset(Mem1<Mem<SP_REAL> > &Xs, Mem1<SP_REAL> *Ys, const Mem1<Vec3> &pnts, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const int seed) {
             srand(seed);
 
             const Vec3 Nv = getDirect(pose);
@@ -236,17 +236,17 @@ namespace sp{
             for (int i = 0; i < SAMPLE_NUM; i++) {
                 const Pose delta = randPoseUnif(m_randRot, m_randTrn);
                 const Pose tpose = pose * delta;
-                Mem<double> data = Mem1<double>(POINT_NUM);
+                Mem<SP_REAL> data = Mem1<SP_REAL>(POINT_NUM);
 
                 for (int p = 0; p < POINT_NUM; p++) {
                     const Vec3 pos = tpose * pnts[p];
                     const Vec2 npx = prjVec(pos);
                     const Vec2 pix = mulCam(cam, npx);
 
-                    double d = depth(round(pix.x), round(pix.y));
+                    SP_REAL d = depth(round(pix.x), round(pix.y));
                     d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
 
-                    const Vec3 vec = getVec(npx.x, npx.y, 1.0) * d;
+                    const Vec3 vec = getVec3(npx.x, npx.y, 1.0) * d;
                     const Vec3 vec1 = invPose(tpose) * vec;
                     const Vec3 vec2 = pnts[p];
                     const Vec3 dif = vec1 - vec2;
@@ -262,15 +262,15 @@ namespace sp{
             }
         }
 
-        double evalPose(const GeoNode &node, const CamParam &cam, const Pose &pose, const Mem2<double> &depth) {
+        SP_REAL evalPose(const GeoNode &node, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth) {
 
-            Mem1<double> data(POINT_NUM);
+            Mem1<SP_REAL> data(POINT_NUM);
             for (int p = 0; p < POINT_NUM; p++) {
                 const Vec3 pos = pose * node.pnts[p];
                 const Vec2 npx = prjVec(pos);
                 const Vec2 pix = mulCam(cam, npx);
 
-                const double d = depth(round(pix.x), round(pix.y));
+                const SP_REAL d = depth(round(pix.x), round(pix.y));
                 if (d > 0.0) {
                     data[p] = fabs(pos.z - d);
                 }

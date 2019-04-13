@@ -18,7 +18,7 @@ namespace sp{
 
         Mem2<Byte> base(src.dsize);
         {
-            const double scale = 100.0 / (src.dsize[0] + src.dsize[1]);
+            const SP_REAL scale = 100.0 / (src.dsize[0] + src.dsize[1]);
 
             Mem2<Byte> minImg;
             rescale(minImg, src, scale, scale);
@@ -100,7 +100,7 @@ namespace sp{
                     const int u = (x + 1) * distance;
                     const int v = (y + 1) * distance;
 
-                    const Vec2 prj = getVec(u, v);
+                    const Vec2 prj = getVec2(u, v);
                     const Byte bit = rand() % 2;
 
                     renderPoint<Byte>(img, prj, val, (bit == 0) ? radius : 2 * radius);
@@ -191,7 +191,7 @@ namespace sp{
 
                 // detect blob
                 Mem1<Vec2> pixs;
-                Mem1<double> scales;
+                Mem1<SP_REAL> scales;
                 detect(pixs, scales, src);
 
                 estimate(src, pixs, scales);
@@ -211,7 +211,7 @@ namespace sp{
         // execute main flow
         //--------------------------------------------------------------------------------
 
-        void detect(Mem1<Vec2> &pixs, Mem1<double> &scales, const Mem2<Byte> &img) {
+        void detect(Mem1<Vec2> &pixs, Mem1<SP_REAL> &scales, const Mem2<Byte> &img) {
             Mem2<int> labelMap;
             {
                 Mem2<Byte> bin;
@@ -230,9 +230,9 @@ namespace sp{
             }
         }
 
-        void estimate(const Mem2<Byte> &img, const Mem1<Vec2> &pixs, const Mem1<double> &scales) {
+        void estimate(const Mem2<Byte> &img, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales) {
 
-            KdTree<double> kdtree(2);
+            KdTree<SP_REAL> kdtree(2);
             {
                 for (int i = 0; i < pixs.size(); i++) {
                     kdtree.addData(&pixs[i]);
@@ -240,7 +240,7 @@ namespace sp{
                 kdtree.makeTree();
             }
 
-            double eval = 0.0;
+            SP_REAL eval = 0.0;
             Mat hom;
             {
                 Mem1<Mem1<Vec2> > links;
@@ -277,7 +277,7 @@ namespace sp{
         // modules
         //--------------------------------------------------------------------------------
 
-        void getBlob(Mem1<Vec2> &pixs, Mem1<double> &scales, const Mem2<int> &labelMap) {
+        void getBlob(Mem1<Vec2> &pixs, Mem1<SP_REAL> &scales, const Mem2<int> &labelMap) {
 
             const Mem1<Rect> rects = getLabelRect(labelMap);
 
@@ -287,37 +287,37 @@ namespace sp{
                 // check outside area
                 if (inRect(getRect2(labelMap.dsize), rect) == false) continue;
 
-                Vec2 sum = getVec(0, 0);
+                Vec2 sum = getVec2(0.0, 0.0);
                 int cnt = 0;
                 for (int y = 0; y < rect.dsize[1]; y++) {
                     for (int x = 0; x < rect.dsize[0]; x++) {
                         if (labelMap(x + rect.dbase[0], y + rect.dbase[1]) > 0) continue;
 
-                        sum += getVec(x, y);
+                        sum += getVec2(x, y);
                         cnt++;
                     }
                 }
                 if (cnt > 0) {
-                    pixs.push(sum / cnt + getVec(rect.dbase[0], rect.dbase[1]));
+                    pixs.push(sum / cnt + getVec2(rect.dbase[0], rect.dbase[1]));
                     scales.push(cnt);
                 }
             }
         }
 
 
-        double recog(Mat &hom, const DotPatternParam &ptn, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const Mem1<double> &scales, const KdTree<double> &kdtree) {
+        SP_REAL recog(Mat &hom, const DotPatternParam &ptn, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales, const KdTree<SP_REAL> &kdtree) {
 
             const Mem2<Vec2> ext = grid(2 * (ptn.map.dsize[0] - 1), 2 * (ptn.map.dsize[1] - 1));
-            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec(0.5, 0.5);
-            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec(1.5, 1.5);
-            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec(2.5, 2.5);
+            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
+            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec2(1.5, 1.5);
+            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec2(2.5, 2.5);
 
             const int maxn = 10;
-            const double step = maxVal(static_cast<double>(links.size()) / maxn, 1.0);
+            const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
 
             Mat H = eyeMat(3, 3);
 
-            double maxv = 0.0;
+            SP_REAL maxv = 0.0;
             for (int n = 0; n < maxn; n++) {
                 const int i = round(n * step);
                 if (i >= links.size()) break;
@@ -329,10 +329,10 @@ namespace sp{
 
                 if (refineHMat(h, ext, pixs, kdtree) == false) continue;
 
-                Mem2<double> evalMap;
+                Mem2<SP_REAL> evalMap;
                 getEvalMap(evalMap, h, ext, pixs, kdtree);
 
-                const double eval = sumVal(evalMap);
+                const SP_REAL eval = sumVal(evalMap);
                 if (eval > maxv) {
                     H = h;
                     maxv = eval;
@@ -343,7 +343,7 @@ namespace sp{
                 if (refineHMat(H, ext, pixs, kdtree) == false) return 0.0;
             }
 
-            Mem2<double> codeMap;
+            Mem2<SP_REAL> codeMap;
             getCodeMap(codeMap, H, ext, pixs, scales, kdtree);
 
             Vec2 peak;
@@ -358,16 +358,16 @@ namespace sp{
             return maxv;
         }
 
-        void getLink(Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const KdTree<double> &kdtree) {
-            const double MIN_ASPECT = 0.3;
-            const double MIN_COS = cos(SP_PI * (90.0 + 30.0) / 180.0);
+        void getLink(Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree) {
+            const SP_REAL MIN_ASPECT = 0.3;
+            const SP_REAL MIN_COS = cos(SP_PI * (90.0 + 30.0) / 180.0);
 
-            Mem1<double> norms;
+            Mem1<SP_REAL> norms;
             for (int p = 0; p < pixs.size(); p++) {
                 const Mem1<int> indexes = kdtree.search(&pixs[p], 100.0);
-                double minv = SP_INFINITY;
+                SP_REAL minv = SP_INFINITY;
                 for (int i = 0; i < indexes.size(); i++) {
-                    const double norm = normVec(pixs[p] - pixs[indexes[i]]);
+                    const SP_REAL norm = normVec(pixs[p] - pixs[indexes[i]]);
                     if (norm > 0 && norm < minv) {
                         minv = norm;
                     }
@@ -376,7 +376,7 @@ namespace sp{
                     norms.push(minv);
                 }
             }
-            const double range = medianVal(norms);
+            const SP_REAL range = medianVal(norms);
 
             for (int p0 = 0; p0 < pixs.size(); p0++) {
                 Mem1<int> index = kdtree.search(&pixs[p0], 2.0 * range);
@@ -395,9 +395,9 @@ namespace sp{
 
                         int s0, s1, s2;
                         {
-                            const double lng01 = normVec(pixs[p1] - pixs[p0]);
-                            const double lng12 = normVec(pixs[p2] - pixs[p1]);
-                            const double lng20 = normVec(pixs[p0] - pixs[p2]);
+                            const SP_REAL lng01 = normVec(pixs[p1] - pixs[p0]);
+                            const SP_REAL lng12 = normVec(pixs[p2] - pixs[p1]);
+                            const SP_REAL lng20 = normVec(pixs[p0] - pixs[p2]);
 
                             if (lng12 >= maxVal(lng01, lng20)) {
                                 s0 = p0, s1 = p1, s2 = p2;
@@ -414,9 +414,9 @@ namespace sp{
                         const Vec2 A = pixs[s1] - pixs[s0];
                         const Vec2 B = pixs[s2] - pixs[s0];
                         {
-                            const double lngA = normVec(A);
-                            const double lngB = normVec(B);
-                            const double cosAB = dotVec(A, B) / (lngA * lngB);
+                            const SP_REAL lngA = normVec(A);
+                            const SP_REAL lngB = normVec(B);
+                            const SP_REAL cosAB = dotVec(A, B) / (lngA * lngB);
 
                             if (minVal(lngA, lngB) / maxVal(lngA, lngB) < MIN_ASPECT) continue;
                             if (cosAB > 0.0 || cosAB < MIN_COS) continue;
@@ -425,10 +425,10 @@ namespace sp{
                         // check outlier in triangle and search s3
                         int s3 = -1;
                         {
-                            const double margin = 0.2;
+                            const SP_REAL margin = 0.2;
 
-                            double inv[2 * 2];
-                            double mat[2 * 2] = { A.x, B.x, A.y, B.y };
+                            SP_REAL inv[2 * 2];
+                            SP_REAL mat[2 * 2] = { A.x, B.x, A.y, B.y };
                             if (invMat22(inv, mat) == false) continue;
 
                             bool check = true;
@@ -454,10 +454,10 @@ namespace sp{
                         // align pixs
                         Vec2 v[4] = { pixs[s0], pixs[s1], pixs[s2], pixs[s3] };
                         {
-                            const Vec2 direct = getVec(1.0, 0.0);
+                            const Vec2 direct = getVec2(1.0, 0.0);
 
                             const Vec2 xdirect = direct;
-                            const Vec2 ydirect = getVec(-direct.y, direct.x);
+                            const Vec2 ydirect = getVec2(-direct.y, direct.x);
 
                             for (int i = 0; i < 4; i++) {
                                 for (int j = i + 1; j < 4; j++) {
@@ -477,7 +477,7 @@ namespace sp{
             }
         }
 
-        void getEvalMap(Mem2<double> &evalMap, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<double> &kdtree) {
+        void getEvalMap(Mem2<SP_REAL> &evalMap, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree) {
             evalMap.resize(mrkMap.dsize);
             evalMap.zero();
 
@@ -491,7 +491,7 @@ namespace sp{
                     const int id = kdtree.search(&pix);
                     if (id < 0) continue;
 
-                    const double err = normVec(obj - ihom * pixs[id]);
+                    const SP_REAL err = normVec(obj - ihom * pixs[id]);
 
                     if (err < 0.1) {
                         evalMap(x, y) = 1.0;
@@ -500,12 +500,12 @@ namespace sp{
             }
         }
 
-        double searchPeak(Vec2 &offset, const Mem2<double> &evalMap, const int dsize0, const int dsize1) {
+        SP_REAL searchPeak(Vec2 &offset, const Mem2<SP_REAL> &evalMap, const int dsize0, const int dsize1) {
 
-            double maxEval = 0.0;
+            SP_REAL maxEval = 0.0;
             for (int y = 0; y <= evalMap.dsize[1] - dsize1; y++) {
                 for (int x = 0; x <= evalMap.dsize[0] - dsize0; x++) {
-                    double eval = 0.0;
+                    SP_REAL eval = 0.0;
                     for (int b = 0; b < dsize1; b++) {
                         for (int a = 0; a < dsize0; a++) {
                             eval += evalMap(x + a, y + b);
@@ -513,19 +513,19 @@ namespace sp{
                     }
                     if (eval > maxEval) {
                         maxEval = eval;
-                        offset = getVec(x, y);
+                        offset = getVec2(x, y);
                     }
                 }
             }
             return maxEval;
         }
 
-        void getCodeMap(Mem2<double> &codeMap, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const Mem1<double> &scales, const KdTree<double> &kdtree) {
+        void getCodeMap(Mem2<SP_REAL> &codeMap, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales, const KdTree<SP_REAL> &kdtree) {
 
             codeMap.resize(mrkMap.dsize);
             codeMap.zero();
 
-            Mem2<double> scaleMap(mrkMap.dsize);
+            Mem2<SP_REAL> scaleMap(mrkMap.dsize);
             scaleMap.zero();
 
             const Mat ihom = invMat(hom);
@@ -538,7 +538,7 @@ namespace sp{
                     const int id = kdtree.search(&pix);
                     if (id < 0) continue;
 
-                    const double err = normVec(obj - ihom * pixs[id]);
+                    const SP_REAL err = normVec(obj - ihom * pixs[id]);
 
                     if (err < 0.1) {
                         scaleMap(x, y) = scales[id];
@@ -546,13 +546,13 @@ namespace sp{
                 }
             }
             
-            Mem1<double> list;
+            Mem1<SP_REAL> list;
             for (int i = 0; i < scaleMap.size(); i++) {
                 if (scaleMap[i] > 0) {
                     list.push(scaleMap[i]);
                 }
             }
-            const double median = medianVal(list);
+            const SP_REAL median = medianVal(list);
 
             for (int i = 0; i < scaleMap.size(); i++) {
                 if (scaleMap[i] > 0) {
@@ -562,15 +562,15 @@ namespace sp{
 
         }
     
-        double searchPeak(Vec2 &peak, const DotPatternParam &ptn, const Mem2<double> &codeMap) {
+        SP_REAL searchPeak(Vec2 &peak, const DotPatternParam &ptn, const Mem2<SP_REAL> &codeMap) {
 
-            double maxEval = 0.0;
+            SP_REAL maxEval = 0.0;
             for (int y = 0; y <= codeMap.dsize[1] - ptn.map.dsize[1]; y++) {
                 for (int x = 0; x <= codeMap.dsize[0] - ptn.map.dsize[0]; x++) {
-                    double eval = 0.0;
+                    SP_REAL eval = 0.0;
                     for (int b = 0; b < ptn.map.dsize[1]; b++) {
                         for (int a = 0; a < ptn.map.dsize[0]; a++) {
-                            const double code = codeMap(x + a, y + b);
+                            const SP_REAL code = codeMap(x + a, y + b);
                             if (code < 0.0 && ptn.bits(a, b) == 0) {
                                 eval++;
                             }
@@ -581,14 +581,14 @@ namespace sp{
                     }
                     if (eval > maxEval) {
                         maxEval = eval;
-                        peak = getVec(x, y);
+                        peak = getVec2(x, y);
                     }
                 }
             }
             return maxEval;
         }
 
-        void getFineCrsp(Mem1<Vec2> &cpixs, Mem1<Vec2> &cobjs, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<double> &kdtree) {
+        void getFineCrsp(Mem1<Vec2> &cpixs, Mem1<Vec2> &cobjs, const Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree) {
             cpixs.clear();
             cobjs.clear();
             const Mat ihom = invMat(hom);
@@ -601,7 +601,7 @@ namespace sp{
                     const int id = kdtree.search(&pix);
                     if (id < 0) continue;
 
-                    const double err = normVec(obj - ihom * pixs[id]);
+                    const SP_REAL err = normVec(obj - ihom * pixs[id]);
 
                     if (err < 0.1) {
                         cpixs.push(pixs[id]);
@@ -611,7 +611,7 @@ namespace sp{
             }
         }
 
-        bool refineHMat(Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<double> &kdtree) {
+        bool refineHMat(Mat &hom, const Mem2<Vec2> &mrkMap, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree) {
             Mem1<Vec2> cpixs, cobjs;
             getFineCrsp(cpixs, cobjs, hom, mrkMap, pixs, kdtree);
 

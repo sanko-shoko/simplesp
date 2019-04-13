@@ -50,7 +50,7 @@ private:
         m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
         SP_ASSERT(m_model.size() > 0);
 
-        m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -70,7 +70,7 @@ private:
         // render depth
         {
             static double s = 0.0;
-            m_pose *= getRotAngle(getVec(+0.0, +::sin(s), +::cos(s)), 0.02);
+            m_pose *= getRotAngle(getVec3(+0.0, +::sin(s), +::cos(s)), 0.02);
             s += 0.01;
 
             renderDepth(depth, m_cam, m_pose, m_model);
@@ -89,7 +89,7 @@ private:
                 const double unit = (2 * radius) / vsize;
 
                 // voxel pose
-                const Pose pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+                const Pose pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
                 m_kfusion.init(vsize, unit, m_cam, pose);
             }
@@ -117,7 +117,7 @@ private:
         if(0){
             const double scale = 0.3;
 
-            const Vec2 offset = getVec(m_cam.dsize[0], m_cam.dsize[1]) * (0.5 - scale * 0.5);
+            const Vec2 offset = getVec2(m_cam.dsize[0], m_cam.dsize[1]) * (0.5 - scale * 0.5);
             glLoadView2D(m_cam, m_viewPos - offset * m_viewScale, m_viewScale * scale);
 
             glTexDepth(depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);

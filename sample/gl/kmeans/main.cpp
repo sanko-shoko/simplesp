@@ -31,7 +31,7 @@ private:
         // generate test data
         m_pnts.clear();
         for (int c = 0; c < m_K; c++) {
-            const Vec2 vec = getVec(300.0, 200.0);
+            const Vec2 vec = getVec2(300.0, 200.0);
             const Vec2 cent = randVecUnif(vec.x / 2, vec.y / 2);
 
             const int num = 200;

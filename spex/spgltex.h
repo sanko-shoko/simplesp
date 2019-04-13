@@ -165,7 +165,7 @@ namespace sp{
     }
 
     template<typename TYPE0 = Col3, typename TYPE1>
-    SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
+    SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0) {
         if (src.size() == 0) return;
 
         Mem2<TYPE0> img;

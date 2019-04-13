@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const double dscale0, const double dscale1){
+    SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL dscale0, const SP_REAL dscale1){
         SP_ASSERT(isValid(2, src));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -28,8 +28,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
-                const double su = u / dscale0;
-                const double sv = v / dscale1;
+                const SP_REAL su = u / dscale0;
+                const SP_REAL sv = v / dscale1;
 
                 for (int c = 0; c < ch; c++){
                     cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, su, sv, c));
@@ -42,13 +42,13 @@ namespace sp{
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src){
         SP_ASSERT(isValid(2, src));
 
-        const double dscale0 = static_cast<double>(dst.dsize[0]) / src.dsize[0];
-        const double dscale1 = static_cast<double>(dst.dsize[1]) / src.dsize[1];
+        const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
+        const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
 
         rescale<TYPE, ELEM>(dst, src, dscale0, dscale1);
     }
 
-    SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
+    SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const SP_REAL dscale0, const SP_REAL dscale1) {
         SP_ASSERT(isValid(2, src));
 
         const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
@@ -64,8 +64,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
-                const double su = u / dscale0;
-                const double sv = v / dscale1;
+                const SP_REAL su = u / dscale0;
+                const SP_REAL sv = v / dscale1;
 
                 cnvVal(*pDst++, acs2<Byte>(tmp, su, sv));
             }
@@ -75,8 +75,8 @@ namespace sp{
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src) {
         SP_ASSERT(isValid(2, src));
 
-        const double dscale0 = static_cast<double>(dst.dsize[0]) / src.dsize[0];
-        const double dscale1 = static_cast<double>(dst.dsize[1]) / src.dsize[1];
+        const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
+        const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
 
         rescaleFast(dst, src, dscale0, dscale1);
     }
@@ -136,7 +136,7 @@ namespace sp{
                 const TYPE a21 = psrc2[su1];
                 const TYPE a22 = psrc2[su2];
 
-                const double d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
+                const SP_REAL d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
                 cnvVal(*pd++, d);
             }
         }
@@ -148,7 +148,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect &rect, const double angle = 0.0){
+    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect &rect, const SP_REAL angle = 0.0){
         SP_ASSERT(isValid(2, src));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -167,16 +167,16 @@ namespace sp{
             }
         }
         else{
-            const double cv = cos(-angle);
-            const double sv = sin(-angle);
-            const Vec2 cent = getVec((rect.dbase[0] + rect.dsize[0] - 1) * 0.5, (rect.dbase[1] + rect.dsize[1] - 1) * 0.5);
+            const SP_REAL cv = cos(-angle);
+            const SP_REAL sv = sin(-angle);
+            const Vec2 cent = getVec2((rect.dbase[0] + rect.dsize[0] - 1) * 0.5, (rect.dbase[1] + rect.dsize[1] - 1) * 0.5);
             for (int v = 0; v < rect.dsize[1]; v++){
                 for (int u = 0; u < rect.dsize[0]; u++){
-                    const double x = u + rect.dbase[0] - cent.x;
-                    const double y = v + rect.dbase[1] - cent.y;
+                    const SP_REAL x = u + rect.dbase[0] - cent.x;
+                    const SP_REAL y = v + rect.dbase[1] - cent.y;
 
-                    const double rx = cv * x - sv * y;
-                    const double ry = sv * x + cv * y;
+                    const SP_REAL rx = cv * x - sv * y;
+                    const SP_REAL ry = sv * x + cv * y;
 
                     for (int c = 0; c < ch; c++){
                         cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, cent.x + rx, cent.y + ry, c));
@@ -222,7 +222,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
+    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const SP_REAL rate = 0.5) {
         SP_ASSERT(isValid(2, src0));
         SP_ASSERT(isValid(2, src1));
         SP_ASSERT(cmpSize(2, src0.dsize, src1.dsize));
@@ -360,7 +360,7 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
-                const Vec2 vec = imat * getVec(u, v);
+                const Vec2 vec = imat * getVec2(u, v);
                 if (inRect2(rect, vec.x, vec.y) == false) continue;
 
                 for (int c = 0; c < ch; c++){
@@ -397,14 +397,14 @@ namespace sp{
     }
         
     template <typename TYPE0, typename TYPE1>
-    SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
+    SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
         dst.zero();
 
         for (int i = 0; i < dst.size(); i++){
-            const double depth = extractDepth(src[i]);
+            const SP_REAL depth = extractDepth(src[i]);
 
             if (depth >= nearPlane && depth <= farPlane){
                 cnvDepthToCol(dst[i], depth, nearPlane, farPlane);
@@ -413,14 +413,14 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
+    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
         dst.zero();
 
         for (int i = 0; i < dst.size(); i++){
-            const double depth = extractDepth(src[i]);
+            const SP_REAL depth = extractDepth(src[i]);
 
             if (depth >= nearPlane && depth <= farPlane){
                 cnvNormalToCol(dst[i], src[i].nrm);
@@ -454,7 +454,7 @@ namespace sp{
             if (src[i] < 0) continue;
 
             srand(src[i]);
-            cnvHSVToCol(dst[i], getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+            cnvHSVToCol(dst[i], getVec3((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
         }
     }
 

@@ -76,8 +76,8 @@ private:
         m_slam.clear();
 
         const double distance = 20.0;
-        m_pose = getPose(getVec(0.0, 0.0, +distance));
-        m_axis = getPose(getVec(0.0, 0.0, -distance));
+        m_pose = getPose(getVec3(0.0, 0.0, +distance));
+        m_axis = getPose(getVec3(0.0, 0.0, -distance));
 
         m_err = 3.0f;
 
@@ -251,14 +251,14 @@ void VideoGUI::display(){
             const double norm = normVec(flow) / 50.0;
 
             Col3 col;
-            cnvHSVToCol(col, getVec(angle + SP_PI, minVal(1.0, norm), 1.0));
+            cnvHSVToCol(col, getVec3(angle + SP_PI, minVal(1.0, norm), 1.0));
 
             renderLine(*m_img, pix0, pix1, col, 2);
         }
     }
 
     if (slam->getPose() != NULL) {
-        const Pose base = getPose(getVec(0.0, 0.0, 20.0));
+        const Pose base = getPose(getVec3(0.0, 0.0, 20.0));
 
         renderAxis(*m_img, slam->getCam(), *slam->getPose() * base, 2.0, 2);
         renderGrid3d(*m_img, slam->getCam(), *slam->getPose() * base, 6.0, 2, getCol(100, 200, 200), 2);

@@ -95,16 +95,16 @@ int main(){
         const int h = imgs[0].dsize[1];
 
         for (int i = 0; i < pixs0.size(); i++) {
-            renderLine(imgM, pixs0[i], pixs1[i] + getVec(w, 0), getCol(i), 1);
+            renderLine(imgM, pixs0[i], pixs1[i] + getVec2(w, 0), getCol(i), 1);
         }
 
         Mat hom;
         if (calcHMatRANSAC(hom, pixs1, pixs0) == true){
-            const Vec2 pix[4] = { getVec(0.0, 0.0), getVec(w, 0.0), getVec(w, h), getVec(0.0, h) };
+            const Vec2 pix[4] = { getVec2(0.0, 0.0), getVec2(w, 0.0), getVec2(w, h), getVec2(0.0, h) };
             for (int i = 0; i < 4; i++){
-                const Vec2 p0 = pix[i] - getVec(0.5, 0.5);
-                const Vec2 p1 = pix[(i + 1) % 4] - getVec(0.5, 0.5);
-                renderLine(imgM, hom * p0 + getVec(w, 0), hom * p1 + getVec(w, 0), getCol(100, 200, 100), 2);
+                const Vec2 p0 = pix[i] - getVec2(0.5, 0.5);
+                const Vec2 p1 = pix[(i + 1) % 4] - getVec2(0.5, 0.5);
+                renderLine(imgM, hom * p0 + getVec2(w, 0), hom * p1 + getVec2(w, 0), getCol(100, 200, 100), 2);
             }
             //print(hom);
         }

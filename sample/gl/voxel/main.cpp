@@ -47,7 +47,7 @@ private:
         savePLY("model.ply", m_model);
 
         const double distance = getModelDistance(m_model, m_cam);
-        m_pose = getPose(getVec(0.0, 0.0, distance));
+        m_pose = getPose(getVec3(0.0, 0.0, distance));
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {

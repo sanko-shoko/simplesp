@@ -552,8 +552,8 @@ namespace sp{
     // matrix
     //--------------------------------------------------------------------------------
 
-    class Mat : public Mem <double> {
-        typedef double TYPE;
+    class Mat : public Mem <SP_REAL> {
+        typedef SP_REAL TYPE;
     public:
 
         Mat(const Mat &mat){
@@ -603,11 +603,11 @@ namespace sp{
             return *this;
         }
 
-        double& operator () (const int r, const int c){
+        SP_REAL& operator () (const int r, const int c){
             return acsm(*this, r, c);
         }
 
-        const double& operator () (const int r, const int c) const{
+        const SP_REAL& operator () (const int r, const int c) const{
             return acsm(*this, r, c);
         }
 

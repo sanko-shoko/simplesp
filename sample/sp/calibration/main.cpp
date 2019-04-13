@@ -7,7 +7,7 @@ int main() {
     // test camera parameter
     CamParam cam = getCamParam(640, 480);
 
-    const Pose stereo = getPose(getVec(-1.0, 0.0, 0.0));
+    const Pose stereo = getPose(getVec3(-1.0, 0.0, 0.0));
 
     {
         cam.cx = 300;
@@ -32,11 +32,11 @@ int main() {
 
     // generate test pose
     {
-        poses.push(getPose(getVec(+00.0, 0.0, 400)));
-        poses.push(getPose(getVec(0.0, +10.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0));
-        poses.push(getPose(getVec(0.0, -10.0, 400)) * getRotAngleX(-30 * SP_PI / 180.0));
-        poses.push(getPose(getVec(+10.0, 0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0));
-        poses.push(getPose(getVec(-10.0, 0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0));
+        poses.push(getPose(getVec3(+00.0, 0.0, 400)));
+        poses.push(getPose(getVec3(0.0, +10.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0));
+        poses.push(getPose(getVec3(0.0, -10.0, 400)) * getRotAngleX(-30 * SP_PI / 180.0));
+        poses.push(getPose(getVec3(+10.0, 0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0));
+        poses.push(getPose(getVec3(-10.0, 0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0));
     }
 
     // test (generate test points)
@@ -52,7 +52,7 @@ int main() {
         for (int i = 0; i < poses.size(); i++) {
             Mem1<Vec2> tpixs, tobjs;
             for (int n = 0; n < mrkMap.size(); n++) {
-                const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
+                const Vec3 pos = poses[i] * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0);
                 const Vec2 pix = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
 
                 tpixs.push(pix);
@@ -132,7 +132,7 @@ int main() {
         for (int i = 0; i < poses.size(); i++) {
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int n = 0; n < mrkMap.size(); n++) {
-                const Vec3 pos = poses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
+                const Vec3 pos = poses[i] * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0);
                 const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
                 const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randVecGauss(0.1, 0.1);
 

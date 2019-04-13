@@ -25,16 +25,16 @@ int main(){
         }
 
         poses[0] = zeroPose();
-        poses[1] = getPose(randRotGauss(1.0 * SP_PI / 180.0), getVec(-1.0, 0.0, 0.0));
+        poses[1] = getPose(randRotGauss(1.0 * SP_PI / 180.0), getVec3(-1.0, 0.0, 0.0));
     }
 
     // test points
     Mem1<Vec3> list;
     {
-        list.push(getVec(-50.0, -50.0, 500.0));
-        list.push(getVec(+50.0, -50.0, 500.0));
-        list.push(getVec(-50.0, +50.0, 500.0));
-        list.push(getVec(+50.0, +50.0, 500.0));
+        list.push(getVec3(-50.0, -50.0, 500.0));
+        list.push(getVec3(+50.0, -50.0, 500.0));
+        list.push(getVec3(-50.0, +50.0, 500.0));
+        list.push(getVec3(+50.0, +50.0, 500.0));
     }
 
     // test images

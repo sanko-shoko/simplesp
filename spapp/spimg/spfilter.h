@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
-    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
+    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(2, kernel));
         
         dst.resize(2, src.dsize);
@@ -33,14 +33,14 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    double sum = 0.0, div = 0.0;
+                    SP_REAL sum = 0.0, div = 0.0;
 
                     for (int ky = -halfY; ky <= halfY; ky++){
                         for (int kx = -halfX; kx <= halfX; kx++){
                             if (inRect2(rect, u + kx, v + ky) == false) continue;
                             
                             const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v + ky, c);
-                            const double s = acs2(kernel, kx + halfX, ky + halfY);
+                            const SP_REAL s = acs2(kernel, kx + halfX, ky + halfY);
 
                             sum += s * val;
                             div += fabs(s);
@@ -55,7 +55,7 @@ namespace sp{
     }
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
-    SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
+    SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
         dst.resize(2, src.dsize);
@@ -73,13 +73,13 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    double sum = 0.0, div = 0.0;
+                    SP_REAL sum = 0.0, div = 0.0;
 
                     for (int kx = -halfX; kx <= halfX; kx++){
                         if (inRect2(rect, u + kx, v) == false) continue;
                         
                         const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u + kx, v, c);
-                        const double s = acs1(kernel, kx + halfX);
+                        const SP_REAL s = acs1(kernel, kx + halfX);
 
                         sum += s * val;
                         div += fabs(s);
@@ -93,7 +93,7 @@ namespace sp{
 
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
-    SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<double> &kernel){
+    SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
         SP_ASSERT(isValid(2, src) && isValid(1, kernel));
 
         dst.resize(2, src.dsize);
@@ -111,13 +111,13 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    double sum = 0.0, div = 0.0;
+                    SP_REAL sum = 0.0, div = 0.0;
 
                     for (int ky = -halfY; ky <= halfY; ky++){
                         if (inRect2(rect, u, v + ky) == false) continue;
                         
                         const ELEM0 &val = acs2<TYPE0, ELEM0>(tmp, u, v + ky, c);
-                        const double s = acs1(kernel, ky + halfY);
+                        const SP_REAL s = acs1(kernel, ky + halfY);
 
                         sum += s * val;
                         div += fabs(s);
@@ -140,14 +140,14 @@ namespace sp{
     // half = round((sigma - 0.8) / 0.3 + 1)
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
+    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
         const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
 
-        Mem1<double> kernel(2 * half + 1);
+        Mem1<SP_REAL> kernel(2 * half + 1);
         for (int k = -half; k <= half; k++){
-            const double r = k * k;
+            const SP_REAL r = k * k;
             kernel(k + half) = exp(-r / (2.0 * square(sigma)));
         }
 
@@ -199,7 +199,7 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
+                const SP_REAL d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
                 cnvVal(*pd++, d / 16.0);
             }
         }
@@ -213,7 +213,7 @@ namespace sp{
     SP_CPUFUNC void boxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
         SP_ASSERT(isValid(2, src));
 
-        Mem1<double> kernel(winSize);
+        Mem1<SP_REAL> kernel(winSize);
         for (int k = 0; k < winSize; k++) {
             kernel(k) = 1.0;
         }
@@ -266,7 +266,7 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double d = (a00 + a01 + a02 + a10 + a11 + a12 + a20 + a21 + a22) / 9.0;
+                const SP_REAL d = (a00 + a01 + a02 + a10 + a11 + a12 + a20 + a21 + a22) / 9.0;
                 cnvVal(*pd++, d);
             }
         }
@@ -338,15 +338,15 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
+    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const SP_REAL sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
         const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
 
-        Mem2<double> kernel(2 * half + 1, 2 * half + 1);
+        Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= half; y++){
             for (int x = -half; x <= half; x++){
-                const double r = x * x + y * y;
+                const SP_REAL r = x * x + y * y;
                 kernel(x + half, y + half) = (r - 2 * square(sigma)) * exp(-r / (2 * square(sigma)));
             }
         }
@@ -397,7 +397,7 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double d = (8 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22)) / 16.0;
+                const SP_REAL d = (8 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22)) / 16.0;
                 cnvVal(*pd++, d);
             }
         }
@@ -448,8 +448,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
-                const double dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
+                const SP_REAL dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
+                const SP_REAL dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
 
                 cnvVal(*pdx++, dx);
                 cnvVal(*pdy++, dy);
@@ -502,8 +502,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const double dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
-                const double dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
+                const SP_REAL dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
+                const SP_REAL dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
 
                 cnvVal(*pdx++, dx);
                 cnvVal(*pdy++, dy);
@@ -557,7 +557,7 @@ namespace sp{
 
         Mem2<TYPE> tmp;
         {
-            Mem1<double> kernel(winSize);
+            Mem1<SP_REAL> kernel(winSize);
             for (int k = 0; k < winSize; k++) {
                 kernel(k) = 1.0;
             }
@@ -584,7 +584,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma_s, const double sigma_c){
+    SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL sigma_s, const SP_REAL sigma_c){
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);
@@ -592,19 +592,19 @@ namespace sp{
 
         const int half = maxVal(1, round((sigma_s - 0.8) / 0.3 + 1));
 
-        Mem2<double> kernel(2 * half + 1, 2 * half + 1);
+        Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= +half; y++) {
             for (int x = -half; x <= +half; x++) {
-                const double r2 = square(x) + square(y);
+                const SP_REAL r2 = square(x) + square(y);
                 kernel(x + half, y + half) = exp(-r2 / (2.0 * square(sigma_s)));
             }
         }
 
-        const double expscale = 10.0;
-        Mem1<double> exptable(100);
+        const SP_REAL expscale = 10.0;
+        Mem1<SP_REAL> exptable(100);
         for (int i = 0; i < exptable.size(); i++){
-            const double r = square(i / expscale);
-            const double v = exp(-r / 2.0);
+            const SP_REAL r = square(i / expscale);
+            const SP_REAL v = exp(-r / 2.0);
             exptable[i] = v;
         }
 
@@ -621,15 +621,15 @@ namespace sp{
                 for (int c = 0; c < ch; c++) {
                     const ELEM base = acs2<TYPE, ELEM>(tmp, u, v, c);
 
-                    double sum = 0.0, div = 0.0;
+                    SP_REAL sum = 0.0, div = 0.0;
                     for (int ky = -half; ky < +half; ky++){
                         for (int kx = -half; kx < +half; kx++){
                             if (inRect2(rect, u + kx, v + ky) == false) continue;
 
                             const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);
 
-                            const double a = kernel(kx + half, ky + half);
-                            const double b = exptable(round(fabs(val - base) * expscale / sigma_c));
+                            const SP_REAL a = kernel(kx + half, ky + half);
+                            const SP_REAL b = exptable(round(fabs(val - base) * expscale / sigma_c));
 
                             sum += a * b * val;
                             div += a * b;

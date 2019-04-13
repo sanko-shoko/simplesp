@@ -65,10 +65,10 @@ private:
             m_prj = getCamParam(320, 240);
 
             if (AXIS == 0) {
-                m_cam2prj = getPose(getRotAngleY(+10.0 / 180.0 * SP_PI), getVec(-100.0, 0.0, 0.0));
+                m_cam2prj = getPose(getRotAngleY(+10.0 / 180.0 * SP_PI), getVec3(-100.0, 0.0, 0.0));
             }
             else {
-                m_cam2prj = getPose(getRotAngleX(+10.0 / 180.0 * SP_PI), getVec(0.0, 100.0, 0.0));
+                m_cam2prj = getPose(getRotAngleX(+10.0 / 180.0 * SP_PI), getVec3(0.0, 100.0, 0.0));
             }
 
             m_graycode.init(m_prj.dsize[0], m_prj.dsize[1], AXIS);
@@ -80,7 +80,7 @@ private:
             m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
             SP_ASSERT(m_model.size() > 0);
 
-            m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+            m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
             m_view3d = false;
             m_view = zeroPose();
@@ -118,12 +118,12 @@ private:
 
                 Vec3 pnt;
                 if (AXIS == 0) {
-                    if (calcPnt3dX(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
+                    if (calcPnt3dX(pnt, zeroPose(), m_cam, getVec2(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
                         m_pnts.push(pnt);
                     }
                 }
                 else {
-                    if (calcPnt3dY(pnt, zeroPose(), m_cam, getVec(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
+                    if (calcPnt3dY(pnt, zeroPose(), m_cam, getVec2(u, v), m_cam2prj, m_prj, map(u, v)) == true) {
                         m_pnts.push(pnt);
                     }
                 }

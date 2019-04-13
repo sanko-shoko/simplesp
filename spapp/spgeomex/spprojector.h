@@ -10,7 +10,7 @@
 
 namespace sp{
 
-    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize[], const double rate, const int seed = 0){
+    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize[], const SP_REAL rate, const int seed = 0){
         Mem2<Byte> ptn(dsize);
         ptn.zero();
 
@@ -26,7 +26,7 @@ namespace sp{
         return ptn;
     }
 
-    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize0, const int dsize1, const double rate, const int seed = 0) {
+    SP_CPUFUNC Mem2<Byte> genRandomPattern(const int dsize0, const int dsize1, const SP_REAL rate, const int seed = 0) {
         int dsize[2] = {dsize0, dsize1};
         return genRandomPattern(dsize, rate, seed);
     }
@@ -115,10 +115,10 @@ namespace sp{
             return imgs;
         }
 
-        Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
+        Mem2<SP_REAL> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
             SP_ASSERT(valid() == true);
 
-            Mem2<double> map(imgs[0].dsize);
+            Mem2<SP_REAL> map(imgs[0].dsize);
             setElm(map, -1.0);
 
             const int num = getCodeNum();
@@ -200,14 +200,14 @@ namespace sp{
 
             Mem1<Mem2<Byte> > imgs;
 
-            const double shift[3] = { -2.0 / 3.0 * SP_PI, 0.0, +2.0 / 3.0 * SP_PI };
+            const SP_REAL shift[3] = { -2.0 / 3.0 * SP_PI, 0.0, +2.0 / 3.0 * SP_PI };
 
             for (int i = 0; i < 3; i++) {
                 Mem2<Byte> img(m_dsize);
 
                 if (m_axis == 0) {
                     for (int u = 0; u < m_dsize[0]; u++) {
-                        const double s = sin(u * 2.0 * SP_PI / m_period + shift[i]);
+                        const SP_REAL s = sin(u * 2.0 * SP_PI / m_period + shift[i]);
                         for (int v = 0; v < m_dsize[1]; v++) {
                             img(u, v) = round((s * SP_BYTEMAX + SP_BYTEMAX) / 2.0);
                         }
@@ -215,7 +215,7 @@ namespace sp{
                 }
                 else {
                     for (int v = 0; v < m_dsize[1]; v++) {
-                        const double s = sin(v * 2.0 * SP_PI / m_period + shift[i]);
+                        const SP_REAL s = sin(v * 2.0 * SP_PI / m_period + shift[i]);
                         for (int u = 0; u < m_dsize[0]; u++) {
                             img(u, v) = round((s * SP_BYTEMAX + SP_BYTEMAX) / 2.0);
                         }
@@ -227,10 +227,10 @@ namespace sp{
             return imgs;
         }
 
-        Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
+        Mem2<SP_REAL> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const int thresh = 10) const {
             SP_ASSERT(valid() == true);
 
-            Mem2<double> map(imgs[0].dsize);
+            Mem2<SP_REAL> map(imgs[0].dsize);
             setElm(map, -1.0);
 
             for (int i = 0; i < map.size(); i++) {
@@ -241,10 +241,10 @@ namespace sp{
                     const int v1 = imgs[1][i];
                     const int v2 = imgs[2][i];
 
-                    const double div = 2 * v1 - (v0 + v2);
+                    const SP_REAL div = 2 * v1 - (v0 + v2);
                     //if (fabs(div) < SP_SMALL) continue;
 
-                    double p = atan2(sqrt(3.0) * (v0 - v2), div);
+                    SP_REAL p = atan2(sqrt(3.0) * (v0 - v2), div);
                     if (p < -SP_PI / 2) {
                         p += 2 * SP_PI;
                     }
@@ -256,12 +256,12 @@ namespace sp{
             return map;
         }
 
-        Mem2<double> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const Mem2<double> &gcmap, const int thresh = 10) const {
+        Mem2<SP_REAL> decode(const Mem1<Mem2<Byte> > &imgs, const Mem2<Byte> &wimg, const Mem2<Byte> &bimg, const Mem2<SP_REAL> &gcmap, const int thresh = 10) const {
             SP_ASSERT(valid() == true);
 
-            const Mem2<double> &psmap = decode(imgs, wimg, bimg, thresh);
+            const Mem2<SP_REAL> &psmap = decode(imgs, wimg, bimg, thresh);
 
-            Mem2<double> map(psmap.dsize);
+            Mem2<SP_REAL> map(psmap.dsize);
             setElm(map, -1.0);
 
             for (int i = 0; i < psmap.size(); i++) {

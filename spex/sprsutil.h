@@ -33,7 +33,7 @@ namespace sp{
         Pose m_dpose;
 
         Mem2<Col3> m_color;
-        Mem2<double> m_depth;
+        Mem2<SP_REAL> m_depth;
 
     public:
         RealSense(){
@@ -83,14 +83,14 @@ namespace sp{
 
             const rs_extrinsics &dex = m_dev->get_extrinsics(stream::color, stream::depth);
 
-            double rot[3 * 3];
+            SP_REAL rot[3 * 3];
             for (int r = 0; r < 3; r++){
                 for (int c = 0; c < 3; c++){
                     rot[r * 3 + c] = dex.rotation[c * 3 + r];
                 }
             }
             m_dpose.rot = getRot(rot, 3, 3);
-            m_dpose.trn = getVec(dex.translation[0], dex.translation[1], dex.translation[2]) * 1000.0;
+            m_dpose.trn = getVec3(dex.translation[0], dex.translation[1], dex.translation[2]) * 1000.0;
         }
 
         void start(){
@@ -119,7 +119,7 @@ namespace sp{
             return (m_cenable == true) ? &m_ccam : NULL;
         }
 
-        const Mem2<double>* getDepth(){
+        const Mem2<SP_REAL>* getDepth(){
             return (m_denable == true) ? &m_depth : NULL;
         }
 
@@ -149,7 +149,7 @@ namespace sp{
                 const uint16_t *dframe = reinterpret_cast<const uint16_t*>(m_dev->get_frame_data(stream::depth));
 
                 // -> mm scale
-                const double scale = m_dev->get_depth_scale() * 1000.0;
+                const SP_REAL scale = m_dev->get_depth_scale() * 1000.0;
                 
                 for (int i = 0; i < m_depth.size(); i++){
                     m_depth[i] = (*dframe++) * scale;

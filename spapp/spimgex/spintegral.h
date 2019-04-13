@@ -55,7 +55,7 @@ namespace sp{
                 int xe = (x + winSize < dst.dsize[0]) ? x + winSize : dst.dsize[0];
                 int ye = (y + winSize < dst.dsize[1]) ? y + winSize : dst.dsize[1];
 
-                double div = (xe - xs) * (ye - ys);
+                SP_REAL div = (xe - xs) * (ye - ys);
 
                 for (int c = 0; c < ch; c++) {
                     ELEM1 sum = acs2<TYPE1, ELEM1>(src, xe - 1, ye - 1, c);

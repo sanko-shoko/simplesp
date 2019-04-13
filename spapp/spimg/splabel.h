@@ -240,7 +240,7 @@ namespace sp{
                             break;
                         }
                     }
-                    dst[i].push(getVec(cx, cy));
+                    dst[i].push(getVec2(cx, cy));
                 }
                 else {
                     const int s = (start[vec[1] + 1][vec[0] + 1] + 4 - 1) % 4;
@@ -288,7 +288,7 @@ namespace sp{
                         }
                     }
 
-                    dst[i].push(getVec(cx - 0.5, cy - 0.5));
+                    dst[i].push(getVec2(cx - 0.5, cy - 0.5));
                 }
 
                 if (cx == sx && cy == sy){
@@ -386,15 +386,15 @@ namespace sp{
                     const Vec2 A = tmps[a];
                     const Vec2 B = tmps[b];
                     const Vec2 v = unitVec(A - B);
-                    const Vec2 n = getVec(-v.y, v.x);
+                    const Vec2 n = getVec2(-v.y, v.x);
 
-                    const Vec2 t = getVec(1.0, 1.0);
+                    const Vec2 t = getVec2(1.0, 1.0);
 
-                    double maxv = 0.0;
+                    SP_REAL maxv = 0.0;
                     int id = -1;
 
-                    const double dA = dotVec(A, t);
-                    const double dB = dotVec(B, t);
+                    const SP_REAL dA = dotVec(A, t);
+                    const SP_REAL dB = dotVec(B, t);
 
                     if (dA < dB || (cmpVal(dA, dB) && (A.y < B.y)) ) {
                         for (int k = a + 1; ; k++) {
@@ -403,7 +403,7 @@ namespace sp{
 
                             const Vec2 C = tmps[c];
 
-                            const double len = fabs(dotVec(n, A - C));
+                            const SP_REAL len = fabs(dotVec(n, A - C));
 
                             if (len > maxv) {
                                 maxv = len;
@@ -418,7 +418,7 @@ namespace sp{
 
                             const Vec2 C = tmps[c];
 
-                            const double len = fabs(dotVec(n, B - C));
+                            const SP_REAL len = fabs(dotVec(n, B - C));
 
                             if (len > maxv) {
                                 maxv = len;

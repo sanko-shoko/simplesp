@@ -24,7 +24,7 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");
 
         // pose (camera <- object)
-        const Pose pose = getPose(randRotGauss(10.0 * SP_PI / 180), getVec(0.0, 0.0, 400));
+        const Pose pose = getPose(randRotGauss(10.0 * SP_PI / 180), getVec3(0.0, 0.0, 400));
         print(pose);
 
 
@@ -61,7 +61,7 @@ int main(){
         printf("3D-3D\n");
         printf("--------------------------------------------------------------------------------\n");
 
-        Pose pose = getPose(getVec(0.0, 0.0, 400));
+        Pose pose = getPose(getVec3(0.0, 0.0, 400));
         calcPose(pose, pnts, objs);
 
         print(pose);

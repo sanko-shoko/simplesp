@@ -68,7 +68,7 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
             renderPoint(img, cpixs[i], getCol(0, 255, 0), 3);
         }
 
-        //const Vec3 offset = getVec(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
+        //const Vec3 offset = getVec3(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
         //const Pose pose = *bitMarker.getPose(0) * getPose(offset);
         //renderCube(img, bitMarker.getCam(), pose, bitMarker.getMrks(0)[0].length, getCol(50, 50, 200), 2);
     }

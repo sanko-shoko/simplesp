@@ -61,7 +61,7 @@ namespace sp{
     }
 
     // get max value
-    SP_GENFUNC const double maxVal(const double a, const double b){
+    SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
         return (a > b) ? a : b;
     }
 
@@ -71,20 +71,20 @@ namespace sp{
     }
 
     // get min value
-    SP_GENFUNC const double minVal(const double a, const double b){
+    SP_GENFUNC const SP_REAL minVal(const double a, const double b){
         return (a < b) ? a : b;
     }
 
     // get uniform random value (-1.0, 1.0)
-    SP_GENFUNC double randValUnif(){
+    SP_GENFUNC SP_REAL randValUnif(){
         const int maxv = 2000;
         return 2.0 * (rand() % (maxv + 1) + 1) / (maxv + 2) - 1.0;
     }
 
     // get gauss random value
-    SP_GENFUNC double randValGauss(){
-        const double a = (randValUnif() + 1.0) / 2.0;
-        const double b = (randValUnif() + 1.0) / 2.0;
+    SP_GENFUNC SP_REAL randValGauss(){
+        const SP_REAL a = (randValUnif() + 1.0) / 2.0;
+        const SP_REAL b = (randValUnif() + 1.0) / 2.0;
         return sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
     }
 
@@ -94,7 +94,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // check nearly equal
-    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = SP_SMALL){
+    SP_GENFUNC bool cmpVal(const SP_REAL a, const SP_REAL b, const SP_REAL t = SP_SMALL){
         return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 
@@ -111,10 +111,10 @@ namespace sp{
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
-    SP_GENFUNC bool cmpVec(const Vec2 &vec0, const Vec2 &vec1, const double t = SP_SMALL){
+    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const SP_REAL t = SP_SMALL){
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
     }
-    SP_GENFUNC bool cmpVec(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL) {
+    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const SP_REAL t = SP_SMALL) {
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
@@ -125,7 +125,7 @@ namespace sp{
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
     }
 
-    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const double t = SP_SMALL){
+    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const SP_REAL t = SP_SMALL){
         bool ret = true;
         ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
         ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
@@ -134,10 +134,10 @@ namespace sp{
         return ret;
     }
 
-    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const double tr = SP_SMALL, const double tt = SP_SMALL){
+    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL){
         bool ret = true;
         ret &= cmpRot(pose0.rot, pose1.rot, tr);
-        ret &= cmpVec(pose0.trn, pose1.trn, tt);
+        ret &= cmpVec3(pose0.trn, pose1.trn, tt);
         return ret;
     }
 
@@ -175,7 +175,7 @@ namespace sp{
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(double &dst, const TYPE &src){
-        dst = static_cast<double>(src);
+        dst = static_cast<SP_REAL>(src);
     }
 
 

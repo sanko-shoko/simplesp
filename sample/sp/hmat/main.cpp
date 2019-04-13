@@ -18,9 +18,9 @@ int main() {
         cam.k1 = -0.5;
 
         // generate test pose
-        pose0 = getPose(getVec(+0.0, 0.0, 400));
-        //pose0 = getPose(getVec(+1.0, 0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0);
-        pose1 = getPose(getVec(-1.0, 0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0);
+        pose0 = getPose(getVec3(+0.0, 0.0, 400));
+        //pose0 = getPose(getVec3(+1.0, 0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0);
+        pose1 = getPose(getVec3(-1.0, 0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0);
     }
 
     {
@@ -30,8 +30,8 @@ int main() {
 
         // generate test points
         for (int n = 0; n < mrkMap.size(); n++) {
-            const Vec2 pix0 = mulCamD(cam, prjVec(pose0 * getVec(mrkMap[n], 0.0)));
-            const Vec2 pix1 = mulCamD(cam, prjVec(pose1 * getVec(mrkMap[n], 0.0)));
+            const Vec2 pix0 = mulCamD(cam, prjVec(pose0 * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0)));
+            const Vec2 pix1 = mulCamD(cam, prjVec(pose1 * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0)));
 
             pixs0.push(pix0);
             pixs1.push(pix1);

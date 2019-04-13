@@ -142,14 +142,14 @@ namespace sp{
             Mem2<TYPE> rect = m_rect;
 
             Node *result = m_root;
-            double dist = normData(result->data, data);
+            SP_REAL dist = normData(result->data, data);
 
             searchOne(dist, result, m_root, data, rect);
 
             return result->index;
         }
 
-        Mem1<int> search(const void *ptr, double range) const {
+        Mem1<int> search(const void *ptr, SP_REAL range) const {
             SP_ASSERT(m_stack.size() == 0);
             Mem1<int> index;
 
@@ -162,16 +162,16 @@ namespace sp{
 
     private:
 
-        double normData(const TYPE *data, const TYPE *base) const {
-            double norm = 0.0;
+        SP_REAL normData(const TYPE *data, const TYPE *base) const {
+            SP_REAL norm = 0.0;
             for (int i = 0; i < m_dim; i++) {
                 norm += square(data[i] - base[i]);
             }
             return sqrt(norm);
         }
 
-        double normRect(Mem2<TYPE> &rect, const TYPE *base) const {
-            double norm = 0.0;
+        SP_REAL normRect(Mem2<TYPE> &rect, const TYPE *base) const {
+            SP_REAL norm = 0.0;
 
             for (int i = 0; i < m_dim; i++) {
                 if (base[i] >= rect(i, 0) && base[i] <= rect(i, 1)) continue;
@@ -183,7 +183,7 @@ namespace sp{
             return sqrt(norm);
         }
 
-        double cmpData(const TYPE *data0, const TYPE *data1, const int div) const {
+        SP_REAL cmpData(const TYPE *data0, const TYPE *data1, const int div) const {
             return data0[div] - data1[div];
         }
 
@@ -204,16 +204,16 @@ namespace sp{
             }
             else{
                 Node *node = *parent;
-                const double d = cmpData(data, node->data, node->div);
+                const SP_REAL d = cmpData(data, node->data, node->div);
                 const int t = (d < 0.0) ? 0 : 1;
 
                 addNode(&node->sub[t], data, node->div + 1, index);
             }
         }
 
-        void searchOne(double &mindist, Node *&result, Node *node, const TYPE *data, Mem2<TYPE> &rect) const {
+        void searchOne(SP_REAL &mindist, Node *&result, Node *node, const TYPE *data, Mem2<TYPE> &rect) const {
 
-            const double d = cmpData(data, node->data, node->div);
+            const SP_REAL d = cmpData(data, node->data, node->div);
             const int t = (d < 0.0) ? 0 : 1;
 
             // check near node
@@ -230,7 +230,7 @@ namespace sp{
                 side = tmp;
             }
 
-            const double dist = normData(node->data, data);
+            const SP_REAL dist = normData(node->data, data);
             if (dist < mindist) {
                 result = node;
                 mindist = dist;
@@ -256,12 +256,12 @@ namespace sp{
         void searchRange(Mem1<int> &index, Node *node, const TYPE *data, TYPE rect) const {
             if (node == NULL) return;
 
-            const double dist = normData(node->data, data);
+            const SP_REAL dist = normData(node->data, data);
             if (dist <= rect) {
                 index.push(node->index);
             }
 
-            const double d = cmpData(data, node->data, node->div);
+            const SP_REAL d = cmpData(data, node->data, node->div);
             const int t = (d < 0.0) ? 0 : 1;
 
             searchRange(index, node->sub[t], data, rect);

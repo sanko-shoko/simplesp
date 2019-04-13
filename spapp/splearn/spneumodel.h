@@ -40,7 +40,7 @@ namespace sp{
             m_order.push(layer);
         }
 
-        const Mem1<Mem<double> >& getResult(){
+        const Mem1<Mem<SP_REAL> >& getResult(){
             return m_order[m_order.size() - 1]->getResult(true);
         }
 
@@ -49,20 +49,20 @@ namespace sp{
         // train
         //--------------------------------------------------------------------------------
 
-        void train(const Mem1<Mem<double> > &src, const Mem1<Mem<double> > &truth){
+        void train(const Mem1<Mem<SP_REAL> > &src, const Mem1<Mem<SP_REAL> > &truth){
 
             forward(src, true);
 
             backward(truth);
         }
 
-        void train(const Mem1<Mem<double> > &src, const Mem1<int> &truth){
+        void train(const Mem1<Mem<SP_REAL> > &src, const Mem1<int> &truth){
             forward(src, true);
             const int labelNum = getResult()[0].size();
 
-            Mem1<Mem<double> > oh(truth.size());
+            Mem1<Mem<SP_REAL> > oh(truth.size());
             for (int i = 0; i < oh.size(); i++){
-                oh[i] = oneHot<double>(truth[i], labelNum);
+                oh[i] = oneHot<SP_REAL>(truth[i], labelNum);
             }
 
             backward(oh);
@@ -73,16 +73,16 @@ namespace sp{
         // forward
         //--------------------------------------------------------------------------------
 
-        void forward(const Mem1<Mem<double> > &mem, bool train = false){
-            const Mem1<Mem<double> > *prop = &mem;
+        void forward(const Mem1<Mem<SP_REAL> > &mem, bool train = false){
+            const Mem1<Mem<SP_REAL> > *prop = &mem;
             for (int i = 0; i < m_order.size(); i++){
                 m_order[i]->m_train = train;
                 prop = m_order[i]->execute(prop, true);
             }
         }
 
-        void forward(const Mem<double>  &mem, bool train = false){
-            forward(Mem1<Mem<double> >(1, &mem), train);
+        void forward(const Mem<SP_REAL>  &mem, bool train = false){
+            forward(Mem1<Mem<SP_REAL> >(1, &mem), train);
         }
 
     private:
@@ -91,16 +91,16 @@ namespace sp{
         // backward
         //--------------------------------------------------------------------------------
 
-        void backward(const Mem1<Mem<double> > &mem){
+        void backward(const Mem1<Mem<SP_REAL> > &mem){
 
-            const Mem1<Mem<double> > *prop = &mem;
+            const Mem1<Mem<SP_REAL> > *prop = &mem;
             for (int i = m_order.size() - 1; i >= 0; i--){
                 prop = m_order[i]->execute(prop, false);
             }
         }
 
-        void backward(const Mem<double>  &mem, bool train = false){
-            backward(Mem1<Mem<double> >(1, &mem));
+        void backward(const Mem<SP_REAL>  &mem, bool train = false){
+            backward(Mem1<Mem<SP_REAL> >(1, &mem));
         }
 
 

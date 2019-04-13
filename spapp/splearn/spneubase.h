@@ -27,15 +27,15 @@ namespace sp{
     // cross entropy
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double crossEntropy(const Mem<double>  &result, const int truth){
+    SP_CPUFUNC SP_REAL crossEntropy(const Mem<SP_REAL>  &result, const int truth){
 
-        double loss = -log(result[truth]);
+        SP_REAL loss = -log(result[truth]);
         return loss;
     }
 
-    SP_CPUFUNC double crossEntropy(const Mem1<Mem<double> > &result, const Mem1<int> &truth){
+    SP_CPUFUNC SP_REAL crossEntropy(const Mem1<Mem<SP_REAL> > &result, const Mem1<int> &truth){
 
-        Mem1<double> loss(result.size());
+        Mem1<SP_REAL> loss(result.size());
         for (int i = 0; i < result.size(); i++){
             loss[i] = crossEntropy(result[i], truth[i]);
         }
@@ -47,22 +47,22 @@ namespace sp{
     // accuracy
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double testAccuracy(const int result, const int label) {
+    SP_CPUFUNC SP_REAL testAccuracy(const int result, const int label) {
         return (result == label) ? 1.0 : 0.0;
     }
 
-    SP_CPUFUNC double testAccuracy(const Mem<double>  &result, const int label) {
+    SP_CPUFUNC SP_REAL testAccuracy(const Mem<SP_REAL>  &result, const int label) {
         return (maxArg(result) == label) ? 1.0 : 0.0;
     }
 
-    SP_CPUFUNC double testAccuracy(const Mem<double>  &result, const Mem<double>  &label){
+    SP_CPUFUNC SP_REAL testAccuracy(const Mem<SP_REAL>  &result, const Mem<SP_REAL>  &label){
         return (maxArg(result) == maxArg(label)) ? 1.0 : 0.0;
     }
 
     template<typename TYPE0, typename TYPE1>
-    SP_CPUFUNC double testAccuracy(const Mem1<TYPE0> &result, const Mem1<TYPE1> &truth) {
+    SP_CPUFUNC SP_REAL testAccuracy(const Mem1<TYPE0> &result, const Mem1<TYPE1> &truth) {
 
-        Mem1<double> accuracy(result.size());
+        Mem1<SP_REAL> accuracy(result.size());
         for (int i = 0; i < result.size(); i++) {
             accuracy[i] = testAccuracy(result[i], truth[i]);
         }
@@ -90,7 +90,7 @@ namespace sp{
             b.resize(nodeNum, 1);
         }
 
-        void rand(const double scale = 0.05){
+        void rand(const SP_REAL scale = 0.05){
             for (int i = 0; i < w.size(); i++){
                 w[i] = randValGauss() * scale;
             }

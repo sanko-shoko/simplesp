@@ -28,7 +28,7 @@ namespace sp{
         CamParam m_cam[2];
 
         // camera baseline
-        double m_baseLine;
+        SP_REAL m_baseLine;
 
         // disparity map
         Mem2<Disp> m_dispMap[2];
@@ -61,7 +61,7 @@ namespace sp{
         // input parameter
         //--------------------------------------------------------------------------------
 
-        void setCam(const CamParam &camL, const CamParam &camR, const double baseLine = 1.0) {
+        void setCam(const CamParam &camL, const CamParam &camR, const SP_REAL baseLine = 1.0) {
             m_cam[0] = camL;
             m_cam[1] = camR;
             m_baseLine = baseLine;
@@ -174,7 +174,7 @@ namespace sp{
             }
         }
 
-        void consistencyCheck(Mem2<Disp> &src, const Mem2<Disp> &ref, const double thresh, const int order) {
+        void consistencyCheck(Mem2<Disp> &src, const Mem2<Disp> &ref, const SP_REAL thresh, const int order) {
 
             const Rect rect = getDispRect(order);
 
@@ -199,18 +199,18 @@ namespace sp{
 
             const Rect rect = getDispRect(order);
 
-            const double f = m_cam[0].fx;
-            const double b = m_baseLine;
-            const double cx0 = (order > 0) ? m_cam[0].cx : m_cam[1].cx;
-            const double cx1 = (order > 0) ? m_cam[1].cx : m_cam[0].cx;
+            const SP_REAL f = m_cam[0].fx;
+            const SP_REAL b = m_baseLine;
+            const SP_REAL cx0 = (order > 0) ? m_cam[0].cx : m_cam[1].cx;
+            const SP_REAL cx1 = (order > 0) ? m_cam[1].cx : m_cam[0].cx;
 
             for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
                 for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
-                    const Vec2 npx = invCam(cam, getVec(u, v));
+                    const Vec2 npx = invCam(cam, getVec2(u, v));
                     const Disp disp = src(u, v);
                     if (disp.eval > 0.0) {
-                        const double depth = f * b / (disp.disp - (cx0 - cx1));
-                        dst(u, v) = getVec(npx.x, npx.y, 1.0) * depth;
+                        const SP_REAL depth = f * b / (disp.disp - (cx0 - cx1));
+                        dst(u, v) = getVec3(npx.x, npx.y, 1.0) * depth;
                     }
                 }
             }

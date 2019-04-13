@@ -8,17 +8,17 @@ int main() {
         {
             setElm(src, getCol(255, 255, 255));
 
-            renderPoint(src, getVec(320, 240), getCol(0, 180, 0), 100);
-            renderPoint(src, getVec(400, 180), getCol(0, 180, 0), 60);
+            renderPoint(src, getVec2(320, 240), getCol(0, 180, 0), 100);
+            renderPoint(src, getVec2(400, 180), getCol(0, 180, 0), 60);
         }
 
         const Rect rect = getRect2(120, 90, 400, 300);
         Mem1<Vec2> vtxs;
         {
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
+            vtxs.push(getVec2(rect.dbase[0], rect.dbase[1]));
+            vtxs.push(getVec2(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec2(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec2(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
         }
 
         Mem1<Vec2> contour;
@@ -42,10 +42,10 @@ int main() {
         const Rect rect = getRect2(260, 60, 180, 260);
         Mem1<Vec2> vtxs;
         {
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1]));
-            vtxs.push(getVec(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
-            vtxs.push(getVec(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
+            vtxs.push(getVec2(rect.dbase[0], rect.dbase[1]));
+            vtxs.push(getVec2(rect.dbase[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec2(rect.dbase[0] + rect.dsize[0], rect.dbase[1] + rect.dsize[1]));
+            vtxs.push(getVec2(rect.dbase[0] + rect.dsize[0], rect.dbase[1]));
         }
 
         Mem1<Vec2> contour;

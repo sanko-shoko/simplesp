@@ -62,7 +62,7 @@ private:
         const int level = 2;
         m_pmodels = getPoseModel(m_model, m_distance, level);
 
-        m_pose = getPose(getVec(0.0, 0.0, m_distance));
+        m_pose = getPose(getVec3(0.0, 0.0, m_distance));
 
         m_start = true;
     }
@@ -97,7 +97,7 @@ private:
             static double s = 0.0;
 
             if (m_start == true) {
-                m_pose *= getRotAngle(getVec(+::sin(s), +::cos(s), +0.0), -0.02);
+                m_pose *= getRotAngle(getVec3(+::sin(s), +::cos(s), +0.0), -0.02);
                 m_pose.trn.x = ::cos(s * 2.0) * m_radius * 0.4;
                 m_pose.trn.y = ::sin(s * 2.0) * m_radius * 0.4;
 

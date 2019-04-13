@@ -7,6 +7,11 @@
 
 
 #ifdef WIN32
+//#pragma warning(push)
+#pragma warning(disable:4244)
+#pragma warning(disable:4305)
+#pragma warning(disable:4838)
+
 #pragma warning(disable:4996)
 #pragma warning(disable:4819)
 #pragma warning(disable:4101)
@@ -25,5 +30,8 @@
 #include "spcore/spcore.h"
 #include "spapp/spapp.h"
 
+#ifdef WIN32
+//#pragma warning(pop)
+#endif
 
 #endif

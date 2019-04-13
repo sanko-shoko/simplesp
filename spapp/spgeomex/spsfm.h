@@ -80,7 +80,7 @@ namespace sp {
             Mem1<int> matches;
 
             // match features eval
-            double eval;
+            SP_REAL eval;
 
             MatchPair() {
                 a = -1;
@@ -218,17 +218,17 @@ namespace sp {
 
     private:
 
-        double MIN_MATCHEVAL = 0.2;
-        double MIN_STEREOEVAL = 0.4;
+        SP_REAL MIN_MATCHEVAL = 0.2;
+        SP_REAL MIN_STEREOEVAL = 0.4;
 
         int MIN_POSEPNT = 10;
 
-        double MPNT_PRJERR = 5.0;
-        double MPNT_ANGLE = 2.0 * SP_PI / 180.0;
+        SP_REAL MPNT_PRJERR = 5.0;
+        SP_REAL MPNT_ANGLE = 2.0 * SP_PI / 180.0;
 
         int MAX_UPDATE = 3;
 
-        double MAX_NEARPOSE = 30.0 * SP_PI / 180.0;
+        SP_REAL MAX_NEARPOSE = 30.0 * SP_PI / 180.0;
 
 
     private:
@@ -481,7 +481,7 @@ namespace sp {
                 list.push(getPairs(views, ViewEx::POSE_HINT, ViewEx::POSE_NULL));
                 list.push(getPairs(views, ViewEx::POSE_NULL, ViewEx::POSE_HINT));
             
-                double maxv = 0.0;
+                SP_REAL maxv = 0.0;
                 for (int i = 0; i < list.size(); i++) {
                     const int a = list[i]->a;
                     const int b = list[i]->b;
@@ -492,7 +492,7 @@ namespace sp {
 
                     const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->ftrs, list[i]->matches, true);
                     const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->ftrs, list[i]->matches, false);
-                    const double eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
+                    const SP_REAL eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
 
                     if (eval > maxv) {
                         maxv = eval;
@@ -566,7 +566,7 @@ namespace sp {
                 Pose pose;
 
                 int bestid = -1;
-                double maxe = 0.0;
+                SP_REAL maxe = 0.0;
                 for (int i = 0; i < hypos.size(); i++) {
 
                     const int a = hypos[i]->a;
@@ -591,8 +591,8 @@ namespace sp {
                     Pose tmp = zeroPose();
                     if (calcPoseRANSAC(tmp, views[a]->cam, pixs, objs) == false) continue;
 
-                    const Mem1<double> errs = calcPrjErr(tmp, views[a]->cam, pixs, objs);
-                    const double eval = evalErr(errs, MPNT_PRJERR);
+                    const Mem1<SP_REAL> errs = calcPrjErr(tmp, views[a]->cam, pixs, objs);
+                    const SP_REAL eval = evalErr(errs, MPNT_PRJERR);
 
                     if (eval > maxe) {
                         maxe = eval;
@@ -615,7 +615,7 @@ namespace sp {
                         MapPnt *mpnt = views[b]->ftrs[g].mpnt;
                         if (mpnt == NULL || mpnt->valid == false) continue;
 
-                        const double err = calcPrjErr(pose, views[a]->cam, views[a]->ftrs[f].pix, mpnt->pos);
+                        const SP_REAL err = calcPrjErr(pose, views[a]->cam, views[a]->ftrs[f].pix, mpnt->pos);
                         if (err > MPNT_PRJERR) continue;
 
                         setMPnt(*mpnt, *views[a], f);
@@ -692,20 +692,20 @@ namespace sp {
                         cams[i] = mviews[i]->cam;
                         pixs[i] = mfts[i]->pix;
                     }
-                    Vec3 pos = getVec(0.0, 0.0, 0.0);
+                    Vec3 pos = getVec3(0.0, 0.0, 0.0);
                     if (calcPnt3dRANSAC(pos, poses, cams, pixs) == false) continue;
 
-                    const Mem1<double> errs = calcPrjErr(poses, cams, pixs, pos);
+                    const Mem1<SP_REAL> errs = calcPrjErr(poses, cams, pixs, pos);
                     if (medianVal(errs) > MPNT_PRJERR) continue;
 
-                    Mem1<double> angles;
+                    Mem1<SP_REAL> angles;
                     for (int a = 0; a < num; a++) {
                         for (int b = a + 1; b < num; b++) {
                             if (errs[a] > MPNT_PRJERR || errs[b] > MPNT_PRJERR) continue;
 
                             const Vec3 vec0 = unitVec(poses[a].trn - pos);
                             const Vec3 vec1 = unitVec(poses[b].trn - pos);
-                            const double angle = acos(dotVec(vec0, vec1));
+                            const SP_REAL angle = acos(dotVec(vec0, vec1));
 
                             angles.push(angle);
                         }
@@ -725,7 +725,7 @@ namespace sp {
 
             Mem1<Vec2> pixs;
             Mem1<Vec3> objs;
-            Mem1<double> errs;
+            Mem1<SP_REAL> errs;
             for (int f = 0; f < view.ftrs.size(); f++) {
                 MapPnt *mpnt = view.ftrs[f].mpnt;
                 if (mpnt == NULL || mpnt->valid == false) continue;
@@ -751,15 +751,15 @@ namespace sp {
 
         int searchNearViewId(const Pose &pose) {
             int id = -1;
-            double maxd = SP_INFINITY;
+            SP_REAL maxd = SP_INFINITY;
             for (int i = 0; i < m_views.size(); i++) {
                 if ((m_views[i]->state & ViewEx::POSE_VALID) == false) continue;
                 const Pose hypo = m_views[i]->pose;
 
-                const double angle = difRot(pose.rot, hypo.rot, 2);
+                const SP_REAL angle = difRot(pose.rot, hypo.rot, 2);
                 if (angle > MAX_NEARPOSE) continue;
 
-                const double d = normVec(pose.trn - hypo.trn);
+                const SP_REAL d = normVec(pose.trn - hypo.trn);
                 if (d < maxd) {
                     maxd = d;
                     id = i;

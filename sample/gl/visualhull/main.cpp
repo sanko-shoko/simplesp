@@ -53,7 +53,7 @@ private:
         const double radius = getModelRadius(m_model);
         const double distance = getModelDistance(m_model, m_cam);
 
-        m_view = getPose(getVec(0.0, 0.0, 3 * distance)) * getRotAngleX(SP_PI);
+        m_view = getPose(getVec3(0.0, 0.0, 3 * distance)) * getRotAngleX(SP_PI);
 
         const int level = 0;
         for (int i = 0; i < getGeodesicMeshNum(level); i += 2) {

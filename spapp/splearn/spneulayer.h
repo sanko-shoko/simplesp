@@ -34,10 +34,10 @@ namespace sp{
         //
 
         // src (mini batch)
-        const Mem1<Mem<double> > *m_X, *m_A;
+        const Mem1<Mem<SP_REAL> > *m_X, *m_A;
 
         // dst (mini batch)
-        Mem1<Mem<double> > m_Y, m_B;
+        Mem1<Mem<SP_REAL> > m_Y, m_B;
 
     public:
 
@@ -73,20 +73,20 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         // execute foward(true) / backward(false)
-        const Mem1<Mem<double> >* execute(const Mem1<Mem<double> > *src, const bool direct){
+        const Mem1<Mem<SP_REAL> >* execute(const Mem1<Mem<SP_REAL> > *src, const bool direct){
 
             return (direct == true) ? _forward(src) : _backward(src);
         }
 
         // get result data
-        const Mem1<Mem<double> >& getResult(const bool direct){
+        const Mem1<Mem<SP_REAL> >& getResult(const bool direct){
 
             return (direct == true) ? m_Y : m_B;
         }
 
     private:
 
-        const Mem1<Mem<double> >* _forward(const Mem1<Mem<double> > *src){
+        const Mem1<Mem<SP_REAL> >* _forward(const Mem1<Mem<SP_REAL> > *src){
             m_X = src;
             m_Y.resize(src->size());
 
@@ -99,7 +99,7 @@ namespace sp{
             return &m_Y;
         }
 
-        const Mem1<Mem<double> >* _backward(const Mem1<Mem<double> > *src){
+        const Mem1<Mem<SP_REAL> >* _backward(const Mem1<Mem<SP_REAL> > *src){
             m_A = src;
             m_B.resize(src->size());
 
@@ -112,13 +112,13 @@ namespace sp{
             return &m_B;
         }
 
-        virtual void init(const Mem1<Mem<double> > &X){
+        virtual void init(const Mem1<Mem<SP_REAL> > &X){
         }
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
         }
 
     };
@@ -138,7 +138,7 @@ namespace sp{
     private:
 
         // update rate
-        double m_lambda;
+        SP_REAL m_lambda;
 
     protected:
 
@@ -197,7 +197,7 @@ namespace sp{
                 m_vel.w = grd.w * m_lambda;
                 m_vel.b = grd.b * m_lambda;
             }
-            const double momentum = 0.9;
+            const SP_REAL momentum = 0.9;
 
             m_vel.w = m_vel.w * momentum + grd.w * m_lambda;
             m_vel.b = m_vel.b * momentum + grd.b * m_lambda;
@@ -231,7 +231,7 @@ namespace sp{
             ParamLayer::textex(file);
         }
 
-        virtual void init(const Mem1<Mem<double> > &X){
+        virtual void init(const Mem1<Mem<SP_REAL> > &X){
             const int dataNum = X[0].size();
 
             // foward parameter
@@ -240,7 +240,7 @@ namespace sp{
 
         }
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -253,7 +253,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             const Mat wt = trnMat(m_prm.w);
 
@@ -292,12 +292,12 @@ namespace sp{
 
     private:
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < Y.size(); n++){
-                const double maxv = maxVal(X[n]);
+                const SP_REAL maxv = maxVal(X[n]);
 
-                Mem1<double> S(X[n].size());
+                Mem1<SP_REAL> S(X[n].size());
                 for (int i = 0; i < S.size(); i++){
                     S[i] = exp(X[n][i] - maxv);
                 }
@@ -307,7 +307,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < B.size(); n++){
 
@@ -362,7 +362,7 @@ namespace sp{
 
     private:
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < Y.size(); n++){
                 Y[n].resize(X[n].dim, X[n].dsize);
@@ -373,7 +373,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < B.size(); n++){
                 B[n].resize(A[n].dim, A[n].dsize);
@@ -384,7 +384,7 @@ namespace sp{
             }
         }
 
-        double calcFwrd(const double x){
+        SP_REAL calcFwrd(const SP_REAL x){
             switch (m_activation){
             case ReLU:
                 return (x > 0) ? x : 0;
@@ -394,7 +394,7 @@ namespace sp{
             }
         }
 
-        double calcBwrd(const double a, const double y, const double x){
+        SP_REAL calcBwrd(const SP_REAL a, const SP_REAL y, const SP_REAL x){
             switch (m_activation){
             case ReLU:
                 return (x > 0) ? a : 0;
@@ -461,7 +461,7 @@ namespace sp{
 
     private:
 
-        virtual void init(const Mem1<Mem<double> > &X){
+        virtual void init(const Mem1<Mem<SP_REAL> > &X){
 
             // output dsize
             m_output[0] = (X[0].dsize[0] - 2 * m_margin) / m_stride;
@@ -479,7 +479,7 @@ namespace sp{
 
         }
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -489,7 +489,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             Mem1<NodeParam> grds(B.size());
 
@@ -505,8 +505,8 @@ namespace sp{
             update(grds);
         }
 
-        Mem<double>  cnvFwrd(const Mem<double>  &X){
-            Mem<double>  Y(3, m_output);
+        Mem<SP_REAL>  cnvFwrd(const Mem<SP_REAL>  &X){
+            Mem<SP_REAL>  Y(3, m_output);
 
             for (int oc = 0; oc < m_output[2]; oc++){
                 for (int ov = 0; ov < m_output[1]; ov++){
@@ -515,10 +515,10 @@ namespace sp{
                         const int u = ou * m_stride + m_margin;
                         const int v = ov * m_stride + m_margin;
 
-                        const double *pw = &m_prm.w(oc, 0);
+                        const SP_REAL *pw = &m_prm.w(oc, 0);
                         const int hsize = m_winSize / 2;
 
-                        double sum = 0.0;
+                        SP_REAL sum = 0.0;
 
                         // convolution forward
                         for (int kc = 0; kc < m_kernel[2]; kc++){
@@ -535,8 +535,8 @@ namespace sp{
             return Y;
         }
 
-        Mem<double>  cnvBwrd(const Mem<double>  &A, const Mem<double>  &X){
-            Mem<double>  B(X.dim, X.dsize);
+        Mem<SP_REAL>  cnvBwrd(const Mem<SP_REAL>  &A, const Mem<SP_REAL>  &X){
+            Mem<SP_REAL>  B(X.dim, X.dsize);
             B.zero();
 
             Mat mB = trnMat(Mat(m_nodeNum, m_output[0] * m_output[1], A.ptr)) * m_prm.w;
@@ -548,14 +548,14 @@ namespace sp{
                     const int u = ou * m_stride + m_margin;
                     const int v = ov * m_stride + m_margin;
 
-                    const double *pb = &mB(ov * m_output[0] + ou, 0);
+                    const SP_REAL *pb = &mB(ov * m_output[0] + ou, 0);
                     const int hsize = m_winSize / 2;
 
                     // convolution backward
                     for (int kc = 0; kc < m_kernel[2]; kc++){
                         for (int ky = 0; ky < m_kernel[1]; ky++){
                             for (int kx = 0; kx < m_kernel[0]; kx++){
-                                const double b = *(pb++);
+                                const SP_REAL b = *(pb++);
                                 if (inRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
 
                                 acs3(B, u + kx - hsize, v + ky - hsize, kc) += b;
@@ -567,7 +567,7 @@ namespace sp{
             return B;
         }
 
-        NodeParam grdBwrd(const Mem<double>  &A, const Mem<double>  &X){
+        NodeParam grdBwrd(const Mem<SP_REAL>  &A, const Mem<SP_REAL>  &X){
             NodeParam grd;
             grd.resize(m_nodeNum, m_kernel[0] * m_kernel[1] * m_kernel[2]);
             grd.zero();
@@ -579,11 +579,11 @@ namespace sp{
                         const int u = ou * m_stride + m_margin;
                         const int v = ov * m_stride + m_margin;
 
-                        const double a = acs3(A, ou, ov, oc);
+                        const SP_REAL a = acs3(A, ou, ov, oc);
                         const int hsize = m_winSize / 2;
 
                         // w
-                        double *pw = &grd.w(oc, 0);
+                        SP_REAL *pw = &grd.w(oc, 0);
 
                         for (int kc = 0; kc < m_kernel[2]; kc++){
                             for (int ky = 0; ky < m_kernel[1]; ky++){
@@ -659,7 +659,7 @@ namespace sp{
 
     private:
 
-        virtual void init(const Mem1<Mem<double> > &X){
+        virtual void init(const Mem1<Mem<SP_REAL> > &X){
 
             // output dsize
             m_output[0] = (X[0].dsize[0] - 2 * m_margin) / m_stride;
@@ -672,7 +672,7 @@ namespace sp{
 
         }
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
             m_fwrdMap.resize(Y.size());
 
 #if SP_USE_OMP
@@ -683,7 +683,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -694,10 +694,10 @@ namespace sp{
 
         }
 
-        Mem<double>  poolFwrd(const Mem<double>  &X, Mem<int> &fwrdMap){
+        Mem<SP_REAL>  poolFwrd(const Mem<SP_REAL>  &X, Mem<int> &fwrdMap){
             fwrdMap.resize(3, m_output);
 
-            Mem3<double> Y(m_output);
+            Mem3<SP_REAL> Y(m_output);
 
             const Rect rect = getRect2(X.dsize);
             for (int oc = 0; oc < m_output[2]; oc++){
@@ -711,14 +711,14 @@ namespace sp{
 
                         int &id = acs3(fwrdMap, ou, ov, oc);
 
-                        double maxv = -SP_INFINITY;
+                        SP_REAL maxv = -SP_INFINITY;
 
                         // max pooling forward
                         for (int ky = 0; ky < m_kernel[1]; ky++){
                             for (int kx = 0; kx < m_kernel[0]; kx++){
                                 if (inRect2(rect, u + kx - hsize, v + ky - hsize) == false) continue;
 
-                                const double val = acs3(X, u + kx - hsize, v + ky - hsize, oc);
+                                const SP_REAL val = acs3(X, u + kx - hsize, v + ky - hsize, oc);
                                 if (val > maxv){
                                     maxv = val;
                                     id = acsid3(X.dsize, u + kx - hsize, v + ky - hsize, oc);
@@ -732,8 +732,8 @@ namespace sp{
             return Y;
         }
 
-        Mem<double>  poolBwrd(const Mem<double>  &A, const Mem<double>  &X, const Mem<int> &fwrdMap){
-            Mem<double>  B(X.dim, X.dsize);
+        Mem<SP_REAL>  poolBwrd(const Mem<SP_REAL>  &A, const Mem<SP_REAL>  &X, const Mem<int> &fwrdMap){
+            Mem<SP_REAL>  B(X.dim, X.dsize);
             B.zero();
 
             const Rect rect = getRect2(X.dsize);
@@ -761,12 +761,12 @@ namespace sp{
     class DropOutLayer : public BaseLayer{
 
     public:
-        double m_passRate;
+        SP_REAL m_passRate;
 
         Mem1<Mem<char> > m_mask;
     public:
 
-        DropOutLayer(const double passRate = 0.5){
+        DropOutLayer(const SP_REAL passRate = 0.5){
             m_passRate = passRate;
         }
 
@@ -781,7 +781,7 @@ namespace sp{
 
     private:
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
             if (m_train == true){
                 m_mask.resize(Y.size());
 
@@ -804,7 +804,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < B.size(); n++){
                 mulMem(B[n], A[n], m_mask[n]);
@@ -822,8 +822,8 @@ namespace sp{
 
     private:
 
-        Mem1<Mem1<double> > m_cX, m_nX;
-        Mem1<double> m_mean, m_var, m_std;
+        Mem1<Mem1<SP_REAL> > m_cX, m_nX;
+        Mem1<SP_REAL> m_mean, m_var, m_std;
 
     public:
 
@@ -847,7 +847,7 @@ namespace sp{
 
     private:
 
-        virtual void init(const Mem1<Mem<double> > &X){
+        virtual void init(const Mem1<Mem<SP_REAL> > &X){
             if (m_nodeNum == 0){
                 m_nodeNum = X[0].size();
             }
@@ -867,7 +867,7 @@ namespace sp{
 
         }
 
-        virtual void forward(Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             m_cX.resize(m_nodeNum);
             m_nX.resize(m_nodeNum);
@@ -876,15 +876,15 @@ namespace sp{
             reshape(M, X);
 
             for (int r = 0; r < M.rows(); r++){
-                Mem1<double> bX(M.cols(), &M(r, 0));
+                Mem1<SP_REAL> bX(M.cols(), &M(r, 0));
 
-                Mem1<double> cX, nX;
+                Mem1<SP_REAL> cX, nX;
                 if (m_train == true){
-                    const double mean = meanVal(bX);
+                    const SP_REAL mean = meanVal(bX);
                     cX = bX - mean;
 
-                    const double var = meanSq(cX);
-                    const double std = sqrt(var + 10e-6);
+                    const SP_REAL var = meanSq(cX);
+                    const SP_REAL std = sqrt(var + 10e-6);
                     nX = cX / std;
 
                     m_cX[r] = cX;
@@ -892,7 +892,7 @@ namespace sp{
 
                     m_std[r] = std;
 
-                    const double blend = 0.9;
+                    const SP_REAL blend = 0.9;
                     m_mean[r] = blend * m_mean[r] + (1 - blend) * mean;
                     m_var[r] = blend * m_var[r] + (1 - blend) * var;
                 }
@@ -913,7 +913,7 @@ namespace sp{
             }
         }
 
-        virtual void backward(Mem1<Mem<double> > &B, const Mem1<Mem<double> > &A, const Mem1<Mem<double> > &Y, const Mem1<Mem<double> > &X){
+        virtual void backward(Mem1<Mem<SP_REAL> > &B, const Mem1<Mem<SP_REAL> > &A, const Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             Mat M;
             reshape(M, A);
@@ -923,31 +923,31 @@ namespace sp{
             m_grd.zero();
 
             for (int r = 0; r < M.rows(); r++){
-                Mem1<double> bA(M.cols(), &M(r, 0));
+                Mem1<SP_REAL> bA(M.cols(), &M(r, 0));
 
                 for (int c = 0; c < M.cols(); c++){
                     m_grd.w[r] += m_nX[r][c] * bA[c];
                     m_grd.b[r] += bA[c];
                 }
 
-                Mem1<double> dnX(M.cols());
-                Mem1<double> dcX(M.cols());
+                Mem1<SP_REAL> dnX(M.cols());
+                Mem1<SP_REAL> dcX(M.cols());
                 for (int c = 0; c < M.cols(); c++){
                     dnX[c] = m_prm.w[r] * bA[c];
                     dcX[c] = dnX[c] / m_std[r];
                 }
 
-                Mem1<double> tmp(M.cols());
+                Mem1<SP_REAL> tmp(M.cols());
                 for (int c = 0; c < M.cols(); c++){
                     tmp[c] = dnX[c] * m_cX[r][c] / (m_std[r] * m_std[r]);
                 }
-                const double dstd = -sumVal(tmp);
-                const double dvar = 0.5 * dstd / m_std[r];
+                const SP_REAL dstd = -sumVal(tmp);
+                const SP_REAL dvar = 0.5 * dstd / m_std[r];
 
                 for (int c = 0; c < M.cols(); c++){
                     dcX[c] += (2.0 / M.cols()) * m_cX[r][c] * dvar;
                 }
-                const double dmean = sumVal(dcX);
+                const SP_REAL dmean = sumVal(dcX);
 
                 for (int c = 0; c < M.cols(); c++){
                     M(r, c) = dcX[c] - dmean / M.cols();
@@ -962,13 +962,13 @@ namespace sp{
 
     private:
 
-        void reshape(Mat &M, const Mem1<Mem<double> > &D){
+        void reshape(Mat &M, const Mem1<Mem<SP_REAL> > &D){
             const int batchNum = D.size();
             const int dataNum = D[0].size();
 
             M.resize(m_nodeNum, batchNum * dataNum / m_nodeNum);
 
-            double *m = M.ptr;
+            SP_REAL *m = M.ptr;
             for (int i = 0; i < dataNum; i++){
                 for (int n = 0; n < batchNum; n++){
                     *m++ = D[n][i];
@@ -976,7 +976,7 @@ namespace sp{
             }
         }
 
-        void reshape(Mem1<Mem<double> > &R, const Mat &M){
+        void reshape(Mem1<Mem<SP_REAL> > &R, const Mat &M){
             const int batchNum = R.size();
             const int dataNum = M.cols() * m_nodeNum / batchNum;
             
@@ -985,7 +985,7 @@ namespace sp{
                 R[n].resize(1, dsize);
             }
 
-            double *m = M.ptr;
+            SP_REAL *m = M.ptr;
             for (int i = 0; i < dataNum; i++){
                 for (int n = 0; n < batchNum; n++){
                     R[n][i] = *m++;

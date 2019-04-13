@@ -39,7 +39,7 @@ namespace sp{
                     if (grad(u, v) < low) continue;
 
                     // angle (2*PI ~ 3*PI)
-                    const double angle = (atan2(gy, gx) + 2 * SP_PI);
+                    const SP_REAL angle = (atan2(gy, gx) + 2 * SP_PI);
 
                     // bin (angle -> 0, 1, 2, 3)
                     bin(u, v) = round(angle / SP_PI * 4.0) % 4;

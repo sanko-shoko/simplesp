@@ -22,16 +22,16 @@ namespace sp{
         while(tmps.size() > 3) {
             int p = -1;
 
-            double maxv = 0.0;
+            SP_REAL maxv = 0.0;
             for (int i = 0; i < tmps.size(); i++) {
-                const double norm = normVec(tmps[i]);
+                const SP_REAL norm = normVec(tmps[i]);
                 if (norm > maxv) {
                     maxv = norm;
                     p = i;
                 }
             }
 
-            const double drc = crsVec(tmps(p - 1, true) - tmps(p, true), tmps(p + 1, true) - tmps(p, true)).z;
+            const SP_REAL drc = crsVec(tmps(p - 1, true) - tmps(p, true), tmps(p + 1, true) - tmps(p, true)).z;
 
             for (int i = 0; i < tmps.size(); i++) {
                 const int pi = p + i;
@@ -67,7 +67,7 @@ namespace sp{
                 }
 
                 if (check == false) {
-                    meshes.push(getMesh(A, B, C));
+                    meshes.push(getMesh2(A, B, C));
                     p = pi % tmps.size();
                     break;
                 }
@@ -76,7 +76,7 @@ namespace sp{
             tmps.del(p);
         }
 
-        meshes.push(getMesh(tmps[0], tmps[1], tmps[2]));
+        meshes.push(getMesh2(tmps[0], tmps[1], tmps[2]));
 
         return meshes;
     }
@@ -89,7 +89,7 @@ namespace sp{
         nrms.resize(meshes.size() * 3);
         nrms.zero();
 
-        KdTree<double> kdtree(3);
+        KdTree<SP_REAL> kdtree(3);
 
         Mem1<Vec3> mnrms(meshes.size());
         for (int i = 0; i < meshes.size(); i++) {
@@ -104,7 +104,7 @@ namespace sp{
             for (int j = 0; j < 3; j++) {
                 const Mem1<int> index = kdtree.search(&meshes[i].pos[j], 0.1);
 
-                Vec3 nrm = getVec(0.0, 0.0, 0.0);
+                Vec3 nrm = getVec3(0.0, 0.0, 0.0);
                 for (int k = 0; k < index.size(); k++) {
                     const int s = index[k] / 3;
                     nrm += mnrms[s];

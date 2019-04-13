@@ -50,7 +50,7 @@ namespace sp{
                 return false;
             }
 
-            double mean = 0.0;
+            SP_REAL mean = 0.0;
             for (int i = 0; i < contour.size(); i++) {
                 const int ti = i + contour.size();
                 const Vec2 &A = contour[(ti + 0) % contour.size()];
@@ -59,9 +59,9 @@ namespace sp{
             }
             mean /= contour.size();
 
-            const double a = 1.0;
-            const double b = 1.0;
-            const double c = 100.0;
+            const SP_REAL a = 1.0;
+            const SP_REAL b = 1.0;
+            const SP_REAL c = 100.0;
 
             const int w0 = 1;
             const int w1 = 1;
@@ -72,17 +72,17 @@ namespace sp{
                 const Vec2 &B = contour[(ti + 1) % contour.size()];
                 const Vec2 &C = contour[(ti - 1) % contour.size()];
   
-                double eval = SP_INFINITY;
+                SP_REAL eval = SP_INFINITY;
 
-                Vec2 vec = getVec(0.0, 0.0);
+                Vec2 vec = getVec2(0.0, 0.0);
                 for (int v = -w0; v <= +w0; v++) {
                     for (int u = -w0; u <= +w0; u++) {
-                        const Vec2 tA = A + getVec(u, v);
+                        const Vec2 tA = A + getVec2(u, v);
                         const int ix = round(tA.x);
                         const int iy = round(tA.y);
 
-                        const double e_len = square(mean - normVec(C - tA));
-                        const double e_crv = sqVec(B + C - tA * 2.0);
+                        const SP_REAL e_len = square(mean - normVec(C - tA));
+                        const SP_REAL e_crv = sqVec(B + C - tA * 2.0);
 
                         int maxv = 0;
                         int minv = SP_BYTEMAX;
@@ -93,16 +93,16 @@ namespace sp{
                                 minv = minVal(minv, val);
                             }
                         }
-                        const double e_img = -static_cast<double>(smth(ix, iy) - minv) / maxVal(maxv - minv, 20);
+                        const SP_REAL e_img = -static_cast<SP_REAL>(smth(ix, iy) - minv) / maxVal(maxv - minv, 20);
 
-                        //const double dx = fabs(img(ix + 1, iy) - img(ix - 1, iy));
-                        //const double dy = fabs(img(ix, iy + 1) - img(ix, iy - 1));
-                        //const double img = -(dx + dy);
+                        //const SP_REAL dx = fabs(img(ix + 1, iy) - img(ix - 1, iy));
+                        //const SP_REAL dy = fabs(img(ix, iy + 1) - img(ix, iy - 1));
+                        //const SP_REAL img = -(dx + dy);
 
-                        const double e = a * e_len + b * e_crv + c * e_img;
+                        const SP_REAL e = a * e_len + b * e_crv + c * e_img;
                         if (e < eval) {
                             eval = e;
-                            vec = getVec(u, v);
+                            vec = getVec2(u, v);
                         }
                     }
                 }

@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // s * (vec0_3) = (M_3x3) * (vec1_3) - > (J_2x9) * (M_9) = 0
-    SP_GENFUNC void jacobMatType0(double *jacob, const double *vec0, const double *vec1){
+    SP_GENFUNC void jacobMatType0(SP_REAL *jacob, const SP_REAL *vec0, const SP_REAL *vec1){
         jacob[0 * 9 + 0] = +vec0[2] * vec1[0];
         jacob[0 * 9 + 1] = +vec0[2] * vec1[1];
         jacob[0 * 9 + 2] = +vec0[2] * vec1[2];
@@ -37,7 +37,7 @@ namespace sp{
     }
 
     // s * (vec0_3) = (M_3x4) * (vec1_3) - > (J_2x12) * (M_12) = 0
-    SP_GENFUNC void jacobMatType1(double *jacob, const double *vec0, const double *vec1) {
+    SP_GENFUNC void jacobMatType1(SP_REAL *jacob, const SP_REAL *vec0, const SP_REAL *vec1) {
         jacob[0 * 12 +  0] = +vec0[2] * vec1[0];
         jacob[0 * 12 +  1] = +vec0[2] * vec1[1];
         jacob[0 * 12 +  2] = +vec0[2] * vec1[2];
@@ -66,7 +66,7 @@ namespace sp{
     }
 
     // (vec1_3)^T * (M_3x3) * (vec0_3) = 0 -> (J_1x9) * (M_9) = 0
-    SP_GENFUNC void jacobMatType2(double *jacob, const double *vec0, const double *vec1) {
+    SP_GENFUNC void jacobMatType2(SP_REAL *jacob, const SP_REAL *vec0, const SP_REAL *vec1) {
         jacob[0] = vec0[0] * vec1[0];
         jacob[1] = vec0[1] * vec1[0];
         jacob[2] = vec0[2] * vec1[0];
@@ -78,45 +78,45 @@ namespace sp{
         jacob[8] = vec0[2] * vec1[2];
     }
 
-    SP_GENFUNC void jacobHMat(double *jacob, const double *pix, const double *obj) {
-        double ppix[3] = { pix[0], pix[1], 1.0 };
-        double pobj[3] = { obj[0], obj[1], 1.0 };
+    SP_GENFUNC void jacobHMat(SP_REAL *jacob, const SP_REAL *pix, const SP_REAL *obj) {
+        SP_REAL ppix[3] = { pix[0], pix[1], 1.0 };
+        SP_REAL pobj[3] = { obj[0], obj[1], 1.0 };
         jacobMatType0(jacob, ppix, pobj);
     }
 
-    SP_GENFUNC void jacobHMat(double *jacob, const Vec2 &pix, const Vec2 &obj){
-        double ppix[3] = { pix.x, pix.y, 1.0 };
-        double pobj[3] = { obj.x, obj.y, 1.0 };
+    SP_GENFUNC void jacobHMat(SP_REAL *jacob, const Vec2 &pix, const Vec2 &obj){
+        SP_REAL ppix[3] = { pix.x, pix.y, 1.0 };
+        SP_REAL pobj[3] = { obj.x, obj.y, 1.0 };
         jacobMatType0(jacob, ppix, pobj);
     }
 
-    SP_GENFUNC void jacobPMat(double *jacob, const Vec2 &pix, const Vec3 &obj) {
-        double ppix[3] = { pix.x, pix.y, 1.0 };
-        double pobj[3] = { obj.x, obj.y, obj.z };
+    SP_GENFUNC void jacobPMat(SP_REAL *jacob, const Vec2 &pix, const Vec3 &obj) {
+        SP_REAL ppix[3] = { pix.x, pix.y, 1.0 };
+        SP_REAL pobj[3] = { obj.x, obj.y, obj.z };
         jacobMatType1(jacob, ppix, pobj);
     }
 
-    SP_GENFUNC void jacobEMat(double *jacob, const double *vec0, const double *vec1) {
-        double pvec0[3] = { vec0[0], vec0[1], 1.0 };
-        double pvec1[3] = { vec1[0], vec1[1], 1.0 };
+    SP_GENFUNC void jacobEMat(SP_REAL *jacob, const SP_REAL *vec0, const SP_REAL *vec1) {
+        SP_REAL pvec0[3] = { vec0[0], vec0[1], 1.0 };
+        SP_REAL pvec1[3] = { vec1[0], vec1[1], 1.0 };
         jacobMatType2(jacob, pvec0, pvec1);
     }
 
-    SP_GENFUNC void jacobEMat(double *jacob, const Vec2 &vec0, const Vec2 &vec1) {
-        double pvec0[3] = { vec0.x, vec0.y, 1.0 };
-        double pvec1[3] = { vec1.x, vec1.y, 1.0 };
+    SP_GENFUNC void jacobEMat(SP_REAL *jacob, const Vec2 &vec0, const Vec2 &vec1) {
+        SP_REAL pvec0[3] = { vec0.x, vec0.y, 1.0 };
+        SP_REAL pvec1[3] = { vec1.x, vec1.y, 1.0 };
         jacobMatType2(jacob, pvec0, pvec1);
     }
 
-    SP_GENFUNC void jacobFMat(double *jacob, const double *vec0, const double *vec1) {
-        double pvec0[3] = { vec0[0], vec0[1], 1.0 };
-        double pvec1[3] = { vec1[0], vec1[1], 1.0 };
+    SP_GENFUNC void jacobFMat(SP_REAL *jacob, const SP_REAL *vec0, const SP_REAL *vec1) {
+        SP_REAL pvec0[3] = { vec0[0], vec0[1], 1.0 };
+        SP_REAL pvec1[3] = { vec1[0], vec1[1], 1.0 };
         jacobMatType2(jacob, pvec0, pvec1);
     }
 
-    SP_GENFUNC void jacobFMat(double *jacob, const Vec2 &vec0, const Vec2 &vec1){
-        double pvec0[3] = { vec0.x, vec0.y, 1.0 };
-        double pvec1[3] = { vec1.x, vec1.y, 1.0 };
+    SP_GENFUNC void jacobFMat(SP_REAL *jacob, const Vec2 &vec0, const Vec2 &vec1){
+        SP_REAL pvec0[3] = { vec0.x, vec0.y, 1.0 };
+        SP_REAL pvec1[3] = { vec1.x, vec1.y, 1.0 };
         jacobMatType2(jacob, pvec0, pvec1);
     }
 
@@ -125,14 +125,14 @@ namespace sp{
     // homography
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double errHMat(const Mat &H, const Vec2 &pix, const Vec2 &obj) {
+    SP_CPUFUNC SP_REAL errHMat(const Mat &H, const Vec2 &pix, const Vec2 &obj) {
         return normVec(pix - H * obj);
     }
 
-    SP_CPUFUNC Mem1<double> errHMat(const Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs) {
+    SP_CPUFUNC Mem1<SP_REAL> errHMat(const Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs) {
         SP_ASSERT(pixs.size() == objs.size());
 
-        Mem1<double> errs(pixs.size());
+        Mem1<SP_REAL> errs(pixs.size());
         for (int i = 0; i < errs.size(); i++) {
             errs[i] = errHMat(H, pixs[i], objs[i]);
         }
@@ -167,12 +167,12 @@ namespace sp{
 
             H = invMat(T0) * Mat(3, 3, result.ptr) * T1;
 
-            const double norm = normMat(H);
+            const SP_REAL norm = normMat(H);
             if (norm < SP_SMALL) return false;
             H /= norm;
 
-            const Vec2 rx = getVec(H(0, 0), H(1, 0));
-            const Vec2 ry = getVec(H(0, 1), H(1, 1));
+            const Vec2 rx = getVec2(H(0, 0), H(1, 0));
+            const Vec2 ry = getVec2(H(0, 1), H(1, 1));
             if (normVec(rx) < SP_SMALL || normVec(ry) < SP_SMALL) return false;
         }
 
@@ -184,23 +184,23 @@ namespace sp{
     // essential matrix & fundamental matrix
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC double errMatType2(const Mat &M, const Vec2 &vec0, const Vec2 &vec1) {
-        const Vec3 n0 = getVec(vec0, 1.0);
-        const Vec3 n1 = getVec(vec1, 1.0);
+    SP_CPUFUNC SP_REAL errMatType2(const Mat &M, const Vec2 &vec0, const Vec2 &vec1) {
+        const Vec3 n0 = getVec3(vec0.x, vec0.y, 1.0);
+        const Vec3 n1 = getVec3(vec1.x, vec1.y, 1.0);
 
         const Vec3 M0 = M * n0;
         const Vec3 M1 = trnMat(M) * n1;
 
         // |a*x + b*y + c| / sqrt(a*a + b*b)
-        const double err0 = fabs(dotVec(n1, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
-        const double err1 = fabs(dotVec(n0, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
+        const SP_REAL err0 = fabs(dotVec(n1, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
+        const SP_REAL err1 = fabs(dotVec(n0, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
         return maxVal(err0, err1);
     }
 
-    SP_CPUFUNC Mem1<double> errMatType2(const Mat &M, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
+    SP_CPUFUNC Mem1<SP_REAL> errMatType2(const Mat &M, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
         SP_ASSERT(vecs0.size() == vecs1.size());
 
-        Mem1<double> errs(vecs0.size());
+        Mem1<SP_REAL> errs(vecs0.size());
         for (int i = 0; i < errs.size(); i++) {
             errs[i] = errMatType2(M, vecs0[i], vecs1[i]);
         }
@@ -224,11 +224,11 @@ namespace sp{
     // essential matrix
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC double errEMat(const Mat &E, const Vec2 &vec0, const Vec2 &vec1) {
+    SP_CPUFUNC SP_REAL errEMat(const Mat &E, const Vec2 &vec0, const Vec2 &vec1) {
         return errMatType2(E, vec0, vec1);
     }
 
-    SP_CPUFUNC Mem1<double> errEMat(const Mat &E, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
+    SP_CPUFUNC Mem1<SP_REAL> errEMat(const Mat &E, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
         return errMatType2(E, vecs0, vecs1);
     }
 
@@ -264,9 +264,9 @@ namespace sp{
         {
             const Mat EEt = trnMat(EE);
 
-            double *e = EEt.ptr;
+            SP_REAL *e = EEt.ptr;
 
-            double ep2[36], ep3[36];
+            SP_REAL ep2[36], ep3[36];
             for (int i = 0; i < 36; i++) {
                 ep2[i] = square(e[i]);
                 ep3[i] = cubic(e[i]);
@@ -497,9 +497,9 @@ namespace sp{
             B(r, 12) = +a0[9];
         }
 
-        Mem1<double> coeffs(11);
+        Mem1<SP_REAL> coeffs(11);
         {
-            const double *b = B.ptr;
+            const SP_REAL *b = B.ptr;
             coeffs[0] = (b[0] * b[17] * b[34] + b[26] * b[4] * b[21] - b[26] * b[17] * b[8] - b[13] * b[4] * b[34] - b[0] * b[21] * b[30] + b[13] * b[30] * b[8]);
             coeffs[1] = (b[26] * b[4] * b[22] + b[14] * b[30] * b[8] + b[13] * b[31] * b[8] + b[1] * b[17] * b[34] - b[13] * b[5] * b[34] + b[26] * b[5] * b[21] - b[0] * b[21] * b[31] - b[26] * b[17] * b[9] - b[1] * b[21] * b[30] + b[27] * b[4] * b[21] + b[0] * b[17] * b[35] - b[0] * b[22] * b[30] + b[13] * b[30] * b[9] + b[0] * b[18] * b[34] - b[27] * b[17] * b[8] - b[14] * b[4] * b[34] - b[13] * b[4] * b[35] - b[26] * b[18] * b[8]);
             coeffs[2] = (b[14] * b[30] * b[9] + b[14] * b[31] * b[8] + b[13] * b[31] * b[9] - b[13] * b[4] * b[36] - b[13] * b[5] * b[35] + b[15] * b[30] * b[8] - b[13] * b[6] * b[34] + b[13] * b[30] * b[10] + b[13] * b[32] * b[8] - b[14] * b[4] * b[35] - b[14] * b[5] * b[34] + b[26] * b[4] * b[23] + b[26] * b[5] * b[22] + b[26] * b[6] * b[21] - b[26] * b[17] * b[10] - b[15] * b[4] * b[34] - b[26] * b[18] * b[9] - b[26] * b[19] * b[8] + b[27] * b[4] * b[22] + b[27] * b[5] * b[21] - b[27] * b[17] * b[9] - b[27] * b[18] * b[8] - b[1] * b[21] * b[31] - b[0] * b[23] * b[30] - b[0] * b[21] * b[32] + b[28] * b[4] * b[21] - b[28] * b[17] * b[8] + b[2] * b[17] * b[34] + b[0] * b[18] * b[35] - b[0] * b[22] * b[31] + b[0] * b[17] * b[36] + b[0] * b[19] * b[34] - b[1] * b[22] * b[30] + b[1] * b[18] * b[34] + b[1] * b[17] * b[35] - b[2] * b[21] * b[30]);
@@ -516,7 +516,7 @@ namespace sp{
         Mem1<Cmp> roots;
         eqn(roots, coeffs);
 
-        double minv = SP_INFINITY;
+        SP_REAL minv = SP_INFINITY;
         for (int i = 0; i < roots.size(); i++) {
             minv = minVal(minv, fabs(roots[i].im));
         }
@@ -525,14 +525,14 @@ namespace sp{
         for (int i = 0; i < roots.size(); i++) {
             if (fabs(roots[i].im) > 0.1) continue;
 
-            const double z = roots[i].re;
-            const double z2 = pow(z, 2);
-            const double z3 = pow(z, 3);
-            const double z4 = pow(z, 4);
+            const SP_REAL z = roots[i].re;
+            const SP_REAL z2 = pow(z, 2);
+            const SP_REAL z3 = pow(z, 3);
+            const SP_REAL z4 = pow(z, 4);
 
             Mat Bz(3, 3);
             for (int r = 0; r < 3; r++) {
-                const double *b = &B(r, 0);
+                const SP_REAL *b = &B(r, 0);
                 Bz(r, 0) = b[0] * z3 + b[1] * z2 + b[2] * z + b[3];
                 Bz(r, 1) = b[4] * z3 + b[5] * z2 + b[6] * z + b[7];
                 Bz(r, 2) = b[8] * z4 + b[9] * z3 + b[10] * z2 + b[11] * z + b[12];
@@ -544,8 +544,8 @@ namespace sp{
             const Mat m = V.col(0);
 
             if (fabs(m[2]) < SP_SMALL) continue;
-            const double x = m[0] / m[2];
-            const double y = m[1] / m[2];
+            const SP_REAL x = m[0] / m[2];
+            const SP_REAL y = m[1] / m[2];
 
             const Mat vec = X * x + Y * y + Z * z + W;
 
@@ -566,10 +566,10 @@ namespace sp{
         Mem1<Mat> Es;
         if (calcEMat5p(Es, npxs0, npxs1) == false) return false;
 
-        double maxv = SP_INFINITY;
+        SP_REAL maxv = SP_INFINITY;
         for (int i = 0; i < Es.size(); i++) {
-            const Mem1<double> errs = errMatType2(Es[i], npxs0, npxs1);
-            const double sum = sumVal(errs);
+            const Mem1<SP_REAL> errs = errMatType2(Es[i], npxs0, npxs1);
+            const SP_REAL sum = sumVal(errs);
 
             if (sum < maxv) {
                 maxv = sum;
@@ -613,7 +613,7 @@ namespace sp{
             Mat U, S, V;
             if (svdMat(U, S, V, M, false) == false) return false;
 
-            const double div = pythag(S(0, 0), S(1, 1));
+            const SP_REAL div = pythag(S(0, 0), S(1, 1));
             if (div < SP_SMALL) return false;
 
             S(0, 0) /= div;
@@ -666,11 +666,11 @@ namespace sp{
     // fundamental matrix
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC double errFMat(const Mat &F, const Vec2 &vec0, const Vec2 &vec1) {
+    SP_CPUFUNC SP_REAL errFMat(const Mat &F, const Vec2 &vec0, const Vec2 &vec1) {
         return errMatType2(F, vec0, vec1);
     }
 
-    SP_CPUFUNC Mem1<double> errFMat(const Mat &F, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
+    SP_CPUFUNC Mem1<SP_REAL> errFMat(const Mat &F, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
         return errMatType2(F, vecs0, vecs1);
     }
 
@@ -697,7 +697,7 @@ namespace sp{
     // RANSAC + refine
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const double thresh = 5.0) {
+    SP_CPUFUNC bool calcHMatRANSAC(Mat &H, const Mem<Vec2> &pixs, const Mem<Vec2> &objs, const SP_REAL thresh = 5.0) {
         SP_ASSERT(pixs.size() == objs.size());
 
         const int num = pixs.size();
@@ -713,7 +713,7 @@ namespace sp{
         RandomSample<Vec2> _pixs(pixs, unit);
         RandomSample<Vec2> _objs(objs, unit);
 
-        double maxe = 0.0;
+        SP_REAL maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
 
@@ -723,8 +723,8 @@ namespace sp{
             Mat test;
             if (calcHMat(test, rpixs, robjs, 1) == false) continue;
 
-            const Mem1<double> errs = errHMat(test, pixs, objs);
-            const double eval = ransacEval(errs, unit, thresh);
+            const Mem1<SP_REAL> errs = errHMat(test, pixs, objs);
+            const SP_REAL eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
@@ -738,7 +738,7 @@ namespace sp{
         if (maxe < SP_RANSAC_MINEVAL) return false;
 
         // refine
-        const Mem1<double> errs = errHMat(H, pixs, objs);
+        const Mem1<SP_REAL> errs = errHMat(H, pixs, objs);
         const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
         const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
 
@@ -746,7 +746,7 @@ namespace sp{
     }
 
     // calc essential matrix
-    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const double thresh = 2.0 * 1.0e-3) {
+    SP_CPUFUNC bool calcEMatRANSAC(Mat &E, const Mem1<Vec2> &npxs0, const Mem1<Vec2> &npxs1, const SP_REAL thresh = 2.0 * 1.0e-3) {
         SP_ASSERT(npxs0.size() == npxs1.size());
 
         const int num = npxs0.size();
@@ -762,7 +762,7 @@ namespace sp{
         RandomSample<Vec2> _npxs0(npxs0, unit);
         RandomSample<Vec2> _npxs1(npxs1, unit);
 
-        double maxe = 0.0;
+        SP_REAL maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
 
@@ -773,8 +773,8 @@ namespace sp{
             if (calcEMat(tests, rnpxs0, rnpxs1) == false) continue;
 
             for (int i = 0; i < tests.size(); i++) {
-                const Mem1<double> errs = errEMat(tests[i], npxs0, npxs1);
-                const double eval = ransacEval(errs, unit, thresh);
+                const Mem1<SP_REAL> errs = errEMat(tests[i], npxs0, npxs1);
+                const SP_REAL eval = ransacEval(errs, unit, thresh);
 
                 if (eval > maxe) {
                     //SP_PRINTD("eval %lf\n", eval);
@@ -790,7 +790,7 @@ namespace sp{
 
         // refine
         {
-            const Mem1<double> errs = errMatType2(E, npxs0, npxs1);
+            const Mem1<SP_REAL> errs = errMatType2(E, npxs0, npxs1);
             const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh * 2);
             const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh * 2);
 
@@ -801,7 +801,7 @@ namespace sp{
     }
 
     // calc fundamental matrix
-    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const double thresh = 2.0){
+    SP_CPUFUNC bool calcFMatRANSAC(Mat &F, const Mem1<Vec2> &pixs0, const Mem1<Vec2> &pixs1, const SP_REAL thresh = 2.0){
         SP_ASSERT(pixs0.size() == pixs1.size());
 
         const int num = pixs0.size();
@@ -817,7 +817,7 @@ namespace sp{
         RandomSample<Vec2> _pixs0(pixs0, unit);
         RandomSample<Vec2> _pixs1(pixs1, unit);
 
-        double maxe = 0.0;
+        SP_REAL maxe = 0.0;
         int it = 0;
         for (it = 0; it < maxit; it++) {
 
@@ -827,8 +827,8 @@ namespace sp{
             Mat test;
             if (calcEMat8p(test, rpixs0, rpixs1) == false) continue;
 
-            const Mem1<double> errs = errFMat(test, pixs0, pixs1);
-            const double eval = ransacEval(errs, unit, thresh);
+            const Mem1<SP_REAL> errs = errFMat(test, pixs0, pixs1);
+            const SP_REAL eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
@@ -843,7 +843,7 @@ namespace sp{
 
         // refine
         {
-            const Mem1<double> errs = errMatType2(F, pixs0, pixs1);
+            const Mem1<SP_REAL> errs = errMatType2(F, pixs0, pixs1);
             const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, thresh * 2);
             const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, thresh * 2);
 

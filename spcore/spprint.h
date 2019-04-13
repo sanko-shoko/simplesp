@@ -19,7 +19,7 @@ namespace sp {
         SP_PRINTF("%d", val);
     }
 
-    SP_CPUFUNC void _print(const double val) {
+    SP_CPUFUNC void _print(const SP_REAL val) {
         SP_PRINTF("%g", val);
     }
 
@@ -186,7 +186,7 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
-    SP_CPUFUNC void print(const double *mat, const int rows, const int cols) {
+    SP_CPUFUNC void print(const SP_REAL *mat, const int rows, const int cols) {
         SP_PRINTF("Mat %d %d [\n", rows, cols);
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -238,8 +238,8 @@ namespace sp {
     // util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC char* progressBar(const double crnt, const double size){
-        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
+    SP_CPUFUNC char* progressBar(const SP_REAL crnt, const SP_REAL size){
+        const SP_REAL rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
 
         static char bar[11] = { 0 };
         for (int i = 0; i < 10; i++){

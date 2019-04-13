@@ -26,21 +26,21 @@ namespace sp{
             for (int y = 0; y < srcRe.dsize[1]; y++) {
                 for (int x = 0; x < srcRe.dsize[0]; x++) {
 
-                    double sumr = 0.0;
-                    double sumi = 0.0;
+                    SP_REAL sumr = 0.0;
+                    SP_REAL sumi = 0.0;
 
                     for (int k = 0; k < srcRe.dsize[0]; k++) {
-                        const double w = (flag == true) ? k * (x - offset) : (k - offset) * x;
+                        const SP_REAL w = (flag == true) ? k * (x - offset) : (k - offset) * x;
 
-                        const double r = acs2(srcRe, k, y);
-                        const double a = sign * 2 * SP_PI * w / M;
+                        const SP_REAL r = acs2(srcRe, k, y);
+                        const SP_REAL a = sign * 2 * SP_PI * w / M;
 
                         if (useIm == false) {
                             sumr += +r * cos(a);
                             sumi += -r * sin(a);
                         }
                         else {
-                            const double i = acs2(srcIm, k, y);
+                            const SP_REAL i = acs2(srcIm, k, y);
                             sumr += +r * cos(a) + i * sin(a);
                             sumi += -r * sin(a) + i * cos(a);
                         }
@@ -70,7 +70,7 @@ namespace sp{
     using namespace _fourier;
 
     template<typename TYPE>
-    SP_CPUFUNC void dft(Mem<double> &re, Mem<double> &im, const Mem<TYPE> &img) {
+    SP_CPUFUNC void dft(Mem<SP_REAL> &re, Mem<SP_REAL> &im, const Mem<TYPE> &img) {
         SP_ASSERT(isValid(2, img));
 
         Mat mat;
@@ -87,7 +87,7 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void idft(Mem<TYPE> &img, const Mem<double> &re, const Mem<double> &im) {
+    SP_CPUFUNC void idft(Mem<TYPE> &img, const Mem<SP_REAL> &re, const Mem<SP_REAL> &im) {
         SP_ASSERT(cmpSize(re, im));
 
         Mat mRe, mIm;
@@ -104,15 +104,15 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC void poc(Mem<double> &dst, const Mem<double> &re0, const Mem<double> &im0, const Mem<double> &re1, const Mem<double> &im1) {
+    SP_CPUFUNC void poc(Mem<SP_REAL> &dst, const Mem<SP_REAL> &re0, const Mem<SP_REAL> &im0, const Mem<SP_REAL> &re1, const Mem<SP_REAL> &im1) {
         const int *dsize = re0.dsize;
 
-        Mem2<double> re(dsize);
-        Mem2<double> im(dsize);
+        Mem2<SP_REAL> re(dsize);
+        Mem2<SP_REAL> im(dsize);
 
         for (int i = 0; i < re0.size(); i++) {
-            const double vr = re0[i] * re1[i] + im0[i] * im1[i];
-            const double vi = im0[i] * re1[i] - re0[i] * im1[i];
+            const SP_REAL vr = re0[i] * re1[i] + im0[i] * im1[i];
+            const SP_REAL vi = im0[i] * re1[i] - re0[i] * im1[i];
             re[i] = vr / (pythag(vr, vi) + SP_SMALL);
             im[i] = vi / (pythag(vr, vi) + SP_SMALL);
         }

@@ -5,7 +5,7 @@ using namespace sp;
 int main(){
 
     // rotation test
-    const Vec3 euler = getVec(10.0, 20.0, 30.0) / 180.0 * SP_PI;
+    const Vec3 euler = getVec3(10.0, 20.0, 30.0) / 180.0 * SP_PI;
     const Vec3 vec = getAngle(getRotEuler(euler));
 
     // angle -> matrix

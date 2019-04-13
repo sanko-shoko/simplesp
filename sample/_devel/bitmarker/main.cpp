@@ -164,7 +164,7 @@ private:
                     for (int u = 0; u < labelMap->dsize[0]; u++) {
                         if ((*labelMap)(u, v) < 0) continue;
                         glColor((*labelMap)(u, v));
-                        glVertex(getVec(u, v));
+                        glVertex(getVec2(u, v));
                     }
                 }
                 glEnd();

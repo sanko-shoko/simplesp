@@ -9,20 +9,33 @@
 
 #include "spcore/spcore.h"
 
-namespace sp{
+namespace sp {
 
     //--------------------------------------------------------------------------------
     // overwrap
     //--------------------------------------------------------------------------------
+    
+    SP_CPUFUNC void _glLoadMatrix(const float *mat) {
+        glLoadMatrixf(mat);
+    }
+    SP_CPUFUNC void _glLoadMatrix(const double *mat) {
+        glLoadMatrixd(mat);
+    }
+    SP_CPUFUNC void _glMultMatrix(const float *mat) {
+        glMultMatrixf(mat);
+    }
+    SP_CPUFUNC void _glMultMatrix(const double *mat) {
+        glMultMatrixd(mat);
+    }
 
     SP_CPUFUNC void glLoadMatrix(const Mat &mat){
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
-        glLoadMatrixd(m4x4t.ptr);
+        _glLoadMatrix(m4x4t.ptr);
     }
 
     SP_CPUFUNC void glMultMatrix(const Mat &mat){
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
-        glMultMatrixd(m4x4t.ptr);
+        _glMultMatrix(m4x4t.ptr);
     }
 
     SP_CPUFUNC void glLoadMatrix(const Pose &pose){
@@ -57,7 +70,7 @@ namespace sp{
     SP_CPUFUNC void glColor(const int label){
         srand(maxVal(label, 0));
         Col3 col;
-        cnvHSVToCol(col, getVec((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+        cnvHSVToCol(col, getVec3((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
         glColor(col);
     }
 
@@ -88,7 +101,11 @@ namespace sp{
         Mat mat(4, 4);
 
         // GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
-        glGetDoublev(type, mat.ptr);
+        double t[4 * 4];
+        glGetDoublev(type, t);
+        for (int i = 0; i < 4 * 4; i++) {
+            mat[i] = SP_CAST(t[i]);
+        }
         return trnMat(mat);
     }
 
@@ -108,12 +125,12 @@ namespace sp{
     //--------------------------------------------------------------------------------
     // load view
     //--------------------------------------------------------------------------------
-    SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+    SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
         
-        const Vec2 rectCenter = getVec(dsize0 - 1, dsize1 - 1) * 0.5;
-        const Vec2 viewCenter = getVec(viewport[2] - 1, viewport[3] - 1) * 0.5;
+        const Vec2 rectCenter = getVec2(dsize0 - 1, dsize1 - 1) * 0.5;
+        const Vec2 viewCenter = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
 
         Mat vmat = eyeMat(4, 4);
@@ -125,7 +142,7 @@ namespace sp{
         Mat _vmat = vmat;
 
         {// for retina display
-            const double pixScale = glGetPixelScale();
+            const SP_REAL pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
             pmat(0, 0) = pixScale;
@@ -139,22 +156,22 @@ namespace sp{
         return _vmat;
     }
 
-    SP_CPUFUNC Mat glGetViewMat(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+    SP_CPUFUNC Mat glGetViewMat(const int *dsize, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0) {
 
         return glGetViewMat(dsize[0], dsize[1], viewPos, viewScale);
     }
 
-    SP_CPUFUNC Mat glGetWindowMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+    SP_CPUFUNC Mat glGetWindowMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0) {
         Mat vmat = glGetViewMat(dsize0, dsize1, viewPos, viewScale);
 
         Mat _vmat = vmat;
 
         {// for retina display
-			const double pixScale = glGetPixelScale();
+			const SP_REAL pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = 1.0 / pixScale;
-            pmat(1, 1) = 1.0 / pixScale;
+            pmat(0, 0) = SP_CAST(1.0 / pixScale);
+            pmat(1, 1) = SP_CAST(1.0 / pixScale);
 
             _vmat = pmat * vmat;
         }
@@ -162,7 +179,7 @@ namespace sp{
         return _vmat;
     }
 
-    SP_CPUFUNC Mat glGetWindowMat(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+    SP_CPUFUNC Mat glGetWindowMat(const int *dsize, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0) {
 
         return glGetWindowMat(dsize[0], dsize[1], viewPos, viewScale);
     }
@@ -190,22 +207,22 @@ namespace sp{
         glLoadView2D(dsize[0], dsize[1], vmat);
     }
 
-    SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+    SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0){
 
         glLoadView2D(dsize0, dsize1, glGetViewMat(dsize0, dsize1, viewPos, viewScale));
     }
 
-    SP_CPUFUNC void glLoadView2D(const int *dsize, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0) {
+    SP_CPUFUNC void glLoadView2D(const int *dsize, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0) {
 
         glLoadView2D(dsize, glGetViewMat(dsize, viewPos, viewScale));
     }
 
-    SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0){
+    SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0){
 
         glLoadView2D(cam.dsize, glGetViewMat(cam.dsize, viewPos, viewScale));
     }
 
-    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
+    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0){
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -217,18 +234,18 @@ namespace sp{
             cDispPos.x = viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale;
             cDispPos.y = viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale;
 
-            const double nx = nearPlane / cam.fx;
-            const double ny = nearPlane / cam.fy;
+            const SP_REAL nx = nearPlane / cam.fx;
+            const SP_REAL ny = nearPlane / cam.fy;
 
-            const double sw = (viewport[2] - 1) / viewScale;
-            const double sh = (viewport[3] - 1) / viewScale;
+            const SP_REAL sw = (viewport[2] - 1) / viewScale;
+            const SP_REAL sh = (viewport[3] - 1) / viewScale;
 
-            const double l = (-cDispPos.x / viewScale) * nx;
-            const double r = (-cDispPos.x / viewScale + sw) * nx;
-            const double t = (-cDispPos.y / viewScale) * ny;
-            const double b = (-cDispPos.y / viewScale + sh) * ny;
-            const double n = nearPlane;
-            const double f = farPlane;
+            const SP_REAL l = (-cDispPos.x / viewScale) * nx;
+            const SP_REAL r = (-cDispPos.x / viewScale + sw) * nx;
+            const SP_REAL t = (-cDispPos.y / viewScale) * ny;
+            const SP_REAL b = (-cDispPos.y / viewScale + sh) * ny;
+            const SP_REAL n = nearPlane;
+            const SP_REAL f = farPlane;
 
             mat(0, 0) = 2 * n / (r - l);
             mat(1, 1) = 2 * n / (t - b);
@@ -249,7 +266,7 @@ namespace sp{
         glLoadIdentity();
     }
 
-    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const double z, const Vec2 &viewPos = getVec(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const SP_REAL z, const Vec2 &viewPos = getVec2(0.0, 0.0), const SP_REAL viewScale = 1.0, const SP_REAL nearPlane = 1.0, const SP_REAL farPlane = 10000.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -261,18 +278,18 @@ namespace sp{
             cDispPos.x = viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale;
             cDispPos.y = viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale;
 
-            const double nx = z / cam.fx;
-            const double ny = z / cam.fy;
+            const SP_REAL nx = z / cam.fx;
+            const SP_REAL ny = z / cam.fy;
 
-            const double sw = (viewport[2] - 1) / viewScale;
-            const double sh = (viewport[3] - 1) / viewScale;
+            const SP_REAL sw = (viewport[2] - 1) / viewScale;
+            const SP_REAL sh = (viewport[3] - 1) / viewScale;
 
-            const double l = (-cDispPos.x / viewScale) * nx;
-            const double r = (-cDispPos.x / viewScale + sw) * nx;
-            const double t = (-cDispPos.y / viewScale) * ny;
-            const double b = (-cDispPos.y / viewScale + sh) * ny;
-            const double n = nearPlane;
-            const double f = farPlane;
+            const SP_REAL l = (-cDispPos.x / viewScale) * nx;
+            const SP_REAL r = (-cDispPos.x / viewScale + sw) * nx;
+            const SP_REAL t = (-cDispPos.y / viewScale) * ny;
+            const SP_REAL b = (-cDispPos.y / viewScale + sh) * ny;
+            const SP_REAL n = nearPlane;
+            const SP_REAL f = farPlane;
 
             mat(0, 0) = 2 / (r - l);
             mat(1, 1) = 2 / (t - b);
@@ -296,11 +313,11 @@ namespace sp{
     // util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glCircle(const Vec2 &pos, const double radius) {
+    SP_CPUFUNC void glCircle(const Vec2 &pos, const SP_REAL radius) {
         glBegin(GL_LINE_LOOP);
         for (int i = 0; i < 36; i++) {
-            const double p = i / 36.0 * 2.0 * SP_PI;
-            glVertex(getVec(pos.x + radius * sin(p), pos.y + radius * cos(p)));
+            const SP_REAL p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(getVec2(pos.x + radius * sin(p), pos.y + radius * cos(p)));
         }
         glEnd();
     }
@@ -308,14 +325,14 @@ namespace sp{
     SP_CPUFUNC void glRect(const Rect &rect, const bool fill = false) {
         if (rect.dim != 2) return;
 
-        const Vec2 a = getVec(rect.dbase[0], rect.dbase[1]);
-        const Vec2 b = getVec(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
+        const Vec2 a = getVec2(rect.dbase[0], rect.dbase[1]);
+        const Vec2 b = getVec2(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
 
         glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
-        glVertex(getVec(a.x - 0.5, a.y - 0.5));
-        glVertex(getVec(b.x + 0.5, a.y - 0.5));
-        glVertex(getVec(b.x + 0.5, b.y + 0.5));
-        glVertex(getVec(a.x - 0.5, b.y + 0.5));
+        glVertex(getVec2(a.x - 0.5, a.y - 0.5));
+        glVertex(getVec2(b.x + 0.5, a.y - 0.5));
+        glVertex(getVec2(b.x + 0.5, b.y + 0.5));
+        glVertex(getVec2(a.x - 0.5, b.y + 0.5));
         glEnd();
     }
 
@@ -347,7 +364,7 @@ namespace sp{
         glEnd();
     }
 
-    SP_CPUFUNC void glAxis(const double size){
+    SP_CPUFUNC void glAxis(const SP_REAL size){
         glBegin(GL_LINES);
         glColor3ub(255, 0, 0);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
@@ -360,12 +377,12 @@ namespace sp{
         glEnd();
     }
 
-    SP_CPUFUNC void glCube(const double size){
+    SP_CPUFUNC void glCube(const SP_REAL size){
         glBegin(GL_QUADS);
 
-        const double s = size / 2.0;
+        const SP_REAL s = size / 2.0;
         for(int i = 0; i < 2; i++){
-            double v = (i == 0) ? +1.0 : -1.0;
+            SP_REAL v = (i == 0) ? +1.0 : -1.0;
             glNormal3d(v, 0.0, 0.0);
             glVertex3d(+s * v, -s, -s);
             glVertex3d(+s * v, -s, +s);
@@ -387,10 +404,10 @@ namespace sp{
         glEnd();
     }
 
-    SP_CPUFUNC void glGrid(const double size, const int num){
+    SP_CPUFUNC void glGrid(const SP_REAL size, const int num){
         glBegin(GL_LINES);
         for (int i = 0; i < num; i++){
-            const double p = i * 2 * size / (num - 1);
+            const SP_REAL p = i * 2 * size / (num - 1);
             glVertex3d(-size, -size + p, 0.0);
             glVertex3d(+size, -size + p, 0.0);
 
@@ -400,12 +417,12 @@ namespace sp{
         glEnd();
     }
 
-    SP_CPUFUNC void glCam(const CamParam &cam, const double size) {
-        const double f = (cam.fx + cam.fy) / 2.0;
-        const double w = (cam.dsize[0] / 2.0) / f * size;
-        const double h = (cam.dsize[1] / 2.0) / f * size;
+    SP_CPUFUNC void glCam(const CamParam &cam, const SP_REAL size) {
+        const SP_REAL f = (cam.fx + cam.fy) / 2.0;
+        const SP_REAL w = (cam.dsize[0] / 2.0) / f * size;
+        const SP_REAL h = (cam.dsize[1] / 2.0) / f * size;
 
-        const Vec2 loop[4] = { getVec(-w, -h), getVec(+w, -h), getVec(+w, +h), getVec(-w, +h) };
+        const Vec2 loop[4] = { getVec2(-w, -h), getVec2(+w, -h), getVec2(+w, +h), getVec2(-w, +h) };
         glBegin(GL_LINES);
         for (int i = 0; i < 4; i++) {
             const Vec2 a = loop[(i + 0) % 4];
@@ -527,7 +544,7 @@ namespace sp{
                         const char &val = voxel.vmap(x, y, z);
                         if (val < 0) continue;
 
-                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 mpos = getVec3(x, y, z);
                         const Vec3 cpos = ((mpos - cent) * voxel.unit);
 
                         glPushMatrix();

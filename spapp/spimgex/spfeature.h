@@ -62,10 +62,10 @@ namespace sp {
         Vec2 drc;
 
         // scale
-        double scl;
+        SP_REAL scl;
 
         // contrast
-        double cst;
+        SP_REAL cst;
 
         // descripter
         Dsc dsc;
@@ -76,8 +76,8 @@ namespace sp {
     public:
 
         Ftr() {
-            pix = getVec(0.0, 0.0);
-            drc = getVec(0.0, 0.0);
+            pix = getVec2(0.0, 0.0);
+            drc = getVec2(0.0, 0.0);
             scl = 0.0;
             mpnt = NULL;
         }
@@ -153,7 +153,7 @@ namespace sp {
         Col3 col;
 
         // projection err
-        double err;
+        SP_REAL err;
 
         // view index
         Mem1<View*> views;
@@ -161,13 +161,13 @@ namespace sp {
         // feature index
         Mem1<Ftr*> ftrs;
 
-        Mem1<double> errs;
+        Mem1<SP_REAL> errs;
 
         MapPnt() {
             valid = false;
 
-            pos = getVec(0.0, 0.0, 0.0);
-            nrm = getVec(0.0, 0.0, 0.0);
+            pos = getVec3(0.0, 0.0, 0.0);
+            nrm = getVec3(0.0, 0.0, 0.0);
             col = getCol(0, 0, 0);
             err = SP_INFINITY;
         }
@@ -214,13 +214,13 @@ namespace sp {
         void updateCol() {
             if (valid == false) return;
 
-            Vec3 vec = getVec(0.0, 0.0, 0.0);
+            Vec3 vec = getVec3(0.0, 0.0, 0.0);
 
             const int num = views.size();
 
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = ftrs[i]->pix;
-                vec += getVec(acsc(views[i]->img, pix.x, pix.y));
+                vec += getVec3(acsc(views[i]->img, pix.x, pix.y));
             }
 
             col = getCol(vec / (num));
@@ -240,7 +240,7 @@ namespace sp {
         return cnt;
     };
 
-    SP_CPUFUNC double getMatchEval(const Mem1<int> &matches) {
+    SP_CPUFUNC SP_REAL getMatchEval(const Mem1<int> &matches) {
         const int minv = 10;
         const int maxv = 100;
 
@@ -252,7 +252,7 @@ namespace sp {
         if (v <= 0) return 0.0;
 
         // c: minn..maxv, scale: 0..1
-        const double scale = 1.0 - 1.0 / v + v / (m * m);
+        const SP_REAL scale = 1.0 - 1.0 / v + v / (m * m);
         return scale * c / n;
     };
 
@@ -275,10 +275,10 @@ namespace sp {
         switch (ftr.dsc.type) {
         case Dsc::Type::DSC_SIFT:
         {
-            const double MIN_NCC = 0.9;
-            const double MIN_BIN = MIN_NCC * 0.9;
+            const SP_REAL MIN_NCC = 0.9;
+            const SP_REAL MIN_BIN = MIN_NCC * 0.9;
 
-            double maxv = MIN_NCC;
+            SP_REAL maxv = MIN_NCC;
 
             // SIFT dim = 128
             const int dim = 128;
@@ -287,14 +287,14 @@ namespace sp {
                 if (ftr.cst * ftrs[i].cst <= 0.0) continue;
 
                 {
-                    const double btest = static_cast<double>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
+                    const SP_REAL btest = static_cast<SP_REAL>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
                     if (btest < MIN_BIN) continue;
                 }
 
                 const float *data0 = reinterpret_cast<float*>(ftr.dsc.val.ptr);
                 const float *data1 = reinterpret_cast<float*>(ftrs[i].dsc.val.ptr);
 
-                double sum = 0.0;
+                SP_REAL sum = 0.0;
                 for (int d = 0; d < dim; d++) {
                     sum += (*data0++) * (*data1++);
                 }
@@ -308,10 +308,10 @@ namespace sp {
         }
         case Dsc::Type::DSC_CFBlob:
         {
-            const double MIN_NCC = 0.9;
-            const double MIN_BIN = MIN_NCC * 0.9;
+            const SP_REAL MIN_NCC = 0.9;
+            const SP_REAL MIN_BIN = MIN_NCC * 0.9;
 
-            double maxv = MIN_NCC;
+            SP_REAL maxv = MIN_NCC;
 
             // SIFT dim = 128
             const int dim = 128;
@@ -320,14 +320,14 @@ namespace sp {
                 if (ftr.cst * ftrs[i].cst <= 0.0) continue;
 
                 {
-                    const double btest = static_cast<double>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
+                    const SP_REAL btest = static_cast<SP_REAL>(cntBit(ftr.dsc.bin.ptr, ftrs[i].dsc.bin.ptr, ftr.dsc.bin.size())) / dim;
                     if (btest < MIN_BIN) continue;
                 }
 
                 const float *data0 = reinterpret_cast<float*>(ftr.dsc.val.ptr);
                 const float *data1 = reinterpret_cast<float*>(ftrs[i].dsc.val.ptr);
 
-                double sum = 0.0;
+                SP_REAL sum = 0.0;
                 for (int d = 0; d < dim; d++) {
                     sum += (*data0++) * (*data1++);
                 }

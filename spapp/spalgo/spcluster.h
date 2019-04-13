@@ -36,11 +36,11 @@ namespace sp{
 
             // assign label
             for (int i = 0; i < size; i++){
-                double dist = SP_INFINITY;
+                SP_REAL dist = SP_INFINITY;
 
                 int &label = index[i];
                 for (int k = 0; k < K; k++){
-                    const double d = normMat(&cent(k, 0), 1, dim, &data(i, 0));
+                    const SP_REAL d = normMat(&cent(k, 0), 1, dim, &data(i, 0));
                     if (d < dist){
                         dist = d;
                         label = k;

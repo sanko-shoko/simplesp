@@ -86,17 +86,17 @@ namespace sp {
             }
 
             if (_action == 0) {
-                drag = getVec(0.0, 0.0);
+                drag = getVec2(0.0, 0.0);
             }
         }
 
         void setPos(const double x, const double y) {
 
             if (bDownL || bDownR || bDownM) {
-                move = getVec(x, y) - pos;
+                move = getVec2(x, y) - pos;
                 drag += move;
             }
-            pos = getVec(x, y);
+            pos = getVec2(x, y);
         }
 
         void setScroll(const double x, const double y) {
@@ -138,7 +138,7 @@ namespace sp {
         }
 
         if (mouse.bDownL && normVec(mouse.move) > 0.0) {
-            cpose.rot = getRotAngle(getVec(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
+            cpose.rot = getRotAngle(getVec3(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
             ret = true;
         }
 
@@ -219,14 +219,14 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
-        // background color
-        Col4 m_bcol;
+        // back gournd color
+        const Col4 *m_bgcol;
 
-        // control view position & scale
+        // control view flag
         bool m_space;
 
-        // control view position & scale
-        bool m_clear;
+        // escape flag
+        bool m_escape;
 
     public:
 
@@ -234,15 +234,16 @@ namespace sp {
             m_win = NULL;
             m_parent = NULL;
 
-            m_viewPos = getVec(0.0, 0.0);
+            m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
 
-            m_bcol = getCol(24, 32, 32, 255);
+            const static Col4 col = getCol(24, 32, 32, 255);
+            m_bgcol = &col;
 
             memset(m_keyAction, 0, sizeof(m_keyAction));
             
             m_space = true;
-            m_clear = true;
+            m_escape = true;
         }
 
 
@@ -304,7 +305,7 @@ namespace sp {
 
             SP_ASSERT(create(name, width, height) == true);
 
-            while (!glfwWindowShouldClose(m_win) && !glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+            while (!glfwWindowShouldClose(m_win) && (m_escape == false || !glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
 
                 if (main() == false) break;
 
@@ -355,7 +356,7 @@ namespace sp {
 
         bool main() {
 
-            if (glfwWindowShouldClose(m_win) || glfwGetKey(m_win, GLFW_KEY_ESCAPE)) {
+            if (glfwWindowShouldClose(m_win) || (m_escape == true && glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
                 glfwDestroyWindow(m_win);
                 m_win = NULL;
                 return false;
@@ -379,8 +380,8 @@ namespace sp {
                 ImGui::NewFrame();
             }
 #endif
-            if (m_clear) {
-                glClearColor(m_bcol.r / 255.f, m_bcol.g / 255.f, m_bcol.b / 255.f, m_bcol.a / 255.f);
+            if (m_bgcol != NULL) {
+                glClearColor(m_bgcol->r / 255.f, m_bgcol->g / 255.f, m_bgcol->b / 255.f, m_bgcol->a / 255.f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
             
@@ -444,7 +445,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if (m_keyAction[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                if ((m_space == false || m_keyAction[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                     return;
                 }

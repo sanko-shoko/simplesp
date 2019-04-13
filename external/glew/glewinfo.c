@@ -9978,7 +9978,7 @@ static void _glewInfo_GL_SGIX_vector_ops (void)
 {
   glewPrintExt("GL_SGIX_vector_ops", GLEW_SGIX_vector_ops, glewIsSupported("GL_SGIX_vector_ops"), glewGetExtension("GL_SGIX_vector_ops"));
 
-  glewInfoFunc("glGetVectorOperationSGIX", glGetVectorOperationSGIX == NULL);
+  glewInfoFunc("glgetVec3torOperationSGIX", glgetVec3torOperationSGIX == NULL);
   glewInfoFunc("glVectorOperationSGIX", glVectorOperationSGIX == NULL);
 }
 

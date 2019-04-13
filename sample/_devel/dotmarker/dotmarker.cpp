@@ -116,7 +116,7 @@ void DotMarkerGUI::display(){
             const Pose AnglePose = getPose(getRotAngleX((90 + 5) * SP_PI / 180.0));
 
             {
-                const Pose grandPose = getPose(getVec(0.0, 0.0, -100.0));
+                const Pose grandPose = getPose(getVec3(0.0, 0.0, -100.0));
                 glLoadMatrix(*m_dotMarker.getPose() * AnglePose * grandPose);
                 glLineWidth(4.0f);
                 glColor3d(0.0, 0.4, 0.8);
@@ -137,7 +137,7 @@ void DotMarkerGUI::display(){
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
 
                 const Pose modelPose = getPose(getRotAngleX(90 * SP_PI / 180.0));
-                const Pose offset = getPose(getVec(0.0, 0.0, -30.0));
+                const Pose offset = getPose(getVec3(0.0, 0.0, -30.0));
                 glLoadMatrix(*m_dotMarker.getPose() * AnglePose * (offset * modelPose));
 
                 for (int i = 0; i < m_model.size(); i++){
@@ -173,7 +173,7 @@ void DotMarkerGUI::display(){
                 for (int u = 0; u < labelMap->dsize[0]; u++){
                     if ((*labelMap)(u, v) < 0) continue;
                     glColor((*labelMap)(u, v));
-                    glVertex(getVec(u, v));
+                    glVertex(getVec2(u, v));
                 }
             }
             glEnd();

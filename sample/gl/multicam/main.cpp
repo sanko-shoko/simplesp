@@ -42,12 +42,12 @@ private:
 
 
         const double distance = 1000.0;
-        m_view = getPose(getVec(0.0, 0.0, 3 * distance));
+        m_view = getPose(getVec3(0.0, 0.0, 3 * distance));
 
         {
             const int cnum = 10;
             for (int i = 0; i < cnum; i++) {
-                const Pose pose = getRotAngleX(+20.0 * SP_PI / 180.0) * getPose(getRotAngleY(i * 2 * SP_PI / cnum), getVec(0.0, +0.4 * distance, distance));
+                const Pose pose = getRotAngleX(+20.0 * SP_PI / 180.0) * getPose(getRotAngleY(i * 2 * SP_PI / cnum), getVec3(0.0, +0.4 * distance, distance));
 
                 m_poses.push(pose);
             }
@@ -57,7 +57,7 @@ private:
             const int onum = 50;
             const double size = 200.0;
             for (int i = 0; i < onum; i++) {
-                const Vec3 pos = randVecUnif(size, 0.0, size) + getVec(0.0, -1.0, 0.0);
+                const Vec3 pos = randVecUnif(size, 0.0, size) + getVec3(0.0, -1.0, 0.0);
 
                 const Pose pose = invPose(getPose(invRot(getRotDirection(pos)), pos));
                 //const Pose pose = getPose(pos);
@@ -78,7 +78,7 @@ private:
 
             const Mem1<BitMarkerParam> mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
 
-            Mem1<Vec3> unit = getVec(grid(2, 2), 0) * length;
+            Mem1<Vec3> unit = extVec(grid(2, 2), 0) * length;
             unit -= meanVec(unit);
 
             m_pnts.clear();
@@ -129,14 +129,14 @@ private:
                 Mem1<Vec2> tobjs;
                 const Pose pose = m_poses[i] * invPose(boards[j]);
 
-                const Vec3 nrm = pose.rot * getVec(0.0, 0.0, 1.0);
+                const Vec3 nrm = pose.rot * getVec3(0.0, 0.0, 1.0);
                 if (nrm.z > 0.3) {
                     for (int k = 0; k < pnts.size(); k++) {
                         const double noise = 0.5;
                         const Vec2 pix = mulCamD(cam, prjVec(pose * pnts[k])) + randVecGauss(noise, noise);
                      
                         tpixs.push(pix);
-                        tobjs.push(getVec(pnts[k].x, pnts[k].y));
+                        tobjs.push(getVec2(pnts[k].x, pnts[k].y));
                         ///print(noise);
                     }
                 }
@@ -191,7 +191,7 @@ private:
                 for (int i = 0; i < m_poses.size(); i++) {
                     glLoadMatrix(m_view * invPose(m_poses[i]));
 
-                    const Vec3 nrm = (m_poses[i] * invPose(m_boards[m_id])).rot * getVec(0.0, 0.0, 1.0);
+                    const Vec3 nrm = (m_poses[i] * invPose(m_boards[m_id])).rot * getVec3(0.0, 0.0, 1.0);
                     if (nrm.z > 0.3) {
                         glColor3d(0.5, 0.5, 0.8);
                     }

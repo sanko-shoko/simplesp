@@ -19,7 +19,7 @@ namespace sp{
 
     SP_CPUFUNC void harris(Mem1<Vec2> &pixs, const Mem2<Byte> &src, const int block = 4) {
 
-        const double RESP_RATE = 0.9;
+        const SP_REAL RESP_RATE = 0.9;
 
         pixs.clear();
 
@@ -45,7 +45,7 @@ namespace sp{
 
             boxFilter<Gnn, float>(dmap, dmap, 3);
 
-            const double k = 0.04;
+            const SP_REAL k = 0.04;
             for (int i = 0; i < rmap.size(); i++){
                 const float gxx = dmap[i].gxx;
                 const float gxy = dmap[i].gxy;
@@ -58,12 +58,12 @@ namespace sp{
         // non-maximal suppression
         {
             // macro block
-            Mem2<double> bimg((rmap.dsize[0] + block - 1) / block, (rmap.dsize[1] + block - 1) / block);
+            Mem2<SP_REAL> bimg((rmap.dsize[0] + block - 1) / block, (rmap.dsize[1] + block - 1) / block);
             bimg.zero();
 
             for (int y = 0; y < bimg.dsize[1]; y++){
                 for (int x = 0; x < bimg.dsize[0]; x++){
-                    double &maxv = bimg(x, y);
+                    SP_REAL &maxv = bimg(x, y);
 
                     const int eu = minVal(rmap.dsize[0], (x + 1) * block);
                     const int ev = minVal(rmap.dsize[1], (y + 1) * block);
@@ -76,15 +76,15 @@ namespace sp{
                 }
             }
 
-            Mem<double> list = bimg;
+            Mem<SP_REAL> list = bimg;
             sort(list);
-            const double thresh = list[round(RESP_RATE * (list.size() - 1))];
+            const SP_REAL thresh = list[round(RESP_RATE * (list.size() - 1))];
 
             maxFilter(bimg, bimg, 3);
 
             for (int y = 0; y < bimg.dsize[1]; y++){
                 for (int x = 0; x < bimg.dsize[0]; x++){
-                    const double maxv = bimg(x, y);
+                    const SP_REAL maxv = bimg(x, y);
                     if (maxv < thresh) continue;
 
                     const int eu = minVal(rmap.dsize[0], (x + 1) * block);
@@ -94,7 +94,7 @@ namespace sp{
                         for (int u = x * block; u < eu; u++){
                             if (rmap(u, v) < maxv) continue;
                         
-                            pixs.push(getVec(u, v));
+                            pixs.push(getVec2(u, v));
                             goto _exit;
                         }
                     }

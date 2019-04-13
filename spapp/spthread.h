@@ -26,6 +26,10 @@ namespace sp {
             m_used = false;
         }
 
+        bool used() {
+            return m_used;
+        }
+
         template<class Class, void (Class::*Func)()>
         bool run(Class *ptr, const bool wait = true) {
             if (wait == false && m_used == true) return false;
@@ -34,6 +38,20 @@ namespace sp {
                 m_mtx.lock();
                 m_used = true;
                 (ptr->*Func)();
+                m_used = false;
+                m_mtx.unlock();
+            });
+            th.detach();
+            return true;
+        }
+
+        bool run(std::function<void()> func, const bool wait = true) {
+            if (wait == false && m_used == true) return false;
+
+            thread th([this, func, wait] {
+                m_mtx.lock();
+                m_used = true;
+                func();
                 m_used = false;
                 m_mtx.unlock();
             });

@@ -12,7 +12,7 @@ namespace sp {
 
 #define SP_VOXEL_VMAX 127
 #define SP_VOXEL_WMAX 20
-#define SP_VOXEL_NULL -128
+#define SP_VOXEL_NULL -127
 
     class Voxel {
 
@@ -21,7 +21,7 @@ namespace sp {
         int dsize[3];
 
         // voxel unit length
-        double unit;
+        SP_REAL unit;
 
         // value map
         Mem3<char> vmap;
@@ -53,7 +53,7 @@ namespace sp {
             return *this;
         }
 
-        void init(const int *dsize, const double unit) {
+        void init(const int *dsize, const SP_REAL unit) {
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
             this->dsize[2] = dsize[2];
@@ -65,7 +65,7 @@ namespace sp {
             zero();
         }
         
-        void init(const int size, const double unit) {
+        void init(const int size, const SP_REAL unit) {
             const int dsize[3] = { size, size, size };
             init(dsize, unit);
         }
@@ -76,7 +76,7 @@ namespace sp {
             wmap.zero();
         }
 
-        void update(const int x, const int y, const int z, const double src) {
+        void update(const int x, const int y, const int z, const SP_REAL src) {
             if (src > +1.0) return;
 
             char &val = vmap(x, y, z);
@@ -105,19 +105,19 @@ namespace sp {
         }
 
         Vec3 getn(const int x, const int y, const int z) const {
-            const double vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
-            const double vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
-            const double vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
-            return unitVec(getVec(-vx, -vy, -vz));
+            const SP_REAL vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
+            const SP_REAL vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
+            const SP_REAL vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
+            return unitVec(getVec3(-vx, -vy, -vz));
         }
 
         Vec3 center() const {
-            return getVec(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
+            return getVec3(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
         }
     };
 
 
-    SP_CPUFUNC bool cnvMeshToVoxel(Voxel &voxel, const Mem1<Mesh3> &meshes, const double unit = 1.0) {
+    SP_CPUFUNC bool cnvMeshToVoxel(Voxel &voxel, const Mem1<Mesh3> &meshes, const SP_REAL unit = 1.0) {
 
         const int size = (ceil(getModelRadius(meshes) / unit) + 2) * 2;
         SP_PRINTD("voxel size %d\n", size);
@@ -125,10 +125,10 @@ namespace sp {
         voxel.init(size, unit);
         setElm(voxel.vmap, +1);
 
-        const double step = sqrt(3.0) * unit;
+        const SP_REAL step = sqrt(3.0) * unit;
 
         const CamParam cam = getCamParam(size * 2, size * 2);
-        const double distance = sqrt(3.0) * getModelDistance(meshes, cam);
+        const SP_REAL distance = sqrt(3.0) * getModelDistance(meshes, cam);
 
         const Vec3 cent = voxel.center();
 
@@ -146,7 +146,7 @@ namespace sp {
             for (int z = 0; z < voxel.dsize[2]; z++) {
                 for (int y = 0; y < voxel.dsize[1]; y++) {
                     for (int x = 0; x < voxel.dsize[0]; x++) {
-                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 mpos = getVec3(x, y, z);
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
@@ -161,7 +161,7 @@ namespace sp {
                         else {
                             if (dotVec(cpos, nrm) >= 0) continue;
 
-                            const double dist = maxVal(cpos.z - pos.z, -step) / step;
+                            const SP_REAL dist = maxVal(cpos.z - pos.z, -step) / step;
                             voxel.update(x, y, z, dist);
                         }
                     }
@@ -293,7 +293,7 @@ namespace sp {
 
                                 int score = 0;
                                 for (int k = 0; k < 8; k++) {
-                                    p[k] = getVec(x, y, z) + getVec(order[k]);
+                                    p[k] = getVec3(x, y, z) + getVec3(order[k]);
                                     v[k] = vmap(order[k][0], order[k][1], order[k][2]);
 
                                     score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
@@ -315,7 +315,7 @@ namespace sp {
                         return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
                     };
                     auto g = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                        return (pid > 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                        return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
                     };
                     auto h = [&](const int a0, const int a1, const int b0, const int b1, const int c0, const int c1) {
                         ms.push(g(f(a0, a1), f(b0, b1), f(c0, c1)));
@@ -446,13 +446,13 @@ namespace sp {
                         }
                         if (vecs.size() != 8) continue;
 
-                        if (cmpVec(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
-                        if (cmpVec(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
+                        if (cmpVec3(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
+                        if (cmpVec3(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
+                        if (cmpVec3(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
+                        if (cmpVec3(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
 
-                        zms[mz].push(getMesh(vecs[0], vecs[3], vecs[1]));
-                        zms[mz].push(getMesh(vecs[1], vecs[3], vecs[2]));
+                        zms[mz].push(getMesh3(vecs[0], vecs[3], vecs[1]));
+                        zms[mz].push(getMesh3(vecs[1], vecs[3], vecs[2]));
                         dpids[mz].push(15);
                     }
                 }
@@ -472,7 +472,7 @@ namespace sp {
             for (int i = 0; i < dpids[mz].size(); i++) {
                 const int pid = dpids[mz][i];
                 auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                    return (pid < 0) ? getMesh(a, b, c) : getMesh(a, c, b);
+                    return (pid < 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
                 };
                 auto div3 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const int type){
                     const Vec3 s = (a + b + c) / 3.0;
@@ -480,14 +480,14 @@ namespace sp {
                     const Vec3 bc = (b + c) / 2.0;
                     const Vec3 ca = (c + a) / 2.0;
 
-                    const double A = normVec(a - b);
-                    const double B = normVec(b - c);
-                    const double C = normVec(c - a);
+                    const SP_REAL A = normVec(a - b);
+                    const SP_REAL B = normVec(b - c);
+                    const SP_REAL C = normVec(c - a);
                     if (A == 0.0 || B == 0.0 || C == 0.0) return;
 
-                    const double s0 = fabs(A - B) / A;
-                    const double s1 = fabs(B - C) / B;
-                    const double s2 = fabs(C - A) / C;
+                    const SP_REAL s0 = fabs(A - B) / A;
+                    const SP_REAL s1 = fabs(B - C) / B;
+                    const SP_REAL s2 = fabs(C - A) / C;
                     switch(type) {
                     case 0:
                         tmps.push(h(a, s, ab));
@@ -653,14 +653,14 @@ namespace sp {
 
         rmsk.resize(cam.dsize);
 
-        const double radius = (voxel.dsize[0] - 1) * voxel.unit * 0.5;
+        const SP_REAL radius = (voxel.dsize[0] - 1) * voxel.unit * 0.5;
 
         struct VoxelPlane {
             Vec3 pos, axis[3];
         };
         Mem1<VoxelPlane> vps;
         {
-            const Vec3 _axis[3] = { getVec(1.0, 0.0, 0.0), getVec(0.0, 1.0, 0.0), getVec(0.0, 0.0, 1.0) };
+            const Vec3 _axis[3] = { getVec3(1.0, 0.0, 0.0), getVec3(0.0, 1.0, 0.0), getVec3(0.0, 0.0, 1.0) };
             
             for (int i = 0; i < 3; i++) {
                 for (int s = -1; s <= +1; s += 2) {
@@ -677,23 +677,23 @@ namespace sp {
         for (int v = 0; v < rmsk.dsize[1]; v++) {
             for (int u = 0; u < rmsk.dsize[0]; u++) {
                 Vec2 &range = rmsk(u, v);
-                range = getVec(0.0, SP_INFINITY);
+                range = getVec2(0.0, SP_INFINITY);
 
-                const Vec3 vec = prjVec(invCam(cam, getVec(u, v)));
+                const Vec3 vec = prjVec(invCam(cam, getVec2(u, v)));
                 for (int i = 0; i < vps.size(); i++) {
                     const Vec3 &pos = vps[i].pos;
                     const Vec3 &X = vps[i].axis[0];
                     const Vec3 &Y = vps[i].axis[1];
                     const Vec3 &Z = vps[i].axis[2];
 
-                    const double n = dotVec(vec, Z);
+                    const SP_REAL n = dotVec(vec, Z);
                     if (fabs(n) < SP_SMALL) continue;
 
                     const Vec3 crs = vec * (dotVec(pos, Z) / n);
                     if (crs.z <= SP_SMALL) continue;
 
-                    const double x = dotVec(crs - pos, X);
-                    const double y = dotVec(crs - pos, Y);
+                    const SP_REAL x = dotVec(crs - pos, X);
+                    const SP_REAL y = dotVec(crs - pos, Y);
 
                     if (n < 0) {
                         if (maxVal(fabs(x), fabs(y)) > radius * 1.00) continue;
@@ -715,9 +715,9 @@ namespace sp {
     // visual hull
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool visualHull(Voxel &voxel, const Mem1<Mem2<Byte> > &imgs, const Mem1<CamParam> &cams, const Mem1<Pose> &poses, const double unit = 1.0) {
+    SP_CPUFUNC bool visualHull(Voxel &voxel, const Mem1<Mem2<Byte> > &imgs, const Mem1<CamParam> &cams, const Mem1<Pose> &poses, const SP_REAL unit = 1.0) {
 
-        double meanDist = 0.0;
+        SP_REAL meanDist = 0.0;
         {
             for (int i = 0; i < poses.size(); i++) {
                 meanDist += poses[i].trn.z;
@@ -743,7 +743,7 @@ namespace sp {
             for (int z = 0; z < voxel.dsize[2]; z++) {
                 for (int y = 0; y < voxel.dsize[1]; y++) {
                     for (int x = 0; x < voxel.dsize[0]; x++) {
-                        const Vec3 mpos = getVec(x, y, z);
+                        const Vec3 mpos = getVec3(x, y, z);
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
@@ -769,10 +769,10 @@ namespace sp {
     // truncated signed distance function
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void updateTSDF(Voxel &voxel, const CamParam &cam, const Pose &pose, const Mem2<double> &depth, const double mu = 5.0) {
+    SP_CPUFUNC void updateTSDF(Voxel &voxel, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const SP_REAL mu = 5.0) {
 
         const Vec3 cent = voxel.center();
-        const double step = mu * voxel.unit;
+        const SP_REAL step = mu * voxel.unit;
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -780,23 +780,23 @@ namespace sp {
         for (int z = 0; z < voxel.dsize[2]; z++) {
             for (int y = 0; y < voxel.dsize[1]; y++) {
                 for (int x = 0; x < voxel.dsize[0]; x++) {
-                    const Vec3 mpos = getVec(x, y, z);
+                    const Vec3 mpos = getVec3(x, y, z);
                     const Vec3 cpos = pose * ((mpos - cent) * voxel.unit);
 
                     const Vec2 pix = mulCam(cam, prjVec(cpos));
                     if (inRect2(depth.dsize, pix.x, pix.y) == false) continue;
 
-                    const double d = depth(round(pix.x), round(pix.y));
+                    const SP_REAL d = depth(round(pix.x), round(pix.y));
                     if (d == 0.0) continue;
 
-                    const double dist = maxVal(cpos.z - d, -step) / step;
+                    const SP_REAL dist = maxVal(cpos.z - d, -step) / step;
                     voxel.update(x, y, z, dist);
                 }
             }
         }
     }
 
-    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &voxel, const double mu = 5.0) {
+    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &voxel, const SP_REAL mu = 5.0) {
 
         map.resize(cam.dsize);
         map.zero();
@@ -813,19 +813,19 @@ namespace sp {
         for (int v = 0; v < map.dsize[1]; v++) {
             for (int u = 0; u < map.dsize[0]; u++) {
 
-                const double minv = rmsk(u, v).x;
-                const double maxv = rmsk(u, v).y;
+                const SP_REAL minv = rmsk(u, v).x;
+                const SP_REAL maxv = rmsk(u, v).y;
                 if (minv <= SP_SMALL) continue;
 
-                const Vec3 cvec = prjVec(invCam(cam, getVec(u, v)));
+                const Vec3 cvec = prjVec(invCam(cam, getVec2(u, v)));
                 const Vec3 mvec = ipose.rot * cvec;
 
-                double detect = minv;
+                SP_REAL detect = minv;
 
                 char pre = 0;
-                double step = mu;
+                SP_REAL step = mu;
 
-                for (double d = minv; d < maxv; d += step * voxel.unit) {
+                for (SP_REAL d = minv; d < maxv; d += step * voxel.unit) {
                     const Vec3 mpos = (ipose.trn + mvec * d) / voxel.unit + cent;
                     const int x = round(mpos.x);
                     const int y = round(mpos.y);
@@ -865,7 +865,7 @@ namespace sp {
                     const Vec3 cpos = cvec * detect;
                     const Vec3 cnrm = pose.rot * mnrm;
 
-                    map(u, v) = getVecPN(cpos, cnrm);
+                    map(u, v) = getVecPN3(cpos, cnrm);
                 }
             }
         }

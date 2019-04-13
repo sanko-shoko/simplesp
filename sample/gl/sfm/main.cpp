@@ -37,8 +37,8 @@ private:
         help();
 
         const double distance = 20.0;
-        m_pose = getPose(getVec(0.0, 0.0, +distance));
-        m_axis = getPose(getVec(0.0, 0.0, -distance));
+        m_pose = getPose(getVec3(0.0, 0.0, +distance));
+        m_axis = getPose(getVec3(0.0, 0.0, -distance));
 
         m_err = 3.0f;
 

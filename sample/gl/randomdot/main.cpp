@@ -56,7 +56,7 @@ private:
 
             m_prj = getCamParam(320, 240);
 
-            m_cam2prj = getPose(getRotAngleY(+10.0 / 180.0 * SP_PI), getVec(-100.0, 0.0, 0.0));
+            m_cam2prj = getPose(getRotAngleY(+10.0 / 180.0 * SP_PI), getVec3(-100.0, 0.0, 0.0));
 
             m_ptn = genRandomPattern(m_prj.dsize, 0.15);
         }
@@ -68,7 +68,7 @@ private:
                 m_model = loadGeodesicDorm(100.0, 1);
             }
 
-            m_pose = getPose(getVec(0.0, 0.0, getModelDistance(m_model, m_cam)));
+            m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
             m_view3d = false;
             m_view = zeroPose();

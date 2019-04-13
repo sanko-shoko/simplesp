@@ -50,7 +50,7 @@ namespace sp {
 
     private:
 
-        double BLOB_CONTRAST = 0.01;
+        SP_REAL BLOB_CONTRAST = 0.01;
 
     public:
 
@@ -70,7 +70,7 @@ namespace sp {
         // parameter
         //--------------------------------------------------------------------------------
 
-        void setParam(const double contrast) {
+        void setParam(const SP_REAL contrast) {
             BLOB_CONTRAST = contrast;
         }
 
@@ -84,7 +84,7 @@ namespace sp {
         }
 
         template<typename T>
-        static Mem1<Ftr> getFtrs(const Mem2<T> &img, const double contrast = 0.01) {
+        static Mem1<Ftr> getFtrs(const Mem2<T> &img, const SP_REAL contrast = 0.01) {
             CFBlob cfblob;
             cfblob.setParam(contrast);
             cfblob.execute(img);
@@ -265,7 +265,7 @@ namespace sp {
                 const Mem2<Byte> &img = imgsets[myft.pyid].img;
 
                 const Vec2 pix = myft.pix / (1 << myft.pyid);
-                const double scl = myft.scl / (1 << myft.pyid);
+                const SP_REAL scl = myft.scl / (1 << myft.pyid);
 
                 Ftr ftr = myft;
 
@@ -396,7 +396,7 @@ namespace sp {
 
                         if (cst != 0 && fabs(d) > thresh) {
                             MyFtr *ftr = ftrs.extend();
-                            ftr->pix = getVec(u, v) * 2.0;
+                            ftr->pix = getVec2(u, v) * 2.0;
                             ftr->scl = 2.0;
                             ftr->cst = cst;
                             ftr->pyid = p;
@@ -414,14 +414,14 @@ namespace sp {
                 const Mem2<short2> &di1 = imgsets[p].di1;
                 const Mem2<short2> &di2 = imgsets[p].di2;
 
-                const double k = 4.0;
+                const SP_REAL k = 4.0;
                 const int rdiv = 18;
                 const int itmax = 20;
 
                 Mem1<Vec2> rvec;
                 for (int r = 0; r < rdiv; r++) {
-                    const double p = r * 2.0 * SP_PI / rdiv;
-                    const Vec2 v = getVec(cos(p), sin(p));
+                    const SP_REAL p = r * 2.0 * SP_PI / rdiv;
+                    const Vec2 v = getVec2(cos(p), sin(p));
                     rvec.push(v);
                 }
 
@@ -429,19 +429,19 @@ namespace sp {
 
                 //{
                 //    const Vec2 pix = ftrs[i].pix;
-                //    const double scl = ftrs[i].scl;
+                //    const SP_REAL scl = ftrs[i].scl;
 
                 //    Vec3 result;
-                //    double maxv = 0.0;
+                //    SP_REAL maxv = 0.0;
                 //    const int r = 3;
                 //    for (int s = -r; s <= +r; s++) {
                 //        for (int y = -1; y <= +1; y++) {
                 //            for (int x = -1; x <= +1; x++) {
 
-                //                const Vec2 tpix = pix + getVec(x, y) * 0.5;
-                //                const double tscl = scl + s * 0.5;
+                //                const Vec2 tpix = pix + getVec3(x, y) * 0.5;
+                //                const SP_REAL tscl = scl + s * 0.5;
 
-                //                double mm = 0.0;
+                //                SP_REAL mm = 0.0;
                 //                for (int r = 0; r < rdiv; r++) {
                 //                    const Vec2 n = rvec[r];
                 //                    const Vec2 v = tscl * n;
@@ -453,27 +453,27 @@ namespace sp {
                 //                    Vec2 d1, d2;
                 //                    d1.x = acs2<short2, short>(di1, a.x, a.y, 0);
                 //                    d1.y = acs2<short2, short>(di1, a.x, a.y, 1);
-                //                    const double dd = fabs(dotVec(n, d1));
+                //                    const SP_REAL dd = fabs(dotVec(n, d1));
 
                 //                    mm += dd;
                 //                }
                 //                if (mm > maxv) {
                 //                    maxv = mm;
-                //                    result = getVec(x * 0.5, y * 0.5, s * 0.5);
+                //                    result = getVec3(x * 0.5, y * 0.5, s * 0.5);
                 //                }
                 //            }
                 //        }
                 //    }
-                //    ftrs[i].pix += getVec(result.x, result.y);
+                //    ftrs[i].pix += getVec3(result.x, result.y);
                 //    ftrs[i].scl += result.z;
                 //}
 
                 for (int it = 0; it < itmax; it++) {
                     const Vec2 pix = ftrs[i].pix;
-                    const double scl = ftrs[i].scl;
+                    const SP_REAL scl = ftrs[i].scl;
 
-                    Vec2 ap = getVec(0.0, 0.0);
-                    double as = 0.0;
+                    Vec2 ap = getVec2(0.0, 0.0);
+                    SP_REAL as = 0.0;
 
                     int cnt = 0;
                     for (int r = 0; r < rdiv; r++) {
@@ -516,12 +516,12 @@ namespace sp {
                 }
                 {
                     const Vec2 pix = ftrs[i].pix;
-                    const double scl = ftrs[i].scl;
+                    const SP_REAL scl = ftrs[i].scl;
 
-                    Vec2 ap = getVec(0.0, 0.0);
-                    double as = 0.0;
+                    Vec2 ap = getVec2(0.0, 0.0);
+                    SP_REAL as = 0.0;
 
-                    double minv = SP_INFINITY;
+                    SP_REAL minv = SP_INFINITY;
                     for (int r = 0; r < rdiv / 2; r++) {
                         const Vec2 n0 = rvec[r];
                         const Vec2 v0 = scl * n0;
@@ -543,9 +543,9 @@ namespace sp {
                         bd1.x = acs2<short2, short>(di1, b.x, b.y, 0);
                         bd1.y = acs2<short2, short>(di1, b.x, b.y, 1);
 
-                        const double s0 = dotVec(n0, ad1);
-                        const double s1 = dotVec(n1, bd1);
-                        const double s = maxVal(fabs(s0), fabs(s1));
+                        const SP_REAL s0 = dotVec(n0, ad1);
+                        const SP_REAL s1 = dotVec(n1, bd1);
+                        const SP_REAL s = maxVal(fabs(s0), fabs(s1));
                         minv = minVal(minv, s);
                     }
 
@@ -557,10 +557,10 @@ namespace sp {
         }
        
         template <typename TYPE>
-        void calcFtrDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const double scl) {
+        void calcFtrDrc(Mem1<Vec2> &drcs, const Mem2<TYPE> &img, const Vec2 &pix, const SP_REAL scl) {
 
             const int BINS = 36;
-            Mem1<double> hist(BINS);
+            Mem1<SP_REAL> hist(BINS);
 
             const int x = round(pix.x);
             const int y = round(pix.y);
@@ -573,7 +573,7 @@ namespace sp {
 
                 const int radius = round(3.0 * scl);
 
-                const double sdiv = 1.0 / (2.0 * scl * scl);
+                const SP_REAL sdiv = 1.0 / (2.0 * scl * scl);
 
                 for (int ry = -radius; ry <= radius; ry++) {
                     for (int rx = -radius; rx <= radius; rx++) {
@@ -581,10 +581,10 @@ namespace sp {
                         const int iy = y + ry;
                         if (inRect2(rect, ix, iy) == false) continue;
 
-                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+                        const SP_REAL dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const SP_REAL dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
 
-                        const double angle = atan2(dy, dx);
+                        const SP_REAL angle = atan2(dy, dx);
 
                         int bin = round(angle * BINS / (2 * SP_PI));
                         if (bin < 0) bin += BINS;
@@ -594,58 +594,58 @@ namespace sp {
                 }
             }
 
-            Mem1<double> fhist(BINS);
+            Mem1<SP_REAL> fhist(BINS);
 
             // filtering
             for (int i = 0; i < BINS; i++) {
-                const double hi = hist(i);
-                const double hp1 = hist(i + BINS - 1, true);
-                const double hp2 = hist(i + BINS - 2, true);
-                const double hn1 = hist(i + BINS + 1, true);
-                const double hn2 = hist(i + BINS + 2, true);
+                const SP_REAL hi = hist(i);
+                const SP_REAL hp1 = hist(i + BINS - 1, true);
+                const SP_REAL hp2 = hist(i + BINS - 2, true);
+                const SP_REAL hn1 = hist(i + BINS + 1, true);
+                const SP_REAL hn2 = hist(i + BINS + 2, true);
 
                 fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
             }
 
             // detect peak
-            const double phresh = maxVal(fhist) * 0.8;
+            const SP_REAL phresh = maxVal(fhist) * 0.8;
 
             drcs.reserve(BINS);
             for (int i = 0; i < BINS; i++) {
-                const double hi = fhist(i);
-                const double hp1 = fhist(i + BINS - 1, true);
-                const double hn1 = fhist(i + BINS + 1, true);
+                const SP_REAL hi = fhist(i);
+                const SP_REAL hp1 = fhist(i + BINS - 1, true);
+                const SP_REAL hn1 = fhist(i + BINS + 1, true);
 
                 if (hi > phresh && hi > maxVal(hp1, hn1)) {
-                    const double finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
-                    const double angle = finei * (2.0 * SP_PI / BINS);
+                    const SP_REAL finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
+                    const SP_REAL angle = finei * (2.0 * SP_PI / BINS);
 
-                    const Vec2 drc = getVec(cos(angle), sin(angle));
+                    const Vec2 drc = getVec2(cos(angle), sin(angle));
                     drcs.push(drc);
                 }
             }
         }
 
         template <typename TYPE>
-        void calcFtrDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const double scl) {
+        void calcFtrDsc(Dsc &dsc, const Mem2<TYPE> &img, const Vec2 &pix, const Vec2 &drc, const SP_REAL scl) {
 
             const int DSC_BINS = 8;
             const int DSC_BLKS = 4;
-            const double DCS_SCL_FCTR = 3.0;
+            const SP_REAL DCS_SCL_FCTR = 3.0;
 
-            Mem3<double> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
+            Mem3<SP_REAL> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
             hist.zero();
 
             const Rect rect = getRect2(img.dsize) - 1;
 
-            const double block = DCS_SCL_FCTR * scl;
+            const SP_REAL block = DCS_SCL_FCTR * scl;
 
             const int radius = round(block * sqrt(2.0) * (DSC_BLKS + 1) * 0.5);
 
-            const double sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
+            const SP_REAL sdiv = 1.0 / (2.0 * DSC_BLKS * DSC_BLKS);
 
-            const double tcos = +drc.x;
-            const double tsin = -drc.y;
+            const SP_REAL tcos = +drc.x;
+            const SP_REAL tsin = -drc.y;
 
             for (int ry = -radius; ry <= radius; ry++) {
                 for (int rx = -radius; rx <= radius; rx++) {
@@ -653,34 +653,34 @@ namespace sp {
                     const int iy = round(pix.y + ry);
                     if (inRect2(rect, ix, iy) == false) continue;
 
-                    const double tx = (tcos * rx - tsin * ry) / block;
-                    const double ty = (tsin * rx + tcos * ry) / block;
+                    const SP_REAL tx = (tcos * rx - tsin * ry) / block;
+                    const SP_REAL ty = (tsin * rx + tcos * ry) / block;
 
-                    const double bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
-                    const double by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
+                    const SP_REAL bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
+                    const SP_REAL by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
 
                     if (bx > 0 && bx < DSC_BLKS && by > 0 && by < DSC_BLKS) {
 
-                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+                        const SP_REAL dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const SP_REAL dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
 
-                        const double ndx = tcos * dx - tsin * dy;
-                        const double ndy = tsin * dx + tcos * dy;
+                        const SP_REAL ndx = tcos * dx - tsin * dy;
+                        const SP_REAL ndy = tsin * dx + tcos * dy;
 
-                        double angle = atan2(ndy, ndx);
+                        SP_REAL angle = atan2(ndy, ndx);
                         if (angle < 0) angle += 2 * SP_PI;
 
-                        const double ba = angle * (DSC_BINS / (2 * SP_PI));
+                        const SP_REAL ba = angle * (DSC_BINS / (2 * SP_PI));
 
                         const int ibx = floor(bx);
                         const int iby = floor(by);
                         const int iba = floor(ba);
 
-                        const double abx = bx - ibx;
-                        const double aby = by - iby;
-                        const double aba = ba - iba;
+                        const SP_REAL abx = bx - ibx;
+                        const SP_REAL aby = by - iby;
+                        const SP_REAL aba = ba - iba;
 
-                        const double val = pythag(dx, dy) * exp(-(tx * tx + ty * ty) * sdiv);
+                        const SP_REAL val = pythag(dx, dy) * exp(-(tx * tx + ty * ty) * sdiv);
 
                         hist(ibx + 0, iby + 0, iba + 0) += val * (1 - abx) * (1 - aby) * (1 - aba);
                         hist(ibx + 0, iby + 0, iba + 1) += val * (1 - abx) * (1 - aby) * (0 + aba);
@@ -694,7 +694,7 @@ namespace sp {
                 }
             }
 
-            Mem1<double> ddsc(DSC_BLKS * DSC_BLKS * DSC_BINS);
+            Mem1<SP_REAL> ddsc(DSC_BLKS * DSC_BLKS * DSC_BINS);
             {
                 int cnt = 0;
                 for (int iby = 1; iby < DSC_BLKS + 1; iby++) {
@@ -709,10 +709,10 @@ namespace sp {
             }
 
             {
-                const double DSC_MAG_THR = 0.2;
+                const SP_REAL DSC_MAG_THR = 0.2;
 
-                const double sq = sumSq(ddsc);
-                const double thresh = sqrt(sq) * DSC_MAG_THR;
+                const SP_REAL sq = sumSq(ddsc);
+                const SP_REAL thresh = sqrt(sq) * DSC_MAG_THR;
 
                 for (int k = 0; k < ddsc.size(); k++) {
                     ddsc[k] = minVal(ddsc[k], thresh);
@@ -720,8 +720,8 @@ namespace sp {
             }
 
             {
-                const double sq = sumSq(ddsc);
-                const double nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
+                const SP_REAL sq = sumSq(ddsc);
+                const SP_REAL nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
 
                 const int dim = ddsc.size();
 

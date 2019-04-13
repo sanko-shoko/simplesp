@@ -33,12 +33,12 @@ namespace sp{
             for (int v = step / 2; v < img.dsize[1]; v += step){
                 for (int u = step / 2; u < img.dsize[0]; u += step){
                     int su, sv;
-                    double minv = SP_INFINITY;
+                    SP_REAL minv = SP_INFINITY;
                     for (int y = -1; y <= 1; y++){
                         for (int x = -1; x <= 1; x++){
                             const Vec3 dx = labImg(u + x + 1, v + y) - labImg(u + x - 1, v + y);
                             const Vec3 dy = labImg(u + x, v + y + 1) - labImg(u + x, v + y - 1);
-                            const double val = sqVec(dx) + sqVec(dy);
+                            const SP_REAL val = sqVec(dx) + sqVec(dy);
                             if (val < minv){
                                 minv = val;
                                 su = u + x;
@@ -46,14 +46,14 @@ namespace sp{
                             }
                         }
                     }
-                    pixs.push(getVec(su, sv));
+                    pixs.push(getVec2(su, sv));
                     labs.push(labImg(su, sv));
                 }
             }
         }
 
         Mem2<int> &clsMap = map;
-        Mem2<double> dstMap;
+        Mem2<SP_REAL> dstMap;
         {
             clsMap.resize(img.dsize);
             dstMap.resize(img.dsize);
@@ -68,8 +68,8 @@ namespace sp{
             }
 
             // normalize value
-            const double Nc = 30;
-            const double Ns = step;
+            const SP_REAL Nc = 30;
+            const SP_REAL Ns = step;
 
             // assign label
             for (int i = 0; i < pixs.size(); i++){
@@ -78,9 +78,9 @@ namespace sp{
 
                 for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++){
                     for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++){
-                        const Vec2 pix = getVec(u, v);
+                        const Vec2 pix = getVec2(u, v);
                         const Vec3 lab = labImg(u, v);
-                        const double d = sqVec((lab - labs[i]) / Nc) + sqVec((pix - pixs[i]) / Ns);
+                        const SP_REAL d = sqVec((lab - labs[i]) / Nc) + sqVec((pix - pixs[i]) / Ns);
                         if (d < dstMap(u, v)){
                             dstMap(u, v) = d;
                             clsMap(u, v) = i;
@@ -102,7 +102,7 @@ namespace sp{
                         const int label = map(u, v);
                         cnts[label]++;
                         labs[label] += labImg(u, v);
-                        pixs[label] += getVec(u, v);
+                        pixs[label] += getVec2(u, v);
                     }
                 }
 
@@ -127,7 +127,7 @@ namespace sp{
             };
 
             int crntLabel = 0;
-            const double minSize = step * step * 0.2;
+            const SP_REAL minSize = step * step * 0.2;
 
             for (int v = 0; v < img.dsize[1]; v++){
                 for (int u = 0; u < img.dsize[0]; u++){
@@ -149,7 +149,7 @@ namespace sp{
 
                     Mem1<Vec2> list;
                     {
-                        list.push(getVec(u, v));
+                        list.push(getVec2(u, v));
                         tmpMap(u, v) = crntLabel;
                     }
 
@@ -161,7 +161,7 @@ namespace sp{
                             if (tmpMap(x, y) >= 0 || clsMap(u, v) != clsMap(x, y)) continue;
 
                             tmpMap(x, y) = crntLabel;
-                            list.push(getVec(x, y));
+                            list.push(getVec2(x, y));
                         }
                     }
 

@@ -20,19 +20,19 @@ namespace sp{
 
     class Guide1 {
     public:
-        Mem2<double> I;
-        Mem2<double> I2;
-        Mem2<double> mean_I;
-        Mem2<double> mean_I2;
-        Mem1<double> inv;
+        Mem2<SP_REAL> I;
+        Mem2<SP_REAL> I2;
+        Mem2<SP_REAL> mean_I;
+        Mem2<SP_REAL> mean_I2;
+        Mem1<SP_REAL> inv;
 
         template<typename TYPE>
-        Guide1(const Mem<TYPE> &src, const int winSize, const double epsilon) {
+        Guide1(const Mem<TYPE> &src, const int winSize, const SP_REAL epsilon) {
             set(src, winSize, epsilon);
         }
 
         template<typename TYPE>
-        void set(const Mem<TYPE> &src, const int winSize, const double epsilon) {
+        void set(const Mem<TYPE> &src, const int winSize, const SP_REAL epsilon) {
             SP_ASSERT(isValid(2, src));
 
             I.resize(src.dsize);
@@ -50,7 +50,7 @@ namespace sp{
 
             inv.resize(src.size());
             for (int i = 0; i < src.size(); i++) {
-                const double var = mean_I2[i] - mean_I[i] * mean_I[i];
+                const SP_REAL var = mean_I2[i] - mean_I[i] * mean_I[i];
                 inv[i] = 1.0 / (var + epsilon);
             }
         }
@@ -64,13 +64,13 @@ namespace sp{
         Mem2<Vec3> mean_I;
         Mem2<Vec3> mean_I2;
         Mem2<Vec3> mean_Ic;
-        Mem1<double> inv;
+        Mem1<SP_REAL> inv;
 
-        Guide3(const Mem<Col3> &src, const int winSize, const double epsilon) {
+        Guide3(const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
             set(src, winSize, epsilon);
         }
 
-        void set(const Mem<Col3> &src, const int winSize, const double epsilon) {
+        void set(const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
             SP_ASSERT(isValid(2, src));
 
             I.resize(src.dsize);
@@ -93,13 +93,13 @@ namespace sp{
                 Ic[i].z = g.b * g.r;
             }
 
-            boxFilter<Vec3, double>(mean_I, I, winSize);
-            boxFilter<Vec3, double>(mean_I2, I2, winSize);
-            boxFilter<Vec3, double>(mean_Ic, Ic, winSize);
+            boxFilter<Vec3, SP_REAL>(mean_I, I, winSize);
+            boxFilter<Vec3, SP_REAL>(mean_I2, I2, winSize);
+            boxFilter<Vec3, SP_REAL>(mean_Ic, Ic, winSize);
 
             inv.resize(src.size() * 3 * 3);
             for (int i = 0; i < src.size(); i++) {
-                double var[3 * 3];
+                SP_REAL var[3 * 3];
                 var[0 * 3 + 0] = mean_I2[i].x - mean_I[i].x * mean_I[i].x;
                 var[1 * 3 + 1] = mean_I2[i].y - mean_I[i].y * mean_I[i].y;
                 var[2 * 3 + 2] = mean_I2[i].z - mean_I[i].z * mean_I[i].z;
@@ -122,27 +122,27 @@ namespace sp{
     SP_CPUFUNC void guidedFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Guide1 &guide, const int winSize) {
         SP_ASSERT(isValid(2, src));
 
-        Mem2<double> p(src.dsize);
-        Mem2<double> Ip(src.dsize);
+        Mem2<SP_REAL> p(src.dsize);
+        Mem2<SP_REAL> Ip(src.dsize);
 
         for (int i = 0; i < src.size(); i++) {
             const TYPE &v = src[i];
-            const double &g = guide.I[i];
+            const SP_REAL &g = guide.I[i];
             p[i] = v;
             Ip[i] = g * v;
         }
 
-        Mem2<double> mean_p;
+        Mem2<SP_REAL> mean_p;
         boxFilter(mean_p, p, winSize);
 
-        Mem2<double> mean_Ip;
+        Mem2<SP_REAL> mean_Ip;
         boxFilter(mean_Ip, Ip, winSize);
 
-        Mem2<double> a(src.dsize);
-        Mem2<double> b(src.dsize);
+        Mem2<SP_REAL> a(src.dsize);
+        Mem2<SP_REAL> b(src.dsize);
 
         for (int i = 0; i < src.size(); i++) {
-            const double cov = mean_Ip[i] - guide.mean_I[i] * mean_p[i];
+            const SP_REAL cov = mean_Ip[i] - guide.mean_I[i] * mean_p[i];
 
             a[i] = guide.inv[i] * cov;
             b[i] = mean_p[i] - a[i] * guide.mean_I[i];
@@ -160,7 +160,7 @@ namespace sp{
     SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const Guide3 &guide, const int winSize) {
         SP_ASSERT(isValid(2, src));
 
-        Mem2<double> p(src.dsize);
+        Mem2<SP_REAL> p(src.dsize);
 
         Mem2<Vec3> Ip(src.dsize);
 
@@ -175,23 +175,23 @@ namespace sp{
             Ip[i].z = g.z * v;
         }
 
-        Mem2<double> mean_p;
+        Mem2<SP_REAL> mean_p;
         boxFilter(mean_p, p, winSize);
 
         Mem2<Vec3> mean_Ip;
-        boxFilter<Vec3, double>(mean_Ip, Ip, winSize);
+        boxFilter<Vec3, SP_REAL>(mean_Ip, Ip, winSize);
 
         Mem2<Vec3> a(src.dsize);
-        Mem2<double> b(src.dsize);
+        Mem2<SP_REAL> b(src.dsize);
 
         for (int i = 0; i < src.size(); i++) {
 
-            double cov[3];
+            SP_REAL cov[3];
             cov[0] = (mean_Ip[i].x - guide.mean_I[i].x * mean_p[i]);
             cov[1] = (mean_Ip[i].y - guide.mean_I[i].y * mean_p[i]);
             cov[2] = (mean_Ip[i].z - guide.mean_I[i].z * mean_p[i]);
 
-            double tmp[3];
+            SP_REAL tmp[3];
             mulMat(tmp, 3, 1, &guide.inv[i * 3 * 3], 3, 3, cov, 3, 1);
 
             a[i].x = tmp[0];
@@ -200,7 +200,7 @@ namespace sp{
             b[i] = mean_p[i] - tmp[0] * guide.mean_I[i].x - tmp[1] * guide.mean_I[i].y - tmp[2] * guide.mean_I[i].z;
         }
 
-        boxFilter<Vec3, double>(a, a, winSize);
+        boxFilter<Vec3, SP_REAL>(a, a, winSize);
         boxFilter(b, b, winSize);
 
         dst.resize(2, src.dsize);
@@ -242,11 +242,11 @@ namespace sp{
         }
 
         Mem2<Vec3> mean_p;
-        boxFilter<Vec3, double>(mean_p, p, winSize);
+        boxFilter<Vec3, SP_REAL>(mean_p, p, winSize);
 
         Mem2<Vec3> mean_Ip[3];
         for (int c = 0; c < 3; c++) {
-            boxFilter<Vec3, double>(mean_Ip[c], Ip[c], winSize);
+            boxFilter<Vec3, SP_REAL>(mean_Ip[c], Ip[c], winSize);
         }
 
         Mem2<Vec3> a[3];
@@ -254,25 +254,25 @@ namespace sp{
         a[1].resize(src.dsize);
         a[2].resize(src.dsize);
 
-        Mem2<double> b[3];
+        Mem2<SP_REAL> b[3];
         b[0].resize(src.dsize);
         b[1].resize(src.dsize);
         b[2].resize(src.dsize);
 
         for (int i = 0; i < src.size(); i++) {
 
-            double mp[3];
+            SP_REAL mp[3];
             mp[0] = mean_p[i].x;
             mp[1] = mean_p[i].y;
             mp[2] = mean_p[i].z;
 
             for (int c = 0; c < 3; c++) {
-                double cov[3];
+                SP_REAL cov[3];
                 cov[0] = (mean_Ip[c][i].x - guide.mean_I[i].x * mp[c]);
                 cov[1] = (mean_Ip[c][i].y - guide.mean_I[i].y * mp[c]);
                 cov[2] = (mean_Ip[c][i].z - guide.mean_I[i].z * mp[c]);
 
-                double tmp[3];
+                SP_REAL tmp[3];
                 mulMat(tmp, 3, 1, &guide.inv[i * 3 * 3], 3, 3, cov, 3, 1);
 
                 a[c][i].x = tmp[0];
@@ -283,7 +283,7 @@ namespace sp{
         }
 
         for (int c = 0; c < 3; c++) {
-            boxFilter<Vec3, double>(a[c], a[c], winSize);
+            boxFilter<Vec3, SP_REAL>(a[c], a[c], winSize);
             boxFilter(b[c], b[c], winSize);
         }
 
@@ -297,14 +297,14 @@ namespace sp{
     }
 
 
-    SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const double epsilon) {
+    SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const SP_REAL epsilon) {
         SP_ASSERT(isValid(2, src));
 
         const Guide1 guide(src, winSize, epsilon);
         guidedFilter(dst, src, guide, winSize);
     }
 
-    SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const double epsilon) {
+    SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
         SP_ASSERT(isValid(2, src));
 
         const Guide3 guide(src, winSize, epsilon);

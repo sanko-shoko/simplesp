@@ -18,10 +18,10 @@ int main(){
     // generate dataset
     {
         // hand to cam pose
-        const Pose hand2camPose = getPose(getRotAngleZ(-0.1 * SP_PI), getVec(0.0, 100.0, 0.0));
+        const Pose hand2camPose = getPose(getRotAngleZ(-0.1 * SP_PI), getVec3(0.0, 100.0, 0.0));
 
         // base to mrk pose
-        const Pose base2mrkPose = getPose(getRotAngleZ(+0.1 * SP_PI), getVec(0.0, 0.0, -600.0));
+        const Pose base2mrkPose = getPose(getRotAngleZ(+0.1 * SP_PI), getVec3(0.0, 0.0, -600.0));
 
         printf("--------------------------------------------------------------------------------\n");
         printf("ground truth\n");
@@ -36,11 +36,11 @@ int main(){
 
         // generate test pose
         {
-            mrk2camPoses.push(getPose(getVec(+0.0, +0.0, 400)));
-            mrk2camPoses.push(getPose(getVec(+0.0, +10.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0));
-            mrk2camPoses.push(getPose(getVec(+0.0, -10.0, 400)) * getRotAngleX(-30 * SP_PI / 180.0));
-            mrk2camPoses.push(getPose(getVec(+10.0, +0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0));
-            mrk2camPoses.push(getPose(getVec(-10.0, +0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0));
+            mrk2camPoses.push(getPose(getVec3(+0.0, +0.0, 400)));
+            mrk2camPoses.push(getPose(getVec3(+0.0, +10.0, 400)) * getRotAngleX(+30 * SP_PI / 180.0));
+            mrk2camPoses.push(getPose(getVec3(+0.0, -10.0, 400)) * getRotAngleX(-30 * SP_PI / 180.0));
+            mrk2camPoses.push(getPose(getVec3(+10.0, +0.0, 400)) * getRotAngleY(+30 * SP_PI / 180.0));
+            mrk2camPoses.push(getPose(getVec3(-10.0, +0.0, 400)) * getRotAngleY(-30 * SP_PI / 180.0));
         }
 
         for (int i = 0; i < mrk2camPoses.size(); i++) {
@@ -60,7 +60,7 @@ int main(){
 
                 const double sigma = 0.1;
                 for (int n = 0; n < mrkMap.size(); n++) {
-                    const Vec3 pos = mrk2camPoses[i] * getVec(mrkMap[n].x, mrkMap[n].y, 0.0);
+                    const Vec3 pos = mrk2camPoses[i] * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0);
                     const Vec2 pix = mulCamD(cam, prjVec(pos)) + randVecGauss(sigma, sigma);
 
                     _pixs.push(pix);

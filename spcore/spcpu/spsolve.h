@@ -17,7 +17,7 @@ namespace sp{
 
     namespace solver {
 
-        template<typename TYPE, typename ELEM = double>
+        template<typename TYPE, typename ELEM = SP_REAL>
         SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
 
             const int dim = sizeof(TYPE) / sizeof(ELEM);
@@ -27,7 +27,7 @@ namespace sp{
             const Mat mean = meanVal(data, 0);
             data -= mean;
 
-            double scale = meanSqrt(sumSq(data, 1));
+            SP_REAL scale = meanSqrt(sumSq(data, 1));
             if (scale < SP_SMALL) return false;
             data /= scale;
 
@@ -46,19 +46,19 @@ namespace sp{
         }
 
 
-        SP_CPUFUNC Mat calcW(const Mem<double> errs, const int step = 1, const double minErr = 0.1) {
+        SP_CPUFUNC Mat calcW(const Mem<SP_REAL> errs, const int step = 1, const SP_REAL minErr = 0.1) {
             const int nsize = errs.size();
 
             Mat W(nsize * step, 1);
 
-            const double sigma = 1.4826 * medianVal(errs);
-            const double thresh = maxVal(3.0 * sigma, minErr);
+            const SP_REAL sigma = 1.4826 * medianVal(errs);
+            const SP_REAL thresh = maxVal(3.0 * sigma, minErr);
 
-            double *pw = W.ptr;
-            const double *pe = errs.ptr;
+            SP_REAL *pw = W.ptr;
+            const SP_REAL *pe = errs.ptr;
 
             for (int i = 0; i < nsize; i++) {
-                const double w = funcTukey(*pe++, thresh);
+                const SP_REAL w = funcTukey(*pe++, thresh);
                 for (int s = 0; s < step; s++) {
                     *pw++ = w;
                 }
@@ -77,16 +77,16 @@ namespace sp{
             const int nsize = A.rows();
 
             for (int i = 0; i < nsize; i++) {
-                double *pm = M.ptr;
-                const double *pa_ = &A(i, 0);
-                const double w = (W.ptr != NULL) ? W[i] : 1.0;
+                SP_REAL *pm = M.ptr;
+                const SP_REAL *pa_ = &A(i, 0);
+                const SP_REAL w = (W.ptr != NULL) ? W[i] : 1.0;
 
                 for (int r = 0; r < rsize; r++) {
-                    const double *pa = pa_;
+                    const SP_REAL *pa = pa_;
                     pm += r;
                     pa += r;
 
-                    const double a = *pa;
+                    const SP_REAL a = *pa;
                     for (int c = r; c < csize; c++) {
                         (*pm++) += a * (*pa++) * w;
                     }
@@ -115,10 +115,10 @@ namespace sp{
             const int nsize = A.rows();
 
             for (int i = 0; i < nsize; i++) {
-                double *pm = M.ptr;
-                const double *pa = &A(i, 0);
-                const double b = B(i, 0);
-                const double w = (W.ptr != NULL) ? W[i] : 1.0;
+                SP_REAL *pm = M.ptr;
+                const SP_REAL *pa = &A(i, 0);
+                const SP_REAL b = B(i, 0);
+                const SP_REAL w = (W.ptr != NULL) ? W[i] : 1.0;
 
                 for (int r = 0; r < rsize; r++) {
                     *pm++ += (*pa++) * b * w;
@@ -164,18 +164,18 @@ namespace sp{
 #define SP_RANSAC_MINEVAL 0.2
 
     // ransac adaptive stop
-    SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int unit, const double n = 0.99){
-        const double e = maxVal(rate, 0.1);
+    SP_CPUFUNC int ransacAdaptiveStop(const SP_REAL rate, const int unit, const SP_REAL n = 0.99){
+        const SP_REAL e = maxVal(rate, 0.1);
         const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, unit)));
         return minVal(k, SP_RANSAC_ITMAX);
     }
 
-    SP_CPUFUNC double ransacEval(const Mem<double> &errs, const int unit, const double thresh) {
+    SP_CPUFUNC SP_REAL ransacEval(const Mem<SP_REAL> &errs, const int unit, const SP_REAL thresh) {
         int cnt = 0;
         for (int i = 0; i < errs.size(); i++) {
             if (errs[i] < thresh) cnt++;
         }
-        const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
+        const SP_REAL eval = static_cast<SP_REAL>(cnt - unit) / (errs.size() - unit);
      
         return eval;
     }

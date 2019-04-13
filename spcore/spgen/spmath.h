@@ -16,25 +16,25 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // x * x
-    SP_GENFUNC double square(const double x) {
+    SP_GENFUNC SP_REAL square(const SP_REAL x) {
         return x * x;
     }
 
     // x * x * x
-    SP_GENFUNC double cubic(const double x) {
+    SP_GENFUNC SP_REAL cubic(const SP_REAL x) {
         return x * x * x;
     }
 
     // cubic root
-    SP_GENFUNC double cbrt(const double x) {
-        const double z = pow(fabs(x), 1.0 / 3.0);
+    SP_GENFUNC SP_REAL cbrt(const SP_REAL x) {
+        const SP_REAL z = pow(fabs(x), 1.0 / 3.0);
         return (x >= 0.0) ? z : -z;
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
-    SP_GENFUNC double pythag(const double a, const double b) {
-        const double x = fabs(a);
-        const double y = fabs(b);
+    SP_GENFUNC SP_REAL pythag(const SP_REAL a, const SP_REAL b) {
+        const SP_REAL x = fabs(a);
+        const SP_REAL y = fabs(b);
         if (x > y) {
             return x * sqrt(1.0 + (y / x) * (y / x));
         }
@@ -58,7 +58,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // get complex
-    SP_GENFUNC Cmp getCmp(const double re, const double im) {
+    SP_GENFUNC Cmp getCmp(const SP_REAL re, const SP_REAL im) {
         Cmp dst;
         dst.re = re, dst.im = im;
         return dst;
@@ -70,12 +70,12 @@ namespace sp{
     }
 
     // addition
-    SP_GENFUNC Cmp addCmp(const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp addCmp(const Cmp &cmp, const SP_REAL val) {
         return getCmp(cmp.re + val, cmp.im);
     }
 
     // addition
-    SP_GENFUNC Cmp addCmp(const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp addCmp(const SP_REAL val, const Cmp &cmp) {
         return getCmp(val + cmp.re, cmp.im);
     }
 
@@ -85,12 +85,12 @@ namespace sp{
     }
 
     // subtraction
-    SP_GENFUNC Cmp subCmp(const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp subCmp(const Cmp &cmp, const SP_REAL val) {
         return getCmp(cmp.re - val, cmp.im);
     }
 
     // subtraction
-    SP_GENFUNC Cmp subCmp(const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp subCmp(const SP_REAL val, const Cmp &cmp) {
         return getCmp(val - cmp.re, cmp.im);
     }
 
@@ -100,42 +100,42 @@ namespace sp{
     }
 
     // multiple
-    SP_GENFUNC Cmp mulCmp(const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp mulCmp(const Cmp &cmp, const SP_REAL val) {
         return getCmp(cmp.re * val, cmp.im * val);
     }
 
     // multiple
-    SP_GENFUNC Cmp mulCmp(const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp mulCmp(const SP_REAL val, const Cmp &cmp) {
         return getCmp(cmp.re * val, cmp.im * val);
     }
 
     // division
     SP_GENFUNC Cmp divCmp(const Cmp &cmp0, const Cmp &cmp1) {
         const Cmp tmp = mulCmp(cmp0, getCmp(cmp1.re, -cmp1.im));
-        const double div = cmp1.re * cmp1.re + cmp1.im * cmp1.im;
+        const SP_REAL div = cmp1.re * cmp1.re + cmp1.im * cmp1.im;
         return getCmp(tmp.re / div, tmp.im / div);
     }
 
     // division
-    SP_GENFUNC Cmp divCmp(const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp divCmp(const Cmp &cmp, const SP_REAL val) {
         return getCmp(cmp.re / val, cmp.im / val);
     }
 
     // division
-    SP_GENFUNC Cmp divCmp(const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp divCmp(const SP_REAL val, const Cmp &cmp) {
         return divCmp(getCmp(val, 0.0), cmp);
     }
 
-    SP_GENFUNC double fabs(const Cmp cmp) {
+    SP_GENFUNC SP_REAL fabs(const Cmp cmp) {
         return pythag(cmp.re, cmp.im);
     }
 
-    SP_GENFUNC Cmp pow(const Cmp cmp, const double n) {
+    SP_GENFUNC Cmp pow(const Cmp cmp, const SP_REAL n) {
         Cmp ret = getCmp(0.0, 0.0);
         
-        double a = pow(fabs(cmp), n);
+        SP_REAL a = pow(fabs(cmp), n);
         if (a > SP_SMALL) {
-            const double theta = atan2(cmp.im, cmp.re);
+            const SP_REAL theta = atan2(cmp.im, cmp.re);
 
             ret.re = a * cos(n * theta);
             ret.im = a * sin(n * theta);
@@ -151,10 +151,10 @@ namespace sp{
     SP_GENFUNC Cmp operator + (const Cmp &cmp0, const Cmp &cmp1) {
         return addCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator + (const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp operator + (const Cmp &cmp, const SP_REAL val) {
         return addCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator + (const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator + (const SP_REAL val, const Cmp &cmp) {
         return addCmp(val, cmp);
     }
     SP_GENFUNC Cmp operator + (const Cmp &cmp) {
@@ -164,10 +164,10 @@ namespace sp{
     SP_GENFUNC Cmp operator - (const Cmp &cmp0, const Cmp &cmp1) {
         return subCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator - (const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp operator - (const Cmp &cmp, const SP_REAL val) {
         return subCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator - (const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator - (const SP_REAL val, const Cmp &cmp) {
         return subCmp(val, cmp);
     }
     SP_GENFUNC Cmp operator - (const Cmp &cmp) {
@@ -177,48 +177,48 @@ namespace sp{
     SP_GENFUNC Cmp operator * (const Cmp &cmp0, const Cmp &cmp1) {
         return mulCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator * (const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp operator * (const Cmp &cmp, const SP_REAL val) {
         return mulCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator * (const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator * (const SP_REAL val, const Cmp &cmp) {
         return mulCmp(val, cmp);
     }
 
     SP_GENFUNC Cmp operator / (const Cmp &cmp0, const Cmp &cmp1) {
         return divCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator / (const Cmp &cmp, const double val) {
+    SP_GENFUNC Cmp operator / (const Cmp &cmp, const SP_REAL val) {
         return divCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator / (const double val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator / (const SP_REAL val, const Cmp &cmp) {
         return divCmp(val, cmp);
     }
 
     SP_GENFUNC void operator += (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = addCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator += (Cmp &cmp, const double val) {
+    SP_GENFUNC void operator += (Cmp &cmp, const SP_REAL val) {
         cmp = addCmp(cmp, val);
     }
 
     SP_GENFUNC void operator -= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = subCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator -= (Cmp &cmp, const double val) {
+    SP_GENFUNC void operator -= (Cmp &cmp, const SP_REAL val) {
         cmp = subCmp(cmp, val);
     }
 
     SP_GENFUNC void operator *= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = mulCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator *= (Cmp &cmp, const double val) {
+    SP_GENFUNC void operator *= (Cmp &cmp, const SP_REAL val) {
         cmp = mulCmp(cmp, val);
     }
 
     SP_GENFUNC void operator /= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = divCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator /= (Cmp &cmp, const double val) {
+    SP_GENFUNC void operator /= (Cmp &cmp, const SP_REAL val) {
         cmp = divCmp(cmp, val);
     }
 
@@ -228,8 +228,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // gauss function
-    SP_GENFUNC double funcGauss(const double x, const double mean, const double sigma){
-        double ret = 0.0;
+    SP_GENFUNC SP_REAL funcGauss(const SP_REAL x, const SP_REAL mean, const SP_REAL sigma){
+        SP_REAL ret = 0.0;
 
         if (fabs(sigma) > 0){
             ret = exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma);
@@ -238,21 +238,21 @@ namespace sp{
     }
 
     // tukey function
-    SP_GENFUNC double funcTukey(const double x, const double t){
-        double ret = 0.0;
+    SP_GENFUNC SP_REAL funcTukey(const SP_REAL x, const SP_REAL t){
+        SP_REAL ret = 0.0;
 
         if (fabs(x) < t){
-            const double v = 1.0 - (x * x) / (t * t);
+            const SP_REAL v = 1.0 - (x * x) / (t * t);
             ret = v * v;
         }
         return ret;
     }
 
     // f = cs[0] * x^(n) + cs[1] * x^(n-1) + ... + cs[n]
-    SP_GENFUNC double funcX(const double x, const int csize, const double *cs) {
+    SP_GENFUNC SP_REAL funcX(const SP_REAL x, const int csize, const SP_REAL *cs) {
         const int n = csize - 1;
 
-        double f = cs[n];
+        SP_REAL f = cs[n];
         for (int i = 0; i < n; i++) {
             f += cs[i] * pow(x, n - i);
         }
@@ -260,7 +260,7 @@ namespace sp{
     }
 
     // f = sc[0] * x^(n-1) + cs[1] * x^(n-2) + ... + cs[n]
-    SP_GENFUNC Cmp funcX(const Cmp &x, const int csize, const double *cs) {
+    SP_GENFUNC Cmp funcX(const Cmp &x, const int csize, const SP_REAL *cs) {
         const int n = csize - 1;
 
         Cmp f = getCmp(cs[n], 0.0);
@@ -271,10 +271,10 @@ namespace sp{
     }
 
     // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
-    SP_GENFUNC double dfuncX(const double x, const int csize, const double *cs) {
+    SP_GENFUNC SP_REAL dfuncX(const SP_REAL x, const int csize, const SP_REAL *cs) {
         const int n = csize - 1;
 
-        double df = cs[n - 1];
+        SP_REAL df = cs[n - 1];
         for (int i = 0; i < n - 1; i++) {
             df += cs[i] * (n - i) * pow(x, n - 1 - i);
         }
@@ -282,7 +282,7 @@ namespace sp{
     }
 
     // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
-    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int csize, const double *cs) {
+    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int csize, const SP_REAL *cs) {
         const int n = csize - 1;
 
         Cmp df = getCmp(cs[n - 1], 0.0);
@@ -308,7 +308,7 @@ namespace sp{
 
     // convert
     template <typename TYPE, typename TYPE0>
-    SP_GENFUNC void cnvMem(TYPE *dst, const int size, const TYPE0 *mem0, const double scale = 1.0, const double base = 0.0) {
+    SP_GENFUNC void cnvMem(TYPE *dst, const int size, const TYPE0 *mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0) {
         for (int i = 0; i < size; i++) {
             cnvVal(dst[i], (mem0[i] - base) * scale);
         }
@@ -395,7 +395,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // identity matrix
-    SP_GENFUNC void eyeMat(double *dst, const int rows, const int cols){
+    SP_GENFUNC void eyeMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
                 dst[r * cols + c] = (r == c) ? 1.0 : 0.0;
@@ -404,7 +404,7 @@ namespace sp{
     }
 
     // zero matrix
-    SP_GENFUNC void zeroMat(double *dst, const int rows, const int cols){
+    SP_GENFUNC void zeroMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
                 dst[r * cols + c] = 0.0;
@@ -413,7 +413,7 @@ namespace sp{
     }
 
     // extension matrix
-    SP_GENFUNC void extMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+    SP_GENFUNC void extMat(SP_REAL *dst, const int rows, const int cols, const SP_REAL *mat0, const int rows0, const int cols0){
         eyeMat(dst, rows, cols);
 
         for (int r = 0; r < minVal(rows, rows0); r++){
@@ -424,11 +424,11 @@ namespace sp{
     }
 
     // multiple
-    SP_GENFUNC void mulMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0, const double *mat1, const int rows1, const int cols1){
+    SP_GENFUNC void mulMat(SP_REAL *dst, const int rows, const int cols, const SP_REAL *mat0, const int rows0, const int cols0, const SP_REAL *mat1, const int rows1, const int cols1){
 
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                double &d = dst[r * cols + c];
+                SP_REAL &d = dst[r * cols + c];
                 d = 0;
                 for (int i = 0; i < cols0; i++){
                     d += mat0[r * cols0 + i] * mat1[i * cols1 + c];
@@ -439,7 +439,7 @@ namespace sp{
 
 
     // transpose
-    SP_GENFUNC void trnMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+    SP_GENFUNC void trnMat(SP_REAL *dst, const int rows, const int cols, const SP_REAL *mat0, const int rows0, const int cols0){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
                 dst[r * cols + c] = mat0[c * cols0 + r];
@@ -448,10 +448,10 @@ namespace sp{
     }
 
     // covariance
-    SP_GENFUNC void covMat(double *dst, const int rows, const int cols, const double *mat0, const int rows0, const int cols0){
+    SP_GENFUNC void covMat(SP_REAL *dst, const int rows, const int cols, const SP_REAL *mat0, const int rows0, const int cols0){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                double &d = dst[r * cols + c];
+                SP_REAL &d = dst[r * cols + c];
                 d = 0;
                 for (int i = 0; i < rows0; i++){
                     d += mat0[i * cols0 + r] * mat0[i * cols0 + c];
@@ -461,7 +461,7 @@ namespace sp{
     }
 
     // skew
-    SP_GENFUNC void skewMat(double *dst, const int rows, const int cols, const Vec3 &vec){
+    SP_GENFUNC void skewMat(SP_REAL *dst, const int rows, const int cols, const Vec3 &vec){
         dst[0 * 3 + 0] = 0.0;
         dst[0 * 3 + 1] = -vec.z;
         dst[0 * 3 + 2] = +vec.y;
@@ -476,8 +476,8 @@ namespace sp{
     }
 
     // norm
-    SP_GENFUNC double normMat(const double *mat, const int rows, const int cols, const double *base = NULL){
-        double norm = 0.0;
+    SP_GENFUNC SP_REAL normMat(const SP_REAL *mat, const int rows, const int cols, const SP_REAL *base = NULL){
+        SP_REAL norm = 0.0;
         for (int i = 0; i < rows * cols; i++){
             norm += (base == NULL) ? square(mat[i]) : square(mat[i] - base[i]);
         }
@@ -489,19 +489,19 @@ namespace sp{
     // matrix determinant
     //--------------------------------------------------------------------------------
     
-    SP_GENFUNC double detMat22(const double *mat){
+    SP_GENFUNC SP_REAL detMat22(const SP_REAL *mat){
         return mat[0 * 2 + 0] * mat[1 * 2 + 1] - mat[0 * 2 + 1] * mat[1 * 2 + 0];
     }
 
-    SP_GENFUNC double detMat33(const double *mat){
-        const double v0 = mat[0 * 3 + 0] * (mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[2 * 3 + 1] * mat[1 * 3 + 2]);
-        const double v1 = mat[0 * 3 + 1] * (mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[2 * 3 + 0] * mat[1 * 3 + 2]);
-        const double v2 = mat[0 * 3 + 2] * (mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[2 * 3 + 0] * mat[1 * 3 + 1]);
+    SP_GENFUNC SP_REAL detMat33(const SP_REAL *mat){
+        const SP_REAL v0 = mat[0 * 3 + 0] * (mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[2 * 3 + 1] * mat[1 * 3 + 2]);
+        const SP_REAL v1 = mat[0 * 3 + 1] * (mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[2 * 3 + 0] * mat[1 * 3 + 2]);
+        const SP_REAL v2 = mat[0 * 3 + 2] * (mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[2 * 3 + 0] * mat[1 * 3 + 1]);
 
         return v0 - v1 + v2;
     }
 
-    SP_GENFUNC double detMat(const double *mat, const int rows, const int cols, double *buf){
+    SP_GENFUNC SP_REAL detMat(const SP_REAL *mat, const int rows, const int cols, SP_REAL *buf){
 
         if (rows != cols) return 0.0;
         const int size = rows;
@@ -512,7 +512,7 @@ namespace sp{
             }
         }
 
-        double dst = 1.0;
+        SP_REAL dst = 1.0;
         for (int i = 0; i < size; i++){
             if (i == size - 1){
                 dst *= buf[i * size + i];
@@ -522,9 +522,9 @@ namespace sp{
             // partial pivoting
             {
                 int pivot = i;
-                double maxVal = 0.0;
+                SP_REAL maxVal = 0.0;
                 for (int r = i; r < size; r++){
-                    const double val = fabs(buf[r * size + i]);
+                    const SP_REAL val = fabs(buf[r * size + i]);
                     if (val > maxVal){
                         maxVal = val;
                         pivot = r;
@@ -541,7 +541,7 @@ namespace sp{
 
             // div
             {
-                const double div = buf[i * size + i];
+                const SP_REAL div = buf[i * size + i];
                 if (fabs(div) < SP_SMALL) return 0.0;
 
                 dst *= div;
@@ -550,7 +550,7 @@ namespace sp{
                 }
 
                 for (int r = i + 1; r < size; r++){
-                    const double scl = buf[r * size + i];
+                    const SP_REAL scl = buf[r * size + i];
                     for (int c = i + 1; c < size; c++){
                         buf[r * size + c] -= buf[i * size + c] * scl;
                     }
@@ -564,8 +564,8 @@ namespace sp{
     // matrix inverse
     //--------------------------------------------------------------------------------
     
-    SP_GENFUNC bool invMat22(double *dst, const double *mat){
-        const double det = detMat22(mat);
+    SP_GENFUNC bool invMat22(SP_REAL *dst, const SP_REAL *mat){
+        const SP_REAL det = detMat22(mat);
         if (fabs(det) < SP_SMALL) return false;
 
         dst[0 * 2 + 0] = +mat[1 * 2 + 1];
@@ -577,8 +577,8 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC bool invMat33(double *dst, const double *mat){
-        const double det = detMat33(mat);
+    SP_GENFUNC bool invMat33(SP_REAL *dst, const SP_REAL *mat){
+        const SP_REAL det = detMat33(mat);
         if (fabs(det) < SP_SMALL) return false;
 
         dst[0 * 3 + 0] = +(mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]);
@@ -597,7 +597,7 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC bool invMat(double *dst, const double *mat, const int rows, const int cols, double *buf){
+    SP_GENFUNC bool invMat(SP_REAL *dst, const SP_REAL *mat, const int rows, const int cols, SP_REAL *buf){
 
         if (rows != cols) return false;
         const int size = rows;
@@ -624,9 +624,9 @@ namespace sp{
             // partial pivoting
             {
                 int pivot = i;
-                double maxVal = 0.0;
+                SP_REAL maxVal = 0.0;
                 for (int r = i; r < size; r++){
-                    const double val = fabs(buf[r * size + i]);
+                    const SP_REAL val = fabs(buf[r * size + i]);
                     if (val > maxVal){
                         maxVal = val;
                         pivot = r;
@@ -643,7 +643,7 @@ namespace sp{
 
             // div
             {
-                const double div = buf[i * size + i];
+                const SP_REAL div = buf[i * size + i];
                 if (fabs(div) < SP_SMALL) return false;
 
                 for (int c = 0; c < size; c++){
@@ -654,7 +654,7 @@ namespace sp{
                 for (int r = 0; r < size; r++){
                     if (r == i) continue;
 
-                    const double scl = buf[r * size + i];
+                    const SP_REAL scl = buf[r * size + i];
                     for (int c = 0; c < size; c++){
                         dst[r * size + c] -= dst[i * size + c] * scl;
                         buf[r * size + c] -= buf[i * size + c] * scl;
@@ -670,7 +670,7 @@ namespace sp{
     // matrix eigen
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC bool eigMat(double *eigVec, double *eigVal, const double *mat, const int rows, const int cols, const bool minOrder = true){
+    SP_GENFUNC bool eigMat(SP_REAL *eigVec, SP_REAL *eigVal, const SP_REAL *mat, const int rows, const int cols, const bool minOrder = true){
     
         if (rows < 2 || cols < 2 || rows != cols) return false;
 
@@ -688,12 +688,12 @@ namespace sp{
         // jacobi algorithm
         for (int it = 0; it < maxit; it++){
             int p = 0, q = 0;
-            double maxv = 0.0;
+            SP_REAL maxv = 0.0;
 
             for (int r = 0; r < size; r++){
                 for (int c = r + 1; c < size; c++){
 
-                    const double val = fabs(eigVal[r * size + c]);
+                    const SP_REAL val = fabs(eigVal[r * size + c]);
                     if (val > maxv){
                         maxv = val;
                         p = r;
@@ -703,17 +703,17 @@ namespace sp{
             }
             if (maxv < SP_SMALL) break;
 
-            const double app = eigVal[p * size + p];
-            const double apq = eigVal[p * size + q];
-            const double aqq = eigVal[q * size + q];
+            const SP_REAL app = eigVal[p * size + p];
+            const SP_REAL apq = eigVal[p * size + q];
+            const SP_REAL aqq = eigVal[q * size + q];
 
-            double sinv, cosv;
+            SP_REAL sinv, cosv;
             {
-                const double a = (app - aqq) / 2.0;
-                const double b = -apq;
+                const SP_REAL a = (app - aqq) / 2.0;
+                const SP_REAL b = -apq;
 
                 // g = cos(2A) = |a| / sqrt(a * a + b * b)
-                const double g = fabs(a) / pythag(a, b);
+                const SP_REAL g = fabs(a) / pythag(a, b);
 
                 sinv = sqrt((1.0 - g) / 2.0) * sign(a * b);
                 cosv = sqrt((1.0 + g) / 2.0);
@@ -721,8 +721,8 @@ namespace sp{
 
             for (int i = 0; i < size; i++){
                 if (i == p || i == q) continue;
-                const double tmpa = cosv * eigVal[p * size + i] - sinv * eigVal[q * size + i];
-                const double tmpb = sinv * eigVal[p * size + i] + cosv * eigVal[q * size + i];
+                const SP_REAL tmpa = cosv * eigVal[p * size + i] - sinv * eigVal[q * size + i];
+                const SP_REAL tmpb = sinv * eigVal[p * size + i] + cosv * eigVal[q * size + i];
 
                 eigVal[i * size + p] = eigVal[p * size + i] = tmpa;
                 eigVal[i * size + q] = eigVal[q * size + i] = tmpb;
@@ -735,8 +735,8 @@ namespace sp{
             }
 
             for (int i = 0; i < size; i++){
-                const double tmpa = cosv * eigVec[i * size + p] - sinv * eigVec[i * size + q];
-                const double tmpb = sinv * eigVec[i * size + p] + cosv * eigVec[i * size + q];
+                const SP_REAL tmpa = cosv * eigVec[i * size + p] - sinv * eigVec[i * size + q];
+                const SP_REAL tmpb = sinv * eigVec[i * size + p] + cosv * eigVec[i * size + q];
 
                 eigVec[i * size + p] = tmpa;
                 eigVec[i * size + q] = tmpb;
@@ -756,11 +756,11 @@ namespace sp{
             int maxid = c;
             int minid = c;
 
-            double maxv = 0.0;
-            double minv = SP_INFINITY;
+            SP_REAL maxv = 0.0;
+            SP_REAL minv = SP_INFINITY;
 
             for (int i = c; i < size; i++){
-                const double val = ::fabs(eigVal[i * size + i]);
+                const SP_REAL val = ::fabs(eigVal[i * size + i]);
                 if (val > maxv){
                     maxv = val;
                     maxid = i;
@@ -789,7 +789,7 @@ namespace sp{
     // matrix svd (simgular value decomposition)
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC bool svdMat(double *U, double *S, double *V, const double *mat, const int rows, const int cols, const bool minOrder = true){
+    SP_GENFUNC bool svdMat(SP_REAL *U, SP_REAL *S, SP_REAL *V, const SP_REAL *mat, const int rows, const int cols, const bool minOrder = true){
         if (rows < 2 || cols < 2 || rows < cols) return false;
 
         for (int i = 0; i < rows * cols; i++){
@@ -799,31 +799,31 @@ namespace sp{
             V[i] = 0.0;
             S[i] = 0.0;
         }
-        double *Q = &S[0];
-        double *R = &S[cols];
+        SP_REAL *Q = &S[0];
+        SP_REAL *R = &S[cols];
 
         // householder reduction to bidiagonal form
         for (int i = 0; i < cols; i++) {
 
             {
-                double scale = 0.0;
+                SP_REAL scale = 0.0;
                 for (int r = i; r < rows; r++){
                     scale += fabs(U[r * cols + i]);
                 }
 
-                double val = 0.0;
+                SP_REAL val = 0.0;
                 if (scale > 0.0) {
-                    double s = 0.0;
+                    SP_REAL s = 0.0;
                     for (int r = i; r < rows; r++) {
                         U[r * cols + i] /= scale;
                         s += U[r * cols + i] * U[r * cols + i];
                     }
 
-                    double f = U[i * cols + i];
-                    double g = -sign(f) * sqrt(s);
+                    SP_REAL f = U[i * cols + i];
+                    SP_REAL g = -sign(f) * sqrt(s);
                     U[i * cols + i] = f - g;
 
-                    double h = f * g - s;
+                    SP_REAL h = f * g - s;
 
                     for (int j = i + 1; j < cols; j++) {
                         s = 0.0;
@@ -844,22 +844,22 @@ namespace sp{
             }
 
             if (i < cols - 1) {
-                double scale = 0.0;
+                SP_REAL scale = 0.0;
                 for (int c = i + 1; c < cols; c++){
                     scale += fabs(U[i * cols + c]);
                 }
 
-                double val = 0.0;
+                SP_REAL val = 0.0;
                 if (scale > 0.0){
-                    double s = 0.0;
+                    SP_REAL s = 0.0;
 
                     for (int c = i + 1; c < cols; c++) {
                         U[i * cols + c] /= scale;
                         s += U[i * cols + c] * U[i * cols + c];
                     }
-                    double f = U[i * cols + i + 1];
-                    double g = -sign(f) * sqrt(s);
-                    double h = f * g - s;
+                    SP_REAL f = U[i * cols + i + 1];
+                    SP_REAL g = -sign(f) * sqrt(s);
+                    SP_REAL h = f * g - s;
                     U[i * cols + i + 1] = f - g;
 
                     for (int c = i + 1; c < cols; c++){
@@ -884,7 +884,7 @@ namespace sp{
             }
         }
 
-        double unorm = 0.0;
+        SP_REAL unorm = 0.0;
         for (int i = 0; i < cols; i++) {
             unorm = maxVal(unorm, fabs(Q[i]) + fabs(R[i]));
 
@@ -892,16 +892,16 @@ namespace sp{
 
         // accumulation of right-hand transformations
         for (int i = cols - 1; i >= 0; i--) {
-            const double g = R[i + 1];
+            const SP_REAL g = R[i + 1];
             if (i < cols - 1){
                 if (g){
 
-                    // double division to avoid possible underflow
+                    // SP_REAL division to avoid possible underflow
                     for (int j = i + 1; j < cols; j++){
                         V[j * cols + i] = (U[i * cols + j] / U[i * cols + (i + 1)]) / g;
                     }
                     for (int j = i + 1; j < cols; j++) {
-                        double s = 0.0;
+                        SP_REAL s = 0.0;
                         for (int k = i + 1; k < cols; k++){
                             s += U[i * cols + k] * V[k * cols + j];
                         }
@@ -924,15 +924,15 @@ namespace sp{
                 U[i * cols + j] = 0.0;
             }
 
-            double g = Q[i];
+            SP_REAL g = Q[i];
             if (g) {
                 g = 1.0 / g;
                 for (int j = i + 1; j < cols; j++) {
-                    double s = 0.0;
+                    SP_REAL s = 0.0;
                     for (int k = i + 1; k < rows; k++){
                         s += U[k * cols + i] * U[k * cols + j];
                     }
-                    double f = (s / U[i * cols + i]) * g;
+                    SP_REAL f = (s / U[i * cols + i]) * g;
 
                     for (int k = i; k < rows; k++){
                         U[k * cols + j] += f * U[k * cols + i];
@@ -976,30 +976,30 @@ namespace sp{
                 }
                 if (flag) {
                     // cancellation of R[l], if l > 0
-                    double c = 0.0;
-                    double s = 1.0;
+                    SP_REAL c = 0.0;
+                    SP_REAL s = 1.0;
                     for (int i = l; i <= k; i++) {
-                        double f = s * R[i];
+                        SP_REAL f = s * R[i];
                         R[i] = c * R[i];
 
-                        if ((double)(fabs(f) + unorm) == unorm){
+                        if ((SP_REAL)(fabs(f) + unorm) == unorm){
                             break;
                         }
-                        double g = Q[i];
-                        double h = pythag(f, g);
+                        SP_REAL g = Q[i];
+                        SP_REAL h = pythag(f, g);
                         Q[i] = h;
                         h = 1.0 / h;
                         c = g * h;
                         s = -f * h;
                         for (int j = 0; j < rows; j++) {
-                            const double y = U[j * cols + n];
-                            const double z = U[j * cols + i];
+                            const SP_REAL y = U[j * cols + n];
+                            const SP_REAL z = U[j * cols + i];
                             U[j * cols + n] = y * c + z * s;
                             U[j * cols + i] = z * c - y * s;
                         }
                     }
                 }
-                double z = Q[k];
+                SP_REAL z = Q[k];
 
                 // convergence
                 if (l == k) {
@@ -1019,16 +1019,16 @@ namespace sp{
 
                 // shift from bottom 2-by-2 minor
                 n = k - 1;
-                double x = Q[l];
-                double y = Q[n];
-                double g = R[n];
-                double h = R[k];
-                double f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
+                SP_REAL x = Q[l];
+                SP_REAL y = Q[n];
+                SP_REAL g = R[n];
+                SP_REAL h = R[k];
+                SP_REAL f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
                 g = pythag(f, 1.0);
                 f = ((x - z)*(x + z) + h*((y / (f + sign(f) * g)) - h)) / x;
                 
-                double c = 1.0;
-                double s = 1.0;
+                SP_REAL c = 1.0;
+                SP_REAL s = 1.0;
 
                 // next QR transformation
                 for (int j = l; j <= n; j++) {
@@ -1085,11 +1085,11 @@ namespace sp{
             int maxid = c;
             int minid = c;
 
-            double maxv = 0.0;
-            double minv = SP_INFINITY;
+            SP_REAL maxv = 0.0;
+            SP_REAL minv = SP_INFINITY;
 
             for (int i = c; i < cols; i++){
-                const double val = S[i * cols + i];
+                const SP_REAL val = S[i * cols + i];
                 if (val > maxv){
                     maxv = val;
                     maxid = i;
@@ -1121,7 +1121,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // a * x^2 + b * x + c = 0
-    SP_GENFUNC int eq2(Cmp xs[2], const double a, const double b, const double c) {
+    SP_GENFUNC int eq2(Cmp xs[2], const SP_REAL a, const SP_REAL b, const SP_REAL c) {
         if (fabs(a) < SP_SMALL) {
             if (fabs(b) < SP_SMALL) {
                 return 0;
@@ -1132,7 +1132,7 @@ namespace sp{
             }
         }
 
-        const double D = b * b - 4.0 * a * c;
+        const SP_REAL D = b * b - 4.0 * a * c;
 
         int ret = 0;
         if (fabs(D) < SP_SMALL) {
@@ -1159,22 +1159,22 @@ namespace sp{
     }
 
     // a * x^3 + b * x^2 + c * x + d = 0
-    SP_GENFUNC int eq3(Cmp xs[3], const double a, const double b, const double c, const double d) {
+    SP_GENFUNC int eq3(Cmp xs[3], const SP_REAL a, const SP_REAL b, const SP_REAL c, const SP_REAL d) {
         if (fabs(a) < SP_SMALL) {
             return eq2(xs, b, c, d);
         }
 
-        const double nb = b / a;
-        const double nc = c / a;
-        const double nd = d / a;
+        const SP_REAL nb = b / a;
+        const SP_REAL nc = c / a;
+        const SP_REAL nd = d / a;
 
-        const double p = nc - nb * nb / 3.0;
-        const double q = nd - nb * nc / 3.0 + 2.0 * nb * nb * nb / 27.0;
+        const SP_REAL p = nc - nb * nb / 3.0;
+        const SP_REAL q = nd - nb * nc / 3.0 + 2.0 * nb * nb * nb / 27.0;
 
-        const double D = -square(q / 2.0) - cubic(p / 3.0);
+        const SP_REAL D = -square(q / 2.0) - cubic(p / 3.0);
 
-        const double A = -nb / 3.0;
-        const double B = q / 2.0;
+        const SP_REAL A = -nb / 3.0;
+        const SP_REAL B = q / 2.0;
 
         int ret = 0;
         if (fabs(D) < SP_SMALL) {
@@ -1194,9 +1194,9 @@ namespace sp{
         }
         else if (D > 0.0) {
 
-            const double theta = atan2(sqrt(D), -B);
-            const double R = pow(B * B + D, 1.0 / 6.0) * cos(theta / 3.0);
-            const double Q = pow(B * B + D, 1.0 / 6.0) * sin(theta / 3.0);
+            const SP_REAL theta = atan2(sqrt(D), -B);
+            const SP_REAL R = pow(B * B + D, 1.0 / 6.0) * cos(theta / 3.0);
+            const SP_REAL Q = pow(B * B + D, 1.0 / 6.0) * sin(theta / 3.0);
 
             xs[0] = getCmp(A + 2 * R, 0.0);
             xs[1] = getCmp(A - R - Q * sqrt(3.0), 0.0);
@@ -1206,8 +1206,8 @@ namespace sp{
         }
         else if (D < 0.0) {
 
-            const double S = cbrt(-B + sqrt(-D));
-            const double T = cbrt(-B - sqrt(-D));
+            const SP_REAL S = cbrt(-B + sqrt(-D));
+            const SP_REAL T = cbrt(-B - sqrt(-D));
 
             xs[0] = getCmp(A + (S + T), 0.0);
             xs[1] = getCmp(A - (S + T) / 2.0, +(S - T) * sqrt(3.0) / 2.0);
@@ -1219,35 +1219,35 @@ namespace sp{
     }
 
     // a * x^4 + b * x^3 + c * x^2 + d * x + e = 0
-    SP_GENFUNC int eq4(Cmp xs[4], const double a, const double b, const double c, const double d, const double e) {
+    SP_GENFUNC int eq4(Cmp xs[4], const SP_REAL a, const SP_REAL b, const SP_REAL c, const SP_REAL d, const SP_REAL e) {
         if (fabs(a) < SP_SMALL) {
             return eq3(xs, b, c, d, e);
         }
 
-        const double nb = b / a;
-        const double nc = c / a;
-        const double nd = d / a;
-        const double ne = e / a;
+        const SP_REAL nb = b / a;
+        const SP_REAL nc = c / a;
+        const SP_REAL nd = d / a;
+        const SP_REAL ne = e / a;
 
-        const double b2 = nb / 4;
+        const SP_REAL b2 = nb / 4;
 
-        const double p = nc - 6 * b2 * b2;
-        const double q = nd - 2 * nc * b2 + 8 * pow(b2, 3);
+        const SP_REAL p = nc - 6 * b2 * b2;
+        const SP_REAL q = nd - 2 * nc * b2 + 8 * pow(b2, 3);
 
-        const double r = ne - nd * b2 + nc * b2 * b2 - 3 * pow(b2, 4);
-        const double x = 2 * p;
-        const double y = p * p - 4 * r;
-        const double z = -q * q;
+        const SP_REAL r = ne - nd * b2 + nc * b2 * b2 - 3 * pow(b2, 4);
+        const SP_REAL x = 2 * p;
+        const SP_REAL y = p * p - 4 * r;
+        const SP_REAL z = -q * q;
 
         Cmp e3[3];
         const int nn = eq3(e3, 1.0, x, y, z);
-        const double u = e3[0].re;
+        const SP_REAL u = e3[0].re;
 
-        const double R = -sqrt(u) / 2;
-        const double S = (p + u) / 2;
-        const double T = -q / (4 * R);
-        const double Dp = R * R - S + T;
-        const double Dm = R * R - S - T;
+        const SP_REAL R = -sqrt(u) / 2;
+        const SP_REAL S = (p + u) / 2;
+        const SP_REAL T = -q / (4 * R);
+        const SP_REAL Dp = R * R - S + T;
+        const SP_REAL Dm = R * R - S - T;
 
         int ret = 0;
         if (fabs(Dp) < SP_SMALL) {
@@ -1294,20 +1294,20 @@ namespace sp{
     }
 
     // newton method
-    SP_GENFUNC bool newton(double &x, const int csize, const double *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    SP_GENFUNC bool newton(SP_REAL &x, const int csize, const SP_REAL *cs, const int maxit = 20, const SP_REAL eps = 1.0e-10) {
 
-        double pre = SP_INFINITY;
+        SP_REAL pre = SP_INFINITY;
 
         for (int it = 0; it < maxit; it++) {
-            const double f = funcX(x, csize, cs);
-            const double df = dfuncX(x, csize, cs);
+            const SP_REAL f = funcX(x, csize, cs);
+            const SP_REAL df = dfuncX(x, csize, cs);
 
-            const double dx = f / (df + 1e-10);
+            const SP_REAL dx = f / (df + 1e-10);
 
-            const double backup = x;
+            const SP_REAL backup = x;
             x = x - dx;
             
-            const double err = fabs(funcX(x, csize, cs));
+            const SP_REAL err = fabs(funcX(x, csize, cs));
 
             if (err < eps || fabs(x - pre) < SP_SMALL) {
                 return true;
@@ -1319,7 +1319,7 @@ namespace sp{
     }
 
     // newton method (Durand-Kerner method)
-    SP_GENFUNC bool newton(Cmp *xs, const int csize, const double *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const SP_REAL *cs, const int maxit = 20, const SP_REAL eps = 1.0e-10) {
         const int n = csize - 1;
 
         Cmp pre[100];
@@ -1339,14 +1339,14 @@ namespace sp{
                 xs[i] = xs[i] - dx;
             }
 
-            double maxe = 0.0;
-            double maxd = 0.0;
+            SP_REAL maxe = 0.0;
+            SP_REAL maxd = 0.0;
             for (int i = 0; i < n; i++) {
-                const double err = fabs(funcX(xs[i], csize, cs));
+                const SP_REAL err = fabs(funcX(xs[i], csize, cs));
                 if (err > maxe) {
                     maxe = err;
                 }
-                const double dif = fabs(xs[i] - pre[i]);
+                const SP_REAL dif = fabs(xs[i] - pre[i]);
                 if (dif > maxd) {
                     maxd = dif;
                 }
@@ -1364,7 +1364,7 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const double *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const SP_REAL *cs, const int maxit = 20, const SP_REAL eps = 1.0e-10) {
 
         const int n = csize - 1;
 
@@ -1382,16 +1382,16 @@ namespace sp{
             }
         }
 
-        double b[100];
+        SP_REAL b[100];
         for (int i = 0; i < csize; ++i) {
             b[i] = (i == 0) ? +fabs(a[i]) : -fabs(a[i]);
         }
 
-        double r = 100.0;
+        SP_REAL r = 100.0;
         if(newton(r, csize, b, maxit, eps) == false) return false;
 
         for (int i = 0; i < n; i++) {
-            const double theta = (2 * SP_PI / n) * i + SP_PI / (2.0 * n);
+            const SP_REAL theta = (2 * SP_PI / n) * i + SP_PI / (2.0 * n);
             xs[i] = zc + r * getCmp(cos(theta), sin(theta));
         }
 
@@ -1400,19 +1400,19 @@ namespace sp{
 
 
     // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    SP_GENFUNC int eqn(Cmp xs[], const int csize, const double *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const SP_REAL *cs, const int maxit = 20, const SP_REAL eps = 1.0e-10) {
         if (csize < 2) return 0;
 
         if (fabs(cs[0]) < SP_SMALL) {
             return eqn(xs, csize - 1, cs + 1, maxit, eps);
         }
         else {
-            double ts[100];
-            double sum = 0.0;
+            SP_REAL ts[100];
+            SP_REAL sum = 0.0;
             for (int i = 0; i < csize; i++) {
                 sum += cs[i];
             }
-            const double mean = sum / csize;
+            const SP_REAL mean = sum / csize;
 
             for (int i = 0; i < csize; i++) {
                 ts[i] = cs[i] / mean;
