@@ -41,6 +41,12 @@
 // const value
 //--------------------------------------------------------------------------------
 
+#ifndef SP_REAL
+#define SP_REAL double
+#endif
+
+#define SP_CAST(V) static_cast<SP_REAL>(V)
+
 // pi
 #define SP_PI 3.14159265358979323846
 
@@ -96,7 +102,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Cmp {
-        double re, im;
+        SP_REAL re, im;
     };
 
 
@@ -137,11 +143,11 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Vec2{
-        double x, y;
+        SP_REAL x, y;
     };
 
     struct Vec3{
-        double x, y, z;
+        SP_REAL x, y, z;
     };
 
 
@@ -176,7 +182,7 @@ namespace sp{
 
     struct Rot{
         // quaternion
-        double qx, qy, qz, qw;
+        SP_REAL qx, qy, qz, qw;
     };
 
     struct Pose{
@@ -194,9 +200,9 @@ namespace sp{
 
     struct CamParam{
         int dsize[2];
-        double fx, fy;
-        double cx, cy;
-        double k1, k2, k3, p1, p2;
+        SP_REAL fx, fy;
+        SP_REAL cx, cy;
+        SP_REAL k1, k2, k3, p1, p2;
     };
 
 
