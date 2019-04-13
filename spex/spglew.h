@@ -171,6 +171,9 @@ namespace sp{
             Mem2<float> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
 
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
@@ -196,6 +199,9 @@ namespace sp{
             Mem2<float> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
 
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
@@ -221,6 +227,9 @@ namespace sp{
             Mem2<float> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
 
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
@@ -244,6 +253,9 @@ namespace sp{
             Mem2<float> tmp(dsize);
             glReadPixels(0, 0, tmp.dsize[0], tmp.dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp.ptr);
 
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
             for (int v = 0; v < tmp.dsize[1]; v++) {
                 for (int u = 0; u < tmp.dsize[0]; u++) {
                     const float t = tmp(u, tmp.dsize[1] - 1 - v);
