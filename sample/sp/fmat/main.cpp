@@ -149,11 +149,11 @@ void output(char *name, const Mat &F, const Mem2<Col3> &img0, const Mem1<Vec2> &
     const Mem1<Vec2> dpixs0 = denoise(pixs0, errs);
     const Mem1<Vec2> dpixs1 = denoise(pixs1, errs);
 
-    renderEpipolar(_img0, trnMat(F), dpixs1, getCol(0, 200, 100), 2);
-    renderPoint(_img0, dpixs0, getCol(255, 255, 255), 4);
+    renderEpipolar(_img0, trnMat(F), dpixs1, getCol3(0, 200, 100), 2);
+    renderPoint(_img0, dpixs0, getCol3(255, 255, 255), 4);
 
-    renderEpipolar(_img1, (F), dpixs0, getCol(0, 200, 100), 2);
-    renderPoint(_img1, dpixs1, getCol(255, 255, 255), 4);
+    renderEpipolar(_img1, (F), dpixs0, getCol3(0, 200, 100), 2);
+    renderPoint(_img1, dpixs1, getCol3(255, 255, 255), 4);
 
     char str[256];
     sprintf(str, "%s0.bmp", name);

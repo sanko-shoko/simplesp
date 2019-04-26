@@ -520,7 +520,7 @@ namespace sp {
         glPopAttrib();
     }
 
-    SP_CPUFUNC void glRenderVoxel(const Voxel &voxel) {
+    SP_CPUFUNC void glRenderVoxel(const Voxel<> &voxel) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {

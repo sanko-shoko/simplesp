@@ -65,12 +65,12 @@ void sample(cv::Mat &cvimg, const cv::Mat &cvneko, const int key){
         
         const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(0);
         for (int i = 0; i < cpixs.size(); i++) {
-            renderPoint(img, cpixs[i], getCol(0, 255, 0), 3);
+            renderPoint(img, cpixs[i], getCol3(0, 255, 0), 3);
         }
 
         //const Vec3 offset = getVec3(0.0, 0.0, -bitMarker.getMrks(0)[0].length / 2.0);
         //const Pose pose = *bitMarker.getPose(0) * getPose(offset);
-        //renderCube(img, bitMarker.getCam(), pose, bitMarker.getMrks(0)[0].length, getCol(50, 50, 200), 2);
+        //renderCube(img, bitMarker.getCam(), pose, bitMarker.getMrks(0)[0].length, getCol3(50, 50, 200), 2);
     }
 
     cvCnvImg(cvimg, img);

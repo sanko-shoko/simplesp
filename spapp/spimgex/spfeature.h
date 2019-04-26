@@ -168,7 +168,7 @@ namespace sp {
 
             pos = getVec3(0.0, 0.0, 0.0);
             nrm = getVec3(0.0, 0.0, 0.0);
-            col = getCol(0, 0, 0);
+            col = getCol3(0, 0, 0);
             err = SP_INFINITY;
         }
 
@@ -223,7 +223,7 @@ namespace sp {
                 vec += getVec3(acsc(views[i]->img, pix.x, pix.y));
             }
 
-            col = getCol(vec / (num));
+            col = getCol3(vec / (num));
         }
     };
 

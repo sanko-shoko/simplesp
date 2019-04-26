@@ -75,6 +75,16 @@ namespace sp{
         return SP_CAST((a < b) ? a : b);
     }
 
+    // get limit value
+    SP_GENFUNC const int limitVal(const int v, const int maxv, const int minv) {
+        return (v > maxv) ? maxv : ((v < minv) ? minv : v);
+    }
+
+    // get limit value
+    SP_GENFUNC const SP_REAL limitVal(const double v, const double maxv, const double minv) {
+        return SP_CAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
+    }
+
     // get uniform random value (-1.0, 1.0)
     SP_GENFUNC SP_REAL randValUnif(){
         const int maxv = 2000;
@@ -118,10 +128,10 @@ namespace sp{
         return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
-    SP_GENFUNC bool cmpCol(const Col3 &col0, const Col3 &col1) {
+    SP_GENFUNC bool cmpCol3(const Col3 &col0, const Col3 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
     }
-    SP_GENFUNC bool cmpCol(const Col4 &col0, const Col4 &col1) {
+    SP_GENFUNC bool cmpCol4(const Col4 &col0, const Col4 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
     }
 
@@ -259,9 +269,14 @@ namespace sp{
         return cnt;
     }
 
-    SP_GENFUNC void setBit(Byte &byte, const int p, const Byte b) {
+    SP_GENFUNC void setBit(Byte *byte, const int p, const Byte b) {
         const Byte mask = 0x01 << p;
-        byte = (b != 0) ? byte | mask : byte & ~mask;
+        *byte = (b != 0) ? *byte | mask : *byte & ~mask;
+    }
+  
+    SP_GENFUNC Byte getBit(Byte *byte, const int p) {
+        const Byte mask = 0x01 << p;
+        return (*byte & mask) ? 1 : 0;
     }
 
     template<typename TYPE>
@@ -272,8 +287,8 @@ namespace sp{
         }
 
         for (int i = 0; i < ssize; i++) {
-            if (src[i] > thresh) {
-                setBit(bytes[i / 8], i % 8, 1);
+            if (src[i] >= thresh) {
+                setBit(&bytes[i / 8], i % 8, 1);
             }
         }
     }

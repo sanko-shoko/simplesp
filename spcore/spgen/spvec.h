@@ -16,12 +16,18 @@ namespace sp {
     // vector
     //--------------------------------------------------------------------------------
 
-    // get vector
+     // get vector
     SP_GENFUNC Vec2 getVec2(const double x, const double y) {
         Vec2 dst;
         dst.x = SP_CAST(x);
         dst.y = SP_CAST(y);
         return dst;
+    }
+
+    // get vector
+    template<typename TYPE>
+    SP_GENFUNC Vec2 getVec2(const TYPE *v) {
+        return getVec2(v[0], v[1]);
     }
 
     // get vector
@@ -31,6 +37,12 @@ namespace sp {
         dst.y = SP_CAST(y);
         dst.z = SP_CAST(z);
         return dst;
+    }
+
+    // get vector
+    template<typename TYPE>
+    SP_GENFUNC Vec3 getVec3(const TYPE *v) {
+        return getVec3(v[0], v[1], v[2]);
     }
 
     // get vector

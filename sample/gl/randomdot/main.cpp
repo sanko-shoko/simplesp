@@ -169,7 +169,7 @@ private:
 
                 for (int i = 0; i < mask.size(); i++) {
                     if (mask[i] == 0) {
-                        m_img[i] = getCol(0, 0, 0);
+                        m_img[i] = getCol3(0, 0, 0);
                     }
                 }
                 saveBMP("disp.bmp", m_img);

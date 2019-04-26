@@ -661,8 +661,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     template<typename TYPE>
-    SP_CPUFUNC Vec2 getVec3(const MemA<TYPE, 2> &vec) {
-        return getVec3(vec[0], vec[1]);
+    SP_CPUFUNC Vec2 getVec2(const MemA<TYPE, 2> &vec) {
+        return getVec2(vec[0], vec[1]);
     }
 
     template<typename TYPE>

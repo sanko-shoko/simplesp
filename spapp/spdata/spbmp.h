@@ -44,10 +44,10 @@ namespace sp{
             file.read(line.ptr, line.size());
             for (int u = 0; u < w; u++) {
                 if (ch == 1) {
-                    acs2(dst, u, h - 1 - v) = getCol(line[u], line[u], line[u]);
+                    acs2(dst, u, h - 1 - v) = getCol3(line[u], line[u], line[u]);
                 }
                 if (ch == 3) {
-                    acs2(dst, u, h - 1 - v) = getCol(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
+                    acs2(dst, u, h - 1 - v) = getCol3(line[u * 3 + 2], line[u * 3 + 1], line[u * 3 + 0]);
                 }
             }
         }

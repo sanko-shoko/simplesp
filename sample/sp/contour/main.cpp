@@ -6,10 +6,10 @@ int main() {
     {
         Mem2<Col3> src(640, 480);
         {
-            setElm(src, getCol(255, 255, 255));
+            setElm(src, getCol3(255, 255, 255));
 
-            renderPoint(src, getVec2(320, 240), getCol(0, 180, 0), 100);
-            renderPoint(src, getVec2(400, 180), getCol(0, 180, 0), 60);
+            renderPoint(src, getVec2(320, 240), getCol3(0, 180, 0), 100);
+            renderPoint(src, getVec2(400, 180), getCol3(0, 180, 0), 60);
         }
 
         const Rect rect = getRect2(120, 90, 400, 300);
@@ -27,7 +27,7 @@ int main() {
         for (int i = 0; i < contour.size(); i++) {
             const Vec2 &A = contour[(i + 0) % contour.size()];
             const Vec2 &B = contour[(i + 1) % contour.size()];
-            renderPoint(src, A, getCol(0, 0, 0), 3);
+            renderPoint(src, A, getCol3(0, 0, 0), 3);
         }
 
         saveBMP("test0.bmp", src);
@@ -55,7 +55,7 @@ int main() {
             const Vec2 &A = contour[(i + 0) % contour.size()];
             const Vec2 &B = contour[(i + 1) % contour.size()];
             //renderLine(src, A, B, (Byte)255, 2);
-            renderPoint(src, A, getCol(0, 0, 0), 3);
+            renderPoint(src, A, getCol3(0, 0, 0), 3);
         }
 
         saveBMP("test1.bmp", src);

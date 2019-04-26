@@ -100,7 +100,7 @@ void sample(cv::Mat &cvimg, const int key){
         const Pose base = getPose(getVec3(0.0, 0.0, 20.0));
 
         renderAxis(img, cam, *tracker.getPose() * base, 2.0, 2);
-        renderGrid3d(img, cam, *tracker.getPose() * base, 6.0, 2, getCol(100, 200, 200), 2);
+        renderGrid3d(img, cam, *tracker.getPose() * base, 6.0, 2, getCol3(100, 200, 200), 2);
     }
 
     cvCnvImg(cvimg, img);

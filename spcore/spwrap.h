@@ -175,6 +175,10 @@ namespace sp{
         return static_cast<SP_REAL>(::log(x) / ::log(2.0));
     }
 
+    SP_GENFUNC SP_REAL log10(const double x) {
+        return static_cast<SP_REAL>(::log(x) / ::log(10.0));
+    }
+
 #endif
 
 }

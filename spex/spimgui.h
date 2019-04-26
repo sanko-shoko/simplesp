@@ -18,8 +18,12 @@
 
 namespace sp {
 
-    SP_CPUFUNC Col4 getCol(const ImVec4 &imv) {
-        const Col4 col = getCol(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.w * SP_BYTEMAX + 0.5));
+    SP_CPUFUNC Col4 getCol4(const ImVec4 &imv) {
+        const Col4 col = getCol4(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.w * SP_BYTEMAX + 0.5));
+        return col;
+    }
+    SP_CPUFUNC Col3 getCol3(const ImVec4 &imv) {
+        const Col3 col = getCol3(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5));
         return col;
     }
 
@@ -67,28 +71,48 @@ namespace ImGui {
     
     using namespace sp;
 
-
-    SP_CPUFUNC void SetNextWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
+    static void SetNextWindowRect(const Rect &rect, const ImGuiCond cond, const Rect *limit = NULL) {
         SP_ASSERT(rect.dim == 2);
-
-        ImGui::SetNextWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
+        
+        Rect _rect = rect;
+        if (limit != NULL) {
+            for (int i = 0; i < 2; i++) {
+                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
+                if (_rect.dbase[i] + _rect.dsize[i] > limit->dbase[i] + limit->dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
+            }
+        }
+        ImGui::SetNextWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
+        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
     }
-    SP_CPUFUNC void SetWindowRect(const sp::Rect &rect, const ImGuiCond cond) {
+
+    static void SetWindowRect(const Rect &rect, const ImGuiCond cond, const Rect *limit = NULL) {
         SP_ASSERT(rect.dim == 2);
-
-        ImGui::SetWindowPos(ImVec2(static_cast<float>(rect.dbase[0]), static_cast<float>(rect.dbase[1])), ImGuiCond_Always);
-        ImGui::SetWindowSize(ImVec2(static_cast<float>(rect.dsize[0]), static_cast<float>(rect.dsize[1])), ImGuiCond_Always);
+        Rect _rect = rect;
+        if (limit != NULL) {
+            for (int i = 0; i < 2; i++) {
+                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
+                if (_rect.dbase[i] > limit->dbase[i] + limit->dsize[i] - _rect.dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
+            }
+        }
+        ImGui::SetWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
+        ImGui::SetWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
     }
 
-    SP_CPUFUNC void Spacing(const float space) {
+    static Rect GetWindowRect(){
+        ImGuiContext& g = *GImGui;
+        ImGuiWindow* window = g.CurrentWindow;
+
+        return getRect2(sp::round(window->Pos.x), sp::round(window->Pos.y), sp::round(window->Size.x), sp::round(window->Size.y));
+    }
+
+    static void Spacing(const float space) {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, space));
         ImGui::Spacing();
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
         ImGui::PopStyleVar();
     }
 
-    SP_CPUFUNC bool ShowText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+    static bool ShowText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
         
         char name[32] = { 0 };
         const int maxv = 100;

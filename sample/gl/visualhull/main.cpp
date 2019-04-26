@@ -21,7 +21,7 @@ class VoxelGUI : public BaseWindow {
     Mem1<CamParam> m_cams;
 
     // voxel
-    Voxel m_voxel;
+    Voxel<> m_voxel;
 
     // reconstruct
     Mem1<Mesh3> m_modelR;

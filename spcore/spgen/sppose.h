@@ -141,6 +141,14 @@ namespace sp{
         rot0 = mulRot(rot0, rot1);
     }
 
+    SP_GENFUNC bool operator == (const Rot &rot0, const Rot &rot1) {
+        return cmpRot(rot0, rot1);
+    }
+
+    SP_GENFUNC bool operator != (const Rot &rot0, const Rot &rot1) {
+        return !cmpRot(rot0, rot1);
+    }
+
     //--------------------------------------------------------------------------------
     // rotation util
     //--------------------------------------------------------------------------------
@@ -486,6 +494,14 @@ namespace sp{
         pose0 = mulPose(pose0, pose1);
     }
 
+    SP_GENFUNC bool operator == (const Pose &pose0, const Pose &pose1) {
+        return cmpPose(pose0, pose1);
+    }
+
+    SP_GENFUNC bool operator != (const Pose &pose0, const Pose &pose1) {
+        return !cmpPose(pose0, pose1);
+    }
+    
     //--------------------------------------------------------------------------------
     // pose util
     //--------------------------------------------------------------------------------

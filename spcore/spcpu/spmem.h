@@ -14,6 +14,11 @@ namespace sp{
     // mem base class 
     //--------------------------------------------------------------------------------
 
+    enum MEMORY_TYPE{
+        MEMORY_NEW = 0, 
+        MEMORY_MAL = 1
+    };
+
     template<typename TYPE> class Mem : public ExPtr<TYPE>{
 
     protected:
@@ -21,17 +26,21 @@ namespace sp{
         // memory size
         int msize;
 
-        void init(TYPE *ptr, const int dim, const int *dsize, const int msize){
+        // memory type
+        MEMORY_TYPE mtype;
+
+        void init(TYPE *ptr, const int dim, const int *dsize, const int msize, const MEMORY_TYPE mtype){
             this->ptr = ptr;
             this->dim = dim;
             this->msize = msize;
+            this->mtype = mtype;
 
-            setMem(this->dsize, dim, dsize);
+            const int _dsize[SP_DIMMAX] = { 0 };
+            setMem(this->dsize, dim, (dsize != NULL) ? dsize : _dsize);
         }
 
         void reset(){
-            const int dsize[SP_DIMMAX] = { 0 };
-            init(NULL, 0, dsize, 0);
+            init(NULL, 0, NULL, 0, MEMORY_TYPE::MEMORY_NEW);
         }
 
         void free(){
@@ -40,7 +49,7 @@ namespace sp{
         }
 
         void move(Mem<TYPE> &mem){
-            init(mem.ptr, mem.dim, mem.dsize, mem.msize);
+            init(mem.ptr, mem.dim, mem.dsize, mem.msize, mem.mtype);
             mem.reset();
         }
         
@@ -49,7 +58,10 @@ namespace sp{
 
             if (msize > this->msize) {
                 this->msize = msize;
-                this->ptr = new TYPE[msize];
+                switch (this->mtype) {
+                case MEMORY_TYPE::MEMORY_NEW: this->ptr = new TYPE[msize]; break;
+                case MEMORY_TYPE::MEMORY_MAL: this->ptr = static_cast<TYPE*>(::malloc(sizeof(TYPE) * msize)); break;
+                }
             }
 
             if (cpy != NULL) {
@@ -73,6 +85,10 @@ namespace sp{
         
         Mem() {
             reset();
+        }
+
+        Mem(const MEMORY_TYPE mtype) {
+            init(NULL, 0, NULL, 0, mtype);
         }
 
         Mem(const int dim, const int *dsize = NULL, const void *cpy = NULL){
@@ -156,36 +172,9 @@ namespace sp{
             memset(this->ptr, 0, size() * sizeof(TYPE));
         }
 
-
-        //--------------------------------------------------------------------------------
-        // util
-        //--------------------------------------------------------------------------------
-
-        //Mem slice(const int axis, const int start, const int end) const{
-        //    const int s = start;
-        //    const int e = minVal(end, this->dsize[axis]);
-        //    const int num = e - s;
-
-        //    int dsize[SP_DIMMAX] = { 0 };
-        //    memcpy(dsize, this->dsize, SP_DIMMAX);
-        //    dsize[axis] = num;
-
-        //    Mem<TYPE> ret(this->dim, dsize);
-
-        //    int block = 1;
-        //    for (int i = 0; i < axis; i++){
-        //        block *= this->dsize[i];
-        //    }
-
-        //    TYPE *ptr = ret.ptr;
-        //    for (int i = 0; i < size(); i += (block * this->dsize[axis])){
-        //        for (int j = i + s * block; j < i + e * block; j++){
-        //            *ptr++ = this->ptr[j];
-        //        }
-        //    }
-
-        //    return ret;
-        //}
+        void set(const MEMORY_TYPE mtype) {
+            this->mtype = mtype;
+        }
 
     };
 
@@ -215,6 +204,9 @@ namespace sp{
         // constructor
         //--------------------------------------------------------------------------------
 
+        Mem1(const MEMORY_TYPE mtype) : Mem<TYPE>(mtype){
+        }
+        
         Mem1(const Mem1<TYPE> &mem) : Mem<TYPE>(){
             resize(mem.dsize, mem.ptr);
         }

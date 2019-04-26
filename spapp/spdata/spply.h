@@ -42,7 +42,7 @@ namespace sp{
 
             Vertex() {
                 pos = getVec3(0.0, 0.0, 0.0);
-                col = getCol(0, 0, 0);
+                col = getCol3(0, 0, 0);
             }
             Vertex(const Vertex &vtx) {
                 *this = vtx;

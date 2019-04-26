@@ -168,9 +168,9 @@ namespace sp{
         SP_ASSERT(isValid(2, dst));
 
         TYPE r, g, b;
-        cnvCol(r, getCol(255, 50, 50));
-        cnvCol(g, getCol(50, 255, 50));
-        cnvCol(b, getCol(50, 50, 255));
+        cnvCol(r, getCol3(255, 50, 50));
+        cnvCol(g, getCol3(50, 255, 50));
+        cnvCol(b, getCol3(50, 50, 255));
 
         renderLine(dst, cam, pose, getVec3(0.0, 0.0, 0.0), getVec3(length, 0.0, 0.0), r, thick);
         renderLine(dst, cam, pose, getVec3(0.0, 0.0, 0.0), getVec3(0.0, length, 0.0), g, thick);

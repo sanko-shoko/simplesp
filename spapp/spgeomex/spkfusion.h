@@ -15,7 +15,7 @@ namespace sp{
 
     private:
         // tsdf map
-        Voxel m_tsdf;
+        Voxel<> m_tsdf;
 
         // casted pn
         Mem2<VecPN3> m_cast;
@@ -71,7 +71,7 @@ namespace sp{
             return (m_track == true) ? &m_cast : NULL; ;
         }
 
-        const Voxel* getMap() const {
+        const Voxel<>* getMap() const {
             return (m_track == true) ? &m_tsdf : NULL; ;
         }
 

@@ -92,10 +92,10 @@ namespace sp{
                 if (inRect2(rect, x, y) == false) continue;
 
                 const Byte val = bits[y * block + x] ? 0 : SP_BYTEMAX;
-                img(u, v) = getCol(val, val, val);
+                img(u, v) = getCol3(val, val, val);
             }
         }
-        renderPoint(img, getVec2(-0.5, _SP_BITMARKERSIZE / 2.0 - 0.5), getCol(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX), _SP_BITMARKERSIZE / 20.0);
+        renderPoint(img, getVec2(-0.5, _SP_BITMARKERSIZE / 2.0 - 0.5), getCol3(SP_BYTEMAX, SP_BYTEMAX, SP_BYTEMAX), _SP_BITMARKERSIZE / 20.0);
 
         return BitMarkerParam(img, length, offset);
     }

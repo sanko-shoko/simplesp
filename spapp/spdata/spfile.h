@@ -26,16 +26,6 @@ namespace sp {
 
     using namespace std;
 
-    SP_CPUFUNC int makeDir(const char *dir) {
-        int ret = 0;
-#if WIN32
-        ret = _mkdir(dir);
-#else
-        ret = mkdir(dir, 0755);
-#endif
-        return ret;
-    }
-
     SP_CPUFUNC string trimDir(const char *dir) {
         char buf[SP_STRMAX];
         strcpy(buf, dir);
@@ -71,16 +61,6 @@ namespace sp {
         return ret;
     }
 
-
-    SP_CPUFUNC string getCrntDir() {
-        char dir[SP_STRMAX];
-#if WIN32
-        GetCurrentDirectory(SP_STRMAX, dir);
-#else
-        getcwd(dir, SP_STRMAX);
-#endif
-        return string(dir);
-    }
 
     SP_CPUFUNC Mem1<string> getFileList(const char *dir, const char *ext = NULL) {
         Mem1<string> list;

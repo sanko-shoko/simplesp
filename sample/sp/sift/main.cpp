@@ -19,7 +19,7 @@ int main(){
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", imgs[0]));
 
             imgs[1].resize(imgs[0].dsize);
-            setElm(imgs[1], getCol(127, 127, 127));
+            setElm(imgs[1], getCol3(127, 127, 127));
 
             double mat[3 * 3] = {
                 +0.8000, -0.2000, +130.00,
@@ -74,7 +74,7 @@ int main(){
         if (0) {
             for (int i = 0; i < 2; i++) {
                 for (int f = 0; f < ftrs[i].size(); f++) {
-                    renderCircle(imgs[i], ftrs[i][f].pix, ftrs[i][f].scl, getCol(100, 255, 100), 1);
+                    renderCircle(imgs[i], ftrs[i][f].pix, ftrs[i][f].scl, getCol3(100, 255, 100), 1);
                 }
             }
         }
@@ -82,8 +82,8 @@ int main(){
             for (int f = 0, c = 0; f < ftrs[0].size(); f++) {
                 const int g = matches[f];
                 if (g < 0) continue;
-                renderCircle(imgs[0], ftrs[0][f].pix, ftrs[0][f].scl, getCol(c), 1);
-                renderCircle(imgs[1], ftrs[1][g].pix, ftrs[1][g].scl, getCol(c), 1);
+                renderCircle(imgs[0], ftrs[0][f].pix, ftrs[0][f].scl, getCol3(c), 1);
+                renderCircle(imgs[1], ftrs[1][g].pix, ftrs[1][g].scl, getCol3(c), 1);
                 c++;
             }
         }
@@ -95,7 +95,7 @@ int main(){
         const int h = imgs[0].dsize[1];
 
         for (int i = 0; i < pixs0.size(); i++) {
-            renderLine(imgM, pixs0[i], pixs1[i] + getVec2(w, 0), getCol(i), 1);
+            renderLine(imgM, pixs0[i], pixs1[i] + getVec2(w, 0), getCol3(i), 1);
         }
 
         Mat hom;
@@ -104,7 +104,7 @@ int main(){
             for (int i = 0; i < 4; i++){
                 const Vec2 p0 = pix[i] - getVec2(0.5, 0.5);
                 const Vec2 p1 = pix[(i + 1) % 4] - getVec2(0.5, 0.5);
-                renderLine(imgM, hom * p0 + getVec2(w, 0), hom * p1 + getVec2(w, 0), getCol(100, 200, 100), 2);
+                renderLine(imgM, hom * p0 + getVec2(w, 0), hom * p1 + getVec2(w, 0), getCol3(100, 200, 100), 2);
             }
             //print(hom);
         }

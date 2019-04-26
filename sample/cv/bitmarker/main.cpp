@@ -98,7 +98,7 @@ void sample(cv::Mat &cvimg, const int key){
             if (bitMarker.getPose(i) == NULL) continue;
 
             const Mem1<Vec2> &cpixs = *bitMarker.getCrspPixs(i);
-            renderPoint(img, cpixs, getCol(0, 255, 255), 3);
+            renderPoint(img, cpixs, getCol3(0, 255, 255), 3);
 
             renderAxis(img, bitMarker.getCam(), *bitMarker.getPose(i), 30.0, 2);
         }
