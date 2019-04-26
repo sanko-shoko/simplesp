@@ -17,25 +17,25 @@ namespace sp{
     // camera parameter
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const SP_REAL fx, const SP_REAL fy, const SP_REAL cx, const SP_REAL cy){
+    SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy, const double cx, const double cy){
         CamParam dst;
         dst.dsize[0] = dsize0;
         dst.dsize[1] = dsize1;
 
-        dst.fx = fx;
-        dst.fy = fy;
-        dst.cx = cx;
-        dst.cy = cy;
+        dst.fx = SP_CAST(fx);
+        dst.fy = SP_CAST(fy);
+        dst.cx = SP_CAST(cx);
+        dst.cy = SP_CAST(cy);
 
-        dst.k1 = 0.0;
-        dst.k2 = 0.0;
-        dst.k3 = 0.0;
-        dst.p1 = 0.0;
-        dst.p2 = 0.0;
+        dst.k1 = SP_CAST(0.0);
+        dst.k2 = SP_CAST(0.0);
+        dst.k3 = SP_CAST(0.0);
+        dst.p1 = SP_CAST(0.0);
+        dst.p2 = SP_CAST(0.0);
         return dst;
     }
     
-     SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const SP_REAL fx, const SP_REAL fy) {
+     SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy) {
         return getCamParam(dsize0, dsize1, fx, fy, (dsize0 - 1) * 0.5, (dsize1 - 1) * 0.5);
     }
 
@@ -45,11 +45,11 @@ namespace sp{
         return getCamParam(dsize0, dsize1, f, f);
     }
 
-    SP_GENFUNC CamParam getCamParam(const int *dsize, const SP_REAL fx, const SP_REAL fy, const SP_REAL cx, const SP_REAL cy) {
+    SP_GENFUNC CamParam getCamParam(const int *dsize, const double fx, const double fy, const double cx, const double cy) {
         return getCamParam(dsize[0], dsize[1], fx, fy, cx, cy);
     }
 
-    SP_GENFUNC CamParam getCamParam(const int *dsize, const SP_REAL fx, const SP_REAL fy) {
+    SP_GENFUNC CamParam getCamParam(const int *dsize, const double fx, const double fy) {
         return getCamParam(dsize[0], dsize[1], fx, fy);
     }
 

@@ -170,7 +170,7 @@ int main() {
 
             Mem1<Mem1<Vec2> > contours = getLabelContour(map);
             for (int i = 0; i < contours.size(); i++) {
-                renderPoint(col, contours[i], getCol(0, 0, 0));
+                renderPoint(col, contours[i], getCol3(0, 0, 0));
             }
             saveBMP("slic2.bmp", col);
         }

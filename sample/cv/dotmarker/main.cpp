@@ -82,7 +82,7 @@ void sample(cv::Mat &cvimg, const int key){
         if (key == 'p') flag ^= true;
         
         if (flag == true && dotMarker.getCrspPixs()){
-            renderPoint(img, *dotMarker.getCrspPixs(), getCol(0, 255, 0), 4);
+            renderPoint(img, *dotMarker.getCrspPixs(), getCol3(0, 255, 0), 4);
         }
     }
 
@@ -98,7 +98,7 @@ void sample(cv::Mat &cvimg, const int key){
     if (dotMarker.getPose() != NULL){
         const Vec2 size = getVec2(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
 
-        renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), -size, +size, getCol(0, 100, 200), 2);
+        renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), -size, +size, getCol3(0, 100, 200), 2);
         renderAxis(img, dotMarker.getCam(), *dotMarker.getPose(), minVal(size.x, size.y), 2);
     }
 

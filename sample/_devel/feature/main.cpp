@@ -38,7 +38,7 @@ private:
             //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/test.bmp", m_imgs[0]));
 
             m_imgs[1].resize(m_imgs[0].dsize);
-            setElm(m_imgs[1], getCol(127, 127, 127));
+            setElm(m_imgs[1], getCol3(127, 127, 127));
 
             double mat[3 * 3] = {
                 +0.8000, -0.2000, +130.00,
@@ -93,7 +93,7 @@ private:
                 SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", imgs[0]));
 
                 imgs[1].resize(imgs[0].dsize);
-                setElm(imgs[1], getCol(127, 127, 127));
+                setElm(imgs[1], getCol3(127, 127, 127));
 
                 double mat[3 * 3] = {
                     +0.8000, -0.2000, +130.00,
@@ -291,17 +291,17 @@ private:
                     if (g < 0) continue;
 
                     glBegin(GL_LINES);
-                    glColor(getCol(c));
+                    glColor(getCol3(c));
                     glCircle(m_ftrs[0][f].pix, m_ftrs[0][f].scl);
                     glEnd();
 
                     glBegin(GL_LINES);
-                    glColor(getCol(c));
+                    glColor(getCol3(c));
                     glCircle(m_ftrs[1][g].pix + offset, m_ftrs[1][g].scl);
                     glEnd();
 
                     glBegin(GL_LINES);
-                    glColor(getCol(c));
+                    glColor(getCol3(c));
                     glVertex(m_ftrs[0][f].pix);
                     glVertex(m_ftrs[1][g].pix + offset);
                     glEnd();
@@ -316,7 +316,7 @@ private:
 
             for (int f = 0; f < m_ftrs[0].size(); f++) {
                 glBegin(GL_LINES);
-                glColor(getCol(f));
+                glColor(getCol3(f));
                 glCircle(m_ftrs[0][f].pix, m_ftrs[0][f].scl);
                 glEnd();
             }

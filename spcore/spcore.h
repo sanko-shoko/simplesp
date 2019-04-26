@@ -11,6 +11,7 @@
 
 // debug
 #include "spcore/spprint.h"
+#include "spcore/spsys.h"
 #include "spcore/sptime.h"
 #include "spcore/sphold.h"
 

@@ -115,12 +115,12 @@ private:
                 glPointSize(static_cast<float>(5));
                 const Mem1<Vec2> &cpixs = *m_bitMarker.getCrspPixs(i);
                 glBegin(GL_POINTS);
-                glColor(sp::getCol(0, 255, 0));
+                glColor(sp::getCol3(0, 255, 0));
                 for (int j = 0; j < cpixs.size(); j++) {
                     glVertex(cpixs[j]);
                 }
 
-                glColor(sp::getCol(0, 0, 255));
+                glColor(sp::getCol3(0, 0, 255));
                 const Mem1<Vec3> &cobjs = *m_bitMarker.getCrspObjs(i);
                 for (int j = 0; j < cobjs.size(); j++) {
                     glVertex(mulCamD(m_bitMarker.getCam(), prjVec(*m_bitMarker.getPose(i) * cobjs[j])));
@@ -173,7 +173,7 @@ private:
         if (m_ui.dispContour) {
             const sp::Mem1<sp::Mem1<sp::Vec2> > *contours = SP_HOLDER_GET("contours", const sp::Mem1<sp::Mem1<sp::Vec2> >);
             if (contours) {
-                glColor(sp::getCol(0, 255, 0));
+                glColor(sp::getCol3(0, 255, 0));
                 glPointSize(static_cast<float>(2 * m_viewScale));
 
                 glLoadView2D(m_crntImg.dsize, m_viewPos, m_viewScale);
@@ -191,7 +191,7 @@ private:
         if (m_ui.dispCorner) {
             const sp::Mem1<sp::Mem1<sp::Vec2> > *corners = SP_HOLDER_GET("corners", const sp::Mem1<sp::Mem1<sp::Vec2> >);
             if (corners) {
-                glColor(sp::getCol(0, 255, 0));
+                glColor(sp::getCol3(0, 255, 0));
                 glPointSize(static_cast<float>(2 * m_viewScale));
 
                 glLoadView2D(m_crntImg.dsize, m_viewPos, m_viewScale);

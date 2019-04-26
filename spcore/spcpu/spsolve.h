@@ -164,20 +164,20 @@ namespace sp{
 #define SP_RANSAC_MINEVAL 0.2
 
     // ransac adaptive stop
-    SP_CPUFUNC int ransacAdaptiveStop(const SP_REAL rate, const int unit, const SP_REAL n = 0.99){
+    SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int unit, const double n = 0.99){
         const SP_REAL e = maxVal(rate, 0.1);
         const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, unit)));
         return minVal(k, SP_RANSAC_ITMAX);
     }
 
-    SP_CPUFUNC SP_REAL ransacEval(const Mem<SP_REAL> &errs, const int unit, const SP_REAL thresh) {
+    SP_CPUFUNC SP_REAL ransacEval(const Mem<SP_REAL> &errs, const int unit, const double thresh) {
         int cnt = 0;
         for (int i = 0; i < errs.size(); i++) {
             if (errs[i] < thresh) cnt++;
         }
-        const SP_REAL eval = static_cast<SP_REAL>(cnt - unit) / (errs.size() - unit);
+        const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
      
-        return eval;
+        return SP_CAST(eval);
     }
 
     template<typename TYPE>

@@ -129,9 +129,9 @@ private:
 
         }
 
-        setElm(img, getCol(255, 255, 255));
-        renderPoint(img, getVec2(Z[0], Z[1]), getCol(0, 0, 0), 3);
-        renderPoint(img, getVec2(X[0], X[1]), getCol(0, 0, 255), 5);
+        setElm(img, getCol3(255, 255, 255));
+        renderPoint(img, getVec2(Z[0], Z[1]), getCol3(0, 0, 0), 3);
+        renderPoint(img, getVec2(X[0], X[1]), getCol3(0, 0, 255), 5);
 
         glLoadView2D(img.dsize[0], img.dsize[1], m_viewPos, m_viewScale);
         glTexImg(img);

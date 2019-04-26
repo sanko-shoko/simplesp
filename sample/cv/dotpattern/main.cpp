@@ -64,13 +64,13 @@ void sample(cv::Mat &cvimg, const int key){
     {
         if (dotMarker.getPose() != NULL) {
             const Vec2 size = getVec2(dotMarker.getMrk().map.dsize[0] + 1, dotMarker.getMrk().map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
-            renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), size * -1.0, size * +1.0, getCol(0, 100, 200), 2);
-            renderPoint(img, *dotMarker.getCrspPixs(), getCol(0, 100, 200), 3);
+            renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), size * -1.0, size * +1.0, getCol3(0, 100, 200), 2);
+            renderPoint(img, *dotMarker.getCrspPixs(), getCol3(0, 100, 200), 3);
         }
 
         if (dotPattern.getCrspPix().size() != 0) {
-            renderPoint(img, dotPattern.getCrspPix(), getCol(0, 255, 0), 3);
-            renderRect(img, dotPattern.getCrspHom(), getVec2(0.0, 0.0), getVec2(ptn.img.dsize[0], ptn.img.dsize[1]), getCol(0, 255, 0), 2);
+            renderPoint(img, dotPattern.getCrspPix(), getCol3(0, 255, 0), 3);
+            renderRect(img, dotPattern.getCrspHom(), getVec2(0.0, 0.0), getVec2(ptn.img.dsize[0], ptn.img.dsize[1]), getCol3(0, 255, 0), 2);
         }
     }
 

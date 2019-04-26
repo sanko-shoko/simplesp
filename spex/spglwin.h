@@ -132,8 +132,8 @@ namespace sp {
         if (cpose.trn.z < 0.0) return false;
 
         if (mouse.bDownM && normVec(mouse.move) > 0.0) {
-            cpose.trn.x += mouse.move.x * cpose.trn.z / (cam.fx * viewScale);
-            cpose.trn.y += mouse.move.y * cpose.trn.z / (cam.fy * viewScale);
+            cpose.trn.x += SP_CAST(mouse.move.x * cpose.trn.z / (cam.fx * viewScale));
+            cpose.trn.y += SP_CAST(mouse.move.y * cpose.trn.z / (cam.fy * viewScale));
             ret = true;
         }
 
@@ -237,7 +237,7 @@ namespace sp {
             m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
 
-            const static Col4 col = getCol(24, 32, 32, 255);
+            const static Col4 col = getCol4(24, 32, 32, 255);
             m_bgcol = &col;
 
             memset(m_keyAction, 0, sizeof(m_keyAction));
@@ -347,7 +347,6 @@ namespace sp {
             }
         }
 
- 
     protected:
 
         //--------------------------------------------------------------------------------
@@ -384,7 +383,12 @@ namespace sp {
                 glClearColor(m_bgcol->r / 255.f, m_bgcol->g / 255.f, m_bgcol->b / 255.f, m_bgcol->a / 255.f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
-            
+            {
+                double xpos, ypos;
+                glfwGetCursorPos(m_win, &xpos, &ypos);
+                m_mouse.setPos(xpos, ypos);
+            }
+
             display();
 
 #if SP_USE_IMGUI
@@ -456,8 +460,6 @@ namespace sp {
         }
 
         void _mousePos(double x, double y) {
-
-            m_mouse.setPos(x, y);
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {

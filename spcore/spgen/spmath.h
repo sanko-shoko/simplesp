@@ -27,20 +27,23 @@ namespace sp{
 
     // cubic root
     SP_GENFUNC SP_REAL cbrt(const SP_REAL x) {
-        const SP_REAL z = pow(fabs(x), 1.0 / 3.0);
-        return (x >= 0.0) ? z : -z;
+        const double z = pow(fabs(x), 1.0 / 3.0);
+        return SP_CAST((x >= 0.0) ? z : -z);
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
     SP_GENFUNC SP_REAL pythag(const SP_REAL a, const SP_REAL b) {
-        const SP_REAL x = fabs(a);
-        const SP_REAL y = fabs(b);
+        const double x = fabs(a);
+        const double y = fabs(b);
+
+        double ret = 0.0;
         if (x > y) {
-            return x * sqrt(1.0 + (y / x) * (y / x));
+            ret = x * sqrt(1.0 + (y / x) * (y / x));
         }
         else {
-            return (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
+            ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
         }
+        return SP_CAST(ret);
     }
 
     // combination
@@ -228,22 +231,22 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // gauss function
-    SP_GENFUNC SP_REAL funcGauss(const SP_REAL x, const SP_REAL mean, const SP_REAL sigma){
+    SP_GENFUNC SP_REAL funcGauss(const double x, const double mean, const double sigma){
         SP_REAL ret = 0.0;
 
         if (fabs(sigma) > 0){
-            ret = exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma);
+            ret = SP_CAST(exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma));
         }
         return ret;
     }
 
     // tukey function
-    SP_GENFUNC SP_REAL funcTukey(const SP_REAL x, const SP_REAL t){
+    SP_GENFUNC SP_REAL funcTukey(const double x, const double t){
         SP_REAL ret = 0.0;
 
         if (fabs(x) < t){
-            const SP_REAL v = 1.0 - (x * x) / (t * t);
-            ret = v * v;
+            const double v = 1.0 - (x * x) / (t * t);
+            ret = SP_CAST(v * v);
         }
         return ret;
     }
@@ -678,7 +681,7 @@ namespace sp{
 
         for (int r = 0; r < size; r++){
             for (int c = 0; c < size; c++){
-                eigVec[r * size + c] = (r == c) ? 1.0 : 0.0;
+                eigVec[r * size + c] = SP_CAST((r == c) ? 1.0 : 0.0);
                 eigVal[r * size + c] = mat[r * size + c];
             }
         }
@@ -760,7 +763,7 @@ namespace sp{
             SP_REAL minv = SP_INFINITY;
 
             for (int i = c; i < size; i++){
-                const SP_REAL val = ::fabs(eigVal[i * size + i]);
+                const SP_REAL val = fabs(eigVal[i * size + i]);
                 if (val > maxv){
                     maxv = val;
                     maxid = i;
@@ -926,7 +929,7 @@ namespace sp{
 
             SP_REAL g = Q[i];
             if (g) {
-                g = 1.0 / g;
+                g = SP_CAST(1.0 / g);
                 for (int j = i + 1; j < cols; j++) {
                     SP_REAL s = 0.0;
                     for (int k = i + 1; k < rows; k++){

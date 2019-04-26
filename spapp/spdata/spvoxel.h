@@ -14,6 +14,7 @@ namespace sp {
 #define SP_VOXEL_WMAX 20
 #define SP_VOXEL_NULL -127
 
+    template<typename TYPE = char>
     class Voxel {
 
     public:
@@ -29,6 +30,8 @@ namespace sp {
         // weight map
         Mem3<char> wmap;
 
+        // color map
+        Mem3<TYPE> cmap;
     public:
 
         Voxel() {
@@ -38,11 +41,11 @@ namespace sp {
             unit = 0.0;
         }
 
-        Voxel(const Voxel &voxel) {
+        Voxel(const Voxel<> &voxel) {
             *this = voxel;
         }
 
-        Voxel& operator = (const Voxel &voxel) {
+        Voxel& operator = (const Voxel<> &voxel) {
             dsize[0] = voxel.dsize[0];
             dsize[1] = voxel.dsize[1];
             dsize[2] = voxel.dsize[2];
@@ -50,6 +53,7 @@ namespace sp {
 
             vmap = voxel.vmap;
             wmap = voxel.wmap;
+            cmap = voxel.cmap;
             return *this;
         }
 
@@ -61,7 +65,7 @@ namespace sp {
 
             vmap.resize(dsize);
             wmap.resize(dsize);
-
+            cmap.resize(dsize);
             zero();
         }
         
@@ -74,15 +78,16 @@ namespace sp {
         void zero() {
             setElm(vmap, -SP_VOXEL_VMAX);
             wmap.zero();
+            cmap.zero();
         }
 
-        void update(const int x, const int y, const int z, const SP_REAL src) {
-            if (src > +1.0) return;
+        void update(const int x, const int y, const int z, const SP_REAL srcv) {
+            if (srcv > +1.0) return;
 
             char &val = vmap(x, y, z);
             char &wei = wmap(x, y, z);
 
-            cnvVal(val, (val * wei + SP_VOXEL_VMAX * src) / (wei + 1.0));
+            cnvVal(val, (val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
             wei = minVal(wei + 1, SP_VOXEL_WMAX);
         }
 
@@ -117,7 +122,7 @@ namespace sp {
     };
 
 
-    SP_CPUFUNC bool cnvMeshToVoxel(Voxel &voxel, const Mem1<Mesh3> &meshes, const SP_REAL unit = 1.0) {
+    SP_CPUFUNC bool cnvMeshToVoxel(Voxel<> &voxel, const Mem1<Mesh3> &meshes, const SP_REAL unit = 1.0) {
 
         const int size = (ceil(getModelRadius(meshes) / unit) + 2) * 2;
         SP_PRINTD("voxel size %d\n", size);
@@ -176,98 +181,79 @@ namespace sp {
     }
 
     // Marching cubes
-    SP_CPUFUNC bool cnvVoxelToMesh(Mem1<Mesh3> &meshes, const Voxel &voxel, const Rect *prect = NULL) {
+    SP_CPUFUNC bool cnvVoxelToMesh(Mem1<Mesh3> &meshes, const Voxel<> &voxel) {
 
         meshes.clear();
 
-        typedef MemA<int, 3> Mem3i;
-        typedef MemA<int, 8> Mem8i;
+        struct Vec3i {
+            int x, y, z;
+        };
 
-        Mem1<Mem1<Mem3i> > orders;
+        Mem1<Mem1<Byte> > ptns;
+        Mem1<Mem1<Vec3i> > orders;
 
-        // vertex orders
-        for (int z = 0; z < 2; z++) {
-            for (int y = 0; y < 2; y++) {
-                for (int x = 0; x < 2; x++) {
-                    const int m = (x + y + z) % 2 ? -1 : +1;
+        {
+            // vertex orders
+            for (int z = 0; z < 2; z++) {
+                for (int y = 0; y < 2; y++) {
+                    for (int x = 0; x < 2; x++) {
+                        const int m = (x + y + z) % 2 ? -1 : +1;
 
-                    for (int i = 0; i < 3; i++) {
-                        Mem1<Mem3i> order;
-                        for (int j = 0; j < 8; j++) {
-                            const int ix = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 - x : x;
-                            const int iy = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 - y : y;
-                            const int iz = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 - z : z;
-                            order.push(Mem3i(ix, iy, iz));
+                        for (int i = 0; i < 3; i++) {
+                            Mem1<Vec3i> order;
+                            for (int j = 0; j < 8; j++) {
+                                Vec3i vi;
+                                vi.x = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 - x : x;
+                                vi.y = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 - y : y;
+                                vi.z = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 - z : z;
+                                order.push(vi);
+                            }
+                            orders.push(order);
                         }
-                        orders.push(order);
                     }
                 }
             }
+
+            // 15 pattern
+            const Byte list[][8] = {
+                { +0, +0, +0, +0, +0, +0, +0, +0 }, { +0, +0, +0, +0, +0, +0, +1, +0 }, { +0, +0, +0, +0, +0, +0, +1, +1 }, 
+                { +0, +0, +0, +1, +0, +0, +1, +0 }, { +0, +0, +0, +0, +1, +1, +0, +1 }, { +0, +0, +0, +0, +1, +1, +1, +1 }, 
+                { +0, +0, +1, +0, +1, +1, +0, +1 }, { +1, +0, +0, +1, +0, +1, +1, +0 }, { +1, +0, +0, +0, +1, +1, +1, +0 },
+                { +1, +0, +0, +0, +1, +1, +0, +1 }, { +0, +1, +0, +0, +0, +0, +1, +0 }, { +0, +1, +0, +0, +0, +0, +1, +1 },
+                { +0, +1, +1, +0, +0, +0, +0, +1 }, { +0, +1, +1, +0, +0, +1, +1, +0 }, { +0, +1, +0, +0, +1, +1, +1, +0 }
+            };
+
+            for (int p = 0; p < 15; p++) {
+                Mem1<Byte> tmps;
+                for (int o = 0; o < orders.size(); o++) {
+
+                    Byte b = 0;
+                    for (int i = 0; i < 8; i++) {
+                        setBit(&b, orders[o][i].z * 4 + orders[o][i].y * 2 + orders[o][i].x, list[p][i]);
+                    }
+                    tmps.push(b);
+                }
+                ptns.push(tmps);
+            }
         }
 
-        Mem1<Mem8i> patterns;
-        Mem1<int> pcnts;
-        {
-            // 15 patterns
-            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, -1, -1)); pcnts.push(0);
-            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, +1, -1)); pcnts.push(1);
-            patterns.push(Mem8i(-1, -1, -1, -1, -1, -1, +1, +1)); pcnts.push(2);
-            patterns.push(Mem8i(-1, -1, -1, +1, -1, -1, +1, -1)); pcnts.push(2);
-            patterns.push(Mem8i(-1, -1, -1, -1, +1, +1, -1, +1)); pcnts.push(3);
-
-            patterns.push(Mem8i(-1, -1, -1, -1, +1, +1, +1, +1)); pcnts.push(4);
-            patterns.push(Mem8i(-1, -1, +1, -1, +1, +1, -1, +1)); pcnts.push(4);
-            patterns.push(Mem8i(+1, -1, -1, +1, -1, +1, +1, -1)); pcnts.push(4);
-            patterns.push(Mem8i(+1, -1, -1, -1, +1, +1, +1, -1)); pcnts.push(4);
-            patterns.push(Mem8i(+1, -1, -1, -1, +1, +1, -1, +1)); pcnts.push(4);
-
-            patterns.push(Mem8i(-1, +1, -1, -1, -1, -1, +1, -1)); pcnts.push(2);
-            patterns.push(Mem8i(-1, +1, -1, -1, -1, -1, +1, +1)); pcnts.push(3);
-            patterns.push(Mem8i(-1, +1, +1, -1, -1, -1, -1, +1)); pcnts.push(3);
-            patterns.push(Mem8i(-1, +1, +1, -1, -1, +1, +1, -1)); pcnts.push(4);
-            patterns.push(Mem8i(-1, +1, -1, -1, +1, +1, +1, -1)); pcnts.push(4);
-        }
-
-        Rect vrect = (prect == NULL) ? getRect3(voxel.dsize) : andRect(getRect3(voxel.dsize), *prect);
-        Rect brect = vrect;
-        Rect mrect = vrect;
-
+        Rect vrect = getRect3(voxel.dsize);
         for (int i = 0; i < 3; i++) {
-            if(brect.dbase[i] == 0){
-                brect.dbase[i] -= 1;
-                brect.dsize[i] += 1;
-            }
-            {
-                mrect.dbase[i] -= 1;
-                mrect.dsize[i] += 1;
-            }
+            vrect.dbase[i] -= 1;
+            vrect.dsize[i] += 1;
         }
 
-        Mem3<Mem1<Mesh3> > map(mrect.dsize);
+        Mem1<Mem1<Mesh3> > zms(vrect.dsize[2]);
+        Mem1<Mem1<char> > dpids(vrect.dsize[2]);
 
-        Mem1<Mem1<Mesh3> > zms(mrect.dsize[2]);
-        Mem1<Mem1<char> > dpids(mrect.dsize[2]);
-
+        {
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-        for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
-            for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
-                for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
-                    const int mx = x - mrect.dbase[0];
-                    const int my = y - mrect.dbase[1];
-                    const int mz = z - mrect.dbase[2];
+            for (int z = vrect.dbase[2]; z < vrect.dbase[2] + vrect.dsize[2]; z++) {
+                for (int y = vrect.dbase[1]; y < vrect.dbase[1] + vrect.dsize[1]; y++) {
+                    for (int x = vrect.dbase[0]; x < vrect.dbase[0] + vrect.dsize[0]; x++) {
 
-                    Mem1<Mesh3> &ms = map(mx, my, mz);
-
-
-                    // pattern id
-                    int pid = 0;
-                    
-                    Vec3 p[8];
-                    char v[8];
-
-                    {
                         Mem3<char> vmap(2, 2, 2);
                         for (int zz = 0; zz < 2; zz++) {
                             for (int yy = 0; yy < 2; yy++) {
@@ -276,380 +262,391 @@ namespace sp {
                                 }
                             }
                         }
+  
+                        Byte bb = 0;
+                        cnvBit<char>(&bb, 1, vmap.ptr, 8, 0);
 
-                        int pcnt = 0;
-                        for (int i = 0; i < vmap.size(); i++) {
-                            if (vmap[i] >= 0) pcnt++;
+                        const int bcnt = cntBit(bb);
+                        if (bcnt == 8 || bcnt == 0) continue;
+
+                        if (bcnt > 4) {
+                            bb = (Byte)~bb;
                         }
-                        pcnt = minVal(pcnt, 8 - pcnt);
+
+                        // pattern id
+                        int pid = 0;
+                        int ord = 0;
+
 
                         // matching
-                        for (int i = 0; i < patterns.size(); i++) {
-                            if (pcnt != pcnts[i]) continue;
-                            const Mem8i &pattern = patterns[i];
+                        for (int p = 1; p < ptns.size(); p++) {
+                            if (bcnt != cntBit(ptns[p][0]) && 8-bcnt != cntBit(ptns[p][0])) continue;
 
-                            for (int j = 0; j < orders.size(); j++) {
-                                const Mem1<Mem3i> &order = orders[j];
+                            const Byte *b = ptns[p].ptr;
+                            for (int o = 0; o < 24; o++) {
+                                if (b[o] != bb) continue;
 
-                                int score = 0;
-                                for (int k = 0; k < 8; k++) {
-                                    p[k] = getVec3(x, y, z) + getVec3(order[k]);
-                                    v[k] = vmap(order[k][0], order[k][1], order[k][2]);
-
-                                    score += ((v[k] + 0.5) * pattern[k] > 0) ? +1 : -1;
-                                }
-                                if ((i == 7 || i == 13) && score > 0) continue;
-
-                                if (abs(score) == 8) {
-                                    pid = i * sign(score);
-                                    goto _match;
-                                }
+                                pid = p * ((bcnt <= 4) ? +1 : -1);
+                                ord = o;
+                                goto _match;
                             }
                         }
-
+                        continue;
                     _match:;
-                        if (pid == 0) continue;
-                    }
 
-                    auto f = [&](const int i, const int j)-> Vec3 {
-                        return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
-                    };
-                    auto g = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                        return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
-                    };
-                    auto h = [&](const int a0, const int a1, const int b0, const int b1, const int c0, const int c1) {
-                        ms.push(g(f(a0, a1), f(b0, b1), f(c0, c1)));
-                    };
+                        const int mx = x - vrect.dbase[0];
+                        const int my = y - vrect.dbase[1];
+                        const int mz = z - vrect.dbase[2];
+                        Mem1<Mesh3> &ms = zms[mz];
 
-                    switch (abs(pid)) {
-                    default: 
-                        break;
-                    case 1:
-                        h(6, 2, 6, 7, 6, 4);
-                        break;
-                    case 2:
-                        h(6, 2, 7, 3, 7, 5);
-                        h(6, 2, 7, 5, 6, 4);
-                        break;
-                    case 3:
-                        h(3, 1, 3, 7, 3, 2);
-                        h(6, 2, 6, 7, 6, 4);
-                        break;
-                    case 4:
-                        h(4, 0, 7, 3, 5, 1);
-                        h(4, 0, 4, 6, 7, 3);
-                        h(4, 6, 7, 6, 7, 3);
-                        break;
-                    case 5:
-                        h(4, 0, 6, 2, 5, 1);
-                        h(5, 1, 6, 2, 7, 3);
-                        break;
-                    case 6:
-                        h(2, 0, 2, 3, 2, 6);
-                        h(4, 0, 7, 3, 5, 1);
-                        h(4, 0, 4, 6, 7, 3);
-                        h(4, 6, 7, 6, 7, 3);
-                        break;
-                    case 7:
-                        h(0, 1, 0, 2, 0, 4);
-                        h(3, 1, 3, 7, 3, 2);
-                        h(5, 1, 5, 4, 5, 7);
-                        h(6, 2, 6, 7, 6, 4);
-                        break;
-                    case 8:
-                        h(0, 1, 0, 2, 6, 2);
-                        h(0, 1, 6, 2, 6, 7);
-                        h(0, 1, 6, 7, 5, 1);
-                        h(5, 1, 6, 7, 5, 7);
-                        break;
-                    case 9:
-                        h(0, 1, 0, 2, 5, 1);
-                        h(0, 2, 6, 7, 5, 1);
-                        h(0, 2, 4, 6, 7, 6);
-                        h(5, 1, 7, 6, 7, 3);
-                        break;
-                    case 10:
-                        h(1, 0, 1, 5, 1, 3);
-                        h(6, 2, 6, 7, 6, 4);
-                        break;
-                    case 11:
-                        h(1, 0, 1, 5, 1, 3);
-                        h(6, 2, 7, 3, 7, 5);
-                        h(6, 2, 7, 5, 6, 4);
-                        break;
-                    case 12:
-                        h(1, 0, 1, 5, 1, 3);
-                        h(2, 0, 2, 3, 2, 6);
-                        h(7, 3, 7, 5, 7, 6);
-                        break;
-                    case 13:
-                        h(1, 0, 5, 7, 1, 3);
-                        h(1, 0, 5, 4, 5, 7);
-                        h(2, 0, 2, 3, 6, 7);
-                        h(2, 0, 6, 7, 6, 4);
-                        break;
-                    case 14:
-                        h(1, 0, 4, 0, 1, 3);
-                        h(1, 3, 4, 0, 6, 7);
-                        h(4, 0, 6, 2, 6, 7);
-                        h(5, 7, 1, 3, 6, 7);
-                        break;
-                    }
+                        Vec3 p[8];
+                        char v[8];
 
-                    if (inRect3(brect, x, y, z) == true) {
-                        zms[mz].push(ms);
+                        for (int k = 0; k < 8; k++) {
+                            const Vec3i &vi = orders[ord][k];
+                            p[k] = getVec3(x + vi.x, y + vi.y, z + vi.z);
+                            v[k] = vmap(vi.x, vi.y, vi.z);
+                        }
+
+                        auto f = [&](const int i, const int j)-> Vec3 {
+                            return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
+                        };
+                        auto g = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
+                            return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
+                        };
+                        auto h = [&](const int a0, const int a1, const int b0, const int b1, const int c0, const int c1) {
+                            ms.push(g(f(a0, a1), f(b0, b1), f(c0, c1)));
+                        };
+
+                        switch (abs(pid)) {
+                        default:
+                            break;
+                        case 1:
+                            h(6, 2, 6, 7, 6, 4);
+                            break;
+                        case 2:
+                            h(6, 2, 7, 3, 7, 5);
+                            h(6, 2, 7, 5, 6, 4);
+                            break;
+                        case 3:
+                            h(3, 1, 3, 7, 3, 2);
+                            h(6, 2, 6, 7, 6, 4);
+                            break;
+                        case 4:
+                            h(4, 0, 7, 3, 5, 1);
+                            h(4, 0, 4, 6, 7, 3);
+                            h(4, 6, 7, 6, 7, 3);
+                            break;
+                        case 5:
+                            h(4, 0, 6, 2, 5, 1);
+                            h(5, 1, 6, 2, 7, 3);
+                            break;
+                        case 6:
+                            h(2, 0, 2, 3, 2, 6);
+                            h(4, 0, 7, 3, 5, 1);
+                            h(4, 0, 4, 6, 7, 3);
+                            h(4, 6, 7, 6, 7, 3);
+                            break;
+                        case 7:
+                            h(0, 1, 0, 2, 0, 4);
+                            h(3, 1, 3, 7, 3, 2);
+                            h(5, 1, 5, 4, 5, 7);
+                            h(6, 2, 6, 7, 6, 4);
+                            break;
+                        case 8:
+                            h(0, 1, 0, 2, 6, 2);
+                            h(0, 1, 6, 2, 6, 7);
+                            h(0, 1, 6, 7, 5, 1);
+                            h(5, 1, 6, 7, 5, 7);
+                            break;
+                        case 9:
+                            h(0, 1, 0, 2, 5, 1);
+                            h(0, 2, 6, 7, 5, 1);
+                            h(0, 2, 4, 6, 7, 6);
+                            h(5, 1, 7, 6, 7, 3);
+                            break;
+                        case 10:
+                            h(1, 0, 1, 5, 1, 3);
+                            h(6, 2, 6, 7, 6, 4);
+                            break;
+                        case 11:
+                            h(1, 0, 1, 5, 1, 3);
+                            h(6, 2, 7, 3, 7, 5);
+                            h(6, 2, 7, 5, 6, 4);
+                            break;
+                        case 12:
+                            h(1, 0, 1, 5, 1, 3);
+                            h(2, 0, 2, 3, 2, 6);
+                            h(7, 3, 7, 5, 7, 6);
+                            break;
+                        case 13:
+                            h(1, 0, 5, 7, 1, 3);
+                            h(1, 0, 5, 4, 5, 7);
+                            h(2, 0, 2, 3, 6, 7);
+                            h(2, 0, 6, 7, 6, 4);
+                            break;
+                        case 14:
+                            h(1, 0, 4, 0, 1, 3);
+                            h(1, 3, 4, 0, 6, 7);
+                            h(4, 0, 6, 2, 6, 7);
+                            h(5, 7, 1, 3, 6, 7);
+                            break;
+                        }
+
                         dpids[mz].push(pid);
-                    }
-                }
-            }
-        }
 
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
-        // hole filling
-        for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
-            for (int y = mrect.dbase[1]; y < mrect.dbase[1] + mrect.dsize[1]; y++) {
-                for (int x = mrect.dbase[0]; x < mrect.dbase[0] + mrect.dsize[0]; x++) {
-                    for (int n = 0; n < 3; n++) {
-                        const int mx = x - mrect.dbase[0];
-                        const int my = y - mrect.dbase[1];
-                        const int mz = z - mrect.dbase[2];
-                        const int nx = mx + ((n == 0) ? 1 : 0);
-                        const int ny = my + ((n == 1) ? 1 : 0);
-                        const int nz = mz + ((n == 2) ? 1 : 0);
-                        if (n == 0 && x + 1 >= voxel.dsize[0]) continue;
-                        if (n == 1 && y + 1 >= voxel.dsize[1]) continue;
-                        if (n == 2 && z + 1 >= voxel.dsize[2]) continue;
-                        const Mem1<Mesh3> &m0 = map(mx, my, mz);
-                        const Mem1<Mesh3> &m1 = map(nx, ny, nz);
-                        
-                        if (m0.size() < 2 || m1.size() < 2) continue;
+                        // hole filling
+                        {
+                            auto fill = [&](const int a, const int b, const int c, const int d, const Vec3 &n) {
+                                const Vec3 p0 = getVec3(x, y, z) + getVec3(orders[ord][a].x, orders[ord][a].y, orders[ord][a].z) + n;
+                                const Vec3 p1 = getVec3(x, y, z) + getVec3(orders[ord][b].x, orders[ord][b].y, orders[ord][b].z) + n;
+                                const Vec3 p2 = getVec3(x, y, z) + getVec3(orders[ord][c].x, orders[ord][c].y, orders[ord][c].z) + n;
+                                const Vec3 p3 = getVec3(x, y, z) + getVec3(orders[ord][d].x, orders[ord][d].y, orders[ord][d].z) + n;
 
-                        Mem1<Vec3> vecs;
-                        for (int i = 0; i < m0.size() + m1.size(); i++) {
-                            const Mesh3 &mesh = (i < m0.size()) ? m0[i] : m1[i - m0.size()];
+                                int cnt = 0;
+                                cnt += (voxel.getv(round(p0.x), round(p0.y), round(p0.z)) >= 0) ? 1 : 0;
+                                cnt += (voxel.getv(round(p1.x), round(p1.y), round(p1.z)) >= 0) ? 1 : 0;
+                                cnt += (voxel.getv(round(p2.x), round(p2.y), round(p2.z)) >= 0) ? 1 : 0;
+                                cnt += (voxel.getv(round(p3.x), round(p3.y), round(p3.z)) >= 0) ? 1 : 0;
 
-                            bool check = false;
-                            for (int j = 0; j < 3 && check == false; j++) {
-                                const Vec3 &a = mesh.pos[(j + 0) % 3];
-                                const Vec3 &b = mesh.pos[(j + 1) % 3];
-                                const Vec3 v = b - a;
-                                if ((n == 0 && cmpVal(a.x, x + 1.0) == true && cmpVal(v.x, 0.0) == true) ||
-                                    (n == 1 && cmpVal(a.y, y + 1.0) == true && cmpVal(v.y, 0.0) == true) ||
-                                    (n == 2 && cmpVal(a.z, z + 1.0) == true && cmpVal(v.z, 0.0) == true)) {
-                                    check = true;
-                                    vecs.push(a);
-                                    vecs.push(b);
+                                if (cnt >= 3) {
+                                    zms[mz].push(getMesh3(f(a, b), f(b, d), f(a, c)));
+                                    zms[mz].push(getMesh3(f(a, c), f(b, d), f(c, d)));
+                                    dpids[mz].push(15);
                                 }
+                            };
+
+                            // +dx
+                            if (pid == 7 || pid == 11 || pid == 12) {
+                                const Vec3 nx = getVec3(orders[ord][1].x, orders[ord][1].y, orders[ord][1].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(3, 1, 7, 5, +nx);
+                            }
+                            // -dx
+                            if (pid == 6 || pid == 7) {
+                                const Vec3 nx = getVec3(orders[ord][1].x, orders[ord][1].y, orders[ord][1].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(0, 2, 4, 6, -nx);
+                            }
+                            // +dy
+                            if (pid == 3 || pid == 6 || pid == 7 || pid == 12) {
+                                const Vec3 ny = getVec3(orders[ord][2].x, orders[ord][2].y, orders[ord][2].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(2, 3, 6, 7, +ny);
+                            }
+                            // -dy
+                            if (pid == 7) {
+                                const Vec3 ny = getVec3(orders[ord][2].x, orders[ord][2].y, orders[ord][2].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(1, 0, 5, 4, -ny);
+                            }
+                            // +dz
+                            if (pid == 7 || pid == 13) {
+                                const Vec3 nz = getVec3(orders[ord][4].x, orders[ord][4].y, orders[ord][4].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(6, 7, 4, 5, +nz);
+                            }
+                            // -dz
+                            if (pid == 7 || pid == 12 || pid == 13) {
+                                const Vec3 nz = getVec3(orders[ord][4].x, orders[ord][4].y, orders[ord][4].z) - getVec3(orders[ord][0].x, orders[ord][0].y, orders[ord][0].z);
+                                fill(0, 1, 2, 3, -nz);
                             }
                         }
-                        if (vecs.size() != 8) continue;
 
-                        if (cmpVec3(vecs[0] + vecs[1], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec3(vecs[0] + vecs[1], vecs[6] + vecs[7]) == true) continue;
-                        if (cmpVec3(vecs[2] + vecs[3], vecs[4] + vecs[5]) == true) continue;
-                        if (cmpVec3(vecs[2] + vecs[3], vecs[6] + vecs[7]) == true) continue;
-
-                        zms[mz].push(getMesh3(vecs[0], vecs[3], vecs[1]));
-                        zms[mz].push(getMesh3(vecs[1], vecs[3], vecs[2]));
-                        dpids[mz].push(15);
                     }
                 }
             }
-        }
-       
-#if 1
+        
+}
+        {
+
+#if 0
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-        for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
-            const int mz = z - mrect.dbase[2];
+            for (int z = vrect.dbase[2]; z < vrect.dbase[2] + vrect.dsize[2]; z++) {
+                const int mz = z - vrect.dbase[2];
 
-            Mem1<Mesh3> tmps;
-            int cnt = 0;
-            for (int i = 0; i < dpids[mz].size(); i++) {
-                const int pid = dpids[mz][i];
-                auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                    return (pid < 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
-                };
-                auto div3 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const int type){
-                    const Vec3 s = (a + b + c) / 3.0;
-                    const Vec3 ab = (a + b) / 2.0;
-                    const Vec3 bc = (b + c) / 2.0;
-                    const Vec3 ca = (c + a) / 2.0;
+                Mem1<Mesh3> tmps;
+                int cnt = 0;
+                for (int i = 0; i < dpids[mz].size(); i++) {
+                    const int pid = dpids[mz][i];
+                    auto h = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
+                        return (pid < 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
+                    };
+                    auto div3 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const int type) {
+                        const Vec3 s = (a + b + c) / 3.0;
+                        const Vec3 ab = (a + b) / 2.0;
+                        const Vec3 bc = (b + c) / 2.0;
+                        const Vec3 ca = (c + a) / 2.0;
 
-                    const SP_REAL A = normVec(a - b);
-                    const SP_REAL B = normVec(b - c);
-                    const SP_REAL C = normVec(c - a);
-                    if (A == 0.0 || B == 0.0 || C == 0.0) return;
+                        const SP_REAL A = normVec(a - b);
+                        const SP_REAL B = normVec(b - c);
+                        const SP_REAL C = normVec(c - a);
+                        if (A == 0.0 || B == 0.0 || C == 0.0) return;
 
-                    const SP_REAL s0 = fabs(A - B) / A;
-                    const SP_REAL s1 = fabs(B - C) / B;
-                    const SP_REAL s2 = fabs(C - A) / C;
-                    switch(type) {
-                    case 0:
+                        const SP_REAL s0 = fabs(A - B) / A;
+                        const SP_REAL s1 = fabs(B - C) / B;
+                        const SP_REAL s2 = fabs(C - A) / C;
+                        switch (type) {
+                        case 0:
+                            tmps.push(h(a, s, ab));
+                            tmps.push(h(a, ca, s));
+                            tmps.push(h(b, s, bc));
+                            tmps.push(h(b, ab, s));
+                            tmps.push(h(c, s, ca));
+                            tmps.push(h(c, bc, s));
+                            break;
+                        case 1:
+                            tmps.push(h(a, ca, ab));
+                            tmps.push(h(b, ab, bc));
+                            tmps.push(h(c, bc, ca));
+                            tmps.push(h(ab, ca, bc));
+                            break;
+                        }
+                    };
+                    auto div4 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d) {
+                        const Vec3 s = (a + b + c + d) / 4.0;
+                        const Vec3 ab = (a + b) / 2.0;
+                        const Vec3 bc = (b + c) / 2.0;
+                        const Vec3 cd = (c + d) / 2.0;
+                        const Vec3 da = (d + a) / 2.0;
+                        tmps.push(h(a, da, ab));
+                        tmps.push(h(s, ab, da));
+                        tmps.push(h(b, ab, bc));
+                        tmps.push(h(s, bc, ab));
+                        tmps.push(h(c, bc, cd));
+                        tmps.push(h(s, cd, bc));
+                        tmps.push(h(d, cd, da));
+                        tmps.push(h(s, da, cd));
+                    };
+                    auto div6 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const Vec3 &e, const Vec3 &f) {
+                        const Vec3 s = (a + b + c + d + e + f) / 6.0;
+                        const Vec3 ab = (a + b) / 2.0;
+                        const Vec3 bc = (b + c) / 2.0;
+                        const Vec3 cd = (c + d) / 2.0;
+                        const Vec3 de = (d + e) / 2.0;
+                        const Vec3 ef = (e + f) / 2.0;
+                        const Vec3 fa = (f + a) / 2.0;
                         tmps.push(h(a, s, ab));
-                        tmps.push(h(a, ca, s));
+                        tmps.push(h(a, fa, s));
                         tmps.push(h(b, s, bc));
                         tmps.push(h(b, ab, s));
-                        tmps.push(h(c, s, ca));
+                        tmps.push(h(c, s, cd));
                         tmps.push(h(c, bc, s));
+                        tmps.push(h(d, s, de));
+                        tmps.push(h(d, cd, s));
+                        tmps.push(h(e, s, ef));
+                        tmps.push(h(e, de, s));
+                        tmps.push(h(f, s, fa));
+                        tmps.push(h(f, ef, s));
+                    };
+                    const int i1 = (pid > 0) ? 1 : 2;
+                    const int i2 = (pid > 0) ? 2 : 1;
+                    switch (abs(pid)) {
+                    case 1:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        cnt += 1;
                         break;
-                    case 1:        
-                        tmps.push(h(a, ca, ab));
-                        tmps.push(h(b, ab, bc));
-                        tmps.push(h(c, bc, ca));
-                        tmps.push(h(ab, ca, bc));
+                    case 2:
+                        div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], zms[mz][cnt + 1].pos[i2]);
+                        cnt += 2;
+                        break;
+                    case 3:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
+                        cnt += 2;
+                        break;
+                    case 4:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 1);
+                        div4(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 1].pos[i2]);
+                        cnt += 3;
+                        break;
+                    case 5:
+                        div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
+                        cnt += 2;
+                        break;
+                    case 6:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 1);
+                        div4(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 3].pos[i1], zms[mz][cnt + 2].pos[i2]);
+                        cnt += 4;
+                        break;
+                    case 7:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
+                        div3(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], 0);
+                        div3(zms[mz][cnt + 3].pos[0], zms[mz][cnt + 3].pos[i1], zms[mz][cnt + 3].pos[i2], 0);
+                        cnt += 4;
+                        break;
+                    case 8:
+                        div6(
+                            zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2],
+                            zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 3].pos[i2], zms[mz][cnt + 3].pos[0]);
+                        cnt += 4;
+                        break;
+                    case 9:
+                        div6(
+                            zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 2].pos[i1],
+                            zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[i2], zms[mz][cnt + 3].pos[0]);
+                        cnt += 4;
+                        break;
+                    case 10:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
+                        cnt += 2;
+                        break;
+                    case 11:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div4(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 2].pos[i2]);
+                        cnt += 3;
+                        break;
+                    case 12:
+                        div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
+                        div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
+                        div3(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], 0);
+                        cnt += 3;
+                        break;
+                    case 13:
+                        div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
+                        div4(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[i2]);
+                        cnt += 4;
+                        break;
+                    case 14:
+                        div6(
+                            zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 2].pos[i1],
+                            zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[0], zms[mz][cnt + 3].pos[i1]);
+                        cnt += 4;
+                        break;
+                    case 15:
+                        div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
+                        cnt += 2;
                         break;
                     }
-                };
-                auto div4 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d) {
-                    const Vec3 s = (a + b + c + d) / 4.0;
-                    const Vec3 ab = (a + b) / 2.0;
-                    const Vec3 bc = (b + c) / 2.0;
-                    const Vec3 cd = (c + d) / 2.0;
-                    const Vec3 da = (d + a) / 2.0;
-                    tmps.push(h(a, da, ab));
-                    tmps.push(h(s, ab, da));
-                    tmps.push(h(b, ab, bc));
-                    tmps.push(h(s, bc, ab));
-                    tmps.push(h(c, bc, cd));
-                    tmps.push(h(s, cd, bc));
-                    tmps.push(h(d, cd, da));
-                    tmps.push(h(s, da, cd));
-                };
-                auto div6 = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const Vec3 &e, const Vec3 &f) {
-                    const Vec3 s = (a + b + c + d + e + f) / 6.0;
-                    const Vec3 ab = (a + b) / 2.0;
-                    const Vec3 bc = (b + c) / 2.0;
-                    const Vec3 cd = (c + d) / 2.0;
-                    const Vec3 de = (d + e) / 2.0;
-                    const Vec3 ef = (e + f) / 2.0;
-                    const Vec3 fa = (f + a) / 2.0;
-                    tmps.push(h(a, s, ab));
-                    tmps.push(h(a, fa, s));
-                    tmps.push(h(b, s, bc));
-                    tmps.push(h(b, ab, s));
-                    tmps.push(h(c, s, cd));
-                    tmps.push(h(c, bc, s));
-                    tmps.push(h(d, s, de));
-                    tmps.push(h(d, cd, s));
-                    tmps.push(h(e, s, ef));
-                    tmps.push(h(e, de, s));
-                    tmps.push(h(f, s, fa));
-                    tmps.push(h(f, ef, s));
-                };
-                const int i1 = (pid > 0) ? 1 : 2;
-                const int i2 = (pid > 0) ? 2 : 1;
-                switch (abs(pid)) {
-                case 1:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    cnt += 1;
-                    break;
-                case 2:
-                    div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], zms[mz][cnt + 1].pos[i2]);
-                    cnt += 2;
-                    break;
-                case 3:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
-                    cnt += 2;
-                    break;
-                case 4:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 1);
-                    div4(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 1].pos[i2]);
-                    cnt += 3;
-                    break;
-                case 5:
-                    div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
-                    cnt += 2;
-                    break;
-                case 6:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 1);
-                    div4(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 3].pos[i1], zms[mz][cnt + 2].pos[i2]);
-                    cnt += 4;
-                    break;
-                case 7:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
-                    div3(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], 0);
-                    div3(zms[mz][cnt + 3].pos[0], zms[mz][cnt + 3].pos[i1], zms[mz][cnt + 3].pos[i2], 0);
-                    cnt += 4;
-                    break;
-                case 8:
-                    div6(
-                        zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2],
-                        zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 3].pos[i2], zms[mz][cnt + 3].pos[0]);
-                    cnt += 4;
-                    break;
-                case 9:
-                    div6(
-                        zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 2].pos[i1],
-                        zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[i2], zms[mz][cnt + 3].pos[0]);
-                    cnt += 4;
-                    break;
-                case 10:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
-                    cnt += 2;
-                    break;
-                case 11:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div4(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 2].pos[i2]);
-                    cnt += 3;
-                    break;
-                case 12:
-                    div3(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 0].pos[i2], 0);
-                    div3(zms[mz][cnt + 1].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], 0);
-                    div3(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], 0);
-                    cnt += 3;
-                    break;
-                case 13:
-                    div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 1].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
-                    div4(zms[mz][cnt + 2].pos[0], zms[mz][cnt + 2].pos[i1], zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[i2]);
-                    cnt += 4;
-                    break;
-                case 14:
-                    div6(
-                        zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 2].pos[i1],
-                        zms[mz][cnt + 2].pos[i2], zms[mz][cnt + 3].pos[0], zms[mz][cnt + 3].pos[i1]);
-                    cnt += 4;
-                    break;
-                case 15:
-                    div4(zms[mz][cnt + 0].pos[0], zms[mz][cnt + 0].pos[i1], zms[mz][cnt + 1].pos[i2], zms[mz][cnt + 0].pos[i2]);
-                    cnt += 2;
-                    break;
                 }
-            }
 
-            zms[mz] = tmps;
-        }
+                zms[mz] = tmps;
+            }
 #endif
-        {
-            meshes.clear();
+            {
+                meshes.reserve(voxel.vmap.size() * 10);
 
-            for (int z = mrect.dbase[2]; z < mrect.dbase[2] + mrect.dsize[2]; z++) {
-                const int mz = z - mrect.dbase[2];
+                for (int z = vrect.dbase[2]; z < vrect.dbase[2] + vrect.dsize[2]; z++) {
+                    const int mz = z - vrect.dbase[2];
 
-                for (int i = 0; i < zms[mz].size(); i++) {
-                    const Mesh3 &m = zms[mz][i];
-                    if (normVec(crsVec(m.pos[1] - m.pos[0], m.pos[2] - m.pos[0])) > SP_SMALL) {
-                        meshes.push(m);
+                    for (int i = 0; i < zms[mz].size(); i++) {
+                        const Mesh3 &m = zms[mz][i];
+                        if (normVec(crsVec(m.pos[1] - m.pos[0], m.pos[2] - m.pos[0])) > SP_SMALL) {
+                            meshes.push(m);
+                        }
                     }
                 }
             }
-        }
 
-        meshes = (meshes - voxel.center()) * voxel.unit;
+            meshes = (meshes - voxel.center()) * voxel.unit;
+        }
         return true;
     }
 
 
     // voxel range mask
-    SP_CPUFUNC void calcVoxelMask(Mem2<Vec2> &rmsk, const CamParam &cam, const Pose &pose, const Voxel &voxel) {
+    SP_CPUFUNC void calcVoxelMask(Mem2<Vec2> &rmsk, const CamParam &cam, const Pose &pose, const Voxel<> &voxel) {
 
         rmsk.resize(cam.dsize);
 
@@ -715,7 +712,7 @@ namespace sp {
     // visual hull
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC bool visualHull(Voxel &voxel, const Mem1<Mem2<Byte> > &imgs, const Mem1<CamParam> &cams, const Mem1<Pose> &poses, const SP_REAL unit = 1.0) {
+    SP_CPUFUNC bool visualHull(Voxel<> &voxel, const Mem1<Mem2<Byte> > &imgs, const Mem1<CamParam> &cams, const Mem1<Pose> &poses, const SP_REAL unit = 1.0) {
 
         SP_REAL meanDist = 0.0;
         {
@@ -769,7 +766,7 @@ namespace sp {
     // truncated signed distance function
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void updateTSDF(Voxel &voxel, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const SP_REAL mu = 5.0) {
+    SP_CPUFUNC void updateTSDF(Voxel<> &voxel, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth, const SP_REAL mu = 5.0) {
 
         const Vec3 cent = voxel.center();
         const SP_REAL step = mu * voxel.unit;
@@ -796,7 +793,7 @@ namespace sp {
         }
     }
 
-    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel &voxel, const SP_REAL mu = 5.0) {
+    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel<> &voxel, const SP_REAL mu = 5.0) {
 
         map.resize(cam.dsize);
         map.zero();

@@ -43,7 +43,7 @@ int main() {
         harris(pixs, img1);
 
         Mem2<Col3> img = img1;
-        renderCircle(img, pixs, 4, getCol(0, 255, 0), 1);
+        renderCircle(img, pixs, 4, getCol3(0, 255, 0), 1);
 
         saveBMP("corner.bmp", img);
     }

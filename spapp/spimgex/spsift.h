@@ -307,22 +307,22 @@ namespace sp{
 
             const SP_REAL val = dog1(x, y);
 
-            const SP_REAL dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0);
-            const SP_REAL dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0);
-            const SP_REAL dss = (dog2(x + 0, y + 0) + dog0(x + 0, y + 0) - val * 2.0);
+            const SP_REAL dxx = (dog1(x + 1, y + 0) + dog1(x - 1, y + 0) - val * 2.0f);
+            const SP_REAL dyy = (dog1(x + 0, y + 1) + dog1(x + 0, y - 1) - val * 2.0f);
+            const SP_REAL dss = (dog2(x + 0, y + 0) + dog0(x + 0, y + 0) - val * 2.0f);
 
-            const SP_REAL dxy = (dog1(x + 1, y + 1) - dog1(x - 1, y + 1) - dog1(x + 1, y - 1) + dog1(x - 1, y - 1)) * 0.25;
-            const SP_REAL dxs = (dog2(x + 1, y + 0) - dog2(x - 1, y + 0) - dog0(x + 1, y + 0) + dog0(x - 1, y + 0)) * 0.25;
-            const SP_REAL dys = (dog2(x + 0, y + 1) - dog2(x + 0, y - 1) - dog0(x + 0, y + 1) + dog0(x + 0, y - 1)) * 0.25;
+            const SP_REAL dxy = (dog1(x + 1, y + 1) - dog1(x - 1, y + 1) - dog1(x + 1, y - 1) + dog1(x - 1, y - 1)) * 0.25f;
+            const SP_REAL dxs = (dog2(x + 1, y + 0) - dog2(x - 1, y + 0) - dog0(x + 1, y + 0) + dog0(x - 1, y + 0)) * 0.25f;
+            const SP_REAL dys = (dog2(x + 0, y + 1) - dog2(x + 0, y - 1) - dog0(x + 0, y + 1) + dog0(x + 0, y - 1)) * 0.25f;
 
             const SP_REAL dv2[3 * 3] = { dxx, dxy, dxs, dxy, dyy, dys, dxs, dys, dss };
 
             SP_REAL dst[3 * 3];
             if (invMat33(dst, dv2) == false) return false;
 
-            const SP_REAL dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5;
-            const SP_REAL dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5;
-            const SP_REAL ds = (dog2(x + 0, y + 0) - dog0(x + 0, y + 0)) * 0.5;
+            const SP_REAL dx = (dog1(x + 1, y + 0) - dog1(x - 1, y + 0)) * 0.5f;
+            const SP_REAL dy = (dog1(x + 0, y + 1) - dog1(x + 0, y - 1)) * 0.5f;
+            const SP_REAL ds = (dog2(x + 0, y + 0) - dog0(x + 0, y + 0)) * 0.5f;
 
             const SP_REAL dv[3] = { dx, dy, ds };
 
@@ -338,9 +338,7 @@ namespace sp{
             if (det <= 0) return false;
             if (tr * tr / det > EDGE_THRESH) return false;
 
-            vec.x = x - delta[0];
-            vec.y = y - delta[1];
-            vec.z = s - delta[2];
+            vec = getVec3(x - delta[0], y - delta[1], s - delta[2]);
 
             return true;
         }
@@ -445,8 +443,8 @@ namespace sp{
                     const SP_REAL tx = (tcos * rx - tsin * ry) / block;
                     const SP_REAL ty = (tsin * rx + tcos * ry) / block;
 
-                    const SP_REAL bx = tx + (DSC_BLKS - 1) * 0.5 + 1.0;
-                    const SP_REAL by = ty + (DSC_BLKS - 1) * 0.5 + 1.0;
+                    const SP_REAL bx = tx + (DSC_BLKS - 1) * 0.5f + 1.0f;
+                    const SP_REAL by = ty + (DSC_BLKS - 1) * 0.5f + 1.0f;
 
                     if (bx > 0 && bx < DSC_BLKS && by > 0 && by < DSC_BLKS) {
 
