@@ -8,10 +8,10 @@
 #ifndef SP_USE_SYS
 #define SP_USE_SYS 1
 #endif
+
 //--------------------------------------------------------------------------------
 // timer
 //--------------------------------------------------------------------------------
-
 
 #if SP_USE_SYS
 #if WIN32
@@ -111,27 +111,29 @@ namespace sp {
 #endif
 #endif
 
-// get memory usage [KB]
-static int getMemoryUsage() {
-    int m = -1;
+namespace sp {
+
+    // get memory usage [KB]
+    static int getMemoryUsage() {
+        int m = -1;
 #if SP_USE_SYS
 #ifdef WIN32
-    HANDLE h = GetCurrentProcess();
-    PROCESS_MEMORY_COUNTERS_EX pmc;
-    if (GetProcessMemoryInfo(h, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
-        m = static_cast<int>(pmc.PrivateUsage / (1000.0));
-    }
-    CloseHandle(h);
+        HANDLE h = GetCurrentProcess();
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        if (GetProcessMemoryInfo(h, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+            m = static_cast<int>(pmc.PrivateUsage / (1000.0));
+        }
+        CloseHandle(h);
 #else
-    rusage usage;
-    if (getrusage(RUSAGE_SELF, &usage) == 0) {
-        m = static_cast<int>(usage.ru_marss);
+        rusage usage;
+        if (getrusage(RUSAGE_SELF, &usage) == 0) {
+            m = static_cast<int>(usage.ru_marss);
+        }
+#endif
+#endif
+        return m;
     }
-#endif
-#endif
-    return m;
 }
-
 
 //--------------------------------------------------------------------------------
 // file util
@@ -148,29 +150,68 @@ static int getMemoryUsage() {
 #endif
 #endif
 
-static int makeDir(const char *dir) {
-    int ret = 0;
+namespace sp {
+
+    static int makeDir(const char *dir) {
+        int ret = 0;
 #if SP_USE_SYS
 #if WIN32
-    ret = _mkdir(dir);
+        ret = _mkdir(dir);
 #else
-    ret = mkdir(dir, 0755);
+        ret = mkdir(dir, 0755);
 #endif
 #endif
-    return ret;
-}
+        return ret;
+    }
 
-static char* getCrntDir() {
-    static char dir[SP_STRMAX] = { 0 };
+    static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
+        char buff[4][SP_STRMAX] = { 0 };
+        _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
+    }
+
+    static char* getCrntDir() {
+        static char dir[SP_STRMAX] = { 0 };
 #if SP_USE_SYS
 #if WIN32
-    GetCurrentDirectory(SP_STRMAX, dir);
+        GetCurrentDirectory(SP_STRMAX, dir);
 #else
-    getcwd(dir, SP_STRMAX);
+        getcwd(dir, SP_STRMAX);
 #endif
 #endif
-    return dir;
-}
+        return dir[0] != 0 ? dir : NULL;
+    }
 
+    static char* getModulePath() {
+        static char path[SP_STRMAX] = { 0 };
+#if SP_USE_SYS
+#if WIN32
+        GetModuleFileName(NULL, path, MAX_PATH);
+#else
+        readlink("/proc/self/exe", path, sizeof(path) - 1);
+#endif
+#endif
+        return path[0] != 0 ? path : NULL;
+    }
+
+    static char* getModuleDir() {
+        static char dir[SP_STRMAX] = { 0 };
+#if SP_USE_SYS
+        const char *path = getModulePath();
+        splitPath(NULL, dir, NULL, NULL, path);
+#endif
+        return dir[0] != 0 ? dir : NULL;;
+    }
+
+    static char* getModuleName() {
+        static char name[SP_STRMAX] = { 0 };
+#if SP_USE_SYS
+        const char *path = getModulePath();
+        splitPath(NULL, NULL, name, NULL, path);
+#endif
+        return name[0] != 0 ? name : NULL;;
+    }
+
+
+}
 #endif
 
