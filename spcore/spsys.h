@@ -141,15 +141,25 @@ namespace sp {
 
 #if SP_USE_SYS
 #include <stdlib.h>
-#if WIN32
+
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <direct.h>
+
+#elif defined(__APPLE__)
+#include <dlfcn.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <libgen.h>
+
 #else
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
 #endif
+
 #endif
 
 namespace sp {
@@ -181,7 +191,7 @@ namespace sp {
     static char* getCrntDir() {
         static char dir[SP_STRMAX] = { 0 };
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
         GetCurrentDirectory(SP_STRMAX, dir);
 #else
         getcwd(dir, SP_STRMAX);
@@ -193,11 +203,19 @@ namespace sp {
     static char* getModulePath() {
         static char path[SP_STRMAX] = { 0 };
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
         GetModuleFileName(NULL, path, MAX_PATH);
+        
+#elif defined(__APPLE__)
+        Dl_info module_info;
+        if (dladdr(reinterpret_cast<void*>(getModulePath), &module_info) != 0) {
+            strcpy(path, module_info.dli_fname);
+        }
+
 #else
         readlink("/proc/self/exe", path, sizeof(path) - 1);
 #endif
+        
 #endif
         return path[0] != 0 ? path : NULL;
     }
