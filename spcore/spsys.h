@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 // Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ namespace sp {
 #else
         rusage usage;
         if (getrusage(RUSAGE_SELF, &usage) == 0) {
-            m = static_cast<int>(usage.ru_marss);
+            m = static_cast<int>(usage.ru_maxrss);
         }
 #endif
 #endif
@@ -140,6 +140,7 @@ namespace sp {
 //--------------------------------------------------------------------------------
 
 #if SP_USE_SYS
+#include <stdlib.h>
 #if WIN32
 #include <windows.h>
 #include <direct.h>
@@ -147,6 +148,7 @@ namespace sp {
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <libgen.h>
 #endif
 #endif
 
@@ -166,7 +168,14 @@ namespace sp {
 
     static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
         char buff[4][SP_STRMAX] = { 0 };
+#if SP_USE_SYS
+#if WIN32
         _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
+#else
+        
+#endif
+#endif
+        
     }
 
     static char* getCrntDir() {
