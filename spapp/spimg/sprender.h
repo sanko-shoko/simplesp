@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 // Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ namespace sp{
         SP_ASSERT(isValid(2, dst));
 
         const double s = size / 2.0;
-        const Vec2 xyloop[4] = { getVec3(-s, -s), getVec3(+s, -s), getVec3(+s, +s), getVec3(-s, +s) };
+        const Vec2 xyloop[4] = { getVec2(-s, -s), getVec2(+s, -s), getVec2(+s, +s), getVec2(-s, +s) };
         for (int i = 0; i < 4; i++){
             const Vec2 a = xyloop[(i + 0) % 4];
             const Vec2 b = xyloop[(i + 1) % 4];
@@ -227,7 +227,7 @@ namespace sp{
         const double w = (trg.dsize[0] / 2.0) / f * size;
         const double h = (trg.dsize[1] / 2.0) / f * size;
 
-        const Vec2 loop[4] = { getVec3(-w, -h), getVec3(+w, -h), getVec3(+w, +h), getVec3(-w, +h) };
+        const Vec2 loop[4] = { getVec2(-w, -h), getVec2(+w, -h), getVec2(+w, +h), getVec2(-w, +h) };
         for (int i = 0; i < 4; i++) {
             const Vec2 a = loop[(i + 0) % 4];
             const Vec2 b = loop[(i + 1) % 4];
