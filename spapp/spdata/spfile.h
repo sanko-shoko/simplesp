@@ -9,7 +9,7 @@
 #include "spapp/spdata/spstr.h"
 #include "spapp/spdata/spformat.h"
 
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
 #include <direct.h>
 #else

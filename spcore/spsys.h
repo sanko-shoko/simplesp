@@ -14,7 +14,7 @@
 //--------------------------------------------------------------------------------
 
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
 #include <chrono>
@@ -28,7 +28,7 @@ namespace sp {
     public:
 
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
         typedef LARGE_INTEGER tpoint;
 #else
         typedef std::chrono::system_clock::time_point tpoint;
@@ -40,7 +40,7 @@ namespace sp {
         static tpoint now() {
             tpoint n;
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
             QueryPerformanceCounter(&n);
 #else
             n = std::chrono::system_clock::now();
@@ -54,7 +54,7 @@ namespace sp {
         static double dif(const tpoint &tp0, const tpoint &tp1) {
             double ms = 0.0;
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
             tpoint freq;
             QueryPerformanceFrequency(&freq);
 
@@ -117,7 +117,7 @@ namespace sp {
     static int getMemoryUsage() {
         int m = -1;
 #if SP_USE_SYS
-#ifdef WIN32
+#if defined(_WIN32) || defined(_WIN64)
         HANDLE h = GetCurrentProcess();
         PROCESS_MEMORY_COUNTERS_EX pmc;
         if (GetProcessMemoryInfo(h, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
@@ -167,7 +167,7 @@ namespace sp {
     static int makeDir(const char *dir) {
         int ret = 0;
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
         ret = _mkdir(dir);
 #else
         ret = mkdir(dir, 0755);
@@ -179,7 +179,7 @@ namespace sp {
     static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
         char buff[4][SP_STRMAX] = { 0 };
 #if SP_USE_SYS
-#if WIN32
+#if defined(_WIN32) || defined(_WIN64)
         _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
 #else
         
