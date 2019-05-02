@@ -57,7 +57,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] == 1) {
+        if (m_key[GLFW_KEY_A] == 1) {
             m_dataB = Mem1<VecPN3>(m_dataA.size());
 
             for (int i = 0; i < m_dataB.size(); i++) {
@@ -67,7 +67,7 @@ private:
             reset();
         }
         
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_dataB = Mem2<VecPN3>(m_cam.dsize);
 
             m_dataB.zero();
@@ -81,7 +81,7 @@ private:
             reset();
         }
  
-        if (m_keyAction[GLFW_KEY_D] > 0 && m_dataB.size() > 0) {
+        if (m_key[GLFW_KEY_D] > 0 && m_dataB.size() > 0) {
 
             // point to point
             if (m_dataB.dim == 1) {

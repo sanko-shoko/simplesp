@@ -34,10 +34,10 @@ private:
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_start = true;
         }
-        if (m_keyAction[GLFW_KEY_R] == 1) {
+        if (m_key[GLFW_KEY_R] == 1) {
             m_kfusion.reset();
             m_start = false;
         }

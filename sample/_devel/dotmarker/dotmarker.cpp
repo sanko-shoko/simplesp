@@ -25,14 +25,14 @@ void DotMarkerGUI::calcOne(){
 void DotMarkerGUI::keyFun(int key, int scancode, int action, int mods) {
 
     static CalibTool ctool;
-    if (m_keyAction[GLFW_KEY_A] == 1) {
+    if (m_key[GLFW_KEY_A] == 1) {
         ctool.addImg(m_dotMarker.getMrk(), m_crntImg);
 
         Mem2<Col3> min;
         rescale<Col3, Byte>(min, m_crntImg, 0.3, 0.3);
         m_addImg.push(min);
     }
-    if (m_keyAction[GLFW_KEY_C] == 1 && ctool.execute() == true) {
+    if (m_key[GLFW_KEY_C] == 1 && ctool.execute() == true) {
         ctool.save("cam.txt");
         const CamParam cam = *ctool.getCam();
         m_dotMarker.setCam(cam);

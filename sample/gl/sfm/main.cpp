@@ -77,21 +77,21 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] >= 1) {
+        if (m_key[GLFW_KEY_A] >= 1) {
             m_sfm.update();
         }
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             reset();
         }
 
-        if (m_keyAction[GLFW_KEY_D] == 1) {
+        if (m_key[GLFW_KEY_D] == 1) {
             m_cscale += 0.01;
             if (m_cscale > 0.03) m_cscale = 0.01;
         }
 
 #if SFM_DEBUG
-        if (m_keyAction[GLFW_KEY_T] == 1) {
+        if (m_key[GLFW_KEY_T] == 1) {
             add();
         }
 #endif

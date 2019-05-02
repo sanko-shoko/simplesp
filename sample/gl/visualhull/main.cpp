@@ -81,7 +81,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_V] == 1) {
+        if (m_key[GLFW_KEY_V] == 1) {
             Mem1<Mem2<Byte> > imgs;
             genSilhouette(imgs, m_model, m_cams, m_poses);
 
@@ -98,7 +98,7 @@ private:
             m_mode = 1;
         }
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_mode = 1 - m_mode;
         }
 

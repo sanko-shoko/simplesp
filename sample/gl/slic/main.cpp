@@ -43,7 +43,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_view = (m_view == &m_img) ? &m_col : &m_img;
         }
     }

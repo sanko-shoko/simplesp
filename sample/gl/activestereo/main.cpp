@@ -90,16 +90,16 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
         if (m_capture >= 0) return;
 
-        if (m_keyAction[GLFW_KEY_A] == 1) {
+        if (m_key[GLFW_KEY_A] == 1) {
             m_capture = 0;
         }
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             decodeGC();
         }
-        if (m_keyAction[GLFW_KEY_D] == 1) {
+        if (m_key[GLFW_KEY_D] == 1) {
             decodeGCPS();
         }
-        if (m_keyAction[GLFW_KEY_F] == 1) {
+        if (m_key[GLFW_KEY_F] == 1) {
             m_view3d ^= true;
         }
     }
