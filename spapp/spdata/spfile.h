@@ -10,7 +10,7 @@
 #include "spapp/spdata/spformat.h"
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <Windows.h>
+#include <windows.h>
 #include <direct.h>
 #else
 #include <dirent.h>

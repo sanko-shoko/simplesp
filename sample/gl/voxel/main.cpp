@@ -12,7 +12,7 @@ class VoxelGUI : public BaseWindow {
     Mem1<Mesh3> m_model;
 
     // voxel
-    Voxel m_voxel;
+    Voxel<> m_voxel;
 
     // pose
     Pose m_pose;

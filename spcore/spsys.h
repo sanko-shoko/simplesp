@@ -9,16 +9,16 @@
 #define SP_USE_SYS 1
 #endif
 
+#if SP_USE_SYS
+
 //--------------------------------------------------------------------------------
 // timer
 //--------------------------------------------------------------------------------
 
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
 #include <chrono>
-#endif
 #endif
 
 namespace sp {
@@ -27,33 +27,24 @@ namespace sp {
 
     public:
 
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         typedef LARGE_INTEGER tpoint;
 #else
         typedef std::chrono::system_clock::time_point tpoint;
 #endif
-#else
-        typedef double tpoint;
-#endif
 
         static tpoint now() {
             tpoint n;
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
             QueryPerformanceCounter(&n);
 #else
             n = std::chrono::system_clock::now();
-#endif
-#else
-            n = 0.0;
 #endif
             return n;
         }
 
         static double dif(const tpoint &tp0, const tpoint &tp1) {
             double ms = 0.0;
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
             tpoint freq;
             QueryPerformanceFrequency(&freq);
@@ -61,7 +52,6 @@ namespace sp {
             ms = static_cast<double>((tp1.QuadPart - tp0.QuadPart) * 1000.0 / freq.QuadPart);
 #else
             ms = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(tp1 - tp0).count() / 1000.0);
-#endif
 #endif
             return (ms > 0) ? +ms : -ms;
         }
@@ -101,7 +91,6 @@ namespace sp {
 // resource
 //--------------------------------------------------------------------------------
 
-#if SP_USE_SYS
 #if WIN32
 #include <windows.h>
 #include <psapi.h>
@@ -109,14 +98,12 @@ namespace sp {
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-#endif
 
 namespace sp {
 
     // get memory usage [KB]
     static int getMemoryUsage() {
         int m = -1;
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         HANDLE h = GetCurrentProcess();
         PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -130,7 +117,6 @@ namespace sp {
             m = static_cast<int>(usage.ru_maxrss);
         }
 #endif
-#endif
         return m;
     }
 }
@@ -139,7 +125,6 @@ namespace sp {
 // file util
 //--------------------------------------------------------------------------------
 
-#if SP_USE_SYS
 #include <stdlib.h>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -160,49 +145,40 @@ namespace sp {
 #include <libgen.h>
 #endif
 
-#endif
 
 namespace sp {
 
     static int makeDir(const char *dir) {
         int ret = 0;
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         ret = _mkdir(dir);
 #else
         ret = mkdir(dir, 0755);
-#endif
 #endif
         return ret;
     }
 
     static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
         char buff[4][SP_STRMAX] = { 0 };
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
 #else
         
 #endif
-#endif
-        
     }
 
     static char* getCrntDir() {
         static char dir[SP_STRMAX] = { 0 };
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         GetCurrentDirectory(SP_STRMAX, dir);
 #else
         getcwd(dir, SP_STRMAX);
-#endif
 #endif
         return dir[0] != 0 ? dir : NULL;
     }
 
     static char* getModulePath() {
         static char path[SP_STRMAX] = { 0 };
-#if SP_USE_SYS
 #if defined(_WIN32) || defined(_WIN64)
         GetModuleFileName(NULL, path, MAX_PATH);
         
@@ -215,30 +191,27 @@ namespace sp {
 #else
         readlink("/proc/self/exe", path, sizeof(path) - 1);
 #endif
-        
-#endif
         return path[0] != 0 ? path : NULL;
     }
 
     static char* getModuleDir() {
         static char dir[SP_STRMAX] = { 0 };
-#if SP_USE_SYS
         const char *path = getModulePath();
         splitPath(NULL, dir, NULL, NULL, path);
-#endif
         return dir[0] != 0 ? dir : NULL;;
     }
 
     static char* getModuleName() {
         static char name[SP_STRMAX] = { 0 };
-#if SP_USE_SYS
         const char *path = getModulePath();
         splitPath(NULL, NULL, name, NULL, path);
-#endif
         return name[0] != 0 ? name : NULL;;
     }
 
 
 }
+
+#endif
+
 #endif
 
