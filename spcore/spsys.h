@@ -208,7 +208,6 @@ namespace sp {
         return name[0] != 0 ? name : NULL;;
     }
 
-
 }
 
 #endif

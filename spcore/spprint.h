@@ -238,7 +238,7 @@ namespace sp {
     // util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC char* progressBar(const SP_REAL crnt, const SP_REAL size){
+    SP_CPUFUNC char* progressBar(const double crnt, const double size){
         const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
 
         static char bar[11] = { 0 };
