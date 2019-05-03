@@ -49,8 +49,7 @@ namespace sp {
         double scroll;
 
         // button
-        int bDownL, bDownR, bDownM;
-
+        int buttonL, buttonR, buttonM;
  
         Mouse() {
             reset();
@@ -76,13 +75,13 @@ namespace sp {
             }
 
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                bDownL = _action;
+                buttonL = _action;
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                bDownR = _action;
+                buttonR = _action;
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-                bDownM = _action;
+                buttonM = _action;
             }
 
             if (_action == 0) {
@@ -92,7 +91,7 @@ namespace sp {
 
         void setPos(const double x, const double y) {
 
-            if (bDownL || bDownR || bDownM) {
+            if (buttonL || buttonR || buttonM) {
                 move = getVec2(x, y) - pos;
                 drag += move;
             }
@@ -112,7 +111,7 @@ namespace sp {
 
     SP_CPUFUNC bool controlView(Vec2 &viewpPos, double &viewScale, const Mouse &mouse) {
         bool ret = false;
-        if (mouse.bDownL && normVec(mouse.move) > 0.0) {
+        if (mouse.buttonL && normVec(mouse.move) > 0.0) {
             viewpPos += mouse.move;
             ret = true;
         }
@@ -131,13 +130,13 @@ namespace sp {
         Pose cpose = pose * invPose(base);
         if (cpose.trn.z < 0.0) return false;
 
-        if (mouse.bDownM && normVec(mouse.move) > 0.0) {
+        if (mouse.buttonM && normVec(mouse.move) > 0.0) {
             cpose.trn.x += SP_CAST(mouse.move.x * cpose.trn.z / (cam.fx * viewScale));
             cpose.trn.y += SP_CAST(mouse.move.y * cpose.trn.z / (cam.fy * viewScale));
             ret = true;
         }
 
-        if (mouse.bDownL && normVec(mouse.move) > 0.0) {
+        if (mouse.buttonL && normVec(mouse.move) > 0.0) {
             cpose.rot = getRotAngle(getVec3(+mouse.move.y, -mouse.move.x, 0.0), 0.01 * normVec(mouse.move)) * cpose.rot;
             ret = true;
         }
