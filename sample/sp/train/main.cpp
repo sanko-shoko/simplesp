@@ -16,7 +16,7 @@ void mnist(const char *path) {
 
     // Mem1 image num  : train 60k, test 10k 
     // Mem<double>  image size : 28x28
-    Mem1<Mem<double> > trainImages, testImages;
+    Mem1<Mem<SP_REAL> > trainImages, testImages;
     Mem1<int> trainLabels, testLabels;
 
     SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, path));
@@ -37,12 +37,12 @@ void mnist(const char *path) {
     const int batch = 100;
 
     for (int e = 0; e < epoch; e++) {
-        const Mem1<Mem<double> > images = shuffle(trainImages, e);
+        const Mem1<Mem<SP_REAL> > images = shuffle(trainImages, e);
         const Mem1<int> labels = shuffle(trainLabels, e);
 
         // train
         for (int i = 0; i < trainImages.size(); i += batch) {
-            const Mem1<Mem<double> > X = images.part(i, batch);
+            const Mem1<Mem<SP_REAL> > X = images.part(i, batch);
             const Mem1<int> T = labels.part(i, batch);
 
             model.train(X, T);
@@ -65,7 +65,7 @@ void cifar(const char *path) {
 
     // Mem1 image num  : train 50k, test 10k 
     // Mem<double>  image size : 32x32x3
-    Mem1<Mem<double> > trainImages, testImages;
+    Mem1<Mem<SP_REAL> > trainImages, testImages;
     Mem1<int> trainLabels, testLabels;
 
     SP_ASSERT(loadCIFAR10(trainImages, trainLabels, testImages, testLabels, path));
@@ -95,12 +95,12 @@ void cifar(const char *path) {
     const int batch = 100;
 
     for (int e = 0; e < epoch; e++) {
-        const Mem1<Mem<double> > images = shuffle(trainImages, e);
+        const Mem1<Mem<SP_REAL> > images = shuffle(trainImages, e);
         const Mem1<int> labels = shuffle(trainLabels, e);
 
         // train
         for (int i = 0; i < trainImages.size(); i += batch) {
-            const Mem1<Mem<double> > X = images.part(i, batch);
+            const Mem1<Mem<SP_REAL> > X = images.part(i, batch);
             const Mem1<int> T = labels.part(i, batch);
 
             model.train(X, T);

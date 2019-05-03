@@ -77,58 +77,58 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC void jacobCamToPix(SP_REAL *jacob, const CamParam &cam, const Vec2 &npx) {
-        const SP_REAL x2 = npx.x * npx.x;
-        const SP_REAL y2 = npx.y * npx.y;
-        const SP_REAL xy = npx.x * npx.y;
+        const double x2 = npx.x * npx.x;
+        const double y2 = npx.y * npx.y;
+        const double xy = npx.x * npx.y;
 
-        const SP_REAL r2 = x2 + y2;
-        const SP_REAL r4 = r2 * r2;
-        const SP_REAL r6 = r4 * r2;
+        const double r2 = x2 + y2;
+        const double r4 = r2 * r2;
+        const double r6 = r4 * r2;
 
-        const SP_REAL k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+        const double k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
 
         Vec2 dist;
-        dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
-        dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
+        dist.x = SP_CAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+        dist.y = SP_CAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
 
-        jacob[0 * 9 + 0] = dist.x;
-        jacob[0 * 9 + 1] = 0.0;
-        jacob[0 * 9 + 2] = 1.0;
-        jacob[0 * 9 + 3] = 0.0;
-        jacob[0 * 9 + 4] = cam.fx * (npx.x * r2);
-        jacob[0 * 9 + 5] = cam.fx * (npx.x * r4);
-        jacob[0 * 9 + 6] = cam.fx * (npx.x * r6);
-        jacob[0 * 9 + 7] = cam.fx * (2.0 * xy);
-        jacob[0 * 9 + 8] = cam.fx * (2.0 * x2 + r2);
+        jacob[0 * 9 + 0] = SP_CAST(dist.x);
+        jacob[0 * 9 + 1] = SP_CAST(0.0);
+        jacob[0 * 9 + 2] = SP_CAST(1.0);
+        jacob[0 * 9 + 3] = SP_CAST(0.0);
+        jacob[0 * 9 + 4] = SP_CAST(cam.fx * (npx.x * r2));
+        jacob[0 * 9 + 5] = SP_CAST(cam.fx * (npx.x * r4));
+        jacob[0 * 9 + 6] = SP_CAST(cam.fx * (npx.x * r6));
+        jacob[0 * 9 + 7] = SP_CAST(cam.fx * (2.0 * xy));
+        jacob[0 * 9 + 8] = SP_CAST(cam.fx * (2.0 * x2 + r2));
 
-        jacob[1 * 9 + 0] = 0.0;
-        jacob[1 * 9 + 1] = dist.y;
-        jacob[1 * 9 + 2] = 0.0;
-        jacob[1 * 9 + 3] = 1.0;
-        jacob[1 * 9 + 4] = cam.fy * (npx.y * r2);
-        jacob[1 * 9 + 5] = cam.fy * (npx.y * r4);
-        jacob[1 * 9 + 6] = cam.fy * (npx.y * r6);
-        jacob[1 * 9 + 7] = cam.fy * (2.0 * y2 + r2);
-        jacob[1 * 9 + 8] = cam.fy * (2.0 * xy);
+        jacob[1 * 9 + 0] = SP_CAST(0.0);
+        jacob[1 * 9 + 1] = SP_CAST(dist.y);
+        jacob[1 * 9 + 2] = SP_CAST(0.0);
+        jacob[1 * 9 + 3] = SP_CAST(1.0);
+        jacob[1 * 9 + 4] = SP_CAST(cam.fy * (npx.y * r2));
+        jacob[1 * 9 + 5] = SP_CAST(cam.fy * (npx.y * r4));
+        jacob[1 * 9 + 6] = SP_CAST(cam.fy * (npx.y * r6));
+        jacob[1 * 9 + 7] = SP_CAST(cam.fy * (2.0 * y2 + r2));
+        jacob[1 * 9 + 8] = SP_CAST(cam.fy * (2.0 * xy));
     }
 
     SP_GENFUNC void jacobNpxToDist(SP_REAL *jacob, const CamParam &cam, const Vec2 &npx) {
-        const SP_REAL x2 = npx.x * npx.x;
-        const SP_REAL y2 = npx.y * npx.y;
-        const SP_REAL xy = npx.x * npx.y;
+        const double x2 = npx.x * npx.x;
+        const double y2 = npx.y * npx.y;
+        const double xy = npx.x * npx.y;
 
-        const SP_REAL r2 = x2 + y2;
-        const SP_REAL r4 = r2 * r2;
-        const SP_REAL r6 = r4 * r2;
+        const double r2 = x2 + y2;
+        const double r4 = r2 * r2;
+        const double r6 = r4 * r2;
 
-        const SP_REAL k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
-        const SP_REAL k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
+        const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+        const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
 
-        jacob[0 * 2 + 0] = x2 * k2 + k1 + 2.0 * cam.p1 * npx.y + 6.0 * cam.p2 * npx.x;
-        jacob[1 * 2 + 1] = y2 * k2 + k1 + 6.0 * cam.p1 * npx.y + 2.0 * cam.p2 * npx.x;
+        jacob[0 * 2 + 0] = SP_CAST(x2 * k2 + k1 + 2.0 * cam.p1 * npx.y + 6.0 * cam.p2 * npx.x);
+        jacob[1 * 2 + 1] = SP_CAST(y2 * k2 + k1 + 6.0 * cam.p1 * npx.y + 2.0 * cam.p2 * npx.x);
 
-        jacob[0 * 2 + 1] = xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y;
-        jacob[1 * 2 + 0] = xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y;
+        jacob[0 * 2 + 1] = SP_CAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
+        jacob[1 * 2 + 0] = SP_CAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
     }
 
     SP_GENFUNC void jacobNpxToPix(SP_REAL *jacob, const CamParam &cam, const Vec2 &npx) {
@@ -164,19 +164,19 @@ namespace sp{
 
     // distiortion
     SP_GENFUNC Vec2 npxDist(const CamParam &cam, const Vec2 &npx) {
-        const SP_REAL x2 = npx.x * npx.x;
-        const SP_REAL y2 = npx.y * npx.y;
-        const SP_REAL xy = npx.x * npx.y;
+        const double x2 = npx.x * npx.x;
+        const double y2 = npx.y * npx.y;
+        const double xy = npx.x * npx.y;
 
-        const SP_REAL r2 = x2 + y2;
-        const SP_REAL r4 = r2 * r2;
-        const SP_REAL r6 = r4 * r2;
+        const double r2 = x2 + y2;
+        const double r4 = r2 * r2;
+        const double r6 = r4 * r2;
 
-        const SP_REAL k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+        const double k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
 
         Vec2 dist;
-        dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
-        dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
+        dist.x = SP_CAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+        dist.y = SP_CAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
 
         return dist;
     }
@@ -225,31 +225,31 @@ namespace sp{
     SP_GENFUNC Vec2 npxUndistX(const CamParam &cam, const Vec3 &epi, const SP_REAL &npxx) {
         const int maxit = 10;
 
-        const SP_REAL a = -epi.x / epi.y;
-        const SP_REAL b = -epi.z / epi.y;
+        const double a = -epi.x / epi.y;
+        const double b = -epi.z / epi.y;
 
-        SP_REAL x = npxx;
+        double x = npxx;
         for (int i = 0; i < maxit; i++) {
-            const SP_REAL y = a * x + b;
+            const double y = a * x + b;
 
-            const SP_REAL x2 = x * x;
-            const SP_REAL y2 = y * y;
-            const SP_REAL xy = x * y;
+            const double x2 = x * x;
+            const double y2 = y * y;
+            const double xy = x * y;
 
-            const SP_REAL r2 = x2 + y2;
-            const SP_REAL r4 = r2 * r2;
+            const double r2 = x2 + y2;
+            const double r4 = r2 * r2;
             const SP_REAL r6 = r4 * r2;
 
-            const SP_REAL k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
-            const SP_REAL k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
+            const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+            const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
 
-            const SP_REAL err = npxx - (x * k1 + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+            const double err = npxx - (x * k1 + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
 
             // dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
             // dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
             // j = d(err) / d(npx.x)
 
-            const SP_REAL j = x * k2 + k1 + 2.0 * cam.p1 * y + 6.0 * cam.p2 * x;
+            const double j = x * k2 + k1 + 2.0 * cam.p1 * y + 6.0 * cam.p2 * x;
 
             if (fabs(j) < SP_SMALL) break;
             x += err / j;
@@ -261,31 +261,31 @@ namespace sp{
     SP_GENFUNC Vec2 npxUndistY(const CamParam &cam, const Vec3 &epi, const SP_REAL &npxy) {
         const int maxit = 10;
 
-        const SP_REAL a = -epi.y / epi.x;
-        const SP_REAL b = -epi.z / epi.x;
+        const double a = -epi.y / epi.x;
+        const double b = -epi.z / epi.x;
 
-        SP_REAL y = npxy;
+        double y = npxy;
         for (int i = 0; i < maxit; i++) {
-            const SP_REAL x = a * y + b;
+            const double x = a * y + b;
 
-            const SP_REAL x2 = x * x;
-            const SP_REAL y2 = y * y;
-            const SP_REAL xy = x * y;
+            const double x2 = x * x;
+            const double y2 = y * y;
+            const double xy = x * y;
 
-            const SP_REAL r2 = x2 + y2;
-            const SP_REAL r4 = r2 * r2;
-            const SP_REAL r6 = r4 * r2;
+            const double r2 = x2 + y2;
+            const double r4 = r2 * r2;
+            const double r6 = r4 * r2;
 
-            const SP_REAL k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
-            const SP_REAL k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
+            const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
+            const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
 
-            const SP_REAL err = npxy - (y * k1 + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
+            const double err = npxy - (y * k1 + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
 
             // dist.x = npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2);
             // dist.y = npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy);
             // j = d(err) / d(npx.y)
 
-            const SP_REAL j = y * k2 + k1 + 6.0 * cam.p1 * y + 2.0 * cam.p2 * x;
+            const double j = y * k2 + k1 + 6.0 * cam.p1 * y + 2.0 * cam.p2 * x;
 
             if (fabs(j) < SP_SMALL) break;
             y += err / j;

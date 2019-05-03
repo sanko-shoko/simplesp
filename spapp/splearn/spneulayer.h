@@ -197,7 +197,7 @@ namespace sp{
                 m_vel.w = grd.w * m_lambda;
                 m_vel.b = grd.b * m_lambda;
             }
-            const SP_REAL momentum = 0.9;
+            const double momentum = 0.9;
 
             m_vel.w = m_vel.w * momentum + grd.w * m_lambda;
             m_vel.b = m_vel.b * momentum + grd.b * m_lambda;
@@ -883,8 +883,8 @@ namespace sp{
                     const SP_REAL mean = meanVal(bX);
                     cX = bX - mean;
 
-                    const SP_REAL var = meanSq(cX);
-                    const SP_REAL std = sqrt(var + 10e-6);
+                    const double var = meanSq(cX);
+                    const double std = sqrt(var + 10e-6);
                     nX = cX / std;
 
                     m_cX[r] = cX;
@@ -892,7 +892,7 @@ namespace sp{
 
                     m_std[r] = std;
 
-                    const SP_REAL blend = 0.9;
+                    const double blend = 0.9;
                     m_mean[r] = blend * m_mean[r] + (1 - blend) * mean;
                     m_var[r] = blend * m_var[r] + (1 - blend) * var;
                 }

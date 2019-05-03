@@ -55,12 +55,12 @@ private:
         //        id = 0;
         //    }
         //}
-        const Mem2<double> *depth = m_rs.getDepth();
+        const Mem2<SP_REAL> *depth = m_rs.getDepth();
         if (depth == NULL) return;
 
         // make min data for computational cost
         CamParam minCam;
-        Mem2<double> minDepth;
+        Mem2<SP_REAL> minDepth;
         {
             pyrdown(minCam, *m_rs.getDepthCam());
             pyrdownDepth(minDepth, *depth);

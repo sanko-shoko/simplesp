@@ -55,7 +55,7 @@ private:
         //    }
         //}
         const Mem2<Col3> *color = m_rs.getColor();
-        const Mem2<double> *depth = m_rs.getDepth();
+        const Mem2<SP_REAL> *depth = m_rs.getDepth();
 
         if (m_view3d == false){
             // view 2D

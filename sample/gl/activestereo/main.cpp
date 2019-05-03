@@ -104,7 +104,7 @@ private:
         }
     }
 
-    void calcPnt3d(const Mem2<double> &map) {
+    void calcPnt3d(const Mem2<SP_REAL> &map) {
         m_img.zero();
         for (int i = 0; i < m_img.size(); i++) {
             if (map[i] < 0.0) continue;
@@ -133,15 +133,15 @@ private:
 
     void decodeGC() {
 
-        const Mem2<double> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
+        const Mem2<SP_REAL> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
 
         calcPnt3d(gcmap);
     }
 
     void decodeGCPS() {
 
-        const Mem2<double> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
-        const Mem2<double> psmap = m_phaseshift.decode(m_psimgs, m_wimg, m_bimg, gcmap);
+        const Mem2<SP_REAL> gcmap = m_graycode.decode(m_gcimgs, m_wimg, m_bimg);
+        const Mem2<SP_REAL> psmap = m_phaseshift.decode(m_psimgs, m_wimg, m_bimg, gcmap);
 
         calcPnt3d(psmap);
     }

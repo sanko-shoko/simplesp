@@ -77,7 +77,7 @@ int main(){
         const double rate = 0.5;
         for (int i = 0; i < pixs.size(); i++) {
             if (::fabs(randValUnif()) < rate) {
-                pnts_n[i] += randVecUnif(100, 100, 100);
+                pnts_n[i] += randVecUnif(10, 10, 10);
             }
         }
 

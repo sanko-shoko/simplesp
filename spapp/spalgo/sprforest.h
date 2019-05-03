@@ -91,7 +91,7 @@ namespace sp{
 
         virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) = 0;
 
-        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) = 0;
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
 
         Node* divTree(MemP<Node> &tree, const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
 
@@ -217,7 +217,7 @@ namespace sp{
         }
 
 
-        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) {
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
 
             SP_REAL sum[2] = { 0 };
             int cnt[2] = { 0 };

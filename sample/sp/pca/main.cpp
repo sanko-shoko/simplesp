@@ -62,9 +62,9 @@ int main() {
         // principal component analysis (Image)
         //--------------------------------------------------------------------------------
 
-        Mem1<Mem<double> > imgs;
+        Mem1<Mem<SP_REAL> > imgs;
         {
-            Mem1<Mem<double> > trainImages, testImages;
+            Mem1<Mem<SP_REAL> > trainImages, testImages;
             Mem1<int> trainLabels, testLabels;
 
             SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, SP_DATA_DIR "/mnist"));
@@ -76,7 +76,7 @@ int main() {
             }
         }
 
-        Mem<double> mean = imgs[0];
+        Mem<SP_REAL> mean = imgs[0];
         for (int i = 1; i < imgs.size(); i++) {
             addMem(mean, mean, imgs[i]);
         }

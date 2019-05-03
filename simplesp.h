@@ -12,9 +12,9 @@
 #pragma warning(disable:4101)
 
 #pragma warning(push)
-#pragma warning(disable:4244)
-#pragma warning(disable:4305)
-#pragma warning(disable:4838)
+//#pragma warning(disable:4244)
+//#pragma warning(disable:4305)
+//#pragma warning(disable:4838)
 #endif
 
 

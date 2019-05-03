@@ -77,7 +77,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename DEPTH>
-    SP_CPUFUNC void pyrdownDepth(Mem<SP_REAL> &dst, const Mem<DEPTH> &src){
+    SP_CPUFUNC void pyrdownDepth(Mem<DEPTH> &dst, const Mem<DEPTH> &src){
         SP_ASSERT(isValid(2, src));
 
         const Mem<DEPTH> &tmp = (&dst != &src) ? src : clone(src);
@@ -191,7 +191,7 @@ namespace sp{
     }
 
     template<typename DEPTH>
-    SP_CPUFUNC void cnvVecPNToDepth(Mem<SP_REAL> &dst, const Mem<VecPN3> &src) {
+    SP_CPUFUNC void cnvVecPNToDepth(Mem<DEPTH> &dst, const Mem<VecPN3> &src) {
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);

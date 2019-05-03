@@ -187,7 +187,7 @@ int main() {
             cnvImg(gry, col);
         }
 
-        Mem2<double> re, im;
+        Mem2<SP_REAL> re, im;
         {
             printf("dft ");
             dft(re, im, gry);

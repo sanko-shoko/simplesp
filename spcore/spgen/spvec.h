@@ -681,7 +681,7 @@ namespace sp {
             int cnt;
 
             Vec3 p[12];
-            const SP_REAL u = (1.0 + sqrt(5.0)) / 2.0;
+            const double u = (1.0 + sqrt(5.0)) / 2.0;
             // vertex (0, ±1, ±u), (±u, 0, ±1), (±1, ±u, 0)
 
             cnt = 0;

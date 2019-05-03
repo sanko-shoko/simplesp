@@ -65,7 +65,7 @@ private:
     }
 
     virtual void display() {
-        Mem2<double> depth;
+        Mem2<SP_REAL> depth;
 
         // render depth
         {

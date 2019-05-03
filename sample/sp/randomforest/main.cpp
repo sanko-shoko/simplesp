@@ -27,13 +27,13 @@ void regression(){
     const double c = 5.6;
 
     // generate test data
-    Mem1<Mem<double> > Xs;
-    Mem1<double> Ys;
+    Mem1<Mem<SP_REAL> > Xs;
+    Mem1<SP_REAL> Ys;
 
     for (int i = 0; i < 1500; i++) {
         const double noise = randValGauss() * 0.1;
 
-        Mem1<double> X(2);
+        Mem1<SP_REAL> X(2);
         X[0] = randValUnif() * 10;
         X[1] = randValUnif() * 10;
 
@@ -52,7 +52,7 @@ void regression(){
     
     const int testNum = 5;
     for (int i = 0; i < testNum; i++) {
-        Mem1<double> X(2);
+        Mem1<SP_REAL> X(2);
         X[0] = randValUnif() * 10;
         X[1] = randValUnif() * 10;
 
@@ -74,7 +74,7 @@ void classification(const char *path) {
 
     // Mem1 image num  : train 60k, test 10k 
     // Mem<double>  image size : 28x28
-    Mem1<Mem<double> > trainImages, testImages;
+    Mem1<Mem<SP_REAL> > trainImages, testImages;
     Mem1<int> trainLabels, testLabels;
 
     SP_ASSERT(loadMNIST(trainImages, trainLabels, testImages, testLabels, path));
@@ -90,7 +90,7 @@ void classification(const char *path) {
 
     Mem1<int> results;
     for (int i = 0; i < testImages.size(); i++) {
-        Mem<double> &X = testImages[i];
+        Mem<SP_REAL> &X = testImages[i];
 
         Mem1<int> hist;
         histogram(hist, rf.execute(X), 10);

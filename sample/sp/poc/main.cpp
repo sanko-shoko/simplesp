@@ -28,15 +28,15 @@ int main(){
         saveBMP("input1.bmp", img1);
     }
 
-    Mem2<double> re0, im0;
-    Mem2<double> re1, im1;
+    Mem2<SP_REAL> re0, im0;
+    Mem2<SP_REAL> re1, im1;
     {
         printf("dft\n");
         dft(re0, im0, img0);
         dft(re1, im1, img1);
     }
 
-    Mem2<double> r;
+    Mem2<SP_REAL> r;
     {
         poc(r, re0, im0, re1, im1);
         saveText("r.csv", r);

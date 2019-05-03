@@ -210,7 +210,7 @@ namespace sp{
         const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const double v)-> SP_REAL {
-            return (v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0);
+            return SP_CAST((v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0));
         };
 
         Vec3 val;
@@ -231,13 +231,13 @@ namespace sp{
         const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const SP_REAL v)-> SP_REAL {
-            return (v > 0.206897) ? pow(v, 3.0) : 0.001107 * (116.0 * v - 16.0);
+            return SP_CAST((v > 0.206897) ? pow(v, 3.0) : 0.001107 * (116.0 * v - 16.0));
         };
 
         Vec3 val;
-        val.y = (lab.x + 16.0) / 116.0;
-        val.x = val.y + lab.y / 500.0;
-        val.z = val.y - lab.z / 200.0;
+        val.y = SP_CAST((lab.x + 16.0) / 116.0);
+        val.x = SP_CAST(val.y + lab.y / 500.0);
+        val.z = SP_CAST(val.y - lab.z / 200.0);
 
         xyz.x = f(val.x) * w.x;
         xyz.y = f(val.y) * w.y;
@@ -246,7 +246,7 @@ namespace sp{
 
     SP_GENFUNC void cnvColToXYZ(Vec3 &xyz, const Col3 &col){
         auto f = [](const double v)-> SP_REAL {
-            return (v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
+            return SP_CAST((v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92);
         };
 
         Vec3 val;
@@ -255,9 +255,9 @@ namespace sp{
         val.z = f(col.b / 255.0);
 
         // D65
-        xyz.x = +0.412391 * val.x + 0.357584 * val.y + 0.180481 * val.z;
-        xyz.y = +0.212639 * val.x + 0.715169 * val.y + 0.072192 * val.z;
-        xyz.z = +0.019331 * val.x + 0.119195 * val.y + 0.950532 * val.z;
+        xyz.x = SP_CAST(+0.412391 * val.x + 0.357584 * val.y + 0.180481 * val.z);
+        xyz.y = SP_CAST(+0.212639 * val.x + 0.715169 * val.y + 0.072192 * val.z);
+        xyz.z = SP_CAST(+0.019331 * val.x + 0.119195 * val.y + 0.950532 * val.z);
     }
 
     SP_GENFUNC void cnvXYZToCol(Col3 &col, const Vec3 &xyz) {
@@ -268,9 +268,9 @@ namespace sp{
         Vec3 val;
 
         // D65
-        val.x = +3.240970 * xyz.x - 1.537383 * xyz.y - 0.498611 * xyz.z;
-        val.y = -0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z;
-        val.z = 0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z;
+        val.x = SP_CAST(+3.240970 * xyz.x - 1.537383 * xyz.y - 0.498611 * xyz.z);
+        val.y = SP_CAST(-0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z);
+        val.z = SP_CAST(0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
     
         val.x = minVal(1.0, f(val.x));
         val.y = minVal(1.0, f(val.y));
@@ -331,13 +331,13 @@ namespace sp{
     // convert geom to image
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC void cnvDepthToCol(Byte &dst, const SP_REAL depth, const SP_REAL nearPlane, const SP_REAL farPlane){
-        const SP_REAL rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
-        dst = static_cast<Byte>(255 * rate);
+    SP_GENFUNC void cnvDepthToCol(Byte &dst, const double depth, const double nearPlane, const double farPlane){
+        const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
+        dst = static_cast<Byte>(255 * rate + 0.5);
     }
 
-    SP_GENFUNC void cnvDepthToCol(Col3 &dst, const SP_REAL depth, const SP_REAL nearPlane, const SP_REAL farPlane){
-        const SP_REAL rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
+    SP_GENFUNC void cnvDepthToCol(Col3 &dst, const double depth, const double nearPlane, const double farPlane){
+        const double rate = 1.0 - (depth - nearPlane) / (farPlane - nearPlane);
         cnvPhaseToCol(dst, rate);
     }
 
@@ -352,12 +352,12 @@ namespace sp{
     }
 
     SP_GENFUNC void cnvDispToCol(Byte &dst, const Disp &disp, const int maxDisp, const int minDisp) {
-        const SP_REAL rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
-        dst = static_cast<Byte>(255 * rate);
+        const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+        dst = static_cast<Byte>(255 * rate + 0.5);
     }
 
     SP_GENFUNC void cnvDispToCol(Col3 &dst, const Disp &disp, const int maxDisp, const int minDisp) {
-        const SP_REAL rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+        const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
         cnvPhaseToCol(dst, rate);
     }
 

@@ -110,9 +110,9 @@ namespace sp {
         }
 
         Vec3 getn(const int x, const int y, const int z) const {
-            const SP_REAL vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
-            const SP_REAL vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
-            const SP_REAL vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
+            const double vx = vmap(x + 1, y, z) - vmap(x - 1, y, z);
+            const double vy = vmap(x, y + 1, z) - vmap(x, y - 1, z);
+            const double vz = vmap(x, y, z + 1) - vmap(x, y, z - 1);
             return unitVec(getVec3(-vx, -vy, -vz));
         }
 

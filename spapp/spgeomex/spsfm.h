@@ -218,17 +218,17 @@ namespace sp {
 
     private:
 
-        SP_REAL MIN_MATCHEVAL = 0.2;
-        SP_REAL MIN_STEREOEVAL = 0.4;
+        double MIN_MATCHEVAL = 0.2;
+        double MIN_STEREOEVAL = 0.4;
 
         int MIN_POSEPNT = 10;
 
-        SP_REAL MPNT_PRJERR = 5.0;
-        SP_REAL MPNT_ANGLE = 2.0 * SP_PI / 180.0;
+        double MPNT_PRJERR = 5.0;
+        double MPNT_ANGLE = 2.0 * SP_PI / 180.0;
 
         int MAX_UPDATE = 3;
 
-        SP_REAL MAX_NEARPOSE = 30.0 * SP_PI / 180.0;
+        double MAX_NEARPOSE = 30.0 * SP_PI / 180.0;
 
 
     private:

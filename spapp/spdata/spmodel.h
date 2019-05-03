@@ -44,10 +44,10 @@ namespace sp{
 
     SP_CPUFUNC SP_REAL getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
 
-        const SP_REAL radius = getModelRadius(model);
-        const SP_REAL distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
+        const double radius = getModelRadius(model);
+        const double distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
     
-        return distance;
+        return SP_CAST(distance);
     }
 
     SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){
@@ -73,7 +73,7 @@ namespace sp{
         tmp = shuffle(tmp);
 
         Mem1<VecPN3> pnts;
-        const SP_REAL unit = 2 * distance / (cam.fx + cam.fy);
+        const double unit = 2 * distance / (cam.fx + cam.fy);
 
         for (int i = 0; i < tmp.size(); i++){
             bool check = true;
@@ -385,7 +385,7 @@ namespace sp{
     SP_CPUFUNC Mem1<Mesh3> loadCube(const SP_REAL size) {
         Mem1<Mesh3> model;
 
-        const SP_REAL half = size / 2.0;
+        const double half = size / 2.0;
 
         for (int z = -1; z <= +1; z += 2) {
             for (int y = -1; y <= +1; y += 2) {
