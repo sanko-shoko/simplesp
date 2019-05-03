@@ -16,23 +16,23 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // x * x
-    SP_GENFUNC SP_REAL square(const SP_REAL x) {
+    SP_GENFUNC SP_REAL square(const double x) {
         return x * x;
     }
 
     // x * x * x
-    SP_GENFUNC SP_REAL cubic(const SP_REAL x) {
+    SP_GENFUNC SP_REAL cubic(const double x) {
         return x * x * x;
     }
 
     // cubic root
-    SP_GENFUNC SP_REAL cbrt(const SP_REAL x) {
+    SP_GENFUNC SP_REAL cbrt(const double x) {
         const double z = pow(fabs(x), 1.0 / 3.0);
         return SP_CAST((x >= 0.0) ? z : -z);
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
-    SP_GENFUNC SP_REAL pythag(const SP_REAL a, const SP_REAL b) {
+    SP_GENFUNC SP_REAL pythag(const double a, const double b) {
         const double x = fabs(a);
         const double y = fabs(b);
 
@@ -61,7 +61,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // get complex
-    SP_GENFUNC Cmp getCmp(const SP_REAL re, const SP_REAL im) {
+    SP_GENFUNC Cmp getCmp(const double re, const double im) {
         Cmp dst;
         dst.re = re, dst.im = im;
         return dst;
@@ -73,12 +73,12 @@ namespace sp{
     }
 
     // addition
-    SP_GENFUNC Cmp addCmp(const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp addCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re + val, cmp.im);
     }
 
     // addition
-    SP_GENFUNC Cmp addCmp(const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp addCmp(const double val, const Cmp &cmp) {
         return getCmp(val + cmp.re, cmp.im);
     }
 
@@ -88,12 +88,12 @@ namespace sp{
     }
 
     // subtraction
-    SP_GENFUNC Cmp subCmp(const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp subCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re - val, cmp.im);
     }
 
     // subtraction
-    SP_GENFUNC Cmp subCmp(const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp subCmp(const double val, const Cmp &cmp) {
         return getCmp(val - cmp.re, cmp.im);
     }
 
@@ -103,12 +103,12 @@ namespace sp{
     }
 
     // multiple
-    SP_GENFUNC Cmp mulCmp(const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp mulCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re * val, cmp.im * val);
     }
 
     // multiple
-    SP_GENFUNC Cmp mulCmp(const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp mulCmp(const double val, const Cmp &cmp) {
         return getCmp(cmp.re * val, cmp.im * val);
     }
 
@@ -120,12 +120,12 @@ namespace sp{
     }
 
     // division
-    SP_GENFUNC Cmp divCmp(const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp divCmp(const Cmp &cmp, const double val) {
         return getCmp(cmp.re / val, cmp.im / val);
     }
 
     // division
-    SP_GENFUNC Cmp divCmp(const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp divCmp(const double val, const Cmp &cmp) {
         return divCmp(getCmp(val, 0.0), cmp);
     }
 
@@ -133,7 +133,7 @@ namespace sp{
         return pythag(cmp.re, cmp.im);
     }
 
-    SP_GENFUNC Cmp pow(const Cmp cmp, const SP_REAL n) {
+    SP_GENFUNC Cmp pow(const Cmp cmp, const double n) {
         Cmp ret = getCmp(0.0, 0.0);
         
         SP_REAL a = pow(fabs(cmp), n);
@@ -154,10 +154,10 @@ namespace sp{
     SP_GENFUNC Cmp operator + (const Cmp &cmp0, const Cmp &cmp1) {
         return addCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator + (const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp operator + (const Cmp &cmp, const double val) {
         return addCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator + (const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator + (const double val, const Cmp &cmp) {
         return addCmp(val, cmp);
     }
     SP_GENFUNC Cmp operator + (const Cmp &cmp) {
@@ -167,10 +167,10 @@ namespace sp{
     SP_GENFUNC Cmp operator - (const Cmp &cmp0, const Cmp &cmp1) {
         return subCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator - (const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp operator - (const Cmp &cmp, const double val) {
         return subCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator - (const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator - (const double val, const Cmp &cmp) {
         return subCmp(val, cmp);
     }
     SP_GENFUNC Cmp operator - (const Cmp &cmp) {
@@ -180,48 +180,48 @@ namespace sp{
     SP_GENFUNC Cmp operator * (const Cmp &cmp0, const Cmp &cmp1) {
         return mulCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator * (const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp operator * (const Cmp &cmp, const double val) {
         return mulCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator * (const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator * (const double val, const Cmp &cmp) {
         return mulCmp(val, cmp);
     }
 
     SP_GENFUNC Cmp operator / (const Cmp &cmp0, const Cmp &cmp1) {
         return divCmp(cmp0, cmp1);
     }
-    SP_GENFUNC Cmp operator / (const Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC Cmp operator / (const Cmp &cmp, const double val) {
         return divCmp(cmp, val);
     }
-    SP_GENFUNC Cmp operator / (const SP_REAL val, const Cmp &cmp) {
+    SP_GENFUNC Cmp operator / (const double val, const Cmp &cmp) {
         return divCmp(val, cmp);
     }
 
     SP_GENFUNC void operator += (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = addCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator += (Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC void operator += (Cmp &cmp, const double val) {
         cmp = addCmp(cmp, val);
     }
 
     SP_GENFUNC void operator -= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = subCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator -= (Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC void operator -= (Cmp &cmp, const double val) {
         cmp = subCmp(cmp, val);
     }
 
     SP_GENFUNC void operator *= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = mulCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator *= (Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC void operator *= (Cmp &cmp, const double val) {
         cmp = mulCmp(cmp, val);
     }
 
     SP_GENFUNC void operator /= (Cmp &cmp0, const Cmp &cmp1) {
         cmp0 = divCmp(cmp0, cmp1);
     }
-    SP_GENFUNC void operator /= (Cmp &cmp, const SP_REAL val) {
+    SP_GENFUNC void operator /= (Cmp &cmp, const double val) {
         cmp = divCmp(cmp, val);
     }
 

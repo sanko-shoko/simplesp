@@ -5,7 +5,9 @@
 #ifndef __SP_COL_H__
 #define __SP_COL_H__
 
-#include "spcore/spcore.h"
+#include "spcore/spcom.h"
+#include "spcore/spgen/spbase.h"
+
 #include "spcore/spgen/spvec.h"
 
 namespace sp{
@@ -64,6 +66,15 @@ namespace sp{
         return (val != 0.0) ? mulCol3(col, 1.0 / val) : col;
     }
 
+    // compare
+    SP_GENFUNC bool cmpCol3(const Col3 &col0, const Col3 &col1) {
+        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
+    }
+    // compare
+    SP_GENFUNC bool cmpCol4(const Col4 &col0, const Col4 &col1) {
+        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
+    }
+    
     //--------------------------------------------------------------------------------
     // blend
     //--------------------------------------------------------------------------------
@@ -198,7 +209,7 @@ namespace sp{
 
         const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
-        auto f = [](const SP_REAL v)-> SP_REAL {
+        auto f = [](const double v)-> SP_REAL {
             return (v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0);
         };
 
@@ -234,7 +245,7 @@ namespace sp{
     }
 
     SP_GENFUNC void cnvColToXYZ(Vec3 &xyz, const Col3 &col){
-        auto f = [](const SP_REAL v)-> SP_REAL {
+        auto f = [](const double v)-> SP_REAL {
             return (v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
         };
 
@@ -250,7 +261,7 @@ namespace sp{
     }
 
     SP_GENFUNC void cnvXYZToCol(Col3 &col, const Vec3 &xyz) {
-        auto f = [](const SP_REAL v)-> SP_REAL {
+        auto f = [](const double v)-> SP_REAL {
             return (v > 0.0031308) ? 1.055 * pow(v, 1.0 / 2.4) - 0.055 : 12.92 * v;
         };
 

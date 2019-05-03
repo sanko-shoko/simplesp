@@ -189,7 +189,7 @@ namespace sp {
         }
 
 #else
-        readlink("/proc/self/exe", path, sizeof(path) - 1);
+        //readlink("/proc/self/exe", path, sizeof(path) - 1);
 #endif
         return path[0] != 0 ? path : NULL;
     }

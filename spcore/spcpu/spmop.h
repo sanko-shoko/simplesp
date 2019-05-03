@@ -27,7 +27,7 @@ namespace sp{
 
     // convert mem type [dst = (src - base) * scale)
     template<typename TYPE, typename TYPE0>
-    SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0){
+    SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const double scale = 1.0, const double base = 0.0){
         dst.resize(mem0.dim, mem0.dsize);
         for (int i = 0; i < mem0.size(); i++){
             cnvVal(dst[i], (mem0[i] - base) * scale);
@@ -554,43 +554,43 @@ namespace sp{
         subMat(dst, dst, mat0);
     }
 
-    SP_CPUFUNC Mat operator + (const Mat &mat0, const SP_REAL val){
+    SP_CPUFUNC Mat operator + (const Mat &mat0, const double val){
         Mat dst;
         addElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator - (const Mat &mat0, const SP_REAL val){
+    SP_CPUFUNC Mat operator - (const Mat &mat0, const double val){
         Mat dst;
         subElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator * (const Mat &mat0, const SP_REAL val){
+    SP_CPUFUNC Mat operator * (const Mat &mat0, const double val){
         Mat dst;
         mulElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC Mat operator / (const Mat &mat0, const SP_REAL val){
+    SP_CPUFUNC Mat operator / (const Mat &mat0, const double val){
         Mat dst;
         divElm(dst, mat0, val);
         return dst;
     }
 
-    SP_CPUFUNC void operator += (Mat &dst, const SP_REAL val){
+    SP_CPUFUNC void operator += (Mat &dst, const double val){
         addElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator -= (Mat &dst, const SP_REAL val){
+    SP_CPUFUNC void operator -= (Mat &dst, const double val){
         subElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator *= (Mat &dst, const SP_REAL val){
+    SP_CPUFUNC void operator *= (Mat &dst, const double val){
         mulElm(dst, dst, val);
     }
 
-    SP_CPUFUNC void operator /= (Mat &dst, const SP_REAL val){
+    SP_CPUFUNC void operator /= (Mat &dst, const double val){
         divElm(dst, dst, val);
     }
 
@@ -670,7 +670,7 @@ namespace sp{
         return getVec3(vec[0], vec[1], vec[2]);
     }
 
-    SP_CPUFUNC Mem1<Vec3> extVec(const Mem1<Vec2> &vec, const SP_REAL z) {
+    SP_CPUFUNC Mem1<Vec3> extVec(const Mem1<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = getVec3(vec[i].x, vec[i].y, z);

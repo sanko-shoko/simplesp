@@ -121,36 +121,6 @@ namespace sp{
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
-    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const SP_REAL t = SP_SMALL){
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
-    }
-    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const SP_REAL t = SP_SMALL) {
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
-    }
-
-    SP_GENFUNC bool cmpCol3(const Col3 &col0, const Col3 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
-    }
-    SP_GENFUNC bool cmpCol4(const Col4 &col0, const Col4 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
-    }
-
-    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const SP_REAL t = SP_SMALL){
-        bool ret = true;
-        ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qz * sign(rot0.qw), rot1.qz * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qw * sign(rot0.qw), rot1.qw * sign(rot1.qw), t);
-        return ret;
-    }
-
-    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL){
-        bool ret = true;
-        ret &= cmpRot(pose0.rot, pose1.rot, tr);
-        ret &= cmpVec3(pose0.trn, pose1.trn, tt);
-        return ret;
-    }
-
 
     //--------------------------------------------------------------------------------
     // convert value
@@ -200,11 +170,11 @@ namespace sp{
     }
 
     // reverse byte order
-    template <typename TYPE> SP_GENFUNC void revByteOrder(TYPE *ptr, const int count) {
+    template <typename TYPE> SP_GENFUNC void revByteOrder(TYPE *ptr, const int size) {
         const int n = sizeof(TYPE);
         if (sizeof(TYPE) == 1) return;
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < size; i++) {
             Byte *tmp = (Byte*)&ptr[i];
 
             for (int j = 0; j < n / 2; j++) {

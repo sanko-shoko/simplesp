@@ -6,9 +6,7 @@
 #define __SP_VEC_H__
 
 #include "spcore/spcom.h"
-#include "spcore/spwrap.h"
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/spmath.h"
 
 namespace sp {
 
@@ -92,6 +90,15 @@ namespace sp {
     // division
     SP_GENFUNC Vec3 divVec3(const Vec3 &vec, const double val) {
         return (val != 0.0) ? mulVec3(vec, 1.0 / val) : vec;
+    }
+
+    // compare
+    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const double t = SP_SMALL) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
+    }
+    // compare
+    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
 
@@ -304,26 +311,26 @@ namespace sp {
     SP_GENFUNC Vec2 mulMat(const SP_REAL *mat, const int rows, const int cols, const Vec2 &vec) {
         Vec2 dst = getVec2(0.0, 0.0);
         if (rows == 2 && cols == 2) {
-            dst.x = mat[0 * 2 + 0] * vec.x + mat[0 * 2 + 1] * vec.y;
-            dst.y = mat[1 * 2 + 0] * vec.x + mat[1 * 2 + 1] * vec.y;
+            dst.x = SP_CAST(mat[0 * 2 + 0] * vec.x + mat[0 * 2 + 1] * vec.y);
+            dst.y = SP_CAST(mat[1 * 2 + 0] * vec.x + mat[1 * 2 + 1] * vec.y);
         }
         if (rows == 2 && cols == 3) {
-            dst.x = mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2];
-            dst.y = mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2];
+            dst.x = SP_CAST(mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2]);
+            dst.y = SP_CAST(mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2]);
         }
         if (rows == 3 && cols == 3) {
-            const SP_REAL scale = mat[2 * 3 + 0] * vec.x + mat[2 * 3 + 1] * vec.y + mat[2 * 3 + 2];
-            dst.x = (mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2]) / scale;
-            dst.y = (mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2]) / scale;
+            const double scale = mat[2 * 3 + 0] * vec.x + mat[2 * 3 + 1] * vec.y + mat[2 * 3 + 2];
+            dst.x = SP_CAST((mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2]) / scale);
+            dst.y = SP_CAST((mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2]) / scale);
         }
         if (rows == 3 && cols == 4) {
-            dst.x = mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * 0.0 + mat[0 * 4 + 3];
-            dst.y = mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * 0.0 + mat[1 * 4 + 3];
+            dst.x = SP_CAST(mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * 0.0 + mat[0 * 4 + 3]);
+            dst.y = SP_CAST(mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * 0.0 + mat[1 * 4 + 3]);
         }
         if (rows == 4 && cols == 4) {
-            const SP_REAL scale = mat[3 * 4 + 0] * vec.x + mat[3 * 4 + 1] * vec.y + mat[3 * 4 + 2] * 0.0 + mat[3 * 4 + 3];
-            dst.x = (mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * 0.0 + mat[0 * 4 + 3]) / scale;
-            dst.y = (mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * 0.0 + mat[1 * 4 + 3]) / scale;
+            const double scale = mat[3 * 4 + 0] * vec.x + mat[3 * 4 + 1] * vec.y + mat[3 * 4 + 2] * 0.0 + mat[3 * 4 + 3];
+            dst.x = SP_CAST((mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * 0.0 + mat[0 * 4 + 3]) / scale);
+            dst.y = SP_CAST((mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * 0.0 + mat[1 * 4 + 3]) / scale);
         }
 
         return dst;
@@ -332,20 +339,20 @@ namespace sp {
     SP_GENFUNC Vec3 mulMat(const SP_REAL *mat, const int rows, const int cols, const Vec3 &vec) {
         Vec3 dst = getVec3(0.0, 0.0, 0.0);
         if (rows == 3 && cols == 3) {
-            dst.x = mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2] * vec.z;
-            dst.y = mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2] * vec.z;
-            dst.z = mat[2 * 3 + 0] * vec.x + mat[2 * 3 + 1] * vec.y + mat[2 * 3 + 2] * vec.z;
+            dst.x = SP_CAST(mat[0 * 3 + 0] * vec.x + mat[0 * 3 + 1] * vec.y + mat[0 * 3 + 2] * vec.z);
+            dst.y = SP_CAST(mat[1 * 3 + 0] * vec.x + mat[1 * 3 + 1] * vec.y + mat[1 * 3 + 2] * vec.z);
+            dst.z = SP_CAST(mat[2 * 3 + 0] * vec.x + mat[2 * 3 + 1] * vec.y + mat[2 * 3 + 2] * vec.z);
         }
         if (rows == 3 && cols == 4) {
-            dst.x = mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * vec.z + mat[0 * 4 + 3];
-            dst.y = mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * vec.z + mat[1 * 4 + 3];
-            dst.z = mat[2 * 4 + 0] * vec.x + mat[2 * 4 + 1] * vec.y + mat[2 * 4 + 2] * vec.z + mat[2 * 4 + 3];
+            dst.x = SP_CAST(mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * vec.z + mat[0 * 4 + 3]);
+            dst.y = SP_CAST(mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * vec.z + mat[1 * 4 + 3]);
+            dst.z = SP_CAST(mat[2 * 4 + 0] * vec.x + mat[2 * 4 + 1] * vec.y + mat[2 * 4 + 2] * vec.z + mat[2 * 4 + 3]);
         }
         if (rows == 4 && cols == 4) {
-            const SP_REAL scale = mat[3 * 4 + 0] * vec.x + mat[3 * 4 + 1] * vec.y + mat[3 * 4 + 2] * vec.z + mat[3 * 4 + 3];
-            dst.x = (mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * vec.z + mat[0 * 4 + 3]) / scale;
-            dst.y = (mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * vec.z + mat[1 * 4 + 3]) / scale;
-            dst.z = (mat[2 * 4 + 0] * vec.x + mat[2 * 4 + 1] * vec.y + mat[2 * 4 + 2] * vec.z + mat[2 * 4 + 3]) / scale;
+            const double scale = mat[3 * 4 + 0] * vec.x + mat[3 * 4 + 1] * vec.y + mat[3 * 4 + 2] * vec.z + mat[3 * 4 + 3];
+            dst.x = SP_CAST((mat[0 * 4 + 0] * vec.x + mat[0 * 4 + 1] * vec.y + mat[0 * 4 + 2] * vec.z + mat[0 * 4 + 3]) / scale);
+            dst.y = SP_CAST((mat[1 * 4 + 0] * vec.x + mat[1 * 4 + 1] * vec.y + mat[1 * 4 + 2] * vec.z + mat[1 * 4 + 3]) / scale);
+            dst.z = SP_CAST((mat[2 * 4 + 0] * vec.x + mat[2 * 4 + 1] * vec.y + mat[2 * 4 + 2] * vec.z + mat[2 * 4 + 3]) / scale);
         }
 
         return dst;
@@ -651,28 +658,6 @@ namespace sp {
     // get center vector
     SP_GENFUNC Vec3 getMeshPos(const Mesh3 &mesh) {
         return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
-    }
-
-    // get cross depth
-    SP_GENFUNC SP_REAL getMeshCrs(const Mesh3 &mesh, const Vec3 &vec) {
-        const Vec3 nrm = getMeshNrm(mesh);
-        if (dotVec(nrm, vec) >= 0.0) return -1.0;
-
-        const Vec3 A = mesh.pos[1] - mesh.pos[0];
-        const Vec3 B = mesh.pos[2] - mesh.pos[0];
-        SP_REAL mat[3 * 3] = { -A.x, -B.x, vec.x, -A.y, -B.y, vec.y, -A.z, -B.z, vec.z };
-        SP_REAL val[3] = { mesh.pos[0].x,  mesh.pos[0].y,  mesh.pos[0].z };
-
-        SP_REAL inv[3 * 3];
-        if (invMat33(inv, mat) == false) return -1.0;
-
-        SP_REAL dst[3];
-        mulMat(dst, 3, 1, inv, 3, 3, val, 3, 1);
-
-        if (dst[0] < 0.0 || dst[1] < 0.0 || dst[0] + dst[1] > 1.0) return -1.0;
-        if (dst[2] < SP_SMALL) return -1.0;
-
-        return dst[2];
     }
 
     //--------------------------------------------------------------------------------

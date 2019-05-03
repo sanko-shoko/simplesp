@@ -481,7 +481,7 @@ namespace sp {
                 list.push(getPairs(views, ViewEx::POSE_HINT, ViewEx::POSE_NULL));
                 list.push(getPairs(views, ViewEx::POSE_NULL, ViewEx::POSE_HINT));
             
-                SP_REAL maxv = 0.0;
+                double maxv = 0.0;
                 for (int i = 0; i < list.size(); i++) {
                     const int a = list[i]->a;
                     const int b = list[i]->b;
@@ -492,7 +492,7 @@ namespace sp {
 
                     const Mem1<Vec2> pixs0 = getMatchPixs(views[a]->ftrs, list[i]->matches, true);
                     const Mem1<Vec2> pixs1 = getMatchPixs(views[b]->ftrs, list[i]->matches, false);
-                    const SP_REAL eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
+                    const double eval = evalStereo(views[b]->cam, pixs1, views[a]->cam, pixs0, MPNT_ANGLE * 1.2);
 
                     if (eval > maxv) {
                         maxv = eval;

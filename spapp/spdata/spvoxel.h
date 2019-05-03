@@ -57,7 +57,7 @@ namespace sp {
             return *this;
         }
 
-        void init(const int *dsize, const SP_REAL unit) {
+        void init(const int *dsize, const double unit) {
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
             this->dsize[2] = dsize[2];
@@ -69,7 +69,7 @@ namespace sp {
             zero();
         }
         
-        void init(const int size, const SP_REAL unit) {
+        void init(const int size, const double unit) {
             const int dsize[3] = { size, size, size };
             init(dsize, unit);
         }
@@ -81,7 +81,7 @@ namespace sp {
             cmap.zero();
         }
 
-        void update(const int x, const int y, const int z, const SP_REAL srcv) {
+        void update(const int x, const int y, const int z, const double srcv) {
             if (srcv > +1.0) return;
 
             char &val = vmap(x, y, z);
@@ -122,7 +122,7 @@ namespace sp {
     };
 
 
-    SP_CPUFUNC bool cnvMeshToVoxel(Voxel<> &voxel, const Mem1<Mesh3> &meshes, const SP_REAL unit = 1.0) {
+    SP_CPUFUNC bool cnvMeshToVoxel(Voxel<> &voxel, const Mem1<Mesh3> &meshes, const double unit = 1.0) {
 
         const int size = (ceil(getModelRadius(meshes) / unit) + 2) * 2;
         SP_PRINTD("voxel size %d\n", size);
