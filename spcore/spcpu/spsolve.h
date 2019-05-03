@@ -46,19 +46,19 @@ namespace sp{
         }
 
 
-        SP_CPUFUNC Mat calcW(const Mem<SP_REAL> errs, const int step = 1, const SP_REAL minErr = 0.1) {
+        SP_CPUFUNC Mat calcW(const Mem<SP_REAL> errs, const int step = 1, const double minErr = 0.1) {
             const int nsize = errs.size();
 
             Mat W(nsize * step, 1);
 
-            const SP_REAL sigma = 1.4826 * medianVal(errs);
-            const SP_REAL thresh = maxVal(3.0 * sigma, minErr);
+            const double sigma = 1.4826 * medianVal(errs);
+            const double thresh = maxVal(3.0 * sigma, minErr);
 
             SP_REAL *pw = W.ptr;
             const SP_REAL *pe = errs.ptr;
 
             for (int i = 0; i < nsize; i++) {
-                const SP_REAL w = funcTukey(*pe++, thresh);
+                const double w = funcTukey(*pe++, thresh);
                 for (int s = 0; s < step; s++) {
                     *pw++ = w;
                 }

@@ -498,7 +498,8 @@ namespace sp{
         }
     }
 
-    SP_CPUFUNC void renderDepth(Mem<SP_REAL> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
+    template<typename DEPTH>
+    SP_CPUFUNC void renderDepth(Mem<DEPTH> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
 
         Mem<VecPN3> pnmap;
         for (int i = 0; i < meshes.size(); i++) {

@@ -20,9 +20,9 @@ namespace sp{
     SP_GENFUNC Rot nrmRot(const Rot &rot){
         Rot dst;
 
-        const SP_REAL div = sqrt(rot.qx * rot.qx + rot.qy * rot.qy + rot.qz * rot.qz + rot.qw * rot.qw);
+        const double div = sqrt(rot.qx * rot.qx + rot.qy * rot.qy + rot.qz * rot.qz + rot.qw * rot.qw);
         if (div > SP_SMALL){
-            const SP_REAL s = (sign(rot.qw) >= 0.0) ? +1 : -1;
+            const double s = (sign(rot.qw) >= 0.0) ? +1 : -1;
 
             dst.qx = rot.qx / div * s;
             dst.qy = rot.qy / div * s;
@@ -63,30 +63,30 @@ namespace sp{
 
     SP_GENFUNC void getMat(SP_REAL *dst, const int rows, const int cols, const Rot &rot) {
         {
-            const SP_REAL qx2 = rot.qx * rot.qx;
-            const SP_REAL qy2 = rot.qy * rot.qy;
-            const SP_REAL qz2 = rot.qz * rot.qz;
-            const SP_REAL qw2 = rot.qw * rot.qw;
+            const double qx2 = rot.qx * rot.qx;
+            const double qy2 = rot.qy * rot.qy;
+            const double qz2 = rot.qz * rot.qz;
+            const double qw2 = rot.qw * rot.qw;
 
-            dst[0 * cols + 0] = qw2 + qx2 - qy2 - qz2;
-            dst[1 * cols + 1] = qw2 - qx2 + qy2 - qz2;
-            dst[2 * cols + 2] = qw2 - qx2 - qy2 + qz2;
+            dst[0 * cols + 0] = SP_CAST(qw2 + qx2 - qy2 - qz2);
+            dst[1 * cols + 1] = SP_CAST(qw2 - qx2 + qy2 - qz2);
+            dst[2 * cols + 2] = SP_CAST(qw2 - qx2 - qy2 + qz2);
         }
         {
-            const SP_REAL qxy = rot.qx * rot.qy;
-            const SP_REAL qzw = rot.qz * rot.qw;
-            dst[0 * cols + 1] = 2 * (qxy - qzw);
-            dst[1 * cols + 0] = 2 * (qxy + qzw);
+            const double qxy = rot.qx * rot.qy;
+            const double qzw = rot.qz * rot.qw;
+            dst[0 * cols + 1] = SP_CAST(2 * (qxy - qzw));
+            dst[1 * cols + 0] = SP_CAST(2 * (qxy + qzw));
 
-            const SP_REAL qxz = rot.qx * rot.qz;
-            const SP_REAL qyw = rot.qy * rot.qw;
-            dst[0 * cols + 2] = 2 * (qxz + qyw);
-            dst[2 * cols + 0] = 2 * (qxz - qyw);
+            const double qxz = rot.qx * rot.qz;
+            const double qyw = rot.qy * rot.qw;
+            dst[0 * cols + 2] = SP_CAST(2 * (qxz + qyw));
+            dst[2 * cols + 0] = SP_CAST(2 * (qxz - qyw));
 
-            const SP_REAL qyz = rot.qy * rot.qz;
-            const SP_REAL qxw = rot.qx * rot.qw;
-            dst[1 * cols + 2] = 2 * (qyz - qxw);
-            dst[2 * cols + 1] = 2 * (qyz + qxw);
+            const double qyz = rot.qy * rot.qz;
+            const double qxw = rot.qx * rot.qw;
+            dst[1 * cols + 2] = SP_CAST(2 * (qyz - qxw));
+            dst[2 * cols + 1] = SP_CAST(2 * (qyz + qxw));
         }
     }
 
@@ -100,11 +100,11 @@ namespace sp{
 
     SP_GENFUNC Rot mulRot(const Rot &rot0, const Rot &rot1){
         Rot dst;
-        dst.qx = (rot0.qw * rot1.qx) + (rot0.qx * rot1.qw) + (rot0.qy * rot1.qz) - (rot0.qz * rot1.qy);
-        dst.qy = (rot0.qw * rot1.qy) + (rot0.qy * rot1.qw) + (rot0.qz * rot1.qx) - (rot0.qx * rot1.qz);
-        dst.qz = (rot0.qw * rot1.qz) + (rot0.qz * rot1.qw) + (rot0.qx * rot1.qy) - (rot0.qy * rot1.qx);
+        dst.qx = SP_CAST((rot0.qw * rot1.qx) + (rot0.qx * rot1.qw) + (rot0.qy * rot1.qz) - (rot0.qz * rot1.qy));
+        dst.qy = SP_CAST((rot0.qw * rot1.qy) + (rot0.qy * rot1.qw) + (rot0.qz * rot1.qx) - (rot0.qx * rot1.qz));
+        dst.qz = SP_CAST((rot0.qw * rot1.qz) + (rot0.qz * rot1.qw) + (rot0.qx * rot1.qy) - (rot0.qy * rot1.qx));
 
-        dst.qw = (rot0.qw * rot1.qw) - (rot0.qx * rot1.qx) - (rot0.qy * rot1.qy) - (rot0.qz * rot1.qz);
+        dst.qw = SP_CAST((rot0.qw * rot1.qw) - (rot0.qx * rot1.qx) - (rot0.qy * rot1.qy) - (rot0.qz * rot1.qz));
 
         return nrmRot(dst);
     }
@@ -118,6 +118,15 @@ namespace sp{
 
     SP_GENFUNC Vec3 mulRot(const Rot &rot, const Vec2 &vec){
         return mulRot(rot, getVec3(vec.x, vec.y, 0.0));
+    }
+
+    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const SP_REAL t = SP_SMALL) {
+        bool ret = true;
+        ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qz * sign(rot0.qw), rot1.qz * sign(rot1.qw), t);
+        ret &= cmpVal(rot0.qw * sign(rot0.qw), rot1.qw * sign(rot1.qw), t);
+        return ret;
     }
 
 
@@ -463,6 +472,13 @@ namespace sp{
         getMat(poseMat, 3, 4, pose);
 
         return mulMat(poseMat, 3, 4, mesh);
+    }
+
+    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL) {
+        bool ret = true;
+        ret &= cmpRot(pose0.rot, pose1.rot, tr);
+        ret &= cmpVec3(pose0.trn, pose1.trn, tt);
+        return ret;
     }
 
 

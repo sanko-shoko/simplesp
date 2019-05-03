@@ -140,7 +140,7 @@ namespace sp{
     // half = round((sigma - 0.8) / 0.3 + 1)
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL sigma = 0.8){
+    SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
         const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
@@ -338,7 +338,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename TYPE0>
-    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const SP_REAL sigma = 0.8){
+    SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(isValid(2, src));
 
         const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
@@ -584,7 +584,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL sigma_s, const SP_REAL sigma_c){
+    SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma_s, const double sigma_c){
         SP_ASSERT(isValid(2, src));
 
         dst.resize(2, src.dsize);

@@ -44,7 +44,7 @@ void sample(cv::Mat &cvimg, const int key){
     static Mem2<Col3> prev;
 
     static Mem1<Vec2> pixs;
-    static Mem1<double> scls;
+    static Mem1<SP_REAL> scls;
 
     // detect features
     if (key == 'a' || key == 's') { 

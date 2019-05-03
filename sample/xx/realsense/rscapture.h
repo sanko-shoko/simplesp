@@ -55,7 +55,7 @@ private:
         //    }
         //}
         const Mem2<Col3> *color = m_rs.getColor();
-        const Mem2<double> *depth = m_rs.getDepth();
+        const Mem2<SP_REAL> *depth = m_rs.getDepth();
 
         if (m_view3d == false){
             // view 2D
@@ -109,10 +109,10 @@ private:
             }
         }
 
-        if (m_keyAction[GLFW_KEY_V] == 1){
+        if (m_key[GLFW_KEY_V] == 1){
             m_view3d ^= true;
         }
-        if (m_keyAction[GLFW_KEY_R] == 1){
+        if (m_key[GLFW_KEY_R] == 1){
             m_view = zeroPose();
         }
 
@@ -121,10 +121,10 @@ private:
             static int cnt = 0;
             const int limit = 300;
 
-            if (m_keyAction[GLFW_KEY_S] == 1){
+            if (m_key[GLFW_KEY_S] == 1){
                 cnt = limit;
             }
-            if (m_keyAction[GLFW_KEY_N] == 1){
+            if (m_key[GLFW_KEY_N] == 1){
                 cnt = 1;
             }
 

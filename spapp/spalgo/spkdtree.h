@@ -149,7 +149,7 @@ namespace sp{
             return result->index;
         }
 
-        Mem1<int> search(const void *ptr, SP_REAL range) const {
+        Mem1<int> search(const void *ptr, double range) const {
             SP_ASSERT(m_stack.size() == 0);
             Mem1<int> index;
 

@@ -54,10 +54,10 @@ private:
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_R] == 1) {
+        if (m_key[GLFW_KEY_R] == 1) {
             m_kfusion.reset();
         }
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             Mem1<Mesh3> model;
             cnvVoxelToMesh(model, *m_kfusion.getMap());
             savePLY("model.ply", model);
@@ -65,7 +65,7 @@ private:
     }
 
     virtual void display() {
-        Mem2<double> depth;
+        Mem2<SP_REAL> depth;
 
         // render depth
         {

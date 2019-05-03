@@ -91,7 +91,7 @@ namespace sp{
 
         virtual Node* getNode(MemP<Node> &tree, const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index) = 0;
 
-        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) = 0;
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> > &Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) = 0;
 
         Node* divTree(MemP<Node> &tree, const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int depth) {
 
@@ -217,7 +217,7 @@ namespace sp{
         }
 
 
-        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) {
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
 
             SP_REAL sum[2] = { 0 };
             int cnt[2] = { 0 };
@@ -278,7 +278,7 @@ namespace sp{
             return node;
         }
 
-        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const SP_REAL thresh) {
+        virtual SP_REAL calcGain(const Mem1<Mem<SP_REAL> >& Xs, const Mem1<TYPE> &Ys, const Mem1<int> &index, const int param, const double thresh) {
             
             int cnt[2] = { 0 };
             Mem2<int> hist(2, m_classNum);
@@ -292,16 +292,16 @@ namespace sp{
 
             if (cnt[0] * cnt[1] == 0) return -SP_INFINITY;
     
-            SP_REAL gain = 0.0;
+            double gain = 0.0;
             for (int s = 0; s < 2; s++) {
-                SP_REAL sum = 0.0;
+                double sum = 0.0;
                 for (int c = 0; c < m_classNum; c++) {
-                    const SP_REAL p = hist(s, c) / cnt[s];
+                    const double p = hist(s, c) / cnt[s];
                     sum += (p != 0.0) ? p * log(p) : 0.0;
                 }
                 gain -= sum * cnt[s] / index.size();
             }
-            return gain;
+            return SP_CAST(gain);
         }
 
 

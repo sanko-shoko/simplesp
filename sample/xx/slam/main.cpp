@@ -107,7 +107,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] == 1) {
+        if (m_key[GLFW_KEY_A] == 1) {
             CamParam cam;
             if (m_cam.dsize[0] * m_cam.dsize[1] > 0) {
                 cam = m_cam;
@@ -122,19 +122,19 @@ private:
             m_upflag = true;
         }
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_upflag = false;
             m_thread.run<SLAMGUI, &SLAMGUI::reset>(this);
         }
 
         // calibration
         {
-            if (m_keyAction[GLFW_KEY_X] == 1) {
+            if (m_key[GLFW_KEY_X] == 1) {
                 const DotMarkerParam mrk(5, 5, 30.0);
                 m_ctool.addImg(mrk, m_img);
             }
 
-            if (m_keyAction[GLFW_KEY_C] == 1) {
+            if (m_key[GLFW_KEY_C] == 1) {
                 if (m_ctool.execute() == true) {
                     m_cam = *m_ctool.getCam();
                 }

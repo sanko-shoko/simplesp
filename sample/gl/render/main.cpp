@@ -55,22 +55,22 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_D] == 1 || m_keyAction[GLFW_KEY_N] == 1) {
+        if (m_key[GLFW_KEY_D] == 1 || m_key[GLFW_KEY_N] == 1) {
             const double distance = getModelDistance(m_model, m_cam);
             const double radius = getModelRadius(m_model);
 
             Mem2<VecPN3> map;
             renderVecPN(map, m_cam, m_pose, m_model);
 
-            if (m_keyAction[GLFW_KEY_D] == 1) {
+            if (m_key[GLFW_KEY_D] == 1) {
                 cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
             }
-            if (m_keyAction[GLFW_KEY_N] == 1) {
+            if (m_key[GLFW_KEY_N] == 1) {
                 cnvNormalToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);
             }
         }
 
-        if (m_keyAction[GLFW_KEY_M] == 1) {
+        if (m_key[GLFW_KEY_M] == 1) {
             if (++m_mode >= 3) m_mode = 0;
         }
     }

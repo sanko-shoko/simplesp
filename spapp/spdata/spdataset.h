@@ -17,7 +17,7 @@ namespace sp{
 
     namespace _mnist{
         template<typename TYPE>
-        SP_CPUFUNC bool loadImages(Mem1<TYPE> &images, const char *dir, const char *name, const SP_REAL scale = 1.0){
+        SP_CPUFUNC bool loadImages(Mem1<TYPE> &images, const char *dir, const char *name, const double scale = 1.0){
             File file;
             char path[512];
             
@@ -94,7 +94,7 @@ namespace sp{
     namespace _cifar{
 
         template<typename TYPE>
-        SP_CPUFUNC bool load10(Mem1<TYPE> &images, Mem1<int> &labels, const char *dir, const char *name, const int num, const SP_REAL scale = 1.0){
+        SP_CPUFUNC bool load10(Mem1<TYPE> &images, Mem1<int> &labels, const char *dir, const char *name, const int num, const double scale = 1.0){
             
             File file;
             char path[512];
@@ -120,7 +120,7 @@ namespace sp{
         }
 
         template<typename TYPE>
-        SP_CPUFUNC bool loadTrain10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const SP_REAL scale = 1.0){
+        SP_CPUFUNC bool loadTrain10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
             const int num = 10000;
 
             images.clear();
@@ -138,7 +138,7 @@ namespace sp{
         }
 
         template<typename TYPE>
-        SP_CPUFUNC bool loadTest10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const SP_REAL scale = 1.0){
+        SP_CPUFUNC bool loadTest10(Mem1<Mem<TYPE> > &images, Mem1<int> &labels, const char *dir, const double scale = 1.0){
             const int num = 10000;
 
             images.clear();

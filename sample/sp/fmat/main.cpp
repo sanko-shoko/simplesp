@@ -143,7 +143,7 @@ void output(char *name, const Mat &F, const Mem2<Col3> &img0, const Mem1<Vec2> &
     Mem2<Col3> _img0 = img0;
     Mem2<Col3> _img1 = img1;
 
-    const Mem1<double> errs = errFMat(F, pixs0, pixs1);
+    const Mem1<SP_REAL> errs = errFMat(F, pixs0, pixs1);
 
     // get points on epipolar line
     const Mem1<Vec2> dpixs0 = denoise(pixs0, errs);

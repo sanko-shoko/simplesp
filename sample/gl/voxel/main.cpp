@@ -12,7 +12,7 @@ class VoxelGUI : public BaseWindow {
     Mem1<Mesh3> m_model;
 
     // voxel
-    Voxel m_voxel;
+    Voxel<> m_voxel;
 
     // pose
     Pose m_pose;
@@ -52,7 +52,7 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_mode ^= 1;
         }
     }

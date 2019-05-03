@@ -34,10 +34,10 @@ private:
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_start = true;
         }
-        if (m_keyAction[GLFW_KEY_R] == 1) {
+        if (m_key[GLFW_KEY_R] == 1) {
             m_kfusion.reset();
             m_start = false;
         }
@@ -55,12 +55,12 @@ private:
         //        id = 0;
         //    }
         //}
-        const Mem2<double> *depth = m_rs.getDepth();
+        const Mem2<SP_REAL> *depth = m_rs.getDepth();
         if (depth == NULL) return;
 
         // make min data for computational cost
         CamParam minCam;
-        Mem2<double> minDepth;
+        Mem2<SP_REAL> minDepth;
         {
             pyrdown(minCam, *m_rs.getDepthCam());
             pyrdownDepth(minDepth, *depth);

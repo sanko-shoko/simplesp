@@ -191,10 +191,10 @@ namespace sp{
 
         int MIN_IMGSIZE = 200;
 
-        SP_REAL BIN_BLOCKSIZE = 0.05;
+        double BIN_BLOCKSIZE = 0.05;
 
-        SP_REAL DOT_MAXSIZE = 0.2;
-        SP_REAL DOT_CONTRAST = 0.05;
+        double DOT_MAXSIZE = 0.2;
+        double DOT_CONTRAST = 0.05;
 
     private:
 

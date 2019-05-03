@@ -371,11 +371,11 @@ namespace sp{
 
                 // tracing contour and count good contrast
                 int cnt = 0;
-                SP_REAL minLng = SP_INFINITY;
+                double minLng = SP_INFINITY;
                 for (int j = 0; j < contour.size(); j++) {
                     const Vec2 crnt = contour[j];
                     const Vec2 side = crnt + unitVec(crnt - cent) * 2.0;
-                    const SP_REAL contrast = img(round(side.x), round(side.y)) - img(round(crnt.x), round(crnt.y));
+                    const double contrast = img(round(side.x), round(side.y)) - img(round(crnt.x), round(crnt.y));
                     if (contrast > SP_BYTEMAX * MRK_CONTRAST) {
                         cnt++;
                     }
@@ -384,7 +384,7 @@ namespace sp{
                 }
 
                 // check contrast
-                if (static_cast<SP_REAL>(cnt) / contour.size() < 0.8) continue;
+                if (static_cast<double>(cnt) / contour.size() < 0.8) continue;
 
                 // check size
                 if (minLng < minVal(img.dsize[0], img.dsize[1]) * MRK_MINSIZE) continue;

@@ -90,12 +90,12 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_A] == 1) {
+        if (m_key[GLFW_KEY_A] == 1) {
             m_id++;
             if (m_id >= m_boards.size()) m_id = 0;
         }
 
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             Mem1<Mem1<Mem1<Vec2> > > pixs;
             Mem1<Mem1<Mem1<Vec2> > > objs;
             Mem1<CamParam> cams;

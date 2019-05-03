@@ -69,19 +69,19 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
-        if (m_keyAction[GLFW_KEY_R] == 1) {
+        if (m_key[GLFW_KEY_R] == 1) {
             m_est = m_pose;
         }
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_start = (m_start == false) ? true : false;
         }
 
-        if (m_keyAction[GLFW_KEY_D] >= 1) {
+        if (m_key[GLFW_KEY_D] >= 1) {
             if (m_mode < 0) m_est = m_pose;
             m_mode = 0;
             fit2D(m_est, m_gry, m_cam, m_pmodels, 50, 1);
         }
-        if (m_keyAction[GLFW_KEY_F] >= 1) {
+        if (m_key[GLFW_KEY_F] >= 1) {
             if (m_mode < 0) m_est = m_pose;
             m_mode = 1;
             Mem2<Vec3> map;

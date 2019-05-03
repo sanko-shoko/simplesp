@@ -49,8 +49,8 @@ namespace sp{
 
     private:
 
-        SP_REAL BLOB_CONTRAST = 0.01;
-        SP_REAL EDGE_THRESH = 10.0;
+        double BLOB_CONTRAST = 0.01;
+        double EDGE_THRESH = 10.0;
 
     public:
 
@@ -360,7 +360,7 @@ namespace sp{
 
                 const int radius = round(3.0 * scl);
 
-                const SP_REAL sdiv = 1.0 / (2.0 * scl * scl);
+                const double sdiv = 1.0 / (2.0 * scl * scl);
 
                 for (int ry = -radius; ry <= radius; ry++) {
                     for (int rx = -radius; rx <= radius; rx++) {
@@ -368,10 +368,10 @@ namespace sp{
                         const int iy = y + ry;
                         if (inRect2(rect, ix, iy) == false) continue;
 
-                        const SP_REAL dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
-                        const SP_REAL dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
+                        const double dx = img(ix + 1, iy + 0) - img(ix - 1, iy + 0);
+                        const double dy = img(ix + 0, iy + 1) - img(ix + 0, iy - 1);
 
-                        const SP_REAL angle = atan2(dy, dx);
+                        const double angle = atan2(dy, dx);
 
                         int bin = round(angle * BINS / (2 * SP_PI));
                         if (bin < 0) bin += BINS;

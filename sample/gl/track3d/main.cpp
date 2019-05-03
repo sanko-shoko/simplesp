@@ -57,16 +57,16 @@ private:
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
-        if (m_keyAction[GLFW_KEY_T] == 1) {
+        if (m_key[GLFW_KEY_T] == 1) {
             if (m_tracker.valid() == false) {
                 m_tracker.train(m_model);
             }
             m_est = m_pose;
         }
-        if (m_keyAction[GLFW_KEY_S] == 1) {
+        if (m_key[GLFW_KEY_S] == 1) {
             m_start = (m_start == false) ? true : false;
         }
-        if (m_keyAction[GLFW_KEY_A] >= 1) {
+        if (m_key[GLFW_KEY_A] >= 1) {
             if (m_tracker.valid() == true) {
                 m_tracker.execute(m_est, m_cam, m_depth);
             }

@@ -100,7 +100,8 @@ namespace sp{
             }
         }
 
-        bool execute(Pose &pose, const CamParam &cam, const Mem2<SP_REAL> &depth) {
+        template<typename DEPTH>
+        bool execute(Pose &pose, const CamParam &cam, const Mem2<DEPTH> &depth) {
 
             const SP_REAL maxAngle = 35.0 * SP_PI / 180.0;
  
@@ -123,7 +124,7 @@ namespace sp{
                         const Vec2 npx = prjVec(pos);
                         const Vec2 pix = mulCam(cam, npx);
 
-                        SP_REAL d = depth(round(pix.x), round(pix.y));
+                        double d = depth(round(pix.x), round(pix.y));
                         d = (d > 0.0) ? d : (1.0 + 0.1 * randValUnif()) * pose.trn.z;
 
                         const Vec3 v = getVec3(npx.x, npx.y, 1.0) * d;
@@ -178,7 +179,8 @@ namespace sp{
             return true;
         }
 
-        bool execute(Pose &pose, const CamParam &cam, const Mem2<SP_REAL> &depth, const int itmax) {
+        template<typename DEPTH>
+        bool execute(Pose &pose, const CamParam &cam, const Mem2<DEPTH> &depth, const int itmax) {
             bool ret = true;
             for (int it = 0; ret && it < itmax; it++) {
                 ret = execute(pose, cam, depth);
@@ -262,7 +264,8 @@ namespace sp{
             }
         }
 
-        SP_REAL evalPose(const GeoNode &node, const CamParam &cam, const Pose &pose, const Mem2<SP_REAL> &depth) {
+        template<typename DEPTH>
+        SP_REAL evalPose(const GeoNode &node, const CamParam &cam, const Pose &pose, const Mem2<DEPTH> &depth) {
 
             Mem1<SP_REAL> data(POINT_NUM);
             for (int p = 0; p < POINT_NUM; p++) {
@@ -270,7 +273,7 @@ namespace sp{
                 const Vec2 npx = prjVec(pos);
                 const Vec2 pix = mulCam(cam, npx);
 
-                const SP_REAL d = depth(round(pix.x), round(pix.y));
+                const double d = depth(round(pix.x), round(pix.y));
                 if (d > 0.0) {
                     data[p] = fabs(pos.z - d);
                 }

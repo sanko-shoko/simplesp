@@ -472,49 +472,49 @@ namespace sp {
             nrms.push(nrm);
         }
 
-        const SP_REAL a = normVec(objs[1] - objs[0]);
-        const SP_REAL b = normVec(objs[2] - objs[1]);
-        const SP_REAL c = normVec(objs[0] - objs[2]);
+        const double a = normVec(objs[1] - objs[0]);
+        const double b = normVec(objs[2] - objs[1]);
+        const double c = normVec(objs[0] - objs[2]);
         if (a < SP_SMALL || b < SP_SMALL || c < SP_SMALL) return false;
 
-        const SP_REAL cos_a = dotVec(nrms[1], nrms[0]);
-        const SP_REAL cos_b = dotVec(nrms[2], nrms[1]);
-        const SP_REAL cos_c = dotVec(nrms[0], nrms[2]);
+        const double cos_a = dotVec(nrms[1], nrms[0]);
+        const double cos_b = dotVec(nrms[2], nrms[1]);
+        const double cos_c = dotVec(nrms[0], nrms[2]);
 
-        const SP_REAL cos2_a = cos_a * cos_a;
-        const SP_REAL cos2_b = cos_b * cos_b;
-        const SP_REAL cos2_c = cos_c * cos_c;
+        const double cos2_a = cos_a * cos_a;
+        const double cos2_b = cos_b * cos_b;
+        const double cos2_c = cos_c * cos_c;
         
-        const SP_REAL na = square(a / b);
-        const SP_REAL nc = square(c / b);
+        const double na = square(a / b);
+        const double nc = square(c / b);
 
-        const SP_REAL s = na + nc;
-        const SP_REAL t = na - nc;
+        const double s = na + nc;
+        const double t = na - nc;
 
-        const SP_REAL A4 = square(t - 1.0) - 4.0 * nc * cos2_a;
-        const SP_REAL A3 = 4.0 * (t * (1.0 - t) * cos_b - (1.0 - s) * cos_a * cos_c + 2.0 * nc * cos2_a * cos_b);
-        const SP_REAL A2 = 2.0 * (t * t - 1.0 + 2.0 * t * t * cos2_b + 2.0 * (1.0 - nc) * cos2_a - 4.0 * s * cos_a * cos_b * cos_c + 2.0 * (1.0 - na) * cos2_c);
-        const SP_REAL A1 = 4.0 * (-t * (1.0 + t) * cos_b + 2.0 * na * cos2_c * cos_b - (1.0 - s) * cos_a * cos_c);
-        const SP_REAL A0 = square(1.0 + t) - 4.0 * na * cos2_c;
+        const double A4 = square(t - 1.0) - 4.0 * nc * cos2_a;
+        const double A3 = 4.0 * (t * (1.0 - t) * cos_b - (1.0 - s) * cos_a * cos_c + 2.0 * nc * cos2_a * cos_b);
+        const double A2 = 2.0 * (t * t - 1.0 + 2.0 * t * t * cos2_b + 2.0 * (1.0 - nc) * cos2_a - 4.0 * s * cos_a * cos_b * cos_c + 2.0 * (1.0 - na) * cos2_c);
+        const double A1 = 4.0 * (-t * (1.0 + t) * cos_b + 2.0 * na * cos2_c * cos_b - (1.0 - s) * cos_a * cos_c);
+        const double A0 = square(1.0 + t) - 4.0 * na * cos2_c;
 
         Cmp vs[4];
         const int n = eq4(vs, A4, A3, A2, A1, A0);
 
         poses.clear();
         for (int i = 0; i < n; i++) {
-            if (fabs(vs[i].im) > SP_SMALL) continue;
+            if (fabs(vs[i].im) > 0.001) continue;
 
-            const SP_REAL v = vs[i].re;
-            const SP_REAL u = ((-1.0 + t) * v * v - 2.0 * t * cos_b * v + 1.0 + t) / (2.0 * (cos_c - v * cos_a));
+            const double v = vs[i].re;
+            const double u = ((-1.0 + t) * v * v - 2.0 * t * cos_b * v + 1.0 + t) / (2.0 * (cos_c - v * cos_a));
 
-            const SP_REAL x = a * a / (u * u + v * v - 2.0 * u * v * cos_a);
-            const SP_REAL y = b * b / (1 + v * v - 2.0 * v * cos_b);
-            const SP_REAL z = c * c / (1 + u * u - 2.0 * u * cos_c);
+            const double x = a * a / (u * u + v * v - 2.0 * u * v * cos_a);
+            const double y = b * b / (1 + v * v - 2.0 * v * cos_b);
+            const double z = c * c / (1 + u * u - 2.0 * u * cos_c);
             if (x < 0.0) continue;
 
-            const SP_REAL s1 = sqrt(x);
-            const SP_REAL s2 = u * s1;
-            const SP_REAL s3 = v * s1;
+            const double s1 = sqrt(x);
+            const double s2 = u * s1;
+            const double s3 = v * s1;
 
             Mem1<Vec3> pnts;
             pnts.push(nrms[0] * s2);
@@ -581,7 +581,7 @@ namespace sp {
                 T *= -1.0;
             }
 
-            SP_REAL scale = 1.0;
+            double scale = 1.0;
             for (int i = 0; i < 3; i++) {
                 scale *= sqrt(square(R(0, i)) + square(R(1, i)) + square(R(2, i)));
             }
@@ -919,7 +919,7 @@ namespace sp {
         const Mem1<Vec2> npxs0 = invCamD(cam0, pixs0);
         const Mem1<Vec2> npxs1 = invCamD(cam1, pixs1);
 
-        const SP_REAL nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
+        const double nth = thresh / ((cam0.fx + cam0.fy + cam1.fx + cam1.fy) / 4.0);
 
         Mat E;
         if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
