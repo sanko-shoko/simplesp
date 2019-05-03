@@ -502,7 +502,7 @@ namespace sp {
 
         poses.clear();
         for (int i = 0; i < n; i++) {
-            if (fabs(vs[i].im) > 0.2) continue;
+            if (fabs(vs[i].im) > 0.001) continue;
 
             const double v = vs[i].re;
             const double u = ((-1.0 + t) * v * v - 2.0 * t * cos_b * v + 1.0 + t) / (2.0 * (cos_c - v * cos_a));
