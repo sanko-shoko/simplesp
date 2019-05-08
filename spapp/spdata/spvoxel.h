@@ -185,12 +185,8 @@ namespace sp {
 
         meshes.clear();
 
-        struct Vec3i {
-            int x, y, z;
-        };
-
         Mem1<Mem1<Byte> > ptns;
-        Mem1<Mem1<Vec3i> > orders;
+        Mem1<Mem1<Vec3> > orders;
 
         {
             // vertex orders
@@ -200,9 +196,9 @@ namespace sp {
                         const int m = (x + y + z) % 2 ? -1 : +1;
 
                         for (int i = 0; i < 3; i++) {
-                            Mem1<Vec3i> order;
+                            Mem1<Vec3> order;
                             for (int j = 0; j < 8; j++) {
-                                Vec3i vi;
+                                Vec3 vi;
                                 vi.x = (j & (1 << ((6 - i + m * 0) % 3))) ? 1 - x : x;
                                 vi.y = (j & (1 << ((6 - i + m * 1) % 3))) ? 1 - y : y;
                                 vi.z = (j & (1 << ((6 - i + m * 2) % 3))) ? 1 - z : z;
@@ -229,7 +225,7 @@ namespace sp {
 
                     Byte b = 0;
                     for (int i = 0; i < 8; i++) {
-                        setBit(&b, orders[o][i].z * 4 + orders[o][i].y * 2 + orders[o][i].x, list[p][i]);
+                        setBit(&b, round(orders[o][i].z * 4 + orders[o][i].y * 2 + orders[o][i].x), list[p][i]);
                     }
                     tmps.push(b);
                 }
@@ -303,9 +299,9 @@ namespace sp {
                         char v[8];
 
                         for (int k = 0; k < 8; k++) {
-                            const Vec3i &vi = orders[ord][k];
+                            const Vec3 &vi = orders[ord][k];
                             p[k] = getVec3(x + vi.x, y + vi.y, z + vi.z);
-                            v[k] = vmap(vi.x, vi.y, vi.z);
+                            v[k] = vmap(round(vi.x), round(vi.y), round(vi.z));
                         }
 
                         auto f = [&](const int i, const int j)-> Vec3 {

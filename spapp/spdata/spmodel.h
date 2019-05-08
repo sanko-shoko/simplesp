@@ -357,17 +357,39 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size) {
+    SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size, const int xyz, const int nrm) {
         Mem1<Mesh3> model;
         const SP_REAL hs = size * 0.5;
-        const Vec3 a = getVec3(-hs, -hs, 0.0);
-        const Vec3 b = getVec3(+hs, -hs, 0.0);
-        const Vec3 c = getVec3(+hs, +hs, 0.0);
-        const Vec3 d = getVec3(-hs, +hs, 0.0);
+        Vec3 a, b, c, d;
+        switch(xyz){
+        case 0:
+            a = getVec3(0.0, -hs, -hs);
+            b = getVec3(0.0, +hs, -hs);
+            c = getVec3(0.0, +hs, +hs);
+            d = getVec3(0.0, -hs, +hs);
+            break;
+        case 1:
+            a = getVec3(-hs, 0.0, -hs);
+            b = getVec3(-hs, 0.0, +hs);
+            c = getVec3(+hs, 0.0, +hs);
+            d = getVec3(+hs, 0.0, -hs);
+            break;
+        case 2:
+            a = getVec3(-hs, -hs, 0.0);
+            b = getVec3(+hs, -hs, 0.0);
+            c = getVec3(+hs, +hs, 0.0);
+            d = getVec3(-hs, +hs, 0.0);
+            break;
 
-        model.push(getMesh3(a, b, c));
-        model.push(getMesh3(a, c, d));
-        
+        }
+        if (nrm > 0) {
+            model.push(getMesh3(a, b, c));
+            model.push(getMesh3(a, c, d));
+        }
+        else {
+            model.push(getMesh3(c, b, a));
+            model.push(getMesh3(c, a, d));
+        }
         return model;
     }
 
@@ -382,7 +404,7 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadCube(const SP_REAL size) {
+    SP_CPUFUNC Mem1<Mesh3> loadCube(const double size) {
         Mem1<Mesh3> model;
 
         const double half = size / 2.0;
@@ -404,6 +426,36 @@ namespace sp{
             }
         }
           
+        return model;
+    }
+
+    SP_CPUFUNC Mem1<Mesh3> loadCube(const Rect &rect, const double m = 0.0) {
+        Mem1<Mesh3> model;
+        if (rect.dim != 3) return model;
+
+        const Vec3 A = getVec3(rect.dbase[0] - 0.5 - m, rect.dbase[1] - 0.5 - m, rect.dbase[2] - 0.5 - m);
+        const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 0.5 + m, rect.dbase[1] + rect.dsize[1] - 0.5 + m, rect.dbase[2] + rect.dsize[2] - 0.5 + m);
+
+        const Vec3 C = (A + B) / 2.0;
+        const Vec3 H = (A - B) / 2.0;
+
+        for (int z = -1; z <= +1; z += 2) {
+            for (int y = -1; y <= +1; y += 2) {
+                for (int x = -1; x <= +1; x += 2) {
+                    if ((x * y * z) > 0) continue;
+
+                    const Vec3 p0 = getVec3(+x * fabs(H.x), +y * fabs(H.y), +z * fabs(H.z)) + C;
+                    const Vec3 px = getVec3(-x * fabs(H.x), +y * fabs(H.y), +z * fabs(H.z)) + C;
+                    const Vec3 py = getVec3(+x * fabs(H.x), -y * fabs(H.y), +z * fabs(H.z)) + C;
+                    const Vec3 pz = getVec3(+x * fabs(H.x), +y * fabs(H.y), -z * fabs(H.z)) + C;
+
+                    model.push(getMesh3(p0, py, px));
+                    model.push(getMesh3(p0, pz, py));
+                    model.push(getMesh3(p0, px, pz));
+                }
+            }
+        }
+
         return model;
     }
 

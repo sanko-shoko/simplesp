@@ -22,6 +22,7 @@ namespace sp{
     public:
         GLuint m_fb;
         GLuint m_tex[2];
+        bool m_bind;
 
     private:
         void reset() {
@@ -124,6 +125,7 @@ namespace sp{
             const GLenum buffer = GL_COLOR_ATTACHMENT0_EXT;
             glDrawBuffers(1, &buffer);
 
+            m_bind = true;
             //glClearColor(0.0, 0.0, 0.0, 1.0);
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
@@ -131,6 +133,7 @@ namespace sp{
         void unbind() {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
             glPopAttrib();
+            m_bind = false;
         }
 
         void readImg(Mem2<Col4> &img) {
