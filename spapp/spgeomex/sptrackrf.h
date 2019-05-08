@@ -125,7 +125,7 @@ namespace sp{
                         const Vec2 pix = mulCam(cam, npx);
 
                         double d = depth(round(pix.x), round(pix.y));
-                        d = (d > 0.0) ? d : (1.0 + 0.1 * randValUnif()) * pose.trn.z;
+                        d = (d > 0.0) ? d : (1.0 + 0.1 * randu()) * pose.trn.z;
 
                         const Vec3 v = getVec3(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);
@@ -202,7 +202,7 @@ namespace sp{
             };
 
             Mem1<Tmp> tmps;
-            const SP_REAL angle = randValUnif() * SP_PI;
+            const SP_REAL angle = randu() * SP_PI;
             const Vec2 nl = getVec2(cos(angle), sin(angle));
 
             for (int v = 0; v < cam.dsize[1]; v++) {
@@ -222,7 +222,7 @@ namespace sp{
             sort(tmps);
             pnts.clear();
 
-            const SP_REAL rate = 0.3 * randValUnif() + 0.4; // (0.1, 0.7)
+            const SP_REAL rate = 0.3 * randu() + 0.4; // (0.1, 0.7)
             for (int p = 0; p < POINT_NUM; p++) {
                 const int i = rand() % round(rate * tmps.size());
                 const Vec3 vec = invPose(pose) * tmps[i].pos;
@@ -236,7 +236,7 @@ namespace sp{
             const Vec3 Nv = getDirect(pose);
 
             for (int i = 0; i < SAMPLE_NUM; i++) {
-                const Pose delta = randPoseUnif(m_randRot, m_randTrn);
+                const Pose delta = randuPose(m_randRot, m_randTrn);
                 const Pose tpose = pose * delta;
                 Mem<SP_REAL> data = Mem1<SP_REAL>(POINT_NUM);
 
@@ -246,7 +246,7 @@ namespace sp{
                     const Vec2 pix = mulCam(cam, npx);
 
                     SP_REAL d = depth(round(pix.x), round(pix.y));
-                    d = (d > 0.0) ? d : pose.trn.z + randValUnif() * m_randTrn;
+                    d = (d > 0.0) ? d : pose.trn.z + randu() * m_randTrn;
 
                     const Vec3 vec = getVec3(npx.x, npx.y, 1.0) * d;
                     const Vec3 vec1 = invPose(tpose) * vec;

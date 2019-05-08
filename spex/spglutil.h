@@ -68,9 +68,9 @@ namespace sp {
     }
 
     SP_CPUFUNC void glColor(const int label){
-        srand(maxVal(label, 0));
+        srand(maxval(label, 0));
         Col3 col;
-        cnvHSVToCol(col, getVec3((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+        cnvHSVToCol(col, getVec3((randu() + 1.0) * SP_PI, 1.0, 1.0));
         glColor(col);
     }
 

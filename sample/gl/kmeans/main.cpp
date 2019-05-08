@@ -32,11 +32,11 @@ private:
         m_pnts.clear();
         for (int c = 0; c < m_K; c++) {
             const Vec2 vec = getVec2(300.0, 200.0);
-            const Vec2 cent = randVecUnif(vec.x / 2, vec.y / 2);
+            const Vec2 cent = randuVec2(vec.x / 2, vec.y / 2);
 
             const int num = 200;
             for (int n = 0; n < num; n++) {
-                const Vec2 pnt = randVecGauss(vec.x / 4, vec.y / 4) + cent;
+                const Vec2 pnt = randgVec2(vec.x / 4, vec.y / 4) + cent;
                 m_pnts.push(pnt);
             }
         }

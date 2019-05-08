@@ -24,7 +24,7 @@ int main() {
             mat(1, 1) = +::cos(angle);
 
             for (int i = 0; i < 200; i++) {
-                const Vec2 vec = mat * randVecGauss(20.0, 5.0) + getVec2(50.0, 50.0);
+                const Vec2 vec = mat * randgVec2(20.0, 5.0) + getVec2(50.0, 50.0);
                 data.push(vec);
             }
         }
@@ -127,8 +127,8 @@ int main() {
                     for (int j = 0; j < dst.size(); j++) {
                         tmp[j] = eigVec(j, i);
                     }
-                    const double maxv = maxVal(tmp);
-                    const double minv = minVal(tmp);
+                    const double maxv = maxval(tmp);
+                    const double minv = minval(tmp);
                     cnvMem(dst, tmp, 255 / (maxv - minv), minv);
                 }
 

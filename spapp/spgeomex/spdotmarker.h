@@ -199,11 +199,11 @@ namespace sp{
     private:
 
         SP_REAL getSearchRange(){
-            return maxVal(m_cam.dsize[0], m_cam.dsize[1]) / 2.0;
+            return maxval(m_cam.dsize[0], m_cam.dsize[1]) / 2.0;
         }
 
         SP_REAL getMinScale(){
-            return static_cast<SP_REAL>(MIN_IMGSIZE) / maxVal(m_cam.dsize[0], m_cam.dsize[1]);
+            return static_cast<SP_REAL>(MIN_IMGSIZE) / maxval(m_cam.dsize[0], m_cam.dsize[1]);
         }
 
         //--------------------------------------------------------------------------------
@@ -280,7 +280,7 @@ namespace sp{
 
             {
 
-                if (maxVal(rcgEval, trkEval) < 0.6 * m_mrk.map.dsize[0] * m_mrk.map.dsize[1]){
+                if (maxval(rcgEval, trkEval) < 0.6 * m_mrk.map.dsize[0] * m_mrk.map.dsize[1]){
                     throw "eval";
                 }
 
@@ -316,16 +316,16 @@ namespace sp{
                 if (inRect(getRect2(minImg.dsize), minRect) == false) continue;
 
                 // check size
-                const int maxSize = round(minVal(minImg.dsize[0], minImg.dsize[1]) * DOT_MAXSIZE);
-                if (maxVal(minRect.dsize[0], minRect.dsize[1]) > maxSize) continue;
+                const int maxSize = round(minval(minImg.dsize[0], minImg.dsize[1]) * DOT_MAXSIZE);
+                if (maxval(minRect.dsize[0], minRect.dsize[1]) > maxSize) continue;
 
                 Byte maxv = 0;
                 Byte minv = SP_BYTEMAX;
                 for (int v = minRect.dbase[1]; v < minRect.dbase[1] + minRect.dsize[1]; v++) {
                     for (int u = minRect.dbase[0]; u < minRect.dbase[0] + minRect.dsize[0]; u++){
                         const Byte val = minImg(u, v);
-                        maxv = maxVal(maxv, val);
-                        minv = minVal(minv, val);
+                        maxv = maxval(maxv, val);
+                        minv = minval(minv, val);
                     }
                 }
 
@@ -416,7 +416,7 @@ namespace sp{
             const Mem2<Vec2> unit = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
 
             const int maxn = 10;
-            const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
+            const SP_REAL step = maxval(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
 
             Mat H = eyeMat(3, 3);
             Vec2 V = getVec2(0.0, 0.0);
@@ -475,13 +475,13 @@ namespace sp{
                             const SP_REAL lng12 = normVec(pixs[p2] - pixs[p1]);
                             const SP_REAL lng20 = normVec(pixs[p0] - pixs[p2]);
                             
-                            if (lng12 >= maxVal(lng01, lng20)) {
+                            if (lng12 >= maxval(lng01, lng20)) {
                                 s0 = p0, s1 = p1, s2 = p2;
                             }
-                            if (lng20 >= maxVal(lng12, lng01)) {
+                            if (lng20 >= maxval(lng12, lng01)) {
                                 s0 = p1, s1 = p2, s2 = p0;
                             }
-                            if (lng01 >= maxVal(lng20, lng12)) {
+                            if (lng01 >= maxval(lng20, lng12)) {
                                 s0 = p2, s1 = p0, s2 = p1;
                             }
                         }
@@ -494,7 +494,7 @@ namespace sp{
                             const SP_REAL lngB = normVec(B);
                             const SP_REAL cosAB = dotVec(A, B) / (lngA * lngB);
 
-                            if (minVal(lngA, lngB) / maxVal(lngA, lngB) < MIN_ASPECT) continue;
+                            if (minval(lngA, lngB) / maxval(lngA, lngB) < MIN_ASPECT) continue;
                             if (cosAB > 0.0 || cosAB < MIN_COS) continue;
                         }
 
@@ -513,9 +513,9 @@ namespace sp{
                                 if (pk == p0 || pk == p1 || pk == p2) continue;
 
                                 const Vec2 e = mulMat(inv, 2, 2, pixs[pk] - pixs[s0]);
-                                if (minVal(e.x, e.y) < -margin || maxVal(e.x, e.y) > 1.0 + margin) continue;
+                                if (minval(e.x, e.y) < -margin || maxval(e.x, e.y) > 1.0 + margin) continue;
 
-                                if (s3 < 0 && minVal(e.x, e.y) > 1.0 - margin) {
+                                if (s3 < 0 && minval(e.x, e.y) > 1.0 - margin) {
                                     s3 = pk;
                                 }
                                 else{
@@ -698,9 +698,9 @@ namespace sp{
                     const SP_REAL dh = mrk.map.dsize[1] / 2.0;
                     if (fabs(vec.x) > dw + 0.2 || fabs(vec.y) > dh + 0.2) continue;
 
-                    const SP_REAL rw = maxVal(0.0, fabs(vec.x) - dw);
-                    const SP_REAL rh = maxVal(0.0, fabs(vec.y) - dh);
-                    const SP_REAL rate = 2 * maxVal(rw, rh);
+                    const SP_REAL rw = maxval(0.0, fabs(vec.x) - dw);
+                    const SP_REAL rh = maxval(0.0, fabs(vec.y) - dh);
+                    const SP_REAL rate = 2 * maxval(rw, rh);
 
                     const Vec2 pos = vec + getVec2(dw, dh);
 

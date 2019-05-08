@@ -31,7 +31,7 @@ namespace sp{
 
         const Rect rect = getRect2(img0.dsize);
 
-        SP_REAL range = minVal(img0.dsize[0], img0.dsize[1]) * 0.5;
+        SP_REAL range = minval(img0.dsize[0], img0.dsize[1]) * 0.5;
 
         for (int it = 0; it < maxit; it++) {
 
@@ -39,7 +39,7 @@ namespace sp{
             for (int v = 0; v < img0.dsize[1]; v++) {
                 for (int u = 0; u < img0.dsize[0]; u++) {
 
-                    const Vec2 flow = flows(u, v) + randVecUnif(range, range);
+                    const Vec2 flow = flows(u, v) + randuVec2(range, range);
                     if (inRect2(rect, u + round(flow.x), v + round(flow.y)) == false) continue;
 
                     const int eval = calcSAD(img0, img1, u, v, flow, winSize);

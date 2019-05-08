@@ -43,8 +43,8 @@ private:
             const double angle = time * SP_PI / 180.0;
             const Vec2 pos = getVec2(::cos(angle), ::sin(angle)) * radius + getVec2(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
 
-            Z(0, 0) = pos.x + randValGauss() * onoize;
-            Z(1, 0) = pos.y + randValGauss() * onoize;
+            Z(0, 0) = pos.x + randg() * onoize;
+            Z(1, 0) = pos.y + randg() * onoize;
         }
 
         static Mat X, Q, P, R, F, H;

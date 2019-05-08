@@ -20,9 +20,9 @@ int main(){
     Mem1<Vec2> data;
 
     for (int i = 0; i < 100; i++){
-        const double noise = randValGauss() * 0.1;
+        const double noise = randg() * 0.1;
 
-        const double x = randValUnif() * 10;
+        const double x = randu() * 10;
         const double y = a * x + b + noise;
 
         data.push(getVec2(x, y));
@@ -59,8 +59,8 @@ int main(){
 
     // add outlier
     for (int i = 0; i < 100; i++) {
-        const double x = randValUnif() * 10;
-        const double y = randValUnif() * 10;
+        const double x = randu() * 10;
+        const double y = randu() * 10;
 
         data.push(getVec2(x, y));
     }

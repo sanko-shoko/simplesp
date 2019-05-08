@@ -531,9 +531,9 @@ static int STBRP__CDECL rect_original_order(const void *a, const void *b)
 }
 
 #ifdef STBRP_LARGE_RECTS
-#define STBRP__MAXVAL  0xffffffff
+#define STBRP__maxval  0xffffffff
 #else
-#define STBRP__MAXVAL  0xffff
+#define STBRP__maxval  0xffff
 #endif
 
 STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int num_rects)
@@ -560,7 +560,7 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
             rects[i].x = (stbrp_coord) fr.x;
             rects[i].y = (stbrp_coord) fr.y;
          } else {
-            rects[i].x = rects[i].y = STBRP__MAXVAL;
+            rects[i].x = rects[i].y = STBRP__maxval;
          }
       }
    }
@@ -570,7 +570,7 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
 
    // set was_packed flags and all_rects_packed status
    for (i=0; i < num_rects; ++i) {
-      rects[i].was_packed = !(rects[i].x == STBRP__MAXVAL && rects[i].y == STBRP__MAXVAL);
+      rects[i].was_packed = !(rects[i].x == STBRP__maxval && rects[i].y == STBRP__maxval);
       if (!rects[i].was_packed)
          all_rects_packed = 0;
    }

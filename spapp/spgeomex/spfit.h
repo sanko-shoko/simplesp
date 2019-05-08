@@ -44,8 +44,8 @@ namespace sp{
                     const Vec2 p = pix + nrm * l;
                     const SP_REAL val = acs2(img, p.x, p.y);
                     vlist[l + searchLng] = val;
-                    maxv = maxVal(maxv, val);
-                    minv = minVal(minv, val);
+                    maxv = maxval(maxv, val);
+                    minv = minval(minv, val);
                 }
 
                 const SP_REAL thresh = (maxv + minv) / 2.0;

@@ -31,11 +31,11 @@ void regression(){
     Mem1<SP_REAL> Ys;
 
     for (int i = 0; i < 1500; i++) {
-        const double noise = randValGauss() * 0.1;
+        const double noise = randg() * 0.1;
 
         Mem1<SP_REAL> X(2);
-        X[0] = randValUnif() * 10;
-        X[1] = randValUnif() * 10;
+        X[0] = randu() * 10;
+        X[1] = randu() * 10;
 
         const double Y = a * X[0] + b * X[1] + c + noise;
 
@@ -53,8 +53,8 @@ void regression(){
     const int testNum = 5;
     for (int i = 0; i < testNum; i++) {
         Mem1<SP_REAL> X(2);
-        X[0] = randValUnif() * 10;
-        X[1] = randValUnif() * 10;
+        X[0] = randu() * 10;
+        X[1] = randu() * 10;
 
         const double Y = a * X[0] + b * X[1] + c;
         const double R = meanVal(rf.execute(X));

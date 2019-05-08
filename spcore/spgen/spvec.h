@@ -275,23 +275,23 @@ namespace sp {
     }
 
     // random uniform
-    SP_CPUFUNC Vec2 randVecUnif(const SP_REAL x, const SP_REAL y) {
-        return getVec2(randValUnif() * x, randValUnif() * y);
+    SP_CPUFUNC Vec2 randuVec2(const double x, const double y) {
+        return getVec2(randu() * x, randu() * y);
+    }
+    
+    // random gauss
+    SP_CPUFUNC Vec2 randgVec2(const double x, const double y) {
+        return getVec2(randg() * x, randg() * y);
     }
 
     // random uniform
-    SP_CPUFUNC Vec3 randVecUnif(const SP_REAL x, const SP_REAL y, const SP_REAL z) {
-        return getVec3(randValUnif() * x, randValUnif() * y, randValUnif() * z);
+    SP_CPUFUNC Vec3 randuVec3(const double x, const double y, const double z) {
+        return getVec3(randu() * x, randu() * y, randu() * z);
     }
 
     // random gauss
-    SP_CPUFUNC Vec2 randVecGauss(const SP_REAL x, const SP_REAL y) {
-        return getVec2(randValGauss() * x, randValGauss() * y);
-    }
-
-    // random gauss
-    SP_CPUFUNC Vec3 randVecGauss(const SP_REAL x, const SP_REAL y, const SP_REAL z) {
-        return getVec3(randValGauss() * x, randValGauss() * y, randValGauss() * z);
+    SP_CPUFUNC Vec3 randgVec3(const double x, const double y, const double z) {
+        return getVec3(randg() * x, randg() * y, randg() * z);
     }
 
     // round

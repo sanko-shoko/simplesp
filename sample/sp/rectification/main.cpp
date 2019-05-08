@@ -14,18 +14,18 @@ int main(){
     {
         for (int i = 0; i < 2; i++){
             cams[i] = getCamParam(640, 480);
-            cams[i].cx += randValGauss() * 10.0;
-            cams[i].cy += randValGauss() * 10.0;
+            cams[i].cx += randg() * 10.0;
+            cams[i].cy += randg() * 10.0;
 
-            cams[i].k1 = randValGauss() * 0.01;
-            cams[i].k2 = randValGauss() * 0.01;
-            cams[i].k3 = randValGauss() * 0.01;
-            cams[i].p1 = randValGauss() * 0.01;
-            cams[i].p2 = randValGauss() * 0.01;
+            cams[i].k1 = randg() * 0.01;
+            cams[i].k2 = randg() * 0.01;
+            cams[i].k3 = randg() * 0.01;
+            cams[i].p1 = randg() * 0.01;
+            cams[i].p2 = randg() * 0.01;
         }
 
         poses[0] = zeroPose();
-        poses[1] = getPose(randRotGauss(1.0 * SP_PI / 180.0), getVec3(-1.0, 0.0, 0.0));
+        poses[1] = getPose(randgRot(1.0 * SP_PI / 180.0), getVec3(-1.0, 0.0, 0.0));
     }
 
     // test points

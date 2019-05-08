@@ -244,8 +244,8 @@ namespace sp {
         const int minv = 10;
         const int maxv = 100;
 
-        const int n = minVal(maxv, matches.size());
-        const int c = minVal(maxv, getMatchCnt(matches));
+        const int n = minval(maxv, matches.size());
+        const int c = minval(maxv, getMatchCnt(matches));
 
         const int v = c - minv;
         const int m = maxv - minv;

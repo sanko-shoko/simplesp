@@ -103,7 +103,7 @@ namespace sp{
                     return node;
                 }
 
-                const int maxd = maxVal(floor(log(Xs.size()) / log(2.0) - 2), 2);
+                const int maxd = maxval(floor(log(Xs.size()) / log(2.0) - 2), 2);
                 if (depth >= maxd) {
                     return node;
                 }
@@ -127,8 +127,8 @@ namespace sp{
                     SP_REAL minv = +SP_INFINITY;
                     for (int n = 0; n < index.size(); n++) {
                         const SP_REAL v = Xs[index[n]][s];
-                        maxv = maxVal(maxv, v);
-                        minv = minVal(minv, v);
+                        maxv = maxval(maxv, v);
+                        minv = minval(minv, v);
                     }
                     maxvs[s] = maxv;
                     minvs[s] = minv;
@@ -138,7 +138,7 @@ namespace sp{
 
                     const int param = rand() % Xs[0].size();
 
-                    const SP_REAL thresh = randValUnif() * (maxvs[param] - minvs[param]) + minvs[param];
+                    const SP_REAL thresh = randu() * (maxvs[param] - minvs[param]) + minvs[param];
 
                     const SP_REAL gain = calcGain(Xs, Ys, index, param, thresh);
 
@@ -273,7 +273,7 @@ namespace sp{
             }
 
             node->val = maxArg(hist);
-            node->dev = 1.0 - static_cast<SP_REAL>(maxVal(hist)) / index.size();
+            node->dev = 1.0 - static_cast<SP_REAL>(maxval(hist)) / index.size();
 
             return node;
         }

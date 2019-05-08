@@ -192,9 +192,9 @@ namespace sp{
         const Vec3 M1 = trnMat(M) * n1;
 
         // |a*x + b*y + c| / sqrt(a*a + b*b)
-        const SP_REAL err0 = fabs(dotVec(n1, M0)) / maxVal(pythag(M0.x, M0.y), SP_SMALL);
-        const SP_REAL err1 = fabs(dotVec(n0, M1)) / maxVal(pythag(M1.x, M1.y), SP_SMALL);
-        return maxVal(err0, err1);
+        const SP_REAL err0 = fabs(dotVec(n1, M0)) / maxval(pythag(M0.x, M0.y), SP_SMALL);
+        const SP_REAL err1 = fabs(dotVec(n0, M1)) / maxval(pythag(M1.x, M1.y), SP_SMALL);
+        return maxval(err0, err1);
     }
 
     SP_CPUFUNC Mem1<SP_REAL> errMatType2(const Mat &M, const Mem1<Vec2> &vecs0, const Mem1<Vec2> &vecs1) {
@@ -518,7 +518,7 @@ namespace sp{
 
         SP_REAL minv = SP_INFINITY;
         for (int i = 0; i < roots.size(); i++) {
-            minv = minVal(minv, fabs(roots[i].im));
+            minv = minval(minv, fabs(roots[i].im));
         }
 
         Es.clear();
@@ -779,7 +779,7 @@ namespace sp{
                 if (eval > maxe) {
                     //SP_PRINTD("eval %lf\n", eval);
                     maxe = eval;
-                    maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
+                    maxit = minval(maxit, ransacAdaptiveStop(eval, unit));
 
                     E = tests[i];
                 }
@@ -833,7 +833,7 @@ namespace sp{
             if (eval > maxe) {
                 //SP_PRINTD("eval %lf\n", eval);
                 maxe = eval;
-                maxit = minVal(maxit, ransacAdaptiveStop(eval, unit));
+                maxit = minval(maxit, ransacAdaptiveStop(eval, unit));
 
                 F = test;
             }

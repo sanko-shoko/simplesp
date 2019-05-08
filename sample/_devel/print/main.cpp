@@ -16,7 +16,7 @@ int main(){
 
     Mem1<Vec2> vecs;
     for (int i = 0; i < 10; i++) {
-        vecs.push(randVecUnif(1.0, 1.0));
+        vecs.push(randuVec2(1.0, 1.0));
     }
     print(vecs);
 

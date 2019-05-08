@@ -88,7 +88,7 @@ namespace sp {
             char &wei = wmap(x, y, z);
 
             cnvVal(val, (val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
-            wei = minVal(wei + 1, SP_VOXEL_WMAX);
+            wei = minval(wei + 1, SP_VOXEL_WMAX);
         }
 
         char getv(const int x, const int y, const int z) const {
@@ -166,7 +166,7 @@ namespace sp {
                         else {
                             if (dotVec(cpos, nrm) >= 0) continue;
 
-                            const SP_REAL dist = maxVal(cpos.z - pos.z, -step) / step;
+                            const SP_REAL dist = maxval(cpos.z - pos.z, -step) / step;
                             voxel.update(x, y, z, dist);
                         }
                     }
@@ -689,12 +689,12 @@ namespace sp {
                     const SP_REAL y = dotVec(crs - pos, Y);
 
                     if (n < 0) {
-                        if (maxVal(fabs(x), fabs(y)) > radius * 1.00) continue;
-                        range.x = maxVal(range.x, crs.z);
+                        if (maxval(fabs(x), fabs(y)) > radius * 1.00) continue;
+                        range.x = maxval(range.x, crs.z);
                     }
                     else {
-                        if (maxVal(fabs(x), fabs(y)) > radius * 1.01) continue;
-                        range.y = minVal(range.y, crs.z);
+                        if (maxval(fabs(x), fabs(y)) > radius * 1.01) continue;
+                        range.y = minval(range.y, crs.z);
                     }
                 }
    
@@ -782,7 +782,7 @@ namespace sp {
                     const SP_REAL d = depth(round(pix.x), round(pix.y));
                     if (d == 0.0) continue;
 
-                    const SP_REAL dist = maxVal(cpos.z - d, -step) / step;
+                    const SP_REAL dist = maxval(cpos.z - d, -step) / step;
                     voxel.update(x, y, z, dist);
                 }
             }

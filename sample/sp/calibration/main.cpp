@@ -53,7 +53,7 @@ int main() {
             Mem1<Vec2> tpixs, tobjs;
             for (int n = 0; n < mrkMap.size(); n++) {
                 const Vec3 pos = poses[i] * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0);
-                const Vec2 pix = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
+                const Vec2 pix = mulCamD(cam, prjVec(pos)) + randgVec2(0.1, 0.1);
 
                 tpixs.push(pix);
                 tobjs.push(mrkMap[n]);
@@ -133,8 +133,8 @@ int main() {
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int n = 0; n < mrkMap.size(); n++) {
                 const Vec3 pos = poses[i] * getVec3(mrkMap[n].x, mrkMap[n].y, 0.0);
-                const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randVecGauss(0.1, 0.1);
-                const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randVecGauss(0.1, 0.1);
+                const Vec2 pix0 = mulCamD(cam, prjVec(pos)) + randgVec2(0.1, 0.1);
+                const Vec2 pix1 = mulCamD(cam, prjVec(stereo * pos)) + randgVec2(0.1, 0.1);
 
                 tpixs0.push(pix0);
                 tpixs1.push(pix1);

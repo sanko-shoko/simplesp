@@ -15,13 +15,13 @@ int main(){
     // search target data
     Mem1<Vec2> targ;
     for (int i = 0; i < dataNum; i++) {
-        targ.push(randVecUnif(100.0, 100.0));
+        targ.push(randuVec2(100.0, 100.0));
     }
 
     // test data
     Mem1<Vec2> test;
     for (int i = 0; i < 1000; i++) {
-        test.push(randVecUnif(100.0, 100.0));
+        test.push(randuVec2(100.0, 100.0));
     }
 
 

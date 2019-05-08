@@ -39,13 +39,13 @@ namespace sp{
             mem[i] = normVec(getMeshPos(model[i]));
         }
 
-        return maxVal(mem);
+        return maxval(mem);
     }
 
     SP_CPUFUNC SP_REAL getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
 
         const double radius = getModelRadius(model);
-        const double distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
+        const double distance = 1.2 * maxval(cam.fx, cam.fy) * radius / (0.5 * minval(cam.dsize[0], cam.dsize[1]));
     
         return SP_CAST(distance);
     }
