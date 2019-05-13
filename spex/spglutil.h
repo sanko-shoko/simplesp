@@ -5,7 +5,7 @@
 #ifndef __SP_GLUTIL_H__
 #define __SP_GLUTIL_H__
 
-#include "GLFW/glfw3.h"
+#include "glutil.h"
 
 #include "spcore/spcore.h"
 
@@ -266,7 +266,7 @@ namespace sp {
         glLoadIdentity();
     }
 
-    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const double z, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
@@ -278,8 +278,8 @@ namespace sp {
             cDispPos.x = SP_CAST(viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale);
             cDispPos.y = SP_CAST(viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale);
 
-            const double nx = z / cam.fx;
-            const double ny = z / cam.fy;
+            const double nx = 1.0 / cam.fx;
+            const double ny = 1.0 / cam.fy;
 
             const double sw = (viewport[2] - 1) / viewScale;
             const double sh = (viewport[3] - 1) / viewScale;
@@ -560,6 +560,63 @@ namespace sp {
         glPopAttrib();
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src) {
+        if (src.size() == 0) return;
+
+        Texture tex;
+        if (tex.setimg(src.ptr, src.dsize) == false) return;
+
+        glPushAttrib(GL_ENABLE_BIT);
+        glEnable(GL_TEXTURE_2D);
+
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+            glBindTexture(GL_TEXTURE_2D, tex.getid());
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+            //glShadeModel(GL_FLAT);
+            glColor3d(1.0, 1.0, 1.0);
+            glColorMask(1, 1, 1, 1);
+
+            const int w = src.dsize[0];
+            const int h = src.dsize[1];
+
+            glBegin(GL_QUADS);
+            glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
+            glTexCoord2i(0, 1); glVertex2d(0 - 0.5, h - 0.5);
+            glTexCoord2i(1, 1); glVertex2d(w - 0.5, h - 0.5);
+            glTexCoord2i(1, 0); glVertex2d(w - 0.5, 0 - 0.5);
+            glEnd();
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        glPopAttrib();
+    }
+
+    template<typename TYPE0 = Col3, typename TYPE1>
+    SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0) {
+        if (src.size() == 0) return;
+
+        Mem2<TYPE0> img;
+        cnvDepthToImg(img, src, nearPlane, farPlane);
+        glTexImg(img);
+    }
+
+    template<typename TYPE0 = Col3, typename TYPE1>
+    SP_CPUFUNC void glTexNormal(const Mem<TYPE1> &src) {
+        if (src.size() == 0) return;
+
+        Mem2<TYPE0> img;
+        cnvNormalToImg(img, src);
+        glTexImg(img);
+    }
 }
 
 #endif

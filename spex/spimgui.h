@@ -67,8 +67,18 @@ SP_CPUFUNC ImVec4 getImVec4(const sp::Col4 &spcol) {
 
 namespace ImGui {
 
+    class ItemWidth {
+    public:
+        ItemWidth(const float width) {
+            ImGui::PushItemWidth(width);
+        }
+        ~ItemWidth() {
+            ImGui::PopItemWidth();
+        }
+    };
+#define ImGuiItemWidth(WIDTH) ImGui::ItemWidth __itemWidth(WIDTH);
+
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
-    
     using namespace sp;
 
     static void SetNextWindowRect(const Rect &rect, const ImGuiCond cond, const Rect *limit = NULL) {
@@ -106,7 +116,7 @@ namespace ImGui {
     }
 
     static void Spacing(const float space) {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, space));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, space / 2.0f));
         ImGui::Spacing();
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
         ImGui::PopStyleVar();

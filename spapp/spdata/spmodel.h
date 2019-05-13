@@ -185,13 +185,13 @@ namespace sp{
     };
 
 
-    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const SP_REAL distance, const int level = 2, const int density = 50) {
+    SP_CPUFUNC Mem1<PoseModel> getPoseModel(const Mem1<Mesh3> &model, const double distance, const int level = 2, const int density = 50) {
 
-        const SP_REAL radius = getModelRadius(model);
-        const SP_REAL unit = 2.0 * radius / density;
+        const double radius = getModelRadius(model);
+        const double unit = 2.0 * radius / density;
 
         const int size = 300;
-        const SP_REAL f = distance * size / (1.2 * 2.0 * radius);
+        const double f = distance * size / (1.2 * 2.0 * radius);
         const CamParam cam = getCamParam(size, size, f, f);
 
         Mem1<PoseModel> pmodels;

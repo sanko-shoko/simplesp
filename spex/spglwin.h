@@ -17,9 +17,7 @@
 #include "imgui_internal.h"
 #endif
 
-#include "GLFW/glfw3.h"
-
-#include "spex/spgltex.h"
+#include "glutil.h"
 #include "spcore/spcore.h"
 
 #include <string>

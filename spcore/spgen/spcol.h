@@ -111,13 +111,6 @@ namespace sp{
         col = divCol3(col, val);
     }
 
-    SP_GENFUNC Col3 operator + (const Col3 &col0, const Col3 &col1) {
-        return blendCol(col0, col1);
-    }
-    SP_GENFUNC void operator += (Col3 &col0, const Col3 &col1) {
-        col0 = blendCol(col0, col1);
-    }
-
     SP_GENFUNC bool operator == (const Col3 &col0, const Col3 &col1) {
         return cmpCol3(col0, col1);
     }

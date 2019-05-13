@@ -47,6 +47,7 @@ private:
     }
     
     virtual void keyFun(int key, int scancode, int action, int mods) {
+        
 
     }
 
@@ -78,14 +79,23 @@ private:
             glRenderSurface(m_model);
 
             fbo.unbind();
+
+            {
+                if (m_key[GLFW_KEY_S] > 0) {
+                    Mem2<Col3> img(m_wcam.dsize);
+                    fbo.readi((unsigned char *)img.ptr, 3);
+
+                    saveBMP("test.bmp", img);
+                }
+            }
         }
 
         {
             shader.enable();
-            shader.setUniform("nearPlane", 1.0);
-            shader.setUniform("farPlane", 10000.0);
-            shader.setUniform("dx", 1.0 / m_wcam.dsize[0]);
-            shader.setUniform("dy", 1.0 / m_wcam.dsize[1]);
+            shader.setUniform1f("nearPlane", 1.0);
+            shader.setUniform1f("farPlane", 10000.0);
+            shader.setUniform1f("dx", 1.0 / m_wcam.dsize[0]);
+            shader.setUniform1f("dy", 1.0 / m_wcam.dsize[1]);
 
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
@@ -139,8 +149,8 @@ private:
         glLoadMatrix(m_pose);
 
         shader.enable();
-        shader.setUniform("mat", glGetMat(GL_PROJECTION_MATRIX) * glGetMat(GL_MODELVIEW_MATRIX));
-        shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
+        //shader.setUniform("mat", glGetMat(GL_PROJECTION_MATRIX) * glGetMat(GL_MODELVIEW_MATRIX));
+        //shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
 
         glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
 
