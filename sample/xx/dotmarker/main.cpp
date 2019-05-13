@@ -109,7 +109,7 @@ private:
 
             const Pose modelToCamPose = boardToCamPose * worldToBoardPose * invPose(worldToModelPose);
 
-            glLoadView3D(m_dotMarker.getCam(), m_viewPos, m_viewScale);
+            glLoadView3D(true, m_dotMarker.getCam(), m_viewPos, m_viewScale);
 
             // light
             {

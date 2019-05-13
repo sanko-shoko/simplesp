@@ -15,7 +15,6 @@
 
 // gen
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/spacs.h"
 #include "spcore/spgen/spvec.h"
 #include "spcore/spgen/spcol.h"
 #include "spcore/spgen/spmath.h"

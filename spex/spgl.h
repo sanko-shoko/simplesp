@@ -18,7 +18,6 @@
 #endif
 
 #include "spex/spglutil.h"
-#include "spex/spgltex.h"
 #include "spex/spglwin.h"
 
 #if SP_USE_IMGUI

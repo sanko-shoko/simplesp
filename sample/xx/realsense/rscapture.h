@@ -76,7 +76,7 @@ private:
             // view 3D
 
             if (depth != NULL){
-                glLoadView3D(*m_rs.getDepthCam(), m_viewPos, m_viewScale);
+                glLoadView3D(true, *m_rs.getDepthCam(), m_viewPos, m_viewScale);
 
                 // render points
                 glLoadMatrix(m_view);

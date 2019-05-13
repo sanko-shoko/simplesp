@@ -92,10 +92,10 @@ namespace sp{
 
         void rand(const SP_REAL scale = 0.05){
             for (int i = 0; i < w.size(); i++){
-                w[i] = randValGauss() * scale;
+                w[i] = randg() * scale;
             }
             for (int i = 0; i < b.size(); i++){
-                b[i] = randValGauss() * scale;
+                b[i] = randg() * scale;
             }
         }
 

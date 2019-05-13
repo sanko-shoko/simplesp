@@ -198,8 +198,8 @@ namespace sp{
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
         
-        const int dsize0 = (horizon == true) ? src0.dsize[0] + src1.dsize[0] : maxVal(src0.dsize[0], src1.dsize[0]);
-        const int dsize1 = (horizon == true) ? maxVal(src0.dsize[1], src1.dsize[1]) : src0.dsize[1] + src1.dsize[1];
+        const int dsize0 = (horizon == true) ? src0.dsize[0] + src1.dsize[0] : maxval(src0.dsize[0], src1.dsize[0]);
+        const int dsize1 = (horizon == true) ? maxval(src0.dsize[1], src1.dsize[1]) : src0.dsize[1] + src1.dsize[1];
         
         const int dsize[2] = { dsize0, dsize1 };
         dst.resize(2, dsize);
@@ -454,7 +454,7 @@ namespace sp{
             if (src[i] < 0) continue;
 
             srand(src[i]);
-            cnvHSVToCol(dst[i], getVec3((randValUnif() + 1.0) * SP_PI, 1.0, 1.0));
+            cnvHSVToCol(dst[i], getVec3((randu() + 1.0) * SP_PI, 1.0, 1.0));
         }
     }
 

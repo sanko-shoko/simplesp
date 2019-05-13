@@ -313,7 +313,7 @@ namespace sp{
             const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec2(2.5, 2.5);
 
             const int maxn = 10;
-            const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
+            const SP_REAL step = maxval(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
 
             Mat H = eyeMat(3, 3);
 
@@ -399,13 +399,13 @@ namespace sp{
                             const SP_REAL lng12 = normVec(pixs[p2] - pixs[p1]);
                             const SP_REAL lng20 = normVec(pixs[p0] - pixs[p2]);
 
-                            if (lng12 >= maxVal(lng01, lng20)) {
+                            if (lng12 >= maxval(lng01, lng20)) {
                                 s0 = p0, s1 = p1, s2 = p2;
                             }
-                            if (lng20 >= maxVal(lng12, lng01)) {
+                            if (lng20 >= maxval(lng12, lng01)) {
                                 s0 = p1, s1 = p2, s2 = p0;
                             }
-                            if (lng01 >= maxVal(lng20, lng12)) {
+                            if (lng01 >= maxval(lng20, lng12)) {
                                 s0 = p2, s1 = p0, s2 = p1;
                             }
                         }
@@ -418,7 +418,7 @@ namespace sp{
                             const SP_REAL lngB = normVec(B);
                             const SP_REAL cosAB = dotVec(A, B) / (lngA * lngB);
 
-                            if (minVal(lngA, lngB) / maxVal(lngA, lngB) < MIN_ASPECT) continue;
+                            if (minval(lngA, lngB) / maxval(lngA, lngB) < MIN_ASPECT) continue;
                             if (cosAB > 0.0 || cosAB < MIN_COS) continue;
                         }
 
@@ -437,9 +437,9 @@ namespace sp{
                                 if (pk == p0 || pk == p1 || pk == p2) continue;
 
                                 const Vec2 e = mulMat(inv, 2, 2, pixs[pk] - pixs[s0]);
-                                if (minVal(e.x, e.y) < -margin || maxVal(e.x, e.y) > 1.0 + margin) continue;
+                                if (minval(e.x, e.y) < -margin || maxval(e.x, e.y) > 1.0 + margin) continue;
 
-                                if (s3 < 0 && minVal(e.x, e.y) > 1.0 - margin) {
+                                if (s3 < 0 && minval(e.x, e.y) > 1.0 - margin) {
                                     s3 = pk;
                                 }
                                 else {

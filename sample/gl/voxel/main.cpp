@@ -61,7 +61,7 @@ private:
 
         // render model
         {
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
 
             glClear(GL_DEPTH_BUFFER_BIT);
             {

@@ -49,10 +49,10 @@ namespace sp{
 
     SP_GENFUNC Rot getRot(const SP_REAL *mat, const int rows, const int cols){
         Rot dst;
-        dst.qx = sqrt(maxVal(0.0, 1 + mat[0 * cols + 0] - mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
-        dst.qy = sqrt(maxVal(0.0, 1 - mat[0 * cols + 0] + mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
-        dst.qz = sqrt(maxVal(0.0, 1 - mat[0 * cols + 0] - mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
-        dst.qw = sqrt(maxVal(0.0, 1 + mat[0 * cols + 0] + mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
+        dst.qx = sqrt(maxval(0.0, 1 + mat[0 * cols + 0] - mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
+        dst.qy = sqrt(maxval(0.0, 1 - mat[0 * cols + 0] + mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
+        dst.qz = sqrt(maxval(0.0, 1 - mat[0 * cols + 0] - mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
+        dst.qw = sqrt(maxval(0.0, 1 + mat[0 * cols + 0] + mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
 
         dst.qx *= sign(dst.qx * (mat[2 * cols + 1] - mat[1 * cols + 2]));
         dst.qy *= sign(dst.qy * (mat[0 * cols + 2] - mat[2 * cols + 0]));
@@ -349,14 +349,14 @@ namespace sp{
         return getEuler(mat, 3, 3);
     }
 
-    // random uniform
-    SP_CPUFUNC Rot randRotUnif(const SP_REAL max){
-        return getRotAngle(randVecUnif(1.0, 1.0, 1.0), randValUnif() * max);
+    // random unif
+    SP_CPUFUNC Rot randuRot(const double max) {
+        return getRotAngle(randuVec3(1.0, 1.0, 1.0), randu() * max);
     }
 
     // random gauss
-    SP_CPUFUNC Rot randRotGauss(const SP_REAL sig){
-        return getRotAngle(randVecUnif(1.0, 1.0, 1.0), randValGauss() * sig);
+    SP_CPUFUNC Rot randgRot(const double max){
+        return getRotAngle(randuVec3(1.0, 1.0, 1.0), randg() * max);
     }
 
     // update
@@ -522,14 +522,14 @@ namespace sp{
     // pose util
     //--------------------------------------------------------------------------------
 
-    // random uniform
-    SP_CPUFUNC Pose randPoseUnif(const SP_REAL rmax, const SP_REAL tmax){
-        return getPose(randRotUnif(rmax), randVecUnif(tmax, tmax, tmax));
+    // random unif
+    SP_CPUFUNC Pose randuPose(const double rmax, const double tmax) {
+        return getPose(randuRot(rmax), randuVec3(tmax, tmax, tmax));
     }
-
+    
     // random gauss
-    SP_CPUFUNC Pose randPoseGauss(const SP_REAL rsig, const SP_REAL tsig){
-        return getPose(randRotGauss(rsig), randVecGauss(tsig, tsig, tsig));
+    SP_CPUFUNC Pose randgPose(const double rmax, const double tmax){
+        return getPose(randgRot(rmax), randgVec3(tmax, tmax, tmax));
     }
 
     // update

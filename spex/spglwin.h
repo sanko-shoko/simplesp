@@ -19,8 +19,6 @@
 
 #include "GLFW/glfw3.h"
 
-#include "spex/spgltex.h"
-
 #include "spcore/spcore.h"
 
 #include <string>
@@ -35,6 +33,11 @@ namespace sp {
 
 #define GLFW_DOUBLECLICK 3
 
+#define GLFW_KEY_SHIFT (GLFW_KEY_LAST + 1)
+#define GLFW_KEY_CONTROL (GLFW_KEY_LAST + 2)
+#define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
+#define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
+
     class Mouse {
 
     public:
@@ -48,9 +51,9 @@ namespace sp {
         // scroll value
         double scroll;
 
-        // button
+        // button state
         int buttonL, buttonR, buttonM;
- 
+
         Mouse() {
             reset();
         }
@@ -60,6 +63,7 @@ namespace sp {
         }
 
         void setButton(const int button, const int action, const int mods) {
+
             int _action = action;
 
             if (_action == GLFW_PRESS) {
@@ -506,6 +510,16 @@ namespace sp {
             if (key < 0) return;
 
             m_key[key] = static_cast<char>(action);
+
+            if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+                m_key[GLFW_KEY_SHIFT] = action;
+            }
+            if (key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) {
+                m_key[GLFW_KEY_CONTROL] = action;
+            }
+            if (key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) {
+                m_key[GLFW_KEY_ALT] = action;
+            }
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {

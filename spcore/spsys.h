@@ -24,7 +24,6 @@
 namespace sp {
 
     class Timer {
-
     public:
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -48,21 +47,24 @@ namespace sp {
 #if defined(_WIN32) || defined(_WIN64)
             tpoint freq;
             QueryPerformanceFrequency(&freq);
-
             ms = static_cast<double>((tp1.QuadPart - tp0.QuadPart) * 1000.0 / freq.QuadPart);
 #else
             ms = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(tp1 - tp0).count() / 1000.0);
 #endif
             return (ms > 0) ? +ms : -ms;
         }
+
     private:
+
         tpoint tp[2];
 
     public:
+
         Timer() {
             tp[0] = now();
             tp[1] = tp[0];
         }
+
         Timer(const Timer &timer) {
             *this = timer;
         }
@@ -86,6 +88,7 @@ namespace sp {
         }
     };
 }
+
 
 //--------------------------------------------------------------------------------
 // resource

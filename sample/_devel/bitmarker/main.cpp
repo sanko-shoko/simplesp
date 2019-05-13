@@ -95,7 +95,7 @@ private:
         if (1 || m_ui.test) {
             m_bitMarker.execute(m_crntImg);
 
-            glLoadView3D(m_bitMarker.getCam(), m_viewPos, m_viewScale);
+            glLoadView3D(true, m_bitMarker.getCam(), m_viewPos, m_viewScale);
 
             for (int i = 0; i < m_bitMarker.size(); i++) {
                 if (m_bitMarker.getPose(i) == NULL) continue;
@@ -133,7 +133,7 @@ private:
 
             Pose pose;
             //if (calcBitMarkerArrayPose(pose, m_crntImg, getCamParam(m_crntImg.dsize), m_mrks) == true) {
-            //    glLoadView3D(getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
+            //    glLoadView3D(true, getCamParam(m_crntImg.dsize), m_viewPos, m_viewScale);
             //    glLoadMatrix(pose);
             //    glLineWidth(4.0f);
             //    glBegin(GL_LINES);

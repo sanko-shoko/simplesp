@@ -88,7 +88,7 @@ void sample(cv::Mat &cvimg, const int key){
                 const double norm = normVec(flow) / 50.0;
 
                 Col3 col;
-                cnvHSVToCol(col, getVec3(angle + SP_PI, minVal(1.0, norm), 1.0));
+                cnvHSVToCol(col, getVec3(angle + SP_PI, minval(1.0, norm), 1.0));
 
                 renderLine(img, pix0, pix1, col, 2);
             }

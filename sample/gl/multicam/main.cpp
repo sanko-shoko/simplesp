@@ -57,7 +57,7 @@ private:
             const int onum = 50;
             const double size = 200.0;
             for (int i = 0; i < onum; i++) {
-                const Vec3 pos = randVecUnif(size, 0.0, size) + getVec3(0.0, -1.0, 0.0);
+                const Vec3 pos = randuVec3(size, 0.0, size) + getVec3(0.0, -1.0, 0.0);
 
                 const Pose pose = invPose(getPose(invRot(getRotDirection(pos)), pos));
                 //const Pose pose = getPose(pos);
@@ -133,7 +133,7 @@ private:
                 if (nrm.z > 0.3) {
                     for (int k = 0; k < pnts.size(); k++) {
                         const double noise = 0.5;
-                        const Vec2 pix = mulCamD(cam, prjVec(pose * pnts[k])) + randVecGauss(noise, noise);
+                        const Vec2 pix = mulCamD(cam, prjVec(pose * pnts[k])) + randgVec2(noise, noise);
                      
                         tpixs.push(pix);
                         tobjs.push(getVec2(pnts[k].x, pnts[k].y));
@@ -164,7 +164,7 @@ private:
 
         // render model
         {
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
             glDisable(GL_DEPTH_TEST);
 
             {

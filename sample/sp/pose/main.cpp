@@ -24,7 +24,7 @@ int main(){
         printf("--------------------------------------------------------------------------------\n");
 
         // pose (camera <- object)
-        const Pose pose = getPose(randRotGauss(10.0 * SP_PI / 180), getVec3(0.0, 0.0, 400));
+        const Pose pose = getPose(randgRot(10.0 * SP_PI / 180), getVec3(0.0, 0.0, 400));
         print(pose);
 
 
@@ -32,7 +32,7 @@ int main(){
 
         // object coordinate
         for (int i = 0; i < 100; i++) {
-            objs.push(randVecGauss(20.0, 20.0, 20.0));
+            objs.push(randgVec3(20.0, 20.0, 20.0));
         }
 
         // camera coordinate
@@ -76,8 +76,8 @@ int main(){
         Mem1<Vec3> pnts_n = pnts;
         const double rate = 0.5;
         for (int i = 0; i < pixs.size(); i++) {
-            if (::fabs(randValUnif()) < rate) {
-                pnts_n[i] += randVecUnif(100, 100, 100);
+            if (::fabs(randu()) < rate) {
+                pnts_n[i] += randuVec3(100, 100, 100);
             }
         }
 
@@ -122,8 +122,8 @@ int main(){
         Mem1<Vec2> pixs_n = pixs;
         const double rate = 0.5;
         for (int i = 0; i < pixs.size(); i++) {
-            if (::fabs(randValUnif()) < rate) {
-                pixs_n[i] += randVecUnif(100, 100);
+            if (::fabs(randu()) < rate) {
+                pixs_n[i] += randuVec2(100, 100);
             }
         }
 

@@ -20,7 +20,7 @@ int main() {
         Mem1<Vec2> npxs0, npxs1;
 
         sp::srand(1);
-        Pose stereo = getPose(randRotUnif(5.0 * SP_PI / 180.0), getVec3(-10.0, 0.0, 0.0) + randVecGauss(0.1, 0.1, 0.1));
+        Pose stereo = getPose(randuRot(5.0 * SP_PI / 180.0), getVec3(-10.0, 0.0, 0.0) + randgVec3(0.1, 0.1, 0.1));
 
         // generate test data
         {
@@ -30,7 +30,7 @@ int main() {
             const Pose pose = getPose(getVec3(0.0, 0.0, 400));
 
             for (int i = 0; i < 10; i++){
-                objs.push(randVecGauss(20.0, 20.0, 20.0));
+                objs.push(randgVec3(20.0, 20.0, 20.0));
             }
 
             for (int i = 0; i < objs.size(); i++) {

@@ -193,7 +193,7 @@ private:
             glTexImg(m_img);
 
             // view 3D
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
             
             glLoadMatrix(m_pose);
             glRenderOutline(m_model);
@@ -202,7 +202,7 @@ private:
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glLoadView3D(m_rects[0].cam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_rects[0].cam, m_viewPos, m_viewScale);
 
             // render points
             glLoadMatrix(m_view);

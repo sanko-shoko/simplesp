@@ -966,7 +966,7 @@ namespace sp {
         }
         if (zlist.size() == 0) return 0.0;
 
-        const SP_REAL pnum = minVal(10.0, log2(zlist.size()));
+        const SP_REAL pnum = minval(10.0, log2(zlist.size()));
         const SP_REAL eval = pnum / 10.0;
         return eval;
     }

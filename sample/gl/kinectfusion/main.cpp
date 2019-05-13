@@ -104,7 +104,7 @@ private:
             glTexNormal<Byte>(*m_kfusion.getCast());
 
 
-            glLoadView3D(m_kfusion.getCam(), m_viewPos, m_viewScale);
+            glLoadView3D(true, m_kfusion.getCam(), m_viewPos, m_viewScale);
             glLoadMatrix(*m_kfusion.getPose());
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

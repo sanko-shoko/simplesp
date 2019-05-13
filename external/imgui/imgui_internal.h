@@ -660,7 +660,7 @@ struct ImGuiNextWindowData
     ImGuiSizeCallback       SizeCallback;
     void*                   SizeCallbackUserData;
     float                   BgAlphaVal;
-    ImVec2                  MenuBarOffsetMinVal;                // This is not exposed publicly, so we don't clear it.
+    ImVec2                  MenuBarOffsetminval;                // This is not exposed publicly, so we don't clear it.
 
     ImGuiNextWindowData()
     {
@@ -672,7 +672,7 @@ struct ImGuiNextWindowData
         SizeCallback = NULL;
         SizeCallbackUserData = NULL;
         BgAlphaVal = FLT_MAX;
-        MenuBarOffsetMinVal = ImVec2(0.0f, 0.0f);
+        MenuBarOffsetminval = ImVec2(0.0f, 0.0f);
     }
 
     void    Clear()
