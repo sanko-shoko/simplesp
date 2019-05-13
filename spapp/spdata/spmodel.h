@@ -359,7 +359,7 @@ namespace sp{
 
     SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size, const int xyz, const int nrm) {
         Mem1<Mesh3> model;
-        const SP_REAL hs = size * 0.5;
+        const double hs = size * 0.5;
         Vec3 a, b, c, d;
         switch(xyz){
         case 0:

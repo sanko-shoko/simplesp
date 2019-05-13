@@ -101,7 +101,7 @@ private:
         // render dataB
         {
             if (m_dataB.dim == 1) {
-                glLoadView3D(m_cam, m_viewPos, m_viewScale);
+                glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
                 glPointSize(5.f);
                 glBegin(GL_POINTS);
                 glColor3f(0.2f, 0.2f, 0.7f);
@@ -119,7 +119,7 @@ private:
 
         // render dataA
         {
-            glLoadView3D(m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
 
             glClear(GL_DEPTH_BUFFER_BIT);
             {

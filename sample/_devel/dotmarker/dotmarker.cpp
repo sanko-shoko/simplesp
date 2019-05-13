@@ -92,7 +92,7 @@ void DotMarkerGUI::display(){
 
     if (m_ui.dispSkip == true) return;
     if (m_dotMarker.getPose() != NULL){
-        glLoadView3D(m_dotMarker.getCam(), m_viewPos, m_viewScale);
+        glLoadView3D(true, m_dotMarker.getCam(), m_viewPos, m_viewScale);
 
         if (m_ui.dispModel == false && m_ui.useDiminish == false){
 

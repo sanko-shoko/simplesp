@@ -14,7 +14,7 @@
 #endif
 
 #if SP_USE_GLEW
-#include "spex/glutil.h"
+#include "spex/spglew.h"
 #endif
 
 #include "spex/spglutil.h"

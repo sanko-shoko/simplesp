@@ -5,7 +5,7 @@
 #ifndef __SP_GLUTIL_H__
 #define __SP_GLUTIL_H__
 
-#include "glutil.h"
+#include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
 
@@ -123,8 +123,9 @@ namespace sp {
 	}
 
     //--------------------------------------------------------------------------------
-    // load view
+    // load view 2d
     //--------------------------------------------------------------------------------
+    
     SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
@@ -222,17 +223,27 @@ namespace sp {
         glLoadView2D(cam.dsize, glGetViewMat(cam.dsize, viewPos, viewScale));
     }
 
-    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0){
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
 
+    //--------------------------------------------------------------------------------
+    // load view 3d
+    //--------------------------------------------------------------------------------
+
+#define GL_DEFAULT_NEAR 1.0
+#define GL_DEFAULT_FAR 10000.0
+
+    SP_CPUFUNC void glLoadView3D(const bool pers, const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = GL_DEFAULT_NEAR, const double farPlane = GL_DEFAULT_FAR){
         glEnable(GL_DEPTH_TEST);
 
         Mat mat = zeroMat(4, 4);
-        {
-            Vec2 cDispPos;
-            cDispPos.x = SP_CAST(viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale);
-            cDispPos.y = SP_CAST(viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale);
+
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        const Vec2 vcent = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
+        const Vec2 ccent = getVec2(cam.dsize[0] - 1, cam.dsize[1] - 1) * 0.5 - getVec2(cam.cx, cam.cy);
+        const Vec2 cdisp = viewPos + vcent - ccent * viewScale;
+      
+        if (pers == true) {
 
             const double nx = nearPlane / cam.fx;
             const double ny = nearPlane / cam.fy;
@@ -240,10 +251,10 @@ namespace sp {
             const double sw = (viewport[2] - 1) / viewScale;
             const double sh = (viewport[3] - 1) / viewScale;
 
-            const double l = (-cDispPos.x / viewScale) * nx;
-            const double r = (-cDispPos.x / viewScale + sw) * nx;
-            const double t = (-cDispPos.y / viewScale) * ny;
-            const double b = (-cDispPos.y / viewScale + sh) * ny;
+            const double l = (-cdisp.x / viewScale) * nx;
+            const double r = (-cdisp.x / viewScale + sw) * nx;
+            const double t = (-cdisp.y / viewScale) * ny;
+            const double b = (-cdisp.y / viewScale + sh) * ny;
             const double n = nearPlane;
             const double f = farPlane;
 
@@ -258,36 +269,17 @@ namespace sp {
 
             mat(3, 2) = SP_CAST(1.0);
         }
-
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(mat);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-    }
-
-    SP_CPUFUNC void glLoadView3DOrth(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = 1.0, const double farPlane = 10000.0) {
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        glEnable(GL_DEPTH_TEST);
-
-        Mat mat = zeroMat(4, 4);
-        {
-            Vec2 cDispPos;
-            cDispPos.x = SP_CAST(viewPos.x + (viewport[2] - 1) * 0.5 - ((cam.dsize[0] - 1) * 0.5 - cam.cx) * viewScale);
-            cDispPos.y = SP_CAST(viewPos.y + (viewport[3] - 1) * 0.5 - ((cam.dsize[1] - 1) * 0.5 - cam.cy) * viewScale);
-
+        else {
             const double nx = 1.0 / cam.fx;
             const double ny = 1.0 / cam.fy;
 
             const double sw = (viewport[2] - 1) / viewScale;
             const double sh = (viewport[3] - 1) / viewScale;
 
-            const double l = (-cDispPos.x / viewScale) * nx;
-            const double r = (-cDispPos.x / viewScale + sw) * nx;
-            const double t = (-cDispPos.y / viewScale) * ny;
-            const double b = (-cDispPos.y / viewScale + sh) * ny;
+            const double l = (-cdisp.x / viewScale) * nx;
+            const double r = (-cdisp.x / viewScale + sw) * nx;
+            const double t = (-cdisp.y / viewScale) * ny;
+            const double b = (-cdisp.y / viewScale + sh) * ny;
             const double n = nearPlane;
             const double f = farPlane;
 
@@ -309,31 +301,204 @@ namespace sp {
         glLoadIdentity();
     }
 
+    SP_CPUFUNC float glGetDepth(double zbf, bool orth, const double nearPlane = GL_DEFAULT_NEAR, const double farPlane = GL_DEFAULT_FAR) {
+        double d = 0.0;
+        if (orth == false) {
+            const double div = (farPlane - zbf * (farPlane - nearPlane));
+            if (div > 0.001) {
+                d = farPlane * nearPlane / div;
+            }
+        }
+        else {
+            const double p2 = 2.0 / (farPlane - nearPlane);
+            const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+            d = (zbf * 2 - 1 - p3) / p2;
+        }
+        return static_cast<float>((d > nearPlane && d < farPlane) ? d : 0.0);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // texture
+    //--------------------------------------------------------------------------------
+
+    class Texture {
+    private:
+
+        // texture id
+        GLuint m_id;
+
+        char *mem;
+
+    private:
+
+        void free() {
+            if (m_id > 0) {
+                glDeleteTextures(1, &m_id);
+            }
+            if (mem != NULL) {
+                delete[]mem;
+            }
+            reset();
+        }
+
+        void reset() {
+            memset(this, 0, sizeof(Texture));
+        }
+
+    public:
+
+        int ch;
+        int dsize[2];
+
+        Texture() {
+            reset();
+        }
+
+        ~Texture() {
+            free();
+        }
+
+        Texture(const Texture &tex) {
+            reset();
+            *this = tex;
+        }
+
+        template<typename TYPE>
+        Texture(const TYPE *img, const int *dsize) {
+            reset();
+            setimg(img, dsize);
+        }
+        template <typename TYPE>
+        Texture(const void *img, const int *dsize, const int ch) {
+            reset();
+            setimg(img, dsize, ch);
+        }
+
+        Texture& operator = (const Texture &tex) {
+            free();
+            setimg(tex.mem, tex.dsize, tex.ch);
+            return *this;
+        }
+
+        GLuint getid() {
+            return m_id;
+        }
+
+        template<typename TYPE>
+        bool setimg(const TYPE *img, const int *dsize) {
+            return setimg(img, dsize, sizeof(TYPE));
+        }
+        bool setimg(const void *img, const int *dsize, const int ch) {
+
+            int format;
+            switch (ch) {
+            case 1: format = GL_LUMINANCE; break;
+            case 3: format = GL_RGB; break;
+            case 4: format = GL_RGBA; break;
+            default: return false;
+            }
+
+            free();
+            this->dsize[0] = dsize[0];
+            this->dsize[1] = dsize[1];
+            this->ch = ch;
+
+            mem = new char[dsize[0] * dsize[1] * ch];
+            memcpy(mem, img, dsize[0] * dsize[1] * ch);
+
+            glGenTextures(1, &m_id);
+
+            glBindTexture(GL_TEXTURE_2D, m_id);
+
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, format, GL_UNSIGNED_BYTE, mem);
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            return (m_id > 0) ? true : false;
+        }
+    };
+
+
     //--------------------------------------------------------------------------------
     // util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glCircle(const Vec2 &pos, const double radius) {
-        glBegin(GL_LINE_LOOP);
-        for (int i = 0; i < 36; i++) {
+    SP_CPUFUNC void glCircle(const Vec2 &pos, const double radius, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        glBegin(type);
+
+        if (fill == true) {
+            sp::glVertex(pos);
+        }
+        for (int i = 0; i <= 36; i++) {
             const double p = i / 36.0 * 2.0 * SP_PI;
             glVertex(getVec2(pos.x + radius * sin(p), pos.y + radius * cos(p)));
         }
         glEnd();
     }
 
-    SP_CPUFUNC void glRect(const Rect &rect, const bool fill = false) {
-        if (rect.dim != 2) return;
-
-        const Vec2 a = getVec2(rect.dbase[0], rect.dbase[1]);
-        const Vec2 b = getVec2(rect.dbase[0] + rect.dsize[0] - 1, rect.dbase[1] + rect.dsize[1] - 1);
-
-        glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
-        glVertex(getVec2(a.x - 0.5, a.y - 0.5));
-        glVertex(getVec2(b.x + 0.5, a.y - 0.5));
-        glVertex(getVec2(b.x + 0.5, b.y + 0.5));
-        glVertex(getVec2(a.x - 0.5, b.y + 0.5));
+    template<typename VEC>
+    SP_CPUFUNC void glLine(const VEC &vtx0, const VEC &vtx1) {
+        glBegin(GL_LINES);
+        glVertex(vtx0);
+        glVertex(vtx1);
         glEnd();
+    }
+
+    template<typename VEC>
+    SP_CPUFUNC void glLine(const Mem1<VEC> &vtxs, const bool loop = false) {
+        for (int i = 0; i < vtxs.size(); i++) {
+            if (i == vtxs.size() - 1 && loop == false) break;
+            glLine(vtxs(i + 0, true), vtxs(i + 1, true));
+        }
+    }
+
+    SP_CPUFUNC void glRect(const Rect &rect, const double m = 0.5, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        if (rect.dim == 2) {
+            const Vec2 A = getVec2(rect.dbase[0] - m, rect.dbase[1] - m);
+            const Vec2 B = getVec2(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m);
+
+            glBegin(type);
+            glVertex(getVec2(A.x, A.y)); glVertex(getVec2(B.x, A.y)); glVertex(getVec2(B.x, B.y)); glVertex(getVec2(A.x, B.y));
+            glEnd();
+        }
+        if (rect.dim == 3) {
+            const Vec3 A = getVec3(rect.dbase[0] - m, rect.dbase[1] - m, rect.dbase[2] - m);
+            const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m, rect.dbase[2] + rect.dsize[2] - 1.0 + m);
+
+            glBegin(type);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+            glEnd();
+            glBegin(type);
+            glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glEnd();
+            
+            glBegin(type);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, A.z));
+            glEnd();
+            glBegin(type);
+            glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, A.z));
+            glEnd();
+            
+            glBegin(type);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(A.x, A.y, B.z));
+            glEnd();
+            glBegin(type);
+            glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, A.y, B.z));
+            glEnd();
+        }
     }
 
     SP_CPUFUNC void glMesh(const Mesh2 &mesh) {
@@ -349,17 +514,6 @@ namespace sp {
         glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
         glVertex(mesh.pos[1]);
-        glVertex(mesh.pos[2]);
-        glEnd();
-    }
-
-    SP_CPUFUNC void glMesh(const Mesh3 &mesh, const Vec3 *nrms) {
-        glBegin(GL_TRIANGLES);
-        glNormal(nrms[0]);
-        glVertex(mesh.pos[0]);
-        glNormal(nrms[1]);
-        glVertex(mesh.pos[1]);
-        glNormal(nrms[2]);
         glVertex(mesh.pos[2]);
         glEnd();
     }
@@ -432,27 +586,10 @@ namespace sp {
         }
         glEnd();
     }
-
-    SP_CPUFUNC void glLine(const Mem1<Vec2> &vtxs, const bool loop = false) {
-        glBegin(GL_LINES);
-        for (int i = 0; i < vtxs.size(); i++) {
-            if (i == vtxs.size() - 1 && loop == false) break;
-            glVertex(vtxs(i + 0, true));
-            glVertex(vtxs(i + 1, true));
-        }
-        glEnd();
-    }
-
-    SP_CPUFUNC void glModel(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
-        if (nrms.size() == 0) {
-            for (int i = 0; i < model.size(); i++) {
-                glMesh(model[i]);
-            }
-        }
-        else {
-            for (int i = 0; i < model.size(); i++) {
-                glMesh(model[i], &nrms[i * 3]);
-            }
+    
+    SP_CPUFUNC void glModel(const Mem1<Mesh3> &model) {
+        for (int i = 0; i < model.size(); i++) {
+            glMesh(model[i]);
         }
     }
 
@@ -461,7 +598,38 @@ namespace sp {
     // render
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model, const Mem1<Vec3> nrms = Mem1<Vec3>()) {
+    SP_CPUFUNC void renderRect(const sp::Rect &rect) {
+        glPushAttrib(GL_ENABLE_BIT);
+        {
+            const double m = 0.05;
+            const sp::Vec3 A = sp::getVec3(rect.dbase[0] - 0.5 - m, rect.dbase[1] - 0.5 - m, rect.dbase[2] - 0.5 - m);
+            const sp::Vec3 B = sp::getVec3(rect.dbase[0] + rect.dsize[0] - 0.5 + m, rect.dbase[1] + rect.dsize[1] - 0.5 + m, rect.dbase[2] + rect.dsize[2] - 0.5 + m);
+
+            glBegin(GL_LINE_LOOP);
+            sp::glVertex(sp::getVec3(A.x, A.y, A.z));
+            sp::glVertex(sp::getVec3(B.x, A.y, A.z));
+            sp::glVertex(sp::getVec3(B.x, B.y, A.z));
+            sp::glVertex(sp::getVec3(A.x, B.y, A.z));
+            glEnd();
+
+            glBegin(GL_LINE_LOOP);
+            sp::glVertex(sp::getVec3(A.x, A.y, B.z));
+            sp::glVertex(sp::getVec3(B.x, A.y, B.z));
+            sp::glVertex(sp::getVec3(B.x, B.y, B.z));
+            sp::glVertex(sp::getVec3(A.x, B.y, B.z));
+            glEnd();
+
+            glBegin(GL_LINES);
+            sp::glVertex(sp::getVec3(A.x, A.y, A.z)); sp::glVertex(sp::getVec3(A.x, A.y, B.z));
+            sp::glVertex(sp::getVec3(B.x, A.y, A.z)); sp::glVertex(sp::getVec3(B.x, A.y, B.z));
+            sp::glVertex(sp::getVec3(A.x, B.y, A.z)); sp::glVertex(sp::getVec3(A.x, B.y, B.z));
+            sp::glVertex(sp::getVec3(B.x, B.y, A.z)); sp::glVertex(sp::getVec3(B.x, B.y, B.z));
+            glEnd();
+        }
+        glPopAttrib();
+    }
+
+    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -477,7 +645,7 @@ namespace sp {
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glModel(model, nrms);
+            glModel(model);
         }
         glPopAttrib();
     }

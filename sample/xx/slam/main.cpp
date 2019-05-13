@@ -161,7 +161,7 @@ private:
         }
         {
             // view 3D
-            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
+            glLoadView3D(true, m_wcam, m_viewPos, m_viewScale);
 
             // render points
             {

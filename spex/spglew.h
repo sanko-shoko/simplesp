@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __GLUTIL_H__
-#define __GLUTIL_H__
+#ifndef __SPGLEW_H__
+#define __SPGLEW_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,138 +16,10 @@
 #if SP_USE_GLEW
 #define GLEW_STATIC
 #include "GL/glew.h"
-#endif
 
 #include "GLFW/glfw3.h"
 
-//--------------------------------------------------------------------------------
-// texture
-//--------------------------------------------------------------------------------
-
 namespace sp {
-
-    class Texture {
-    private:
-
-        // texture id
-        GLuint id;
-
-        char *mem;
-
-    private:
-        void free() {
-            if (id > 0) {
-                glDeleteTextures(1, &id);
-            }
-            if (mem != NULL) {
-                delete[]mem;
-            }
-            reset();
-        }
-        void reset() {
-            memset(this, 0, sizeof(Texture));
-        }
-
-
-    public:
-
-        int ch;
-        int dsize[2];
-
-        Texture() {
-            reset();
-        }
-
-        ~Texture() {
-            free();
-        }
-
-        Texture(const Texture &tex) {
-            reset();
-            *this = tex;
-        }
-
-        template<typename TYPE>
-        Texture(const TYPE *img, const int *dsize) {
-            reset();
-            setimg(img, dsize);
-        }
-        template <typename TYPE>
-        Texture(const void *img, const int *dsize, const int ch) {
-            reset();
-            setimg(img, dsize, ch);
-        }
-
-        Texture& operator = (const Texture &tex) {
-            free();
-            setimg(tex.mem, tex.dsize, tex.ch);
-            return *this;
-        }
-
-        GLuint getid() {
-            return id;
-        }
-
-        template<typename TYPE>
-        bool setimg(const TYPE *img, const int *dsize) {
-            return setimg(img, dsize, sizeof(TYPE));
-        }
-        bool setimg(const void *img, const int *dsize, const int ch) {
-
-            int format;
-            switch (ch) {
-            case 1: format = GL_LUMINANCE; break;
-            case 3: format = GL_RGB; break;
-            case 4: format = GL_RGBA; break;
-            default: return false;
-            }
-
-            free();
-            this->dsize[0] = dsize[0];
-            this->dsize[1] = dsize[1];
-            this->ch = ch;
-
-            mem = new char[dsize[0] * dsize[1] * ch];
-            memcpy(mem, img, dsize[0] * dsize[1] * ch);
-
-            glGenTextures(1, &id);
-
-            glBindTexture(GL_TEXTURE_2D, id);
-
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, format, GL_UNSIGNED_BYTE, mem);
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-
-            return (id > 0) ? true : false;
-        }
-    };
-
-    static float glGetDepth(double zbf, bool orth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
-        double d = 0.0;
-        if (orth == false) {
-            const double div = (farPlane - zbf * (farPlane - nearPlane));
-            if (div > 0.001) {
-                d = farPlane * nearPlane / div;
-            }
-        }
-        else {
-            const double p2 = 2.0 / (farPlane - nearPlane);
-            const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
-            d = (zbf * 2 - 1 - p3) / p2;
-        }
-        return static_cast<float>((d > nearPlane && d < farPlane) ? d : 0.0);
-    }
-
-#if SP_USE_GLEW
-
 
     class VertexBufferObject {
 
@@ -610,7 +482,7 @@ namespace sp {
         }
 
     };
-#endif
 }
+#endif
 
 #endif
