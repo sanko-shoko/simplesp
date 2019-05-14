@@ -138,7 +138,7 @@ private:
 
         // render model
         if(m_mode >= 0){
-            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(m_cam, m_viewPos, m_viewScale);
 
             glLoadMatrix(m_est);
 
