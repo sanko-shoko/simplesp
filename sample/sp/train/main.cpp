@@ -47,7 +47,7 @@ void mnist(const char *path) {
 
             model.train(X, T);
 
-            printf("\r%02d train [%s] ", e, progressBar((i + batch), trainImages.size()));
+            printf("\r%02d train [%s] ", e, progress((i + batch), trainImages.size()));
             fflush(stdout);
         }
 
@@ -105,7 +105,7 @@ void cifar(const char *path) {
 
             model.train(X, T);
 
-            printf("\r%02d train [%s] ", e, progressBar((i + batch), trainImages.size()));
+            printf("\r%02d train [%s] ", e, progress((i + batch), trainImages.size()));
             fflush(stdout);
         }
 

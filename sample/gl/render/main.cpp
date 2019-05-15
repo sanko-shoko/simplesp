@@ -166,9 +166,12 @@ private:
 
 
 int main(){
+    char *src = "あいうえお";
+    char dst[256];
 
+    strcode(dst, src, SP_SJIS_TO_UTF8);
     RenderGUI win;
-    win.execute("render", 800, 600);
+    win.execute(dst, 800, 600);
 
     return 0;
 }

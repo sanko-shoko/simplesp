@@ -67,4 +67,4 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
 add_subdirectory(external)
 add_subdirectory(sample)
-
+add_subdirectory(test)

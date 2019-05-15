@@ -6,7 +6,6 @@
 #define __SP_FILE_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spstr.h"
 #include "spapp/spdata/spformat.h"
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -48,7 +47,12 @@ namespace sp {
     SP_CPUFUNC bool cmpFileExt(const char *path, const char *ext) {
         if (ext == NULL) return false;
 
-        Mem1<string> exts = strSplit(ext);
+        Mem1<string> exts;
+        for (int i = 0; ; i++) {
+            char str[256];
+            if (split(str, ext, i) == false) break;
+            exts.push(str);
+        }
 
         bool ret = false;
 

@@ -92,15 +92,6 @@ namespace sp {
         return (val != 0.0) ? mulVec3(vec, 1.0 / val) : vec;
     }
 
-    // compare
-    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const double t = SP_SMALL) {
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
-    }
-    // compare
-    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const double t = SP_SMALL) {
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
-    }
-
 
     //--------------------------------------------------------------------------------
     // vector operator
@@ -245,6 +236,7 @@ namespace sp {
         return getVec3(vec.x, vec.y, 1.0);
     }
 
+    // square
     SP_GENFUNC SP_REAL sqVec(const Vec2 &vec) {
         return dotVec(vec, vec);
     }

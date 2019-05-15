@@ -219,7 +219,9 @@ namespace sp {
                 }
             }
             for (int s = 0; s < pynum; s++) {
-                SP_HOLDER_SET(strFormat("pyimg%d", s).c_str(), imgsets[s].img);
+                char str[SP_STRMAX];
+                sprintf(str, "pyimg%d", s);
+                SP_HOLDER_SET(str, imgsets[s].img);
             }
         }
 

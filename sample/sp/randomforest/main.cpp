@@ -84,7 +84,7 @@ void classification(const char *path) {
     const int treeNum = 80;
     for (int i = 0; i < treeNum; i++) {
         rf.train(trainImages, trainLabels);
-        printf("\rtrain [%s] ", progressBar(i, treeNum));
+        printf("\rtrain [%s] ", progress(i, treeNum));
     }
     printf("\n");
 

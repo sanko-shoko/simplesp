@@ -19,12 +19,12 @@ namespace sp {
         SP_PRINTF("%d", val);
     }
 
-    SP_CPUFUNC void _print(const SP_REAL val) {
+    SP_CPUFUNC void _print(const double val) {
         SP_PRINTF("%g", val);
     }
 
     SP_CPUFUNC void _print(const Cmp &cmp) {
-        SP_PRINTF("[ %+.5lf, %+.5lf ]", cmp.re, cmp.im);
+        SP_PRINTF("[ %+.5lf, %+.5lf ]", static_cast<double>(cmp.re), static_cast<double>(cmp.im));
     }
     SP_CPUFUNC void print(const Cmp &cmp) {
         SP_PRINTF("Cmp ");
@@ -134,6 +134,7 @@ namespace sp {
         _print(mesh);
         SP_PRINTF("\n");
     }
+
     SP_CPUFUNC void _print(const Mesh3 &mesh) {
         SP_PRINTF("[ ");
         _print(mesh.pos[0]);
@@ -186,11 +187,12 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
-    SP_CPUFUNC void print(const SP_REAL *mat, const int rows, const int cols) {
+    template<typename TYPE>
+    SP_CPUFUNC void print(const TYPE *mat, const int rows, const int cols) {
         SP_PRINTF("Mat %d %d [\n", rows, cols);
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
-                SP_PRINTF("%g ", mat[r * cols + c]);
+                SP_PRINTF("%g ", static_cast<double>(mat[r * cols + c]));
             }
             SP_PRINTF("\n");
         }
@@ -229,24 +231,11 @@ namespace sp {
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void print(const TYPE &data, const char *name) {
+    SP_CPUFUNC void print(const char *name, const TYPE &data) {
         SP_PRINTF("%s ", name);
         print(data);
     }
 
-    //--------------------------------------------------------------------------------
-    // util
-    //--------------------------------------------------------------------------------
-
-    SP_CPUFUNC char* progressBar(const double crnt, const double size){
-        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
-
-        static char bar[11] = { 0 };
-        for (int i = 0; i < 10; i++){
-            bar[i] = (i <= 10 * rate) ? '>' : '-';
-        }
-        return bar;
-    }
 }
 
 #endif

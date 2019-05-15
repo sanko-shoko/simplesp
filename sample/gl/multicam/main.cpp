@@ -151,7 +151,6 @@ private:
                 //    renderPoint(img, tpixs[k], BYTE(255), 1);
                 //}
 
-                //saveBMP(strFormat("test%d_%d.bmp", i, j).c_str(), img);
             }
 
             pixs.push(spixs);

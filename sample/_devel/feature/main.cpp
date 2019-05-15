@@ -156,7 +156,11 @@ private:
         }
         {
             const int s = m_ival;
-            const Mem2<Byte> *pyimg = SP_HOLDER_GET(strFormat("pyimg%d", s).c_str(), Mem2<Byte>);
+
+            char str[256];
+            sprintf(str, "pyimg%d", s);
+
+            const Mem2<Byte> *pyimg = SP_HOLDER_GET(str, Mem2<Byte>);
             const Mem1<CFBlob::MyFtr> *myftrs1 = SP_HOLDER_GET("myftrs1", Mem1<CFBlob::MyFtr>);
             const Mem1<CFBlob::MyFtr> *myftrs2 = SP_HOLDER_GET("myftrs2", Mem1<CFBlob::MyFtr>);
             const Mem1<CFBlob::MyFtr> *myftrs3 = SP_HOLDER_GET("myftrs3", Mem1<CFBlob::MyFtr>);

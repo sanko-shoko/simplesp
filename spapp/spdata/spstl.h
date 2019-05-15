@@ -6,7 +6,6 @@
 #define __SP_STL_H__
 
 #include "spapp/spdata/spfile.h"
-#include "spapp/spdata/spstr.h"
 
 namespace sp{
 
