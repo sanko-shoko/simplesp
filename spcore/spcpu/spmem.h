@@ -14,11 +14,6 @@ namespace sp{
     // mem base class 
     //--------------------------------------------------------------------------------
 
-    enum MEMORY_TYPE{
-        MEMORY_NEW = 0, 
-        MEMORY_MAL = 1
-    };
-
     template<typename TYPE> class Mem : public ExPtr<TYPE>{
 
     protected:
@@ -26,21 +21,19 @@ namespace sp{
         // memory size
         int msize;
 
-        // memory type
-        MEMORY_TYPE mtype;
-
-        void init(TYPE *ptr, const int dim, const int *dsize, const int msize, const MEMORY_TYPE mtype){
+        void init(TYPE *ptr, const int dim, const int *dsize, const int msize){
             this->ptr = ptr;
-            this->dim = dim;
-            this->msize = msize;
-            this->mtype = mtype;
 
-            const int _dsize[SP_DIMMAX] = { 0 };
-            setMem(this->dsize, dim, (dsize != NULL) ? dsize : _dsize);
+            this->dim = dim;
+            for (int i = 0; i < SP_DIMMAX; i++) {
+                this->dsize[i] = (i < dim && dsize != NULL) ? dsize[i] : 0;
+            }
+
+            this->msize = msize;
         }
 
         void reset(){
-            init(NULL, 0, NULL, 0, MEMORY_TYPE::MEMORY_NEW);
+            init(NULL, 0, NULL, 0);
         }
 
         void free(){
@@ -49,7 +42,7 @@ namespace sp{
         }
 
         void move(Mem<TYPE> &mem){
-            init(mem.ptr, mem.dim, mem.dsize, mem.msize, mem.mtype);
+            init(mem.ptr, mem.dim, mem.dsize, mem.msize);
             mem.reset();
         }
         
@@ -58,10 +51,7 @@ namespace sp{
 
             if (msize > this->msize) {
                 this->msize = msize;
-                switch (this->mtype) {
-                case MEMORY_TYPE::MEMORY_NEW: this->ptr = new TYPE[msize]; break;
-                case MEMORY_TYPE::MEMORY_MAL: this->ptr = static_cast<TYPE*>(::malloc(sizeof(TYPE) * msize)); break;
-                }
+                this->ptr = new TYPE[msize];
             }
 
             if (cpy != NULL) {
@@ -85,10 +75,6 @@ namespace sp{
         
         Mem() {
             reset();
-        }
-
-        Mem(const MEMORY_TYPE mtype) {
-            init(NULL, 0, NULL, 0, mtype);
         }
 
         Mem(const int dim, const int *dsize = NULL, const void *cpy = NULL){
@@ -172,10 +158,6 @@ namespace sp{
             memset(this->ptr, 0, size() * sizeof(TYPE));
         }
 
-        void set(const MEMORY_TYPE mtype) {
-            this->mtype = mtype;
-        }
-
     };
 
 
@@ -204,9 +186,6 @@ namespace sp{
         // constructor
         //--------------------------------------------------------------------------------
 
-        Mem1(const MEMORY_TYPE mtype) : Mem<TYPE>(mtype){
-        }
-        
         Mem1(const Mem1<TYPE> &mem) : Mem<TYPE>(){
             resize(mem.dsize, mem.ptr);
         }

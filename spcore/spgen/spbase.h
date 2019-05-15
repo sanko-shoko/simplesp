@@ -103,8 +103,8 @@ namespace sp{
     // compare
     //--------------------------------------------------------------------------------
 
-    // check nearly equal
-    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = SP_SMALL){
+    // compare
+    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-10){
         return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 
@@ -119,6 +119,15 @@ namespace sp{
     SP_GENFUNC bool cmpSize(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1){
         if (mem0.dim != mem1.dim) return false;
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
+    }
+
+    // compare
+    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const double t = 1.0e-10) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
+    }
+    // compare
+    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const double t = 1.0e-10) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
     }
 
 

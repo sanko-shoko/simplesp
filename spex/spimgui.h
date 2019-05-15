@@ -76,7 +76,8 @@ namespace ImGui {
             ImGui::PopItemWidth();
         }
     };
-#define ImGuiItemWidth(WIDTH) ImGui::ItemWidth __itemWidth(WIDTH);
+
+#define IMGUI_ITEMWIDTH(WIDTH) ImGui::ItemWidth _itemWidth(WIDTH);
 
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
     using namespace sp;

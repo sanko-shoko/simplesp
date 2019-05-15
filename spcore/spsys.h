@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------
+﻿//--------------------------------------------------------------------------------
 // Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
@@ -124,6 +124,7 @@ namespace sp {
     }
 }
 
+
 //--------------------------------------------------------------------------------
 // file util
 //--------------------------------------------------------------------------------
@@ -135,14 +136,12 @@ namespace sp {
 #include <direct.h>
 
 #elif defined(__APPLE__)
-#include <dlfcn.h>
-#include <dirent.h>
 #include <sys/stat.h>
+#include <dlfcn.h>
 #include <unistd.h>
 #include <libgen.h>
 
 #else
-#include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -162,7 +161,7 @@ namespace sp {
     }
 
     static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
-        char buff[4][SP_STRMAX] = { 0 };
+        char buff[4][512] = { 0 };
 #if defined(_WIN32) || defined(_WIN64)
         _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
 #else
@@ -171,9 +170,9 @@ namespace sp {
     }
 
     static char* getCrntDir() {
-        static char dir[SP_STRMAX] = { 0 };
+        static char dir[512] = { 0 };
 #if defined(_WIN32) || defined(_WIN64)
-        GetCurrentDirectory(SP_STRMAX, dir);
+        GetCurrentDirectory(512, dir);
 #else
         getcwd(dir, SP_STRMAX);
 #endif
@@ -181,7 +180,7 @@ namespace sp {
     }
 
     static char* getModulePath() {
-        static char path[SP_STRMAX] = { 0 };
+        static char path[512] = { 0 };
 #if defined(_WIN32) || defined(_WIN64)
         GetModuleFileName(NULL, path, MAX_PATH);
         
@@ -198,14 +197,14 @@ namespace sp {
     }
 
     static char* getModuleDir() {
-        static char dir[SP_STRMAX] = { 0 };
+        static char dir[512] = { 0 };
         const char *path = getModulePath();
         splitPath(NULL, dir, NULL, NULL, path);
         return dir[0] != 0 ? dir : NULL;;
     }
 
     static char* getModuleName() {
-        static char name[SP_STRMAX] = { 0 };
+        static char name[512] = { 0 };
         const char *path = getModulePath();
         splitPath(NULL, NULL, name, NULL, path);
         return name[0] != 0 ? name : NULL;;
@@ -213,7 +212,80 @@ namespace sp {
 
 }
 
-#endif
+
+//--------------------------------------------------------------------------------
+// thread
+//--------------------------------------------------------------------------------
+
+#include <thread>
+#include <mutex>
+
+namespace sp {
+
+    SP_CPUFUNC void sleep(const long long ms) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    }
+
+    class Thread {
+    private:
+        bool m_used;
+        std::mutex m_mtx;
+
+    public:
+        Thread() {
+            m_used = false;
+        }
+
+        bool used() {
+            return m_used;
+        }
+
+        template<class Class, void (Class::*Func)()>
+        bool run(Class *ptr, const bool wait = true) {
+            if (wait == false && m_used == true) return false;
+
+            std::thread th([this, ptr, wait] {
+                m_mtx.lock();
+                m_used = true;
+                (ptr->*Func)();
+                m_used = false;
+                m_mtx.unlock();
+            });
+            th.detach();
+            return true;
+        }
+
+        bool run(std::function<void()> func, const bool wait = true) {
+            if (wait == false && m_used == true) return false;
+
+            std::thread th([this, func, wait] {
+                m_mtx.lock();
+                m_used = true;
+                func();
+                m_used = false;
+                m_mtx.unlock();
+            });
+            th.detach();
+            return true;
+        }
+
+        bool run(void (*func)(), const bool wait = true) {
+            if (wait == false && m_used == true) return false;
+
+            std::thread th([this, func, wait] {
+                m_mtx.lock();
+                m_used = true;
+                func();
+                m_used = false;
+                m_mtx.unlock();
+            });
+            th.detach();
+            return true;
+        }
+    };
+}
+
+#endif //SP_USE_SYS
 
 #endif
 

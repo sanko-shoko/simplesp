@@ -6,7 +6,6 @@
 #define __SP_PLY_H__
 
 #include "spapp/spdata/spfile.h"
-#include "spapp/spdata/spstr.h"
 
 namespace sp{
 
@@ -53,6 +52,18 @@ namespace sp{
                 col = vtx.col;
             }
         };
+        SP_CPUFUNC Mem1<string> strSplit(const char *str, const char *tok = " ,\t\n\r") {
+            Mem1<string> dst;
+            Mem1<char> buf(static_cast<int>(strlen(str) + 1), str);
+
+            const char *ret = strtok(buf.ptr, tok);
+            while (ret) {
+                dst.push(ret);
+                ret = strtok(NULL, tok);
+            }
+
+            return dst;
+        }
 
         SP_CPUFUNC bool loadHeader(File &file, Mem1<Element> &elems){
             elems.clear();

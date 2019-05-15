@@ -8,10 +8,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spwrap.h"
-
 #include "spcore/spprint.h"
-#include "spcore/spsys.h"
-#include "spcore/spdebug.h"
 
 // gen
 #include "spcore/spgen/spbase.h"
@@ -27,5 +24,10 @@
 #include "spcore/spcpu/spmop.h"
 #include "spcore/spcpu/spsolve.h"
 #include "spcore/spcpu/spstat.h"
+#include "spcore/spcpu/spstr.h"
+
+#include "spcore/spsys.h"
+#include "spcore/spdebug.h"
+
 
 #endif

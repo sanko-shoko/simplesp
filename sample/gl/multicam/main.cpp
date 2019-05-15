@@ -151,7 +151,6 @@ private:
                 //    renderPoint(img, tpixs[k], BYTE(255), 1);
                 //}
 
-                //saveBMP(strFormat("test%d_%d.bmp", i, j).c_str(), img);
             }
 
             pixs.push(spixs);
@@ -164,7 +163,7 @@ private:
 
         // render model
         {
-            glLoadView3D(true, m_cam, m_viewPos, m_viewScale);
+            glLoadView3D(m_cam, m_viewPos, m_viewScale);
             glDisable(GL_DEPTH_TEST);
 
             {

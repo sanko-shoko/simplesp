@@ -228,10 +228,13 @@ namespace sp {
     // load view 3d
     //--------------------------------------------------------------------------------
 
-#define GL_DEFAULT_NEAR 1.0
-#define GL_DEFAULT_FAR 10000.0
+    // default near 
+#define SP_DEFAULT_NEAR 1.0
 
-    SP_CPUFUNC void glLoadView3D(const bool pers, const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = GL_DEFAULT_NEAR, const double farPlane = GL_DEFAULT_FAR){
+    // default far
+#define SP_DEFAULT_FAR 10000.0
+
+    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR, const bool pers = true){
         glEnable(GL_DEPTH_TEST);
 
         Mat mat = zeroMat(4, 4);
@@ -301,7 +304,7 @@ namespace sp {
         glLoadIdentity();
     }
 
-    SP_CPUFUNC float glGetDepth(double zbf, bool orth, const double nearPlane = GL_DEFAULT_NEAR, const double farPlane = GL_DEFAULT_FAR) {
+    SP_CPUFUNC float glGetDepth(double zbf, bool orth, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
         double d = 0.0;
         if (orth == false) {
             const double div = (farPlane - zbf * (farPlane - nearPlane));
@@ -461,6 +464,13 @@ namespace sp {
             if (i == vtxs.size() - 1 && loop == false) break;
             glLine(vtxs(i + 0, true), vtxs(i + 1, true));
         }
+    }
+
+    SP_CPUFUNC void glCross(const Vec2 &vtx, const double size) {
+        glBegin(GL_LINES);
+        glVertex(vtx + getVec2(0.0, +size)); glVertex(vtx + getVec2(0.0, -size));
+        glVertex(vtx + getVec2(+size, 0.0)); glVertex(vtx + getVec2(-size, 0.0));
+        glEnd();
     }
 
     SP_CPUFUNC void glRect(const Rect &rect, const double m = 0.5, const bool fill = false) {

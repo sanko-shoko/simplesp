@@ -62,7 +62,9 @@ int main() {
         for (int i = 0; i < 2; i++) {
             remap<Col3, Byte>(rimgs[i], imgs[i], tables[i]);
 
-            saveBMP(strFormat("rect%d.bmp", i).c_str(), rimgs[i]);
+            char str[512];
+            sprintf(str, "rect%d.bmp", i);
+            saveBMP(str, rimgs[i]);
         }
     }
 

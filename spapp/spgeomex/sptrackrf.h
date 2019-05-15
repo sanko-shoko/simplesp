@@ -68,11 +68,11 @@ namespace sp{
             for (int i = 0; i < gnum; i++) {
 #if SP_USE_OMP
                 if (omp_get_thread_num() == 0) {
-                    printf("\rtrain [%s] ", progressBar(i, gnum / omp_get_num_threads()));
+                    printf("\rtrain [%s] ", progress(i, gnum / omp_get_num_threads()));
                 }
                 fflush(stdout);
 #else
-                printf("\rtrain [%s] ", progressBar(i, gnum));
+                printf("\rtrain [%s] ", progress(i, gnum));
                 fflush(stdout);
 #endif
 
