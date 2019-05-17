@@ -52,18 +52,6 @@ namespace sp{
                 col = vtx.col;
             }
         };
-        SP_CPUFUNC Mem1<string> strSplit(const char *str, const char *tok = " ,\t\n\r") {
-            Mem1<string> dst;
-            Mem1<char> buf(static_cast<int>(strlen(str) + 1), str);
-
-            const char *ret = strtok(buf.ptr, tok);
-            while (ret) {
-                dst.push(ret);
-                ret = strtok(NULL, tok);
-            }
-
-            return dst;
-        }
 
         SP_CPUFUNC bool loadHeader(File &file, Mem1<Element> &elems){
             elems.clear();
@@ -72,22 +60,20 @@ namespace sp{
 
             char line[SP_STRMAX];
             while (file.gets(line)){
-                Mem1<string> words = strSplit(line);
-                
-                if (words[0] == "end_header") break;
+                if (split(line, 0) == "end_header") break;
 
-                if (words[0] == "element"){
+                if (split(line, 0) == "element"){
                     Element elem;
 
-                    elem.name = words[1];
-                    elem.num = atoi(words[2].c_str());
+                    elem.name = split(line, 1);
+                    elem.num = atoi(split(line, 2).c_str());
 
                     elems.push(elem);
                     pElem = &elems[elems.size() - 1];
                 }
 
-                if (words[0] == "property" && pElem){
-                    pElem->prop.push(words[words.size() - 1]);
+                if (split(line, 0) == "property" && pElem){
+                    pElem->prop.push(split(line, -1));
                 }
             }
 
@@ -110,10 +96,8 @@ namespace sp{
         SP_CPUFUNC Vertex getVtx(const char *line, const Element &elem){
             Vertex vtx;
 
-            const Mem1<string> words = strSplit(line);
-
             for (int p = 0; p < elem.prop.size(); p++){
-                const SP_REAL val = atof(words[p].c_str());
+                const SP_REAL val = atof(split(line, p).c_str());
 
                 if (elem.prop[p] == "x") vtx.pos.x = val;
                 if (elem.prop[p] == "y") vtx.pos.y = val;
@@ -130,10 +114,8 @@ namespace sp{
         SP_CPUFUNC Mem1<int> getIdx(const char *line, const Element &elem){
             Mem1<int> idx;
 
-            const Mem1<string> words = strSplit(line);
-
-            for (int i = 0; i < atoi(words[0].c_str()); i++){
-                idx.push(atoi(words[i + 1].c_str()));
+            for (int i = 0; i < atoi(split(line, 0).c_str()); i++){
+                idx.push(atoi(split(line, i + 1).c_str()));
             }
 
             return idx;
