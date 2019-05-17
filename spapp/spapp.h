@@ -71,5 +71,6 @@
 
 // util
 #include "spapp/sptool.h"
+#include "spapp/sppath.h"
 
 #endif

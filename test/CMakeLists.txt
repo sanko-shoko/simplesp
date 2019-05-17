@@ -5,5 +5,5 @@
     set_target_properties(${name} PROPERTIES FOLDER "test")
 endfunction()
 
-make_test(test_str)
+make_test(test_basic)
 

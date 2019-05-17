@@ -124,101 +124,13 @@ namespace sp {
     }
 }
 
-
-//--------------------------------------------------------------------------------
-// file util
-//--------------------------------------------------------------------------------
-
-#include <stdlib.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-#include <direct.h>
-
-#elif defined(__APPLE__)
-#include <sys/stat.h>
-#include <dlfcn.h>
-#include <unistd.h>
-#include <libgen.h>
-
-#else
-#include <sys/stat.h>
-#include <unistd.h>
-#include <libgen.h>
-#endif
-
-
-namespace sp {
-
-    static int makeDir(const char *dir) {
-        int ret = 0;
-#if defined(_WIN32) || defined(_WIN64)
-        ret = _mkdir(dir);
-#else
-        ret = mkdir(dir, 0755);
-#endif
-        return ret;
-    }
-
-    static void splitPath(char *drive, char *dir, char *name, char *ext, const char *path) {
-        char buff[4][512] = { 0 };
-#if defined(_WIN32) || defined(_WIN64)
-        _splitpath(path, drive ? drive : buff[0], dir ? dir : buff[1], name ? name : buff[2], ext ? ext : buff[3]);
-#else
-        
-#endif
-    }
-
-    static char* getCrntDir() {
-        static char dir[512] = { 0 };
-#if defined(_WIN32) || defined(_WIN64)
-        GetCurrentDirectory(512, dir);
-#else
-        getcwd(dir, SP_STRMAX);
-#endif
-        return dir[0] != 0 ? dir : NULL;
-    }
-
-    static char* getModulePath() {
-        static char path[512] = { 0 };
-#if defined(_WIN32) || defined(_WIN64)
-        GetModuleFileName(NULL, path, MAX_PATH);
-        
-#elif defined(__APPLE__)
-        Dl_info module_info;
-        if (dladdr(reinterpret_cast<void*>(getModulePath), &module_info) != 0) {
-            strcpy(path, module_info.dli_fname);
-        }
-
-#else
-        //readlink("/proc/self/exe", path, sizeof(path) - 1);
-#endif
-        return path[0] != 0 ? path : NULL;
-    }
-
-    static char* getModuleDir() {
-        static char dir[512] = { 0 };
-        const char *path = getModulePath();
-        splitPath(NULL, dir, NULL, NULL, path);
-        return dir[0] != 0 ? dir : NULL;;
-    }
-
-    static char* getModuleName() {
-        static char name[512] = { 0 };
-        const char *path = getModulePath();
-        splitPath(NULL, NULL, name, NULL, path);
-        return name[0] != 0 ? name : NULL;;
-    }
-
-}
-
-
 //--------------------------------------------------------------------------------
 // thread
 //--------------------------------------------------------------------------------
 
 #include <thread>
 #include <mutex>
+#include <functional>
 
 namespace sp {
 

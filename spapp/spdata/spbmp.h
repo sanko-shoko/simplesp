@@ -7,11 +7,12 @@
 
 #include "spapp/spdata/spfile.h"
 #include "spapp/spimg/spimg.h"
+#include "spapp/sppath.h"
 
 namespace sp{
 
     SP_CPUFUNC bool loadBMP(const char *path, Mem<Col3> &dst){
-        if (cmpFileExt(path, "bmp, BMP") == false) return false;
+        if (extcmp(path, "bmp, BMP") == false) return false;
 
         File file;
         if (file.open(path, "rb") == false) return false;

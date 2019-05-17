@@ -14,17 +14,9 @@
 
 #endif
 
+#include <string>
+
 namespace sp{
-
-    SP_CPUFUNC char* progress(const double crnt, const double size) {
-        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
-
-        static char bar[11] = { 0 };
-        for (int i = 0; i < 10; i++) {
-            bar[i] = (i <= 10 * rate) ? '>' : '-';
-        }
-        return bar;
-    }
 
     SP_CPUFUNC bool split(char *dst, const char *src, const int x, const char *tok = " ,\t\n\r"){
         char *buf = new char[static_cast<int>(::strlen(src) + 1)];
@@ -55,11 +47,26 @@ namespace sp{
         }
 
         delete[]buf;
+        return (ret != NULL) ? true : false;
+    }
+    
+    SP_CPUFUNC std::string split(const char *src, const int x, const char *tok = " ,\t\n\r") {
+        std::string ret;
+
+        char *buf = new char[static_cast<int>(::strlen(src) + 1)];
+        if (split(buf, src, x, tok) == true) {
+            ret = buf;
+        }
+        delete[]buf;
+
         return ret;
     }
 
+    //--------------------------------------------------------------------------------
+    // code
+    //--------------------------------------------------------------------------------
 
-    bool _convSJIStoUTF8(char *dst, char *src) {
+    SP_CPUFUNC bool _convSJIStoUTF8(char *dst, char *src) {
         bool ret = false;
 
         int size = 0;
@@ -108,7 +115,26 @@ namespace sp{
     }
 
 
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
 
+    SP_CPUFUNC char* progress(const double crnt, const double size) {
+        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
+
+        static char bar[11] = { 0 };
+        for (int i = 0; i < 10; i++) {
+            bar[i] = (i <= 10 * rate) ? '>' : '-';
+        }
+        return bar;
+    }
+
+    SP_CPUFUNC std::string tstamp(const char *format = "%Y%m%d_%H%M%S") {
+        char str[SP_STRMAX];
+        time_t t = time(NULL);
+        strftime(str, sizeof(str), format, localtime(&t));
+        return std::string(str);
+    }
 
 }
 #endif
