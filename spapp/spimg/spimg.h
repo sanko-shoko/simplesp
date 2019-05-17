@@ -15,7 +15,7 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL dscale0, const SP_REAL dscale1){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -40,7 +40,7 @@ namespace sp{
     
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -49,7 +49,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const SP_REAL dscale0, const SP_REAL dscale1) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -73,7 +73,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -88,7 +88,7 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void pyrdown(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE>*>(&dst) != &src) ? src : clone(src);
 
@@ -149,7 +149,7 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect &rect, const SP_REAL angle = 0.0){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -192,8 +192,8 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void merge(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const bool horizon = true){
-        SP_ASSERT(isValid(2, src0));
-        SP_ASSERT(isValid(2, src1));
+        SP_ASSERT(isValid(src0, 2));
+        SP_ASSERT(isValid(src1, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
@@ -223,8 +223,8 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const SP_REAL rate = 0.5) {
-        SP_ASSERT(isValid(2, src0));
-        SP_ASSERT(isValid(2, src1));
+        SP_ASSERT(isValid(src0, 2));
+        SP_ASSERT(isValid(src1, 2));
         SP_ASSERT(cmpSize(2, src0.dsize, src1.dsize));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
@@ -246,7 +246,7 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void invert(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -269,7 +269,7 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void flipX(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -288,7 +288,7 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void flipY(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -312,8 +312,8 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void remap(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<Vec2> &table, const bool useExt = false){
-        SP_ASSERT(isValid(2, src));
-        SP_ASSERT(isValid(2, table));
+        SP_ASSERT(isValid(src, 2));
+        SP_ASSERT(isValid(table, 2));
         SP_ASSERT(cmpSize(2, src.dsize, table.dsize));
         
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -343,7 +343,7 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void warp(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mat &mat){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -377,7 +377,7 @@ namespace sp{
 
     template<typename TYPE0, typename TYPE1>
     SP_CPUFUNC void cnvImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -387,7 +387,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void cnvImgToHSV(Mem<Vec3> &dst, const Mem<Col3> &src) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -398,7 +398,7 @@ namespace sp{
         
     template <typename TYPE0, typename TYPE1>
     SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -414,7 +414,7 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -430,7 +430,7 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<Disp> &src, const int maxDisp, const int minDisp) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -445,7 +445,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void cnvLabelToImg(Mem<Col3> &dst, const Mem<int> &src){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -488,7 +488,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC void cnvImgToPtr(void *dst, const Mem<TYPE> &src, const int ch){
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         switch (ch){
         case 1:

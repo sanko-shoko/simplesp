@@ -7,7 +7,6 @@
 
 #include "spapp/spdata/spfile.h"
 #include "spapp/spimg/spimg.h"
-#include "spapp/sppath.h"
 
 namespace sp{
 
@@ -23,12 +22,12 @@ namespace sp{
         int w, h;
         memcpy(&w, &buf[18], sizeof(int));
         memcpy(&h, &buf[22], sizeof(int));
-        w = getLittleEndian(w);
-        h = getLittleEndian(h);
+        w = getOrderedVal(w, ByteOrder::LittleEndian);
+        h = getOrderedVal(h, ByteOrder::LittleEndian);
 
         int bit;
         memcpy(&bit, &buf[28], sizeof(int));
-        bit = getLittleEndian(bit);
+        bit = getOrderedVal(bit, ByteOrder::LittleEndian);
 
         const int dsize[2] = { w, h };
         dst.resize(2, dsize);
@@ -72,24 +71,24 @@ namespace sp{
         char buf[54] = { 0 };
         memcpy(&buf[0], "BM", sizeof(char) * 2);
 
-        const int offset = getLittleEndian(static_cast<int>(54));
+        const int offset = getOrderedVal(static_cast<int>(54), ByteOrder::LittleEndian);
         memcpy(&buf[10], &offset, sizeof(int));
 
-        const int header = getLittleEndian(static_cast<int>(40));
+        const int header = getOrderedVal(static_cast<int>(40), ByteOrder::LittleEndian);
         memcpy(&buf[14], &header, sizeof(int));
 
-        const int w = getLittleEndian(static_cast<int>(src.dsize[0]));
-        const int h = getLittleEndian(static_cast<int>(src.dsize[1]));
+        const int w = getOrderedVal(static_cast<int>(src.dsize[0]), ByteOrder::LittleEndian);
+        const int h = getOrderedVal(static_cast<int>(src.dsize[1]), ByteOrder::LittleEndian);
         memcpy(&buf[18], &w, sizeof(int));
         memcpy(&buf[22], &h, sizeof(int));
 
-        const short plane = getLittleEndian(static_cast<short>(2));
+        const short plane = getOrderedVal(static_cast<short>(2), ByteOrder::LittleEndian);
         memcpy(&buf[26], &plane, sizeof(short));
 
-        const int bit = getLittleEndian(static_cast<int>(24));
+        const int bit = getOrderedVal(static_cast<int>(24), ByteOrder::LittleEndian);
         memcpy(&buf[28], &bit, sizeof(int));
 
-        const int size = getLittleEndian(static_cast<int>(3 * src.size()));
+        const int size = getOrderedVal(static_cast<int>(3 * src.size()), ByteOrder::LittleEndian);
         memcpy(&buf[34], &size, sizeof(int));
 
         file.write(buf, 54);

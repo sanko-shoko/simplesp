@@ -1,5 +1,4 @@
-﻿#define SP_USE_THREAD 1
-#define SP_USE_IMGUI 1
+﻿#define SP_USE_IMGUI 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"

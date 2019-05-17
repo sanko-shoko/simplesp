@@ -5,12 +5,12 @@
 #ifndef __SP_DEBUG_H__
 #define __SP_DEBUG_H__
 
-#include "spcore/spsys.h"
-#include "spcore/spwrap.h"
+#include "spcore/spsystem.h"
+#include "spcore/sptime.h"
+#include "spcore/spprint.h"
 
-#ifndef SP_USE_DEBUG
-#define SP_USE_DEBUG 0
-#endif
+#include <string>
+#include <vector>
 
 
 //--------------------------------------------------------------------------------
@@ -19,11 +19,6 @@
 
 #ifndef SP_USE_LOGGER
 #define SP_USE_LOGGER SP_USE_DEBUG
-#endif
-
-#if SP_USE_LOGGER
-#include <vector>
-#include <string>
 #endif
 
 #if SP_USE_LOGGER
@@ -41,17 +36,15 @@
 #endif
 
 namespace sp {
-    using namespace std;
 
     class Logger {
-
     public:
 
 #if SP_USE_LOGGER
 
-        vector<string> names;
-        vector<Timer> timers;
-        vector<bool> flags;
+        std::vector<std::string> names;
+        std::vector<Timer> timers;
+        std::vector<bool> flags;
 #endif
 
     public:
@@ -97,7 +90,6 @@ namespace sp {
         void stop(const char *name) {
 
 #if SP_USE_LOGGER
-            const Timer::tpoint tp = Timer::now();
 
             int id = -1;
             for (int i = 0; i < names.size(); i++) {
@@ -162,11 +154,6 @@ namespace sp {
 
 #ifndef SP_USE_HOLDER
 #define SP_USE_HOLDER SP_USE_DEBUG
-#endif
-
-#if SP_USE_HOLDER
-#include <vector>
-#include <string>
 #endif
 
 #if SP_USE_HOLDER

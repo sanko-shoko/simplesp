@@ -14,7 +14,7 @@ namespace sp{
 
     SP_CPUFUNC void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
         
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         Mem2<Byte> base(src.dsize);
         {

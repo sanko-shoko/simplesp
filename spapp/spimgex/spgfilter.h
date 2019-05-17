@@ -33,7 +33,7 @@ namespace sp{
 
         template<typename TYPE>
         void set(const Mem<TYPE> &src, const int winSize, const SP_REAL epsilon) {
-            SP_ASSERT(isValid(2, src));
+            SP_ASSERT(isValid(src, 2));
 
             I.resize(src.dsize);
             I2.resize(src.dsize);
@@ -71,7 +71,7 @@ namespace sp{
         }
 
         void set(const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
-            SP_ASSERT(isValid(2, src));
+            SP_ASSERT(isValid(src, 2));
 
             I.resize(src.dsize);
             I2.resize(src.dsize);
@@ -120,7 +120,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC void guidedFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Guide1 &guide, const int winSize) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         Mem2<SP_REAL> p(src.dsize);
         Mem2<SP_REAL> Ip(src.dsize);
@@ -158,7 +158,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const Guide3 &guide, const int winSize) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         Mem2<SP_REAL> p(src.dsize);
 
@@ -211,7 +211,7 @@ namespace sp{
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const Guide3 &guide, const int winSize) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         Mem2<Vec3> p(src.dsize);
 
@@ -298,14 +298,14 @@ namespace sp{
 
 
     SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const SP_REAL epsilon) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Guide1 guide(src, winSize, epsilon);
         guidedFilter(dst, src, guide, winSize);
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
-        SP_ASSERT(isValid(2, src));
+        SP_ASSERT(isValid(src, 2));
 
         const Guide3 guide(src, winSize, epsilon);
         guidedFilter(dst, src, guide, winSize);

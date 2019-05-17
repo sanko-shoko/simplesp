@@ -6,10 +6,36 @@
 #define __SP_PRINT_H__
 
 #include "spcore/spcom.h"
-#include "spcore/spwrap.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
 
 namespace sp {
+
+    //--------------------------------------------------------------------------------
+    // macro 
+    //--------------------------------------------------------------------------------
+
+#if SP_USE_CONSOLE
+#define SP_PRINTF(...) ::printf(__VA_ARGS__);
+#else
+#define SP_PRINTF(...) if(0){ ::printf(__VA_ARGS__); }
+#endif
+
+#if SP_USE_DEBUG
+#define SP_PRINTD(...) SP_PRINTF(__VA_ARGS__);
+#else
+#define SP_PRINTD(...) if(0){ SP_PRINTF(__VA_ARGS__); }
+#endif
+
+#if SP_USE_ASSERT
+#define SP_ASSERT(EXP) if(!(EXP)){ ::printf(" assert (%s)\n file: %s\n line: %d\n", #EXP, __FILE__, __LINE__); ::exit(0); }
+#else
+#define SP_ASSERT(EXP) (EXP);
+#endif
+
 
     //--------------------------------------------------------------------------------
     // print 
@@ -234,6 +260,20 @@ namespace sp {
     SP_CPUFUNC void print(const char *name, const TYPE &data) {
         SP_PRINTF("%s ", name);
         print(data);
+    }
+
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC char* progress(const double crnt, const double size) {
+        const double rate = (size > 1) ? crnt / (size - 1.0) : 1.0;
+
+        static char bar[11] = { 0 };
+        for (int i = 0; i < 10; i++) {
+            bar[i] = (i <= 10 * rate) ? '>' : '-';
+        }
+        return bar;
     }
 
 }

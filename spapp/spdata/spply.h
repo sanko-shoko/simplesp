@@ -60,20 +60,22 @@ namespace sp{
 
             char line[SP_STRMAX];
             while (file.gets(line)){
-                if (split(line, 0) == "end_header") break;
+                char buff[SP_STRMAX];
+                const std::string name = strget(buff, line, 0);
+                if (name == "end_header") break;
 
-                if (split(line, 0) == "element"){
+                if (name == "element"){
                     Element elem;
 
-                    elem.name = split(line, 1);
-                    elem.num = atoi(split(line, 2).c_str());
+                    elem.name = strget(buff, line, 1);
+                    elem.num = atoi(strget(buff, line, 2));
 
                     elems.push(elem);
                     pElem = &elems[elems.size() - 1];
                 }
 
-                if (split(line, 0) == "property" && pElem){
-                    pElem->prop.push(split(line, -1));
+                if (name == "property" && pElem){
+                    pElem->prop.push(strget(buff, line, -1));
                 }
             }
 
@@ -97,7 +99,8 @@ namespace sp{
             Vertex vtx;
 
             for (int p = 0; p < elem.prop.size(); p++){
-                const SP_REAL val = atof(split(line, p).c_str());
+                char buff[SP_STRMAX];
+                const SP_REAL val = atof(strget(buff, line, p));
 
                 if (elem.prop[p] == "x") vtx.pos.x = val;
                 if (elem.prop[p] == "y") vtx.pos.y = val;
@@ -114,8 +117,9 @@ namespace sp{
         SP_CPUFUNC Mem1<int> getIdx(const char *line, const Element &elem){
             Mem1<int> idx;
 
-            for (int i = 0; i < atoi(split(line, 0).c_str()); i++){
-                idx.push(atoi(split(line, i + 1).c_str()));
+            char buff[SP_STRMAX];
+            for (int i = 0; i < atoi(strget(buff, line, 0)); i++){
+                idx.push(atoi(strget(buff, line, i + 1)));
             }
 
             return idx;
