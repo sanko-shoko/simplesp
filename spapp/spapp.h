@@ -15,6 +15,7 @@
 #include "spapp/spdata/spmodel.h"
 #include "spapp/spdata/spvoxel.h"
 #include "spapp/spdata/spdataset.h"
+#include "spapp/spdata/spiconv.h"
 
 // algorithm
 #include "spapp/spalgo/spkdtree.h"
@@ -71,6 +72,5 @@
 
 // util
 #include "spapp/sptool.h"
-#include "spapp/sppath.h"
 
 #endif

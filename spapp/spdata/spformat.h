@@ -22,7 +22,9 @@ namespace sp{
                 ::fprintf(fp, "%s", format);
             }
             else {
-                ::fscanf(fp, format);
+                const int size = strlen(format);
+                char buf[SP_STRMAX];
+                ::fread(buf, 1, size, fp);
             }
         }
         ftextf(fp, mode, option);

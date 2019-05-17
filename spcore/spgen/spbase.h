@@ -85,19 +85,6 @@ namespace sp{
         return SP_CAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
-    // get random uniform (-1.0, 1.0)
-    SP_GENFUNC SP_REAL randu() {
-        const int maxv = 2000;
-        return SP_CAST(2.0 * (rand() % (maxv + 1) + 1) / (maxv + 2) - 1.0);
-    }
-
-    // get random gauss
-    SP_GENFUNC SP_REAL randg() {
-        const int maxv = 2000;
-        const double a = (rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double b = (rand() % (maxv + 1) + 1) / (maxv + 2);
-        return SP_CAST(sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b));
-    }
 
     //--------------------------------------------------------------------------------
     // compare
@@ -164,7 +151,7 @@ namespace sp{
     }
 
     template<typename TYPE> SP_GENFUNC void cnvVal(double &dst, const TYPE &src){
-        dst = static_cast<SP_REAL>(src);
+        dst = static_cast<double>(src);
     }
 
 
@@ -179,7 +166,8 @@ namespace sp{
     }
 
     // reverse byte order
-    template <typename TYPE> SP_GENFUNC void revByteOrder(TYPE *ptr, const int size) {
+    template <typename TYPE> 
+    SP_GENFUNC void revByteOrder(TYPE *ptr, const int size) {
         const int n = sizeof(TYPE);
         if (sizeof(TYPE) == 1) return;
 
@@ -192,19 +180,11 @@ namespace sp{
         }
     }
 
-    // 
+    // get ordered value
     template<typename TYPE>
-    SP_GENFUNC TYPE getBigEndian(const TYPE &val) {
+    SP_GENFUNC TYPE getOrderedVal(const TYPE &val, const ByteOrder order) {
         TYPE dst = val;
-        if (getByteOrder() != ByteOrder::BigEndian) revByteOrder(&dst, 1);
-        return dst;
-    }
-
-    // 
-    template<typename TYPE>
-    SP_GENFUNC TYPE getLittleEndian(const TYPE &val) {
-        TYPE dst = val;
-        if (getByteOrder() != ByteOrder::LittleEndian) revByteOrder(&dst, 1);
+        if (getByteOrder() != order) revByteOrder(&dst, 1);
         return dst;
     }
 
@@ -448,8 +428,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_GENFUNC bool isValid(const int dim, const ExPtr<TYPE> &src) {
-        if (src.ptr == NULL || src.dim != dim) return false;
+    SP_GENFUNC bool isValid(const ExPtr<TYPE> &src, const int dim) {
+        if (src.dim == 0 || src.ptr == NULL || src.dim != dim) return false;
 
         for (int i = 0; i < src.dim; i++) {
             if (src.dsize[i] == 0) return false;
@@ -459,7 +439,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_GENFUNC bool isValid(const ExPtr<TYPE> &src) {
-        return src.dim > 0 ? isValid(src.dim, src) : false;
+        return isValid(src, src.dim);
     }
 
 

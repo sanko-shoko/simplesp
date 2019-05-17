@@ -7,6 +7,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spgen/spbase.h"
+#include "spcore/spgen/spmath.h"
 
 namespace sp {
 

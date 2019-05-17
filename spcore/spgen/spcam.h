@@ -6,7 +6,6 @@
 #define __SP_CAM_H__
 
 #include "spcore/spcom.h"
-#include "spcore/spwrap.h"
 #include "spcore/spgen/spbase.h"
 #include "spcore/spgen/spvec.h"
 #include "spcore/spgen/spmath.h"

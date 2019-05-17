@@ -1556,7 +1556,7 @@ struct ImGuiTextFilter
         const char*     begin() const   { return b; }
         const char*     end () const    { return e; }
         bool            empty() const   { return b == e; }
-        IMGUI_API void  split(char separator, ImVector<TextRange>* out) const;
+        IMGUI_API void  strget(char separator, ImVector<TextRange>* out) const;
     };
     char                InputBuf[256];
     ImVector<TextRange> Filters;
@@ -1747,7 +1747,7 @@ struct ImDrawVert
 IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT;
 #endif
 
-// Draw channels are used by the Columns API to "split" the render list into different channels while building, so items of each column can be batched together.
+// Draw channels are used by the Columns API to "strget" the render list into different channels while building, so items of each column can be batched together.
 // You can also use them to simulate drawing layers and submit primitives in a different order than how they will be rendered.
 struct ImDrawChannel
 {

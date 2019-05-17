@@ -2,33 +2,84 @@
 // Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_PATH_H__
-#define __SP_PATH_H__
+#ifndef __SP_SYSTEM_H__
+#define __SP_SYSTEM_H__
 
-#include "spcore/spcore.h"
+#include "spcore/spcpu/spstr.h"
+
+
+//--------------------------------------------------------------------------------
+// resource
+//--------------------------------------------------------------------------------
 
 #if defined(_WIN32)
 #include <windows.h>
-#include <direct.h>
+#include <psapi.h>
 
-#elif defined(__unix__)
-#include <sys/stat.h>
-#include <dirent.h>
-#include <dlfcn.h>
-#include <unistd.h>
-#include <libgen.h>
+#elif defined(__APPLE__) || defined(__linux__) || defined(__unix__)
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #else
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <libgen.h>
+
 #endif
+
+namespace sp {
+
+    // get memory usage [KB]
+    static int getMemoryUsage() {
+        int m = -1;
+#if defined(_WIN32)
+        HANDLE h = GetCurrentProcess();
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        if (GetProcessMemoryInfo(h, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+            m = static_cast<int>(pmc.PrivateUsage / (1000.0));
+        }
+        CloseHandle(h);
+
+#elif defined(__APPLE__) || defined(__linux__) || defined(__unix__)
+
+        rusage usage;
+        if (getrusage(RUSAGE_SELF, &usage) == 0) {
+            m = static_cast<int>(usage.ru_maxrss);
+        }
+
+#else
+
+#endif
+        return m;
+    }
+}
 
 
 //--------------------------------------------------------------------------------
 // path util
 //--------------------------------------------------------------------------------
+
+#if defined(_WIN32)
+#include <windows.h>
+#include <direct.h>
+
+#elif defined(__APPLE__)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <dlfcn.h>
+
+#elif defined(__linux__)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <libgen.h>
+
+#elif defined(__unix__)
+
+#else
+
+#endif
 
 namespace sp {
 
@@ -56,15 +107,15 @@ namespace sp {
         static char path[512] = { 0 };
 #if defined(_WIN32)
         GetModuleFileName(NULL, path, MAX_PATH);
-#elif defined(__unix__)
-        // non
 #elif defined(__APPLE__)
         Dl_info module_info;
         if (dladdr(reinterpret_cast<void*>(getModulePath), &module_info) != 0) {
             strcpy(path, module_info.dli_fname);
         }
-#else
+#elif defined(__linux__)
         //readlink("/proc/self/exe", path, sizeof(path) - 1);
+#elif defined(__unix__)
+        // non
 #endif
         return path;
     }
@@ -72,9 +123,9 @@ namespace sp {
     SP_CPUFUNC char* getModuleDir() {
         static char dir[512] = { 0 };
         const char *path = getModulePath();
-        
+
         char tmp[512] = { 0 };
-        split(tmp, path, -1, "\\/");
+        strget(tmp, path, -1, "\\/");
 
         const int size = strlen(path) - strlen(tmp) - 1;
 
@@ -86,20 +137,23 @@ namespace sp {
     SP_CPUFUNC char* getModuleName() {
         static char name[512] = { 0 };
         const char *path = getModulePath();
-        split(name, path, -1, "\\/");
+        strget(name, path, -1, "\\/");
         return name;
     }
 
     SP_CPUFUNC bool extcmp(const char *path, const char *ext) {
         if (ext == NULL) return false;
 
-        bool ret = false;
-        const std::string a = split(path, -1, ".");
-        for (int i = 0; ; i++) {
-            const std::string b = split(ext, i);
-            if (b.size() == 0) break;
+        char ext0[SP_STRMAX];
+        if (strget(ext0, path, -1, ".") == NULL) return false;
 
-            if (a == b) {
+        bool ret = false;
+
+        for (int i = 0; ; i++) {
+            char ext1[SP_STRMAX];
+            if (strget(ext1, ext, i) == NULL) break;
+
+            if (strcmp(ext0, ext1) == 0) {
                 ret = true;
                 break;
             }
@@ -107,8 +161,18 @@ namespace sp {
         return ret;
     }
 
-    SP_CPUFUNC bool searchPath(char *dst, const char *dir, const int x, const char *ext = NULL) {
-        bool ret = false;
+    SP_CPUFUNC char* extset(char *path, const char *ext) {
+        if (ext == false) return NULL;
+        if (extcmp(path, ext) == false) {
+            char tmp[SP_STRMAX];
+            sprintf(tmp, "%s.%s", path, ext);
+            strcpy(path, tmp);
+        }
+        return path;
+    }
+
+    SP_CPUFUNC char* searchPath(char *dst, const char *dir, const int x, const char *ext = NULL) {
+        char *ret = NULL;
 
 #if defined(_WIN32)
         WIN32_FIND_DATA fd;
@@ -130,7 +194,7 @@ namespace sp {
                 if (ext == NULL || extcmp(name, ext) == true) {
                     if (x == c++) {
                         strcpy(dst, name);
-                        ret = true;
+                        ret = dst;
                     }
                 }
             }
@@ -164,7 +228,7 @@ namespace sp {
                         // file
                         if (x == c++ && (ext == NULL || extcmp(name, ext) == true)) {
                             strcpy(dst, name);
-                            ret = true;
+                            ret = dst;
                         }
                     }
                 }
@@ -181,19 +245,6 @@ namespace sp {
 #endif
         return ret;
     }
-
-    SP_CPUFUNC std::string searchPath(const char *dir, const int x, const char *ext = NULL) {
-        std::string ret;
-
-        char name[SP_STRMAX];
-        if (searchPath(name, dir, x, ext) == true) {
-            ret = name;
-        }
-
-        return ret;
-    }
-
-
 
 
 }

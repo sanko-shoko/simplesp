@@ -124,7 +124,7 @@ namespace sp{
 
         const Vec2 base = (getVec2(w, h) - getVec2(length + distance * (dsize0 - 1), length + distance * (dsize1 - 1))) / 2.0;
 
-        string str;
+        std::string str;
         for (int y = 0; y < dsize1; y++) {
             for (int x = 0; x < dsize0; x++) {
                 const Vec2 pos = getVec2(x, y) * distance + getVec2(round(base.x), round(base.y));
