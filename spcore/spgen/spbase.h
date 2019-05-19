@@ -233,7 +233,7 @@ namespace sp{
         *byte = (b != 0) ? *byte | mask : *byte & ~mask;
     }
   
-    SP_GENFUNC Byte getBit(Byte *byte, const int p) {
+    SP_GENFUNC Byte getBit(const Byte *byte, const int p) {
         const Byte mask = 0x01 << p;
         return (*byte & mask) ? 1 : 0;
     }
