@@ -763,7 +763,7 @@ namespace sp {
                 Vec2 &range = rmsk(u, v);
                 range = getVec2(0.0, SP_INFINITY);
 
-                const Vec3 vec = prjVec(invCam(cam, getVec2(u, v)));
+                const Vec3 vec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
                 for (int i = 0; i < vps.size(); i++) {
                     const Vec3 &pos = vps[i].pos;
                     const Vec3 &X = vps[i].axis[0];
@@ -901,7 +901,7 @@ namespace sp {
                 const SP_REAL maxv = rmsk(u, v).y;
                 if (minv <= SP_SMALL) continue;
 
-                const Vec3 cvec = prjVec(invCam(cam, getVec2(u, v)));
+                const Vec3 cvec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
                 const Vec3 mvec = ipose.rot * cvec;
 
                 SP_REAL detect = minv;

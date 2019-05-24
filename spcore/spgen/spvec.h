@@ -45,6 +45,15 @@ namespace sp {
     }
 
     // get vector
+    SP_GENFUNC Vec3 getVec3(const Vec2 &vec, const double z) {
+        Vec3 dst;
+        dst.x = SP_CAST(vec.x);
+        dst.y = SP_CAST(vec.y);
+        dst.z = SP_CAST(z);
+        return dst;
+    }
+
+    // get vector
     SP_GENFUNC Vec3 getVec3(const Col3 &col) {
         Vec3 dst;
         dst.x = static_cast<SP_REAL>(col.r) / SP_BYTEMAX;
@@ -93,6 +102,14 @@ namespace sp {
         return (val != 0.0) ? mulVec3(vec, 1.0 / val) : vec;
     }
 
+    // compare
+    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const double t = 1.0e-10) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
+    }
+    // compare
+    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const double t = 1.0e-10) {
+        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
+    }
 
     //--------------------------------------------------------------------------------
     // vector operator
@@ -228,13 +245,8 @@ namespace sp {
     }
 
     // projection vec3 to vec2
-    SP_GENFUNC Vec2 prjVec(const Vec3 &vec) {
-        return getVec2(vec.x, vec.y) / vec.z;
-    }
-
-    // projection vec2 to vec3
-    SP_GENFUNC Vec3 prjVec(const Vec2 &vec) {
-        return getVec3(vec.x, vec.y, 1.0);
+    SP_GENFUNC Vec2 prjVec(const Vec3 &vec, const bool pers = true) {
+        return (pers == true) ? getVec2(vec.x, vec.y) / vec.z : getVec2(vec.x, vec.y);
     }
 
     // square
@@ -296,6 +308,29 @@ namespace sp {
     SP_GENFUNC Vec3 round(const Vec3 &vec) {
         return getVec3(round(vec.x), round(vec.y), round(vec.z));
     }
+
+    // angle
+    SP_GENFUNC SP_REAL getAngle(const Vec2 &vec0, const Vec2 &vec1) {
+        double ret = 0.0;
+        const double a = normVec(vec0);
+        const double b = normVec(vec1);
+        if (a > SP_SMALL && b > SP_SMALL) {
+            ret = acos(dotVec(vec0, vec1) / (a * b));
+        }
+        return SP_CAST(ret);
+    }
+
+    // angle
+    SP_GENFUNC SP_REAL getAngle(const Vec3 &vec0, const Vec3 &vec1) {
+        double ret = 0.0;
+        const double a = normVec(vec0);
+        const double b = normVec(vec1);
+        if (a > SP_SMALL && b > SP_SMALL) {
+            ret = acos(dotVec(vec0, vec1) / (a * b));
+        }
+        return SP_CAST(ret);
+    }
+
 
     //--------------------------------------------------------------------------------
     // matrix * vector

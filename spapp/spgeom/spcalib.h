@@ -918,7 +918,7 @@ namespace sp{
                 pRect[i]->cam = getCamParam(dsize[0], dsize[1], f, f, cent.x, cent.y);
 
                 const Vec2 npx = invCamD(pRect[i]->pre, cent);
-                const Vec2 wrp = prjVec(pRect[i]->rot * prjVec(npx));
+                const Vec2 wrp = prjVec(pRect[i]->rot * getVec3(npx, 1.0));
 
                 const Vec2 pix = mulCamD(pRect[i]->cam, wrp);
 
@@ -958,7 +958,7 @@ namespace sp{
             for (int u = 0; u < table.dsize[0]; u++){
                 const Vec2 src = getVec2(u, v);
                 const Vec2 npx = invCamD(rect.cam, src);
-                const Vec2 wrp = prjVec(rot * prjVec(npx));
+                const Vec2 wrp = prjVec(rot * getVec3(npx, 1.0));
 
                 const Vec2 dst = mulCamD(rect.pre, wrp);
                 table(u, v) = dst - src;

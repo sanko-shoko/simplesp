@@ -108,14 +108,6 @@ namespace sp{
         return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
-    // compare
-    SP_GENFUNC bool cmpVec2(const Vec2 &vec0, const Vec2 &vec1, const double t = 1.0e-10) {
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t);
-    }
-    // compare
-    SP_GENFUNC bool cmpVec3(const Vec3 &vec0, const Vec3 &vec1, const double t = 1.0e-10) {
-        return cmpVal(vec0.x, vec1.x, t) & cmpVal(vec0.y, vec1.y, t) & cmpVal(vec0.z, vec1.z, t);
-    }
 
 
     //--------------------------------------------------------------------------------
@@ -405,23 +397,63 @@ namespace sp{
         return getRect(rect.dim, dbase, dsize);
     }
 
+    SP_GENFUNC Rect shiftRect(const Rect &rect, const int *shift, bool minus = false) {
+        int dbase[SP_DIMMAX] = { 0 };
+        int dsize[SP_DIMMAX] = { 0 };
+
+        for (int i = 0; i < rect.dim; i++) {
+            dbase[i] = rect.dbase[i] + ((minus == false) ? +shift[i] : -shift[i]);
+            dsize[i] = rect.dsize[i];
+        }
+
+        return getRect(rect.dim, dbase, dsize);
+    }
+
+    SP_GENFUNC bool cmpRect(const Rect &rect0, const Rect &rect1) {
+        if (rect0.dim != rect1.dim) return false;
+
+        bool ret = true;
+        for (int i = 0; i < rect0.dim; i++) {
+            ret &= (rect0.dbase[i] == rect1.dbase[i]);
+            ret &= (rect0.dsize[i] == rect1.dsize[i]);
+        }
+        return ret;
+    }
 
     SP_GENFUNC Rect operator + (const Rect &rect, const int val) {
         return adjustRect(rect, +val);
+    }
+    SP_GENFUNC Rect operator + (const Rect &rect, const int *shift) {
+        return shiftRect(rect, shift);
     }
 
     SP_GENFUNC Rect operator - (const Rect &rect, const int val) {
         return adjustRect(rect, -val);
     }
+    SP_GENFUNC Rect operator - (const Rect &rect, const int *shift) {
+        return shiftRect(rect, shift, true);
+    }
 
     SP_GENFUNC void operator += (Rect &rect, const int val) {
         rect = adjustRect(rect, +val);
+    }
+    SP_GENFUNC void operator += (Rect &rect, const int *shift) {
+        rect = shiftRect(rect, shift);
     }
 
     SP_GENFUNC void operator -= (Rect &rect, const int val) {
         rect = adjustRect(rect, -val);
     }
+    SP_GENFUNC void operator -= (Rect &rect, const int *shift) {
+        rect = shiftRect(rect, shift, true);
+    }
 
+    SP_GENFUNC bool operator == (const Rect &rect0, const Rect &rect1) {
+        return cmpRect(rect0, rect1);
+    }
+    SP_GENFUNC bool operator != (const Rect &rect0, const Rect &rect1) {
+        return !cmpRect(rect0, rect1);
+    }
 
     //--------------------------------------------------------------------------------
     // check memory ptr
