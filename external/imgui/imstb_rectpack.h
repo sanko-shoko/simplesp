@@ -1,4 +1,10 @@
-// stb_rect_pack.h - v0.11 - public domain - rectangle packing
+// [DEAR IMGUI] 
+// This is a slightly modified version of stb_rect_pack.h 0.99. 
+// Those changes would need to be pushed into nothings/stb:
+// - Added STBRP__CDECL
+// Grep for [DEAR IMGUI] to find the changes.
+
+// stb_rect_pack.h - v0.99 - public domain - rectangle packing
 // Sean Barrett 2014
 //
 // Useful for e.g. packing rectangular textures into an atlas.
@@ -34,6 +40,7 @@
 //
 // Version history:
 //
+//     0.99  (2019-02-07)  warning fixes
 //     0.11  (2017-03-03)  return packing success/fail result
 //     0.10  (2016-10-25)  remove cast-away-const to avoid warnings
 //     0.09  (2016-08-27)  fix compiler warnings
@@ -204,6 +211,7 @@ struct stbrp_context
 #define STBRP_ASSERT assert
 #endif
 
+// [DEAR IMGUI] Added STBRP__CDECL
 #ifdef _MSC_VER
 #define STBRP__NOTUSED(v)  (void)(v)
 #define STBRP__CDECL __cdecl
@@ -512,6 +520,7 @@ static stbrp__findresult stbrp__skyline_pack_rectangle(stbrp_context *context, i
    return res;
 }
 
+// [DEAR IMGUI] Added STBRP__CDECL
 static int STBRP__CDECL rect_height_compare(const void *a, const void *b)
 {
    const stbrp_rect *p = (const stbrp_rect *) a;
@@ -523,6 +532,7 @@ static int STBRP__CDECL rect_height_compare(const void *a, const void *b)
    return (p->w > q->w) ? -1 : (p->w < q->w);
 }
 
+// [DEAR IMGUI] Added STBRP__CDECL
 static int STBRP__CDECL rect_original_order(const void *a, const void *b)
 {
    const stbrp_rect *p = (const stbrp_rect *) a;
@@ -531,9 +541,9 @@ static int STBRP__CDECL rect_original_order(const void *a, const void *b)
 }
 
 #ifdef STBRP_LARGE_RECTS
-#define STBRP__maxval  0xffffffff
+#define STBRP__MAXVAL  0xffffffff
 #else
-#define STBRP__maxval  0xffff
+#define STBRP__MAXVAL  0xffff
 #endif
 
 STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int num_rects)
@@ -543,9 +553,6 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
    // we use the 'was_packed' field internally to allow sorting/unsorting
    for (i=0; i < num_rects; ++i) {
       rects[i].was_packed = i;
-      #ifndef STBRP_LARGE_RECTS
-      STBRP_ASSERT(rects[i].w <= 0xffff && rects[i].h <= 0xffff);
-      #endif
    }
 
    // sort according to heuristic
@@ -560,7 +567,7 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
             rects[i].x = (stbrp_coord) fr.x;
             rects[i].y = (stbrp_coord) fr.y;
          } else {
-            rects[i].x = rects[i].y = STBRP__maxval;
+            rects[i].x = rects[i].y = STBRP__MAXVAL;
          }
       }
    }
@@ -570,7 +577,7 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
 
    // set was_packed flags and all_rects_packed status
    for (i=0; i < num_rects; ++i) {
-      rects[i].was_packed = !(rects[i].x == STBRP__maxval && rects[i].y == STBRP__maxval);
+      rects[i].was_packed = !(rects[i].x == STBRP__MAXVAL && rects[i].y == STBRP__MAXVAL);
       if (!rects[i].was_packed)
          all_rects_packed = 0;
    }
