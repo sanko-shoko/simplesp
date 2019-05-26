@@ -468,18 +468,18 @@ namespace sp {
     }
 
     //--------------------------------------------------------------------------------
-    // extract depth element
+    // extract z element
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC SP_REAL extractDepth(const VecPN3 &src) {
+    SP_GENFUNC SP_REAL extractZ(const VecPN3 &src) {
         return src.pos.z;
     }
 
-    SP_GENFUNC SP_REAL extractDepth(const Vec3 &src) {
+    SP_GENFUNC SP_REAL extractZ(const Vec3 &src) {
         return src.z;
     }
 
-    SP_GENFUNC SP_REAL extractDepth(const SP_REAL &src) {
+    SP_GENFUNC SP_REAL extractZ(const SP_REAL &src) {
         return src;
     }
 

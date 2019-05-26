@@ -50,6 +50,18 @@ namespace sp{
 
 #endif
 
+    SP_CPUFUNC bool memcmp(const void *src0, const void *src1, const int size) {
+        bool ret = true;
+
+        const char *p0 = reinterpret_cast<const char*>(src0);
+        const char *p1 = reinterpret_cast<const char*>(src1);
+        for (int i = 0; i < size && ret == true; i++) {
+            ret &= (p0[i] == p1[i]);
+        }
+
+        return ret;
+    }
+
 
     SP_CPUFUNC char* strget(char *dst, const char *src, const int x, const char *tok = " ,\t\n\r"){
         char *buf = new char[strlen(src) + 1];

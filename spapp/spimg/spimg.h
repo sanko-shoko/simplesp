@@ -404,7 +404,7 @@ namespace sp{
         dst.zero();
 
         for (int i = 0; i < dst.size(); i++){
-            const SP_REAL depth = extractDepth(src[i]);
+            const SP_REAL depth = extractZ(src[i]);
 
             if (depth >= nearPlane && depth <= farPlane){
                 cnvDepthToCol(dst[i], depth, nearPlane, farPlane);
@@ -420,7 +420,7 @@ namespace sp{
         dst.zero();
 
         for (int i = 0; i < dst.size(); i++){
-            const SP_REAL depth = extractDepth(src[i]);
+            const SP_REAL depth = extractZ(src[i]);
 
             if (depth >= nearPlane && depth <= farPlane){
                 cnvNormalToCol(dst[i], src[i].nrm);

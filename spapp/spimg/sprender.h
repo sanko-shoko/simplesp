@@ -482,7 +482,7 @@ namespace sp{
                 const SP_REAL depth = result[2];
                 if (depth < SP_SMALL) continue;
 
-                const SP_REAL ref = extractDepth(acs2(dst, u, v));
+                const SP_REAL ref = extractZ(acs2(dst, u, v));
                 if (ref == 0.0 || depth < ref) {
                     acs2(dst, u, v) = getVecPN3(vec * depth, nrm);
                 }
@@ -508,7 +508,7 @@ namespace sp{
 
         dst.resize(2, cam.dsize);
         for (int i = 0; i < dst.size(); i++) {
-            dst[i] = extractDepth(pnmap[i]);
+            dst[i] = extractZ(pnmap[i]);
         }
     }
 
