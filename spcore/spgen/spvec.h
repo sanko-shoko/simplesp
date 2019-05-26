@@ -485,6 +485,78 @@ namespace sp {
 
 
     //--------------------------------------------------------------------------------
+    // line
+    //--------------------------------------------------------------------------------
+    
+    SP_GENFUNC Line2 getLine2(const Vec2 &vec0, const Vec2 &vec1) {
+        Line2 dst;
+        dst.pos[0] = vec0;
+        dst.pos[1] = vec1;
+        return dst;
+    }
+    
+    SP_GENFUNC Line3 getLine3(const Vec3 &vec0, const Vec3 &vec1) {
+        Line3 dst;
+        dst.pos[0] = vec0;
+        dst.pos[1] = vec1;
+        return dst;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // line util
+    //--------------------------------------------------------------------------------
+    
+    // projection vec3 to vec2
+    SP_GENFUNC Line2 prjVec(const Line3 &line, const bool pers = true) {
+        return getLine2(prjVec(line.pos[0], pers), prjVec(line.pos[1], pers));
+    }
+
+    // norm from line to
+    SP_GENFUNC double normVecToLine(const Vec2 &vec, const Line2 &line) {
+        double ret = 0.0;
+
+        const Vec2 lvec = line.pos[1] - line.pos[0];
+        const double len = normVec(lvec);
+
+        if (len < SP_SMALL) {
+            ret = normVec(vec - (line.pos[0] + line.pos[1]) * 0.5);
+        }
+        else {
+            const double s = dotVec(lvec, vec - line.pos[0]) / len;
+            if(s < 0.0){
+                ret = normVec(vec - line.pos[0]);
+            }
+            else if (s > len) {
+                ret = normVec(vec - line.pos[1]);
+            }
+            else {
+                ret = normVec(vec - (line.pos[0] + lvec * s / len));
+            }
+        }
+        return ret;
+    }
+
+    //--------------------------------------------------------------------------------
+    // matrix * line
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Line2 mulMat(const SP_REAL *mat, const int rows, const int cols, const Line2 &line) {
+        Line2 dst;
+        dst.pos[0] = mulMat(mat, rows, cols, line.pos[0]);
+        dst.pos[1] = mulMat(mat, rows, cols, line.pos[1]);
+        return dst;
+    }
+
+    SP_GENFUNC Line3 mulMat(const SP_REAL *mat, const int rows, const int cols, const Line3 &line) {
+        Line3 dst;
+        dst.pos[0] = mulMat(mat, rows, cols, line.pos[0]);
+        dst.pos[1] = mulMat(mat, rows, cols, line.pos[1]);
+        return dst;
+    }
+
+
+    //--------------------------------------------------------------------------------
     // mesh
     //--------------------------------------------------------------------------------
 
