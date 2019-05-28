@@ -173,7 +173,7 @@ namespace sp{
                 const SP_REAL err = medianVal(errs0) + medianVal(errs1);
                 if (err < minv){
                     minv = err;
-                    stereo = pose0 * invPose(pose1);
+                    stereo = pose1 * invPose(pose0);
                 }
             }
 
@@ -214,8 +214,8 @@ namespace sp{
                     Mat J(4 * vpixs0[i].size(), 6);
                     Mat E(4 * vpixs0[i].size(), 1);
 
-                    const Pose pose0 = stereo * vposes[i];
-                    const Pose pose1 = vposes[i];
+                    const Pose pose0 = vposes[i];
+                    const Pose pose1 = stereo * vposes[i];
 
                     const Mat sR = getMat(stereo.rot);
 
@@ -224,8 +224,8 @@ namespace sp{
 
                         SP_REAL jPoseToPos0[3 * 6] = { 0 };
                         SP_REAL jPoseToPos1[3 * 6] = { 0 };
-                        jacobPoseToPos(jPoseToPos1, pose1, obj);
-                        mulMat(jPoseToPos0, 3, 6, sR.ptr, 3, 3, jPoseToPos1, 3, 6);
+                        jacobPoseToPos(jPoseToPos0, pose0, obj);
+                        mulMat(jPoseToPos1, 3, 6, sR.ptr, 3, 3, jPoseToPos0, 3, 6);
 
                         SP_REAL jPosToPix0[2 * 3] = { 0 };
                         SP_REAL jPosToPix1[2 * 3] = { 0 };
@@ -263,7 +263,7 @@ namespace sp{
 
                         const Pose &pose = vposes[i];
 
-                        const Mem1<Vec2> &tpixs = vpixs0[i];
+                        const Mem1<Vec2> &tpixs = vpixs1[i];
                         const Mem1<Vec2> &tobjs = vobjs[i];
                         for (int p = 0; p < tpixs.size(); p++){
                             const Vec2 pix = tpixs[p];
@@ -290,8 +290,8 @@ namespace sp{
 
                 Mem1<SP_REAL> errs;
                 for (int i = 0; i < vposes.size(); i++){
-                    errs.push(calcPrjErr(stereo * vposes[i], cam0, vpixs0[i], extVec(vobjs[i], 0.0)));
-                    errs.push(calcPrjErr(vposes[i], cam1, vpixs1[i], extVec(vobjs[i], 0.0)));
+                    errs.push(calcPrjErr(vposes[i], cam0, vpixs0[i], extVec(vobjs[i], 0.0)));
+                    errs.push(calcPrjErr(stereo * vposes[i], cam1, vpixs1[i], extVec(vobjs[i], 0.0)));
                 }
 
                 const SP_REAL mean = meanVal(errs);
@@ -886,7 +886,7 @@ namespace sp{
             rect1.pre = cam1;
         }
 
-        const Pose stereo = pose0 * invPose(pose1);
+        const Pose stereo = pose1 * invPose(pose0);
 
         // rot
         {
@@ -901,8 +901,8 @@ namespace sp{
 
             const Rot rot = getRotAxis(vecx, vecy, vecz);
 
-            rect0.rot = invRot(stereo.rot * rot);
-            rect1.rot = invRot(rot);
+            rect0.rot = invRot(rot);
+            rect1.rot = invRot(stereo.rot * rot);
         }
 
         // cam parameter
