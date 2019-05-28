@@ -100,12 +100,12 @@ int main(){
             }
 
             const Size imgSize(cam.dsize[0], cam.dsize[1]);
-            cv::Mat camMat, dist;
+            cv::Mat cmat, dist;
             vector<cv::Mat> rvecs, tvecs;
 
-            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
+            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), cmat, dist, rvecs, tvecs);
             printf("opencv rms error: %g\n", rms);
-            cout << "camMat = " << endl << camMat << endl;
+            cout << "cmat = " << endl << cmat << endl;
             cout << "dist = " << endl << dist << endl;
         }
     }
@@ -185,12 +185,12 @@ int main(){
                 cvobjs.push_back(tobjs);
             }
 
-            cv::Mat camMat, dist;
+            cv::Mat cmat, dist;
             vector<cv::Mat> rvecs, tvecs;
 
-            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), camMat, dist, rvecs, tvecs);
+            const double rms = cv::calibrateCamera(cvobjs, cvpixs, Size(cam.dsize[0], cam.dsize[1]), cmat, dist, rvecs, tvecs);
             printf("opencv rms error: %g\n", rms);
-            cout << "camMat = " << endl << camMat << endl;
+            cout << "cmat = " << endl << cmat << endl;
             cout << "dist = " << endl << dist << endl;
         }
     }
@@ -231,7 +231,7 @@ int main(){
 
             // calibration
             Pose pose;
-            const double rms = calibStereo(pose, cam, pixs1, objs1, cam, pixs0, objs0);
+            const double rms = calibStereo(pose, cam, pixs0, objs0, cam, pixs1, objs1);
             printf("simplesp rms error: %g\n", rms);
 
             print(pose);
@@ -266,14 +266,14 @@ int main(){
             }
 
             const Size imgSize(cam.dsize[0], cam.dsize[1]);
-            cv::Mat camMat = cv::Mat::zeros(3, 3, CV_64FC1);
+            cv::Mat cmat = cv::Mat::zeros(3, 3, CV_64FC1);
             cv::Mat dist = cv::Mat::zeros(1, 5, CV_64FC1);
 
-            camMat.at<double>(0, 0) = cam.fx;
-            camMat.at<double>(1, 1) = cam.fy;
-            camMat.at<double>(0, 2) = cam.cx;
-            camMat.at<double>(1, 2) = cam.cy;
-            camMat.at<double>(2, 2) = 1.0;
+            cmat.at<double>(0, 0) = cam.fx;
+            cmat.at<double>(1, 1) = cam.fy;
+            cmat.at<double>(0, 2) = cam.cx;
+            cmat.at<double>(1, 2) = cam.cy;
+            cmat.at<double>(2, 2) = 1.0;
 
             dist.at<double>(0) = cam.k1;
             dist.at<double>(1) = cam.k2;
@@ -282,7 +282,7 @@ int main(){
             dist.at<double>(4) = cam.k3;
             cv::Mat R, T, E, F;
 
-            const double rms = cv::stereoCalibrate(cvobjs, cvpixs0, cvpixs1, camMat, dist, camMat, dist, imgSize, R, T, E, F);
+            const double rms = cv::stereoCalibrate(cvobjs, cvpixs0, cvpixs1, cmat, dist, cmat, dist, imgSize, R, T, E, F);
             printf("opencv rms error: %g\n", rms);
             cout << "R " << R << endl;
             cout << "T " << T << endl;

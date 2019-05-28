@@ -66,7 +66,7 @@ int main(){
     // rectification
     RectParam rects[2];
     {
-        rectify(rects[1], rects[0], cams[1], poses[1], cams[0], poses[0]);
+        rectify(rects[0], rects[1], cams[0], poses[0], cams[1], poses[1]);
     }
 
     Mem2<Vec2> tables[2];
