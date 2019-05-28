@@ -108,8 +108,8 @@ namespace sp{
     // get random gauss
     SP_GENFUNC SP_REAL randg() {
         const int maxv = 2000;
-        const double a = (rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double b = (rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
         return SP_CAST(sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b));
     }
 
