@@ -180,16 +180,15 @@ namespace sp {
         return true;
     }
 
+    
+    //--------------------------------------------------------------------------------
     // Marching cubes
-    SP_CPUFUNC bool cnvVoxelToMesh(Mem1<Mesh3> &meshes, const Voxel<> &voxel) {
+    //--------------------------------------------------------------------------------
+  
+    namespace _mc {
+        SP_CPUFUNC Mem1<Mem1<Vec3> > getVertexOrder() {
+            Mem1<Mem1<Vec3> > orders;
 
-        meshes.clear();
-
-        Mem1<Mem1<Byte> > ptns;
-        Mem1<Mem1<Vec3> > orders;
-
-        {
-            // vertex orders
             for (int z = 0; z < 2; z++) {
                 for (int y = 0; y < 2; y++) {
                     for (int x = 0; x < 2; x++) {
@@ -209,14 +208,20 @@ namespace sp {
                     }
                 }
             }
+            return orders;
+        }
 
+        SP_CPUFUNC Mem1<Mem1<Byte> > getPattern() {
+            Mem1<Mem1<Byte> > ptns;
+            Mem1<Mem1<Vec3> > orders = getVertexOrder();
+            
             // 15 pattern
             const Byte list[][8] = {
-                { +0, +0, +0, +0, +0, +0, +0, +0 }, { +0, +0, +0, +0, +0, +0, +1, +0 }, { +0, +0, +0, +0, +0, +0, +1, +1 }, 
-                { +0, +0, +0, +1, +0, +0, +1, +0 }, { +0, +0, +0, +0, +1, +1, +0, +1 }, { +0, +0, +0, +0, +1, +1, +1, +1 }, 
-                { +0, +0, +1, +0, +1, +1, +0, +1 }, { +1, +0, +0, +1, +0, +1, +1, +0 }, { +1, +0, +0, +0, +1, +1, +1, +0 },
-                { +1, +0, +0, +0, +1, +1, +0, +1 }, { +0, +1, +0, +0, +0, +0, +1, +0 }, { +0, +1, +0, +0, +0, +0, +1, +1 },
-                { +0, +1, +1, +0, +0, +0, +0, +1 }, { +0, +1, +1, +0, +0, +1, +1, +0 }, { +0, +1, +0, +0, +1, +1, +1, +0 }
+                { +0, +0, +0, +0, +0, +0, +0, +0 },{ +0, +0, +0, +0, +0, +0, +1, +0 },{ +0, +0, +0, +0, +0, +0, +1, +1 },
+                { +0, +0, +0, +1, +0, +0, +1, +0 },{ +0, +0, +0, +0, +1, +1, +0, +1 },{ +0, +0, +0, +0, +1, +1, +1, +1 },
+                { +0, +0, +1, +0, +1, +1, +0, +1 },{ +1, +0, +0, +1, +0, +1, +1, +0 },{ +1, +0, +0, +0, +1, +1, +1, +0 },
+                { +1, +0, +0, +0, +1, +1, +0, +1 },{ +0, +1, +0, +0, +0, +0, +1, +0 },{ +0, +1, +0, +0, +0, +0, +1, +1 },
+                { +0, +1, +1, +0, +0, +0, +0, +1 },{ +0, +1, +1, +0, +0, +1, +1, +0 },{ +0, +1, +0, +0, +1, +1, +1, +0 }
             };
 
             for (int p = 0; p < 15; p++) {
@@ -231,7 +236,99 @@ namespace sp {
                 }
                 ptns.push(tmps);
             }
+            return ptns;
         }
+
+        SP_CPUFUNC Vec3 mvec(const char *v, const Vec3 *p, const int i, const int j) {
+            return (v == NULL) ? ((p[i] + p[j]) / (2.0)) : (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
+        };
+
+        SP_CPUFUNC Mesh3 mmesh(const Vec3 &a, const Vec3 &b, const Vec3 &c, const int pid) {
+            return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
+        };
+
+        SP_CPUFUNC Mesh3 mmesh(const char *v, const Vec3 *p, const int a0, const int a1, const int b0, const int b1, const int c0, const int c1, const int pid) {
+            return mmesh(mvec(v, p, a0, a1), mvec(v, p, b0, b1), mvec(v, p, c0, c1), pid);
+        };
+
+        SP_CPUFUNC Mem1<Mesh3> div3a(const Vec3 &a, const Vec3 &b, const Vec3 &c, const int pid) {
+            const Vec3 s = (a + b + c) / 3.0;
+            const Vec3 ab = (a + b) / 2.0;
+            const Vec3 bc = (b + c) / 2.0;
+            const Vec3 ca = (c + a) / 2.0;
+
+            Mem1<Mesh3> ret;
+            ret.push(mmesh(a, ab, s, pid));
+            ret.push(mmesh(a, s, ca, pid));
+            ret.push(mmesh(b, bc, s, pid));
+            ret.push(mmesh(b, s, ab, pid));
+            ret.push(mmesh(c, ca, s, pid));
+            ret.push(mmesh(c, s, bc, pid));
+            return ret;
+        };
+        SP_CPUFUNC Mem1<Mesh3> div3b(const Vec3 &a, const Vec3 &b, const Vec3 &c, const int pid) {
+
+            const Vec3 s = (a + b + c) / 3.0;
+            const Vec3 ab = (a + b) / 2.0;
+            const Vec3 bc = (b + c) / 2.0;
+            const Vec3 ca = (c + a) / 2.0;
+
+            Mem1<Mesh3> ret;
+            ret.push(mmesh(a, ab, ca, pid));
+            ret.push(mmesh(b, bc, ab, pid));
+            ret.push(mmesh(c, ca, bc, pid));
+            ret.push(mmesh(ab, bc, ca, pid));
+            return ret;
+        };
+        SP_CPUFUNC Mem1<Mesh3> div4(const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const int pid) {
+            const Vec3 s = (a + b + c + d) / 4.0;
+            const Vec3 ab = (a + b) / 2.0;
+            const Vec3 bc = (b + c) / 2.0;
+            const Vec3 cd = (c + d) / 2.0;
+            const Vec3 da = (d + a) / 2.0;
+           
+            Mem1<Mesh3> ret;
+            ret.push(mmesh(a, ab, da, pid));
+            ret.push(mmesh(s, da, ab, pid));
+            ret.push(mmesh(b, bc, ab, pid));
+            ret.push(mmesh(s, ab, bc, pid));
+            ret.push(mmesh(c, cd, bc, pid));
+            ret.push(mmesh(s, bc, cd, pid));
+            ret.push(mmesh(d, da, cd, pid));
+            ret.push(mmesh(s, cd, da, pid));
+            return ret;
+        };
+        SP_CPUFUNC Mem1<Mesh3> div6(const Vec3 &a, const Vec3 &b, const Vec3 &c, const Vec3 &d, const Vec3 &e, const Vec3 &f, const int pid) {
+            const Vec3 s = (a + b + c + d + e + f) / 6.0;
+            const Vec3 ab = (a + b) / 2.0;
+            const Vec3 bc = (b + c) / 2.0;
+            const Vec3 cd = (c + d) / 2.0;
+            const Vec3 de = (d + e) / 2.0;
+            const Vec3 ef = (e + f) / 2.0;
+            const Vec3 fa = (f + a) / 2.0;
+            Mem1<Mesh3> ret;
+            ret.push(mmesh(a, ab, s, pid));
+            ret.push(mmesh(a, s, fa, pid));
+            ret.push(mmesh(b, bc, s, pid));
+            ret.push(mmesh(b, s, ab, pid));
+            ret.push(mmesh(c, cd, s, pid));
+            ret.push(mmesh(c, s, bc, pid));
+            ret.push(mmesh(d, de, s, pid));
+            ret.push(mmesh(d, s, cd, pid));
+            ret.push(mmesh(e, ef, s, pid));
+            ret.push(mmesh(e, s, de, pid));
+            ret.push(mmesh(f, fa, s, pid));
+            ret.push(mmesh(f, s, ef, pid));
+            return ret;
+        };
+    }
+
+    SP_CPUFUNC bool cnvVoxelToMesh(Mem1<Mesh3> &meshes, const Voxel<> &voxel) {
+
+        meshes.clear();
+
+        const Mem1<Mem1<Byte> > ptns = _mc::getPattern();
+        const Mem1<Mem1<Vec3> > orders = _mc::getVertexOrder();
 
         Rect vrect = getRect3(voxel.dsize);
         for (int i = 0; i < 3; i++) {
@@ -304,14 +401,8 @@ namespace sp {
                             v[k] = vmap(round(vi.x), round(vi.y), round(vi.z));
                         }
 
-                        auto f = [&](const int i, const int j)-> Vec3 {
-                            return (abs(v[j]) * p[i] + abs(v[i]) * p[j]) / (abs(v[i]) + abs(v[j]));
-                        };
-                        auto g = [&](const Vec3 &a, const Vec3 &b, const Vec3 &c) -> Mesh3 {
-                            return (pid > 0) ? getMesh3(a, b, c) : getMesh3(a, c, b);
-                        };
                         auto h = [&](const int a0, const int a1, const int b0, const int b1, const int c0, const int c1) {
-                            ms.push(g(f(a0, a1), f(b0, b1), f(c0, c1)));
+                            ms.push(_mc::mmesh(v, p, a0, a1, b0, b1, c0, c1, pid));
                         };
 
                         switch (abs(pid)) {
@@ -406,8 +497,8 @@ namespace sp {
                                 cnt += (voxel.getv(round(p3.x), round(p3.y), round(p3.z)) >= 0) ? 1 : 0;
 
                                 if (cnt >= 3) {
-                                    zms[mz].push(getMesh3(f(a, b), f(b, d), f(a, c)));
-                                    zms[mz].push(getMesh3(f(a, c), f(b, d), f(c, d)));
+                                    zms[mz].push(getMesh3(_mc::mvec(v, p, a, b), _mc::mvec(v, p, b, d), _mc::mvec(v, p, a, c)));
+                                    zms[mz].push(getMesh3(_mc::mvec(v, p, a, c), _mc::mvec(v, p, b, d), _mc::mvec(v, p, c, d)));
                                     dpids[mz].push(15);
                                 }
                             };
@@ -672,7 +763,7 @@ namespace sp {
                 Vec2 &range = rmsk(u, v);
                 range = getVec2(0.0, SP_INFINITY);
 
-                const Vec3 vec = prjVec(invCam(cam, getVec2(u, v)));
+                const Vec3 vec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
                 for (int i = 0; i < vps.size(); i++) {
                     const Vec3 &pos = vps[i].pos;
                     const Vec3 &X = vps[i].axis[0];
@@ -810,7 +901,7 @@ namespace sp {
                 const SP_REAL maxv = rmsk(u, v).y;
                 if (minv <= SP_SMALL) continue;
 
-                const Vec3 cvec = prjVec(invCam(cam, getVec2(u, v)));
+                const Vec3 cvec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
                 const Vec3 mvec = ipose.rot * cvec;
 
                 SP_REAL detect = minv;

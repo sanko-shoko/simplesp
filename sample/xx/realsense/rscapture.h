@@ -92,7 +92,7 @@ private:
                         cnvDepthToCol(col, d, nearPlane, farPlane);
                         glColor(col);
 
-                        const Vec3 pnt = prjVec(invCam(*m_rs.getDepthCam(), getVec2(u, v))) * d;
+                        const Vec3 pnt = getVec3(invCam(*m_rs.getDepthCam(), getVec2(u, v)), 1.0) * d;
                         glVertex(pnt);
                     }
                 }

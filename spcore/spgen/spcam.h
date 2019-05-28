@@ -154,11 +154,25 @@ namespace sp{
         return pix;
     }
 
+    SP_GENFUNC Line2 mulCam(const CamParam &cam, const Line2 &npxline) {
+        Line2 pixline;
+        pixline.pos[0] = mulCam(cam, npxline.pos[0]);
+        pixline.pos[1] = mulCam(cam, npxline.pos[1]);
+        return pixline;
+    }
+
     SP_GENFUNC Vec2 invCam(const CamParam &cam, const Vec2 &pix) {
         Vec2 npx;
         npx.x = (pix.x - cam.cx) / cam.fx;
         npx.y = (pix.y - cam.cy) / cam.fy;
         return npx;
+    }
+
+    SP_GENFUNC Line2 invCam(const CamParam &cam, const Line2 &pixline) {
+        Line2 npxline;
+        npxline.pos[0] = invCam(cam, pixline.pos[0]);
+        npxline.pos[1] = invCam(cam, pixline.pos[1]);
+        return npxline;
     }
 
     // distiortion

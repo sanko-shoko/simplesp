@@ -231,7 +231,7 @@ namespace sp {
                     zbf[v * dsize[0] + u] = static_cast<DEPTH>((d > nearPlane && d < farPlane) ? d : 0.0);
                 }
             }
-
+            delete[]tmp;
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 

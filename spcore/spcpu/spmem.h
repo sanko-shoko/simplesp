@@ -294,10 +294,11 @@ namespace sp{
 
         void add(const int x, const TYPE &data) {
             extend();
-            for (int i = this->dsize[0] - 1; i > x; i--) {
+            const int ix = (x >= 0) ? x : this->dsize[0] + x;
+            for (int i = this->dsize[0] - 1; i > ix; i--) {
                 this->ptr[i] = this->ptr[i - 1];
             }
-            this->ptr[x] = data;
+            this->ptr[ix] = data;
         }
 
         void del(const int x) {
