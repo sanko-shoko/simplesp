@@ -16,7 +16,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC bool fit2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec3> &objs, const Mem1<Vec3> &drcs, const int searchLng = 10, const int maxit = 10){
-        const Rect rect = getRect2(img.dsize);
+        const Rect2 rect = getRect2(img.dsize);
 
         for (int it = 0; it < maxit; it++){
 

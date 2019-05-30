@@ -100,7 +100,7 @@ private:
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, fbo.m_tex[1]);
+            glBindTexture(GL_TEXTURE_2D, fbo.m_tx[1]);
 
             glBegin(GL_QUADS);
             glVertex2d(-1.0, -1.0);

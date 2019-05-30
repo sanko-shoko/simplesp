@@ -82,10 +82,8 @@ namespace ImGui {
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
     using namespace sp;
 
-    static void SetNextWindowRect(const Rect &rect, const ImGuiCond cond, const Rect *limit = NULL) {
-        SP_ASSERT(rect.dim == 2);
-        
-        Rect _rect = rect;
+    static void SetNextWindowRect(const Rect2 &rect, const ImGuiCond cond, const Rect2 *limit = NULL) {
+        Rect2 _rect = rect;
         if (limit != NULL) {
             for (int i = 0; i < 2; i++) {
                 if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
@@ -96,9 +94,8 @@ namespace ImGui {
         ImGui::SetNextWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
     }
 
-    static void SetWindowRect(const Rect &rect, const ImGuiCond cond, const Rect *limit = NULL) {
-        SP_ASSERT(rect.dim == 2);
-        Rect _rect = rect;
+    static void SetWindowRect(const Rect2 &rect, const ImGuiCond cond, const Rect2 *limit = NULL) {
+        Rect2 _rect = rect;
         if (limit != NULL) {
             for (int i = 0; i < 2; i++) {
                 if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
@@ -109,7 +106,7 @@ namespace ImGui {
         ImGui::SetWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
     }
 
-    static Rect GetWindowRect(){
+    static Rect2 GetWindowRect(){
         ImGuiContext& g = *GImGui;
         ImGuiWindow* window = g.CurrentWindow;
 

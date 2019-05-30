@@ -134,16 +134,22 @@ namespace sp{
     // rectangle
     //--------------------------------------------------------------------------------
 
-    struct Rect{
-        // dimension
-        int dim;
-
+    struct Rect2 {
         // dimension base
-        int dbase[SP_DIMMAX];
+        int dbase[2];
 
         // dimension size
-        int dsize[SP_DIMMAX];
+        int dsize[2];
     };
+
+    struct Rect3 {
+        // dimension base
+        int dbase[3];
+
+        // dimension size
+        int dsize[3];
+    };
+
 
 
     //--------------------------------------------------------------------------------

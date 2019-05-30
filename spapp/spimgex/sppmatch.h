@@ -29,7 +29,7 @@ namespace sp{
 
         srand(0);
 
-        const Rect rect = getRect2(img0.dsize);
+        const Rect2 rect = getRect2(img0.dsize);
 
         SP_REAL range = minval(img0.dsize[0], img0.dsize[1]) * 0.5;
 

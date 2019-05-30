@@ -83,8 +83,8 @@ namespace sp{
                     const Mem2<Byte> &pyimg0 = pyimgs0[p];
                     const Mem2<Byte> &pyimg1 = pyimgs1[p];
 
-                    const Rect rect0 = getRect2(pyimg0.dsize);
-                    const Rect rect1 = getRect2(pyimg1.dsize);
+                    const Rect2 rect0 = getRect2(pyimg0.dsize);
+                    const Rect2 rect1 = getRect2(pyimg1.dsize);
 
                     const Mem2<short> &dX = dXs[p];
                     const Mem2<short> &dY = dYs[p];

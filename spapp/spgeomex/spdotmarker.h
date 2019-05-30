@@ -307,10 +307,10 @@ namespace sp{
 
         void getBlob(Mem1<Vec2> &pixs, const Mem2<Byte> &orgImg, const Mem2<Byte> &minImg, const Mem2<int> &labelMap, const SP_REAL minScale){
 
-            const Mem1<Rect> rects = getLabelRect(labelMap);
+            const Mem1<Rect2> rects = getLabelRect(labelMap);
 
             for (int i = 0; i < rects.size(); i++) {
-                const Rect minRect = adjustRect(rects[i], 1);
+                const Rect2 minRect = adjustRect(rects[i], 1);
 
                 // check outside area
                 if (inRect(getRect2(minImg.dsize), minRect) == false) continue;
@@ -336,8 +336,7 @@ namespace sp{
                 const int thresh = (maxv + minv) / 2;
 
                 // fine binalize
-                Rect orgRect;
-                orgRect.dim = 2;
+                Rect2 orgRect;
                 for (int d = 0; d < 2; d++){
                     orgRect.dbase[d] = round(minRect.dbase[d] / minScale);
                     orgRect.dsize[d] = round(minRect.dsize[d] / minScale);
@@ -557,7 +556,7 @@ namespace sp{
             evalMap.zero();
 
             const Mat ihom = invMat(hom);
-            const Rect rect = getRect2(m_cam.dsize) - 10;
+            const Rect2 rect = getRect2(m_cam.dsize) - 10;
 
             for (int y = 0; y < evalMap.dsize[1]; y++) {
                 for (int x = 0; x < evalMap.dsize[0]; x++) {

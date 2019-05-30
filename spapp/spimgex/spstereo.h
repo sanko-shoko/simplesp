@@ -128,10 +128,10 @@ namespace sp{
             return true;
         }
 
-        Rect getDispRect(const int order) {
+        Rect2 getDispRect(const int order) {
             const int layers = m_maxDisp - m_minDisp + 1;
 
-            Rect rect = getRect2(m_dsize);
+            Rect2 rect = getRect2(m_dsize);
 
             const int maxv = (order > 0) ? m_maxDisp : -m_minDisp;
             const int minv = (order > 0) ? m_minDisp : -m_maxDisp;
@@ -147,7 +147,7 @@ namespace sp{
 
         void correspBM(Mem2<Disp> &dispMap, const Mem2<Byte> &src, const Mem2<Byte> &ref, const int order) {
 
-            const Rect rect = getDispRect(order);
+            const Rect2 rect = getDispRect(order);
 
             dispMap.resize(m_dsize);
             dispMap.zero();
@@ -176,7 +176,7 @@ namespace sp{
 
         void consistencyCheck(Mem2<Disp> &src, const Mem2<Disp> &ref, const SP_REAL thresh, const int order) {
 
-            const Rect rect = getDispRect(order);
+            const Rect2 rect = getDispRect(order);
 
             for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
                 for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
@@ -197,7 +197,7 @@ namespace sp{
 
             const CamParam &cam = (order > 0) ? m_cam[0] : m_cam[1];
 
-            const Rect rect = getDispRect(order);
+            const Rect2 rect = getDispRect(order);
 
             const SP_REAL f = m_cam[0].fx;
             const SP_REAL b = m_baseLine;

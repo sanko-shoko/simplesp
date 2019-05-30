@@ -23,7 +23,7 @@ namespace sp{
         Mem1<int> table;
         table.reserve(bin.size());
 
-        const Rect rect = getRect2(bin.dsize);
+        const Rect2 rect = getRect2(bin.dsize);
 
         const int linkNum = (near8 == true) ? 4 : 2;
         const int link[][2] = { { -1, 0 }, { 0, -1 }, { -1, -1 }, { +1, -1 } };
@@ -130,22 +130,22 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mem1<Rect> getLabelRect(const Mem2<int> &map){
+    SP_CPUFUNC Mem1<Rect2> getLabelRect(const Mem2<int> &map){
         const int labelNum = round(maxval(map) + 1);
         const int step = map.dsize[0];
 
-        Mem1<Rect> dst(labelNum);
+        Mem1<Rect2> dst(labelNum);
         dst.zero();
 
         const int *pMap = map.ptr;
-        Rect *pDst = dst.ptr;
+        Rect2 *pDst = dst.ptr;
 
         for (int v = 0; v < map.dsize[1]; v++){
             for (int u = 0; u < map.dsize[0]; u++){
                 const int id = *pMap++;
                 if (id < 0) continue;
-                Rect &rect = pDst[id];
-                if (rect.dim == 0) {
+                Rect2 &rect = pDst[id];
+                if (rect.dsize[0] == 0 || rect.dsize[1] == 0) {
                     rect = getRect2(u, v, 1, 1);
                 }
                 else {
@@ -167,7 +167,7 @@ namespace sp{
 
     SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelContour(const Mem2<int> &map, const bool onPixel = true, const bool useImgFrame = true){
 
-        const Mem1<Rect> rects = getLabelRect(map);
+        const Mem1<Rect2> rects = getLabelRect(map);
 
         // 8 nears clockwise search
         const int order8[8][2] = {
@@ -196,7 +196,7 @@ namespace sp{
         Mem1< Mem1<Vec2> > dst(rects.size());
 
         for (int i = 0; i < dst.size(); i++){
-            const Rect rect = rects[i];
+            const Rect2 rect = rects[i];
 
             if (useImgFrame == false){
                 if (inRect(getRect2(map.dsize) - 1, rect) == false) continue;
@@ -245,7 +245,7 @@ namespace sp{
                 else {
                     const int s = (start[vec[1] + 1][vec[0] + 1] + 4 - 1) % 4;
                    
-                    Rect trect = rect;
+                    Rect2 trect = rect;
                     trect.dsize[0]++;
                     trect.dsize[1]++;
 
@@ -303,14 +303,14 @@ namespace sp{
 
     SP_CPUFUNC Mem1<Mem1<Vec2> > getLabelMesh(const Mem2<int> &map, const bool useImgFrame = true) {
 
-        const Mem1<Rect> rects = getLabelRect(map);
+        const Mem1<Rect2> rects = getLabelRect(map);
 
         const Mem1<Mem1<Vec2 > > contours = getLabelContour(map, false, useImgFrame);
 
         Mem1<Mem1<Vec2> > dst(rects.size());
 
         for (int i = 0; i < dst.size(); i++) {
-            const Rect rect = rects[i];
+            const Rect2 rect = rects[i];
 
             if (useImgFrame == false) {
                 if (inRect(getRect2(map.dsize) - 1, rect) == false) continue;

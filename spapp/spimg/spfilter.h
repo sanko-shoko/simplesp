@@ -64,7 +64,7 @@ namespace sp{
         const int ch = sizeof(TYPE) / sizeof(ELEM);
         const int halfX = kernel.dsize[0] / 2;
 
-        const Rect rect = getRect2(dst.dsize);
+        const Rect2 rect = getRect2(dst.dsize);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -102,7 +102,7 @@ namespace sp{
         const int ch = sizeof(TYPE) / sizeof(ELEM);
         const int halfY = kernel.dsize[0] / 2;
 
-        const Rect rect = getRect2(dst.dsize);
+        const Rect2 rect = getRect2(dst.dsize);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -608,7 +608,7 @@ namespace sp{
             exptable[i] = v;
         }
 
-        const Rect rect = getRect2(dst.dsize);
+        const Rect2 rect = getRect2(dst.dsize);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
 

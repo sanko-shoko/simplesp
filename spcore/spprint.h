@@ -71,14 +71,27 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
-    SP_CPUFUNC void _print(const Rect &rect) {
+    SP_CPUFUNC void _print(const Rect2 &rect) {
         SP_PRINTF("[ ");
-        _print(rect.dim, rect.dbase);
+        _print(2, rect.dbase);
         SP_PRINTF(", ");
-        _print(rect.dim, rect.dsize);
+        _print(2, rect.dsize);
         SP_PRINTF(" ]");
     }
-    SP_CPUFUNC void print(const Rect &rect) {
+    SP_CPUFUNC void print(const Rect2 &rect) {
+        SP_PRINTF("Rect ");
+        _print(rect);
+        SP_PRINTF("\n");
+    }
+
+    SP_CPUFUNC void _print(const Rect3 &rect) {
+        SP_PRINTF("[ ");
+        _print(3, rect.dbase);
+        SP_PRINTF(", ");
+        _print(3, rect.dsize);
+        SP_PRINTF(" ]");
+    }
+    SP_CPUFUNC void print(const Rect3 &rect) {
         SP_PRINTF("Rect ");
         _print(rect);
         SP_PRINTF("\n");

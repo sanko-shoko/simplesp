@@ -330,7 +330,7 @@ namespace sp {
         const Mem1<Mem1<Byte> > ptns = _mc::getPattern();
         const Mem1<Mem1<Vec3> > orders = _mc::getVertexOrder();
 
-        Rect vrect = getRect3(voxel.dsize);
+        Rect3 vrect = getRect3(voxel.dsize);
         for (int i = 0; i < 3; i++) {
             vrect.dbase[i] -= 1;
             vrect.dsize[i] += 1;

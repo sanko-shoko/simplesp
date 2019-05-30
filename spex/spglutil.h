@@ -84,7 +84,7 @@ namespace sp {
         glMaterialfv(face, pname, param);
     }
 
-    SP_CPUFUNC void glViewport(const Rect &rect) {
+    SP_CPUFUNC void glViewport(const Rect2 &rect) {
         GLFWwindow *win = glfwGetCurrentContext();
 
         int ww, wh;
@@ -473,48 +473,47 @@ namespace sp {
         glEnd();
     }
 
-    SP_CPUFUNC void glRect(const Rect &rect, const double m = 0.5, const bool fill = false) {
+    SP_CPUFUNC void glRect(const Rect2 &rect, const double m = 0.5, const bool fill = false) {
         const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
 
-        if (rect.dim == 2) {
-            const Vec2 A = getVec2(rect.dbase[0] - m, rect.dbase[1] - m);
-            const Vec2 B = getVec2(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m);
+        const Vec2 A = getVec2(rect.dbase[0] - m, rect.dbase[1] - m);
+        const Vec2 B = getVec2(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m);
 
-            glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
-            glVertex(getVec2(A.x, A.y)); glVertex(getVec2(B.x, A.y)); 
-            glVertex(getVec2(B.x, B.y)); glVertex(getVec2(A.x, B.y));
+        glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
+        glVertex(getVec2(A.x, A.y)); glVertex(getVec2(B.x, A.y)); 
+        glVertex(getVec2(B.x, B.y)); glVertex(getVec2(A.x, B.y));
+        glEnd();
+    }
+    SP_CPUFUNC void glRect(const Rect3 &rect, const double m = 0.5, const bool fill = false) {
+
+        const Vec3 A = getVec3(rect.dbase[0] - m, rect.dbase[1] - m, rect.dbase[2] - m);
+        const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m, rect.dbase[2] + rect.dsize[2] - 1.0 + m);
+
+        if (fill == true) {
+            glBegin(GL_QUADS);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+            glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, A.z));
+            glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, A.z));
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(A.x, A.y, B.z));
+            glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, A.y, B.z));
             glEnd();
         }
-        if (rect.dim == 3) {
-            const Vec3 A = getVec3(rect.dbase[0] - m, rect.dbase[1] - m, rect.dbase[2] - m);
-            const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m, rect.dbase[2] + rect.dsize[2] - 1.0 + m);
+        else {
+            glBegin(GL_LINE_LOOP);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+            glEnd();
 
-            if (fill == true) {
-                glBegin(GL_QUADS);
-                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
-                glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
-                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, A.z));
-                glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, A.z));
-                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(A.x, A.y, B.z));
-                glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, A.y, B.z));
-                glEnd();
-            }
-            else {
-                glBegin(GL_LINE_LOOP);
-                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
-                glEnd();
+            glBegin(GL_LINE_LOOP);
+            glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glEnd();
 
-                glBegin(GL_LINE_LOOP);
-                glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
-                glEnd();
-
-                glBegin(GL_LINES);
-                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z));
-                glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, B.z));
-                glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z));
-                glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z));
-                glEnd();
-            }
+            glBegin(GL_LINES);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z));
+            glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, B.z));
+            glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z));
+            glEnd();
         }
     }
 

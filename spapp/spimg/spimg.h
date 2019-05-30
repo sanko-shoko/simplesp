@@ -148,7 +148,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect &rect, const SP_REAL angle = 0.0){
+    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect2 &rect, const SP_REAL angle = 0.0){
         SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -319,7 +319,7 @@ namespace sp{
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
-        const Rect rect = getRect2(tmp.dsize);
+        const Rect2 rect = getRect2(tmp.dsize);
         
         dst.resize(2, tmp.dsize);
         dst.zero();
@@ -356,7 +356,7 @@ namespace sp{
         const Mat imat = invMat(mat);
 
         const int ch = sizeof(TYPE) / sizeof(ELEM);
-        const Rect rect = getRect2(tmp.dsize);
+        const Rect2 rect = getRect2(tmp.dsize);
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){

@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef SP_USE_GLEW
-#define SP_USE_GLEW 1
-#endif
-
-#if SP_USE_GLEW
 #define GLEW_STATIC
 #include "GL/glew.h"
 
@@ -47,21 +42,20 @@ namespace sp {
 
     public:
         int dsize[2];
+        int samples;
+
+    private:
+        GLuint m_msfb;
+        GLuint m_mstx[2];
 
     public:
         GLuint m_fb;
-        GLuint m_tex[2];
+        GLuint m_tx[2];
         bool m_bind;
 
     private:
         void reset() {
-            dsize[0] = 0;
-            dsize[1] = 0;
-
-            m_fb = 0;
-            m_tex[0] = 0;
-            m_tex[1] = 0;
-            m_bind = false;
+            memset(this, 0, sizeof(FrameBufferObject));
         }
 
     public:
@@ -85,31 +79,41 @@ namespace sp {
 
         void free() {
             if (m_fb) {
-                glDeleteFramebuffersEXT(1, &m_fb);
+                glDeleteFramebuffers(1, &m_fb);
             }
-            if (m_tex[0]) {
-                glDeleteTextures(1, &m_tex[0]);
+            if (m_msfb) {
+                glDeleteFramebuffers(1, &m_msfb);
             }
-            if (m_tex[1]) {
-                glDeleteTextures(1, &m_tex[1]);
+            if (m_tx[0]) {
+                glDeleteTextures(1, &m_tx[0]);
+            }
+            if (m_tx[1]) {
+                glDeleteTextures(1, &m_tx[1]);
+            }
+            if (m_mstx[0]) {
+                glDeleteTextures(1, &m_mstx[0]);
+            }
+            if (m_mstx[1]) {
+                glDeleteTextures(1, &m_mstx[1]);
             }
             reset();
         }
 
-        void resize(const int dsize[2]) {
-            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1]) return;
+        void resize(const int dsize[2], const int samples = 1) {
+            const int s = maxval(1, samples);
+            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1] && this->samples == s) return;
 
             free();
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
-
-            glGenFramebuffersEXT(1, &m_fb);
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
+            this->samples = s;
 
             {
-                glGenTextures(1, &m_tex[0]);
-                glBindTexture(GL_TEXTURE_2D, m_tex[0]);
+                glGenFramebuffers(1, &m_fb);
+                glGenTextures(2, m_tx);
 
+                // color
+                glBindTexture(GL_TEXTURE_2D, m_tx[0]);
                 glPixelStorei(GL_PACK_ALIGNMENT, 1);
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
@@ -119,14 +123,29 @@ namespace sp {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+                // depth
+                glBindTexture(GL_TEXTURE_2D, m_tx[1]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_tex[0], 0);
-            }
-            {
-                glGenTextures(1, &m_tex[1]);
-                glBindTexture(GL_TEXTURE_2D, m_tex[1]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+            }
+            if (s > 1) {
+                glGenFramebuffers(1, &m_msfb);
+                glGenTextures(2, m_mstx);
+
+                // color
+                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0]);
+
+                glPixelStorei(GL_PACK_ALIGNMENT, 1);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_RGBA, dsize[0], dsize[1], false);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -134,30 +153,42 @@ namespace sp {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-                //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-                //glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+                // depth
+                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1]);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, m_tex[1], 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_DEPTH_COMPONENT, dsize[0], dsize[1], false);
             }
-
             glBindTexture(GL_TEXTURE_2D, 0);
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        void resize(const int dsize0, const int dsize1) {
+        void resize(const int dsize0, const int dsize1, const int samples = 1) {
             int dsize[2] = { dsize0, dsize1 };
-            resize(dsize);
+            resize(dsize, samples);
         }
 
         void bind() {
             glPushAttrib(GL_VIEWPORT_BIT);
             ::glViewport(0, 0, dsize[0], dsize[1]);
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
-
-            const GLenum buffer = GL_COLOR_ATTACHMENT0_EXT;
-            glDrawBuffers(1, &buffer);
+            if (m_msfb != 0) {
+                glBindFramebuffer(GL_FRAMEBUFFER, m_msfb);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
+            }
+            else {
+                glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
+            }
 
             m_bind = true;
             //glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -165,7 +196,21 @@ namespace sp {
         }
 
         void unbind() {
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+            if (m_msfb != 0) {
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
+                glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
+                glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
+                //glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
+                //glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+
+                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            }
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glPopAttrib();
             m_bind = false;
         }
@@ -173,8 +218,7 @@ namespace sp {
         void readi(void *img, const int ch) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
-            glFlush();
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
 
             unsigned char *tmp = new unsigned char[dsize[0] * dsize[1] * 4];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_RGBA, GL_UNSIGNED_BYTE, tmp);
@@ -199,15 +243,14 @@ namespace sp {
 
             delete[]tmp;
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
         template<typename DEPTH>
         void readz(DEPTH *zbf, bool orth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fb);
-            glFlush();
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
 
             float *tmp = new float[dsize[0] * dsize[1]];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp);
@@ -483,6 +526,5 @@ namespace sp {
 
     };
 }
-#endif
 
 #endif

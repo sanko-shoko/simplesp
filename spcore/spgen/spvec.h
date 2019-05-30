@@ -249,6 +249,11 @@ namespace sp {
         return (pers == true) ? getVec2(vec.x, vec.y) / vec.z : getVec2(vec.x, vec.y);
     }
 
+    // ray vec2 to vec3
+    SP_GENFUNC Vec3 rayVec(Vec2 &vec, const double z, const bool pers = true) {
+        return (pers == true) ? getVec3(vec.x, vec.y, 1.0) * z : getVec3(vec.x, vec.y, z);
+    }
+
     // square
     SP_GENFUNC SP_REAL sqVec(const Vec2 &vec) {
         return dotVec(vec, vec);

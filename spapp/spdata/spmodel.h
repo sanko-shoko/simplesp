@@ -429,9 +429,8 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadCube(const Rect &rect, const double m = 0.0) {
+    SP_CPUFUNC Mem1<Mesh3> loadCube(const Rect3 &rect, const double m = 0.0) {
         Mem1<Mesh3> model;
-        if (rect.dim != 3) return model;
 
         const Vec3 A = getVec3(rect.dbase[0] - 0.5 - m, rect.dbase[1] - 0.5 - m, rect.dbase[2] - 0.5 - m);
         const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 0.5 + m, rect.dbase[1] + rect.dsize[1] - 0.5 + m, rect.dbase[2] + rect.dsize[2] - 0.5 + m);

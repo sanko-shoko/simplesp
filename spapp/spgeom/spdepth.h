@@ -42,7 +42,7 @@ namespace sp{
             table[i] = v;
         }
 
-        const Rect rect = getRect2(dst.dsize);
+        const Rect2 rect = getRect2(dst.dsize);
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
