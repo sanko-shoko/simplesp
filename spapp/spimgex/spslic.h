@@ -73,7 +73,7 @@ namespace sp{
 
             // assign label
             for (int i = 0; i < pixs.size(); i++){
-                Rect rect = getRect2(round(pixs[i].x), round(pixs[i].y), 1, 1) + step;
+                Rect2 rect = getRect2(pixs[i]) + step;
                 rect = andRect(rect, getRect2(img.dsize));
 
                 for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++){

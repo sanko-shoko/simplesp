@@ -12,7 +12,7 @@ int main() {
             renderPoint(src, getVec2(400, 180), getCol3(0, 180, 0), 60);
         }
 
-        const Rect rect = getRect2(120, 90, 400, 300);
+        const Rect2 rect = getRect2(120, 90, 400, 300);
         Mem1<Vec2> vtxs;
         {
             vtxs.push(getVec2(rect.dbase[0], rect.dbase[1]));
@@ -39,7 +39,7 @@ int main() {
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba02.bmp", src));
         }
 
-        const Rect rect = getRect2(260, 60, 180, 260);
+        const Rect2 rect = getRect2(260, 60, 180, 260);
         Mem1<Vec2> vtxs;
         {
             vtxs.push(getVec2(rect.dbase[0], rect.dbase[1]));

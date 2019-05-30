@@ -355,7 +355,7 @@ namespace sp{
             dst.zero();
         }
 
-        Rect rect;
+        Rect2 rect;
 
         {
             int xs = dst.dsize[0];
@@ -424,7 +424,7 @@ namespace sp{
             dst.zero();
         }
 
-        Rect rect;
+        Rect2 rect;
 
         const Mesh3 pm = pose * mesh;
         {

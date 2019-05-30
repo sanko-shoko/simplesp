@@ -84,7 +84,7 @@ namespace sp{
 
         const int step = _SP_BITMARKERSIZE / (block + 2);
 
-        const Rect rect = getRect2(0, 0, block, block);
+        const Rect2 rect = getRect2(0, 0, block, block);
         for (int v = 0; v < img.dsize[1]; v++) {
             for (int u = 0; u < img.dsize[0]; u++) {
                 const int x = (u / step - 1);

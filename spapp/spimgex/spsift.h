@@ -356,7 +356,7 @@ namespace sp{
             {
                 hist.zero();
 
-                const Rect rect = getRect2(img.dsize) - 1;
+                const Rect2 rect = getRect2(img.dsize) - 1;
 
                 const int radius = round(3.0 * scl);
 
@@ -423,7 +423,7 @@ namespace sp{
             Mem3<SP_REAL> hist(DSC_BLKS + 2, DSC_BLKS + 2, DSC_BINS + 1);
             hist.zero();
 
-            const Rect rect = getRect2(img.dsize) - 1;
+            const Rect2 rect = getRect2(img.dsize) - 1;
 
             const SP_REAL block = DCS_SCL_FCTR * scl;
 

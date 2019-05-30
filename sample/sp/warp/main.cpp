@@ -38,7 +38,7 @@ int main(){
         };
         const Mat hom(3, 3, mat);
 
-        const Rect rect = getRect2(hom * vtxs);
+        const Rect2 rect = getRect2(hom * vtxs);
         
         Mat offset = eyeMat(3, 3);
         offset(0, 2) = -rect.dbase[0];
@@ -65,11 +65,11 @@ int main(){
         {
             Mat hom;
             if (calcHMatRANSAC(hom, pixs1, pixs0) == true) {
-                const Rect rect = getRect2(hom * vtxs);
+                const Rect2 rect = getRect2(hom * vtxs);
                 Mem2<Col3> dst;
 
                 if(0){
-                    const Rect rect = getRect2(hom * vtxs);
+                    const Rect2 rect = getRect2(hom * vtxs);
 
                     Mat offset = eyeMat(3, 3);
                     offset(0, 2) = -rect.dbase[0];
@@ -123,7 +123,7 @@ int main(){
                 Mem2<Col3> dst;
 
                 if (0) {
-                    const Rect rect = getRect2(hom * vtxs);
+                    const Rect2 rect = getRect2(hom * vtxs);
 
                     Mat offset = eyeMat(3, 3);
                     offset(0, 2) = -rect.dbase[0];

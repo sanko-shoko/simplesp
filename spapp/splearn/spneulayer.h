@@ -541,7 +541,7 @@ namespace sp{
 
             Mat mB = trnMat(Mat(m_nodeNum, m_output[0] * m_output[1], A.ptr)) * m_prm.w;
 
-            const Rect rect = getRect2(X.dsize);
+            const Rect2 rect = getRect2(X.dsize);
             for (int ov = 0; ov < m_output[1]; ov++){
                 for (int ou = 0; ou < m_output[0]; ou++){
 
@@ -699,7 +699,7 @@ namespace sp{
 
             Mem3<SP_REAL> Y(m_output);
 
-            const Rect rect = getRect2(X.dsize);
+            const Rect2 rect = getRect2(X.dsize);
             for (int oc = 0; oc < m_output[2]; oc++){
                 for (int ov = 0; ov < m_output[1]; ov++){
                     for (int ou = 0; ou < m_output[0]; ou++){
@@ -736,7 +736,7 @@ namespace sp{
             Mem<SP_REAL>  B(X.dim, X.dsize);
             B.zero();
 
-            const Rect rect = getRect2(X.dsize);
+            const Rect2 rect = getRect2(X.dsize);
             for (int oc = 0; oc < m_output[2]; oc++){
                 for (int ov = 0; ov < m_output[1]; ov++){
                     for (int ou = 0; ou < m_output[0]; ou++){

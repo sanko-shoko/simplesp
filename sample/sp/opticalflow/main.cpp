@@ -20,10 +20,10 @@ int main() {
         else {
             Mem2<Col3> img;
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
-            const Rect rect = adjustRect(getRect2(img.dsize), -64);
+            const Rect2 rect = adjustRect(getRect2(img.dsize), -64);
 
-            Rect rect0 = rect;
-            Rect rect1 = rect;
+            Rect2 rect0 = rect;
+            Rect2 rect1 = rect;
 
             rect1.dbase[0] += 30;
             rect1.dbase[1] += 30;

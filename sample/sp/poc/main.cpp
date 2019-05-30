@@ -13,10 +13,10 @@ int main(){
 
     Mem2<Byte> img0, img1;
     {
-        const Rect rect = adjustRect(getRect2(img.dsize), -128);
+        const Rect2 rect = adjustRect(getRect2(img.dsize), -128);
 
-        Rect rect0 = rect;
-        Rect rect1 = rect;
+        Rect2 rect0 = rect;
+        Rect2 rect1 = rect;
 
         rect1.dbase[0] += 12;
         rect1.dbase[1] += 34;
