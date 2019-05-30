@@ -191,8 +191,8 @@ namespace sp {
             }
 
             m_bind = true;
-            glClearColor(0.0, 0.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //glClearColor(0.0, 0.0, 0.0, 1.0);
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void unbind() {
@@ -219,7 +219,6 @@ namespace sp {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
             glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
-            glFlush();
 
             unsigned char *tmp = new unsigned char[dsize[0] * dsize[1] * 4];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_RGBA, GL_UNSIGNED_BYTE, tmp);
@@ -252,7 +251,6 @@ namespace sp {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
             glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
-            glFlush();
 
             float *tmp = new float[dsize[0] * dsize[1]];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp);
