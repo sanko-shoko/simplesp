@@ -12,8 +12,6 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
-#include "GLFW/glfw3.h"
-
 namespace sp {
 
     class VertexBufferObject {
@@ -40,15 +38,14 @@ namespace sp {
 
     class FrameBufferObject {
 
-    public:
-        int dsize[2];
-        int samples;
-
     private:
+        int samples;
         GLuint m_msfb;
         GLuint m_mstx[2];
 
     public:
+        int dsize[2];
+       
         GLuint m_fb;
         GLuint m_tx[2];
         bool m_bind;

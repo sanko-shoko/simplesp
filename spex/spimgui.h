@@ -27,27 +27,9 @@ namespace sp {
         return col;
     }
 
-    SP_CPUFUNC void glColor(const ImVec4 &imv) {
-        glColor4d(imv.x, imv.y, imv.z, imv.w);
-    }
-
     SP_CPUFUNC Vec2 getVec2(const ImVec2 &imv) {
         return getVec2(imv.x, imv.y);
     }
-
-}
-
-SP_CPUFUNC bool operator == (const ImVec4 &vec0, const ImVec4 &vec1) {
-    bool ret = true;
-    ret &= (vec0.x == vec1.x);
-    ret &= (vec0.y == vec1.y);
-    ret &= (vec0.z == vec1.z);
-    ret &= (vec0.w == vec1.w);
-    return ret;
-}
-
-SP_CPUFUNC bool operator != (const ImVec4 &vec0, const ImVec4 &vec1) {
-    return !(vec0 == vec1);
 }
 
 SP_CPUFUNC ImVec2 getImVec2(const sp::Vec2 &spvec) {
@@ -66,18 +48,6 @@ SP_CPUFUNC ImVec4 getImVec4(const sp::Col4 &spcol) {
 }
 
 namespace ImGui {
-
-    class ItemWidth {
-    public:
-        ItemWidth(const float width) {
-            ImGui::PushItemWidth(width);
-        }
-        ~ItemWidth() {
-            ImGui::PopItemWidth();
-        }
-    };
-
-#define IMGUI_ITEMWIDTH(WIDTH) ImGui::ItemWidth _itemWidth(WIDTH);
 
 #define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
     using namespace sp;
@@ -106,7 +76,7 @@ namespace ImGui {
         ImGui::SetWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
     }
 
-    static Rect2 GetWindowRect(){
+    static Rect2 GetWindowRect() {
         ImGuiContext& g = *GImGui;
         ImGuiWindow* window = g.CurrentWindow;
 
@@ -121,7 +91,7 @@ namespace ImGui {
     }
 
     static bool ShowText(const std::string text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
-        
+
         char name[32] = { 0 };
         const int maxv = 100;
         for (int i = 0; i < maxv; i++) {
@@ -138,7 +108,7 @@ namespace ImGui {
             const float backup = ImGui::GetFontSize();
             ImGui::SetWindowFontScale(scale);
             ImGui::SetWindowPos(pos, ImGuiCond_Always);
- 
+
             ImGui::Text(text.c_str());
 
             ImGui::SetWindowFontScale(backup);
