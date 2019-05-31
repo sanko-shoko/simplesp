@@ -40,7 +40,6 @@ private:
         printf("'a' key : capture simulation image\n");
         printf("'s' key : stereo matching\n");
         printf("'f' key : switch view mode (2d <-> 3d)\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -187,6 +186,9 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         if (m_view3d == false) {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);

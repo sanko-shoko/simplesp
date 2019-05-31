@@ -39,7 +39,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // mouse
     //--------------------------------------------------------------------------------
-    
+
     class Mouse {
 
     public:
@@ -95,7 +95,6 @@ namespace sp {
         void setScroll(const double x, const double y) {
             scroll = y;
         }
-
     };
 
 
@@ -150,7 +149,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // base window
     //--------------------------------------------------------------------------------
-  
+
     class BaseWindow {
 
     protected:
@@ -185,11 +184,11 @@ namespace sp {
         virtual void display() {
         }
 
- 
+
     protected:
 
         // window ptr
-        GLFWwindow *m_win;
+        GLFWwindow * m_win;
 
         // parent window
         BaseWindow *m_parent;
@@ -214,14 +213,8 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
-        // back gournd color
-        const Col4 *m_bgcol;
-
-        // control view flag
-        bool m_space;
-
-        // escape flag
-        bool m_escape;
+        // use default ui
+        bool m_usedui;
 
     public:
 
@@ -232,13 +225,9 @@ namespace sp {
             m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
 
-            const static Col4 col = getCol4(24, 32, 32, 255);
-            m_bgcol = &col;
-
             memset(m_key, 0, sizeof(m_key));
-            
-            m_space = true;
-            m_escape = true;
+
+            m_usedui = true;
         }
 
 
@@ -252,6 +241,7 @@ namespace sp {
                 // glfw create window
                 m_win = glfwCreateWindow(width, height, name, NULL, NULL);
             }
+
             if (m_win == NULL) {
                 SP_PRINTF(" Can't create GLFW window.\n");
                 glfwTerminate();
@@ -280,7 +270,7 @@ namespace sp {
                 ImGui::GetIO().IniFilename = NULL;
             }
 #endif
- 
+
             init();
 
             if (parent != NULL) {
@@ -300,7 +290,7 @@ namespace sp {
 
             SP_ASSERT(create(name, width, height) == true);
 
-            while (!glfwWindowShouldClose(m_win) && (m_escape == false || !glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
+            while (!glfwWindowShouldClose(m_win)) {
 
                 if (main() == false) break;
 
@@ -350,7 +340,7 @@ namespace sp {
 
         bool main() {
 
-            if (glfwWindowShouldClose(m_win) || (m_escape == true && glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
+            if (glfwWindowShouldClose(m_win)) {
                 glfwDestroyWindow(m_win);
                 m_win = NULL;
                 return false;
@@ -374,15 +364,6 @@ namespace sp {
                 ImGui::NewFrame();
             }
 #endif
-            if (m_bgcol != NULL) {
-                glClearColor(m_bgcol->r / 255.f, m_bgcol->g / 255.f, m_bgcol->b / 255.f, m_bgcol->a / 255.f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            }
-            {
-                double xpos, ypos;
-                glfwGetCursorPos(m_win, &xpos, &ypos);
-                m_mouse.setPos(xpos, ypos);
-            }
 
             display();
 
@@ -401,6 +382,7 @@ namespace sp {
                 }
             }
 
+            m_mouse.setScroll(0.0, 0.0);
             return true;
         }
 
@@ -408,7 +390,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // focus
         //--------------------------------------------------------------------------------
-        
+
         bool isFocused() {
             return glfwGetWindowAttrib(m_win, GLFW_FOCUSED);
         }
@@ -444,7 +426,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                     return;
                 }
@@ -456,18 +438,22 @@ namespace sp {
 
         void _mousePos(double x, double y) {
 
+            m_mouse.setPos(x, y);
+
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     return;
                 }
             }
 #endif
 
-            // control view
-            if (m_space == true && m_key[GLFW_KEY_SPACE] > 0) {
-                controlView(m_viewPos, m_viewScale, m_mouse);
-                return;
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
             }
 
             mousePos(x, y);
@@ -479,7 +465,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                     m_mouse.setScroll(0.0, 0.0);
                     return;
@@ -487,15 +473,15 @@ namespace sp {
             }
 #endif
 
-            // control view
-            if (m_space == true && m_key[GLFW_KEY_SPACE] > 0) {
-                controlView(m_viewPos, m_viewScale, m_mouse);
-                m_mouse.setScroll(0.0, 0.0);
-                return;
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
             }
 
             mouseScroll(x, y);
-            m_mouse.setScroll(0.0, 0.0);
         }
 
         void _keyFun(int key, int scancode, int action, int mods) {

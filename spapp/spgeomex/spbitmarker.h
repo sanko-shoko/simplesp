@@ -89,7 +89,7 @@ namespace sp{
             for (int u = 0; u < img.dsize[0]; u++) {
                 const int x = (u / step - 1);
                 const int y = (v / step - 1);
-                if (inRect2(rect, x, y) == false) continue;
+                if (inRect(rect, x, y) == false) continue;
 
                 const Byte val = bits[y * block + x] ? 0 : SP_BYTEMAX;
                 img(u, v) = getCol3(val, val, val);

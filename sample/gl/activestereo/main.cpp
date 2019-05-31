@@ -48,7 +48,6 @@ private:
         printf("'s' key : decode gray code\n");
         printf("'d' key : decode gray code + phase shift\n");
         printf("'f' key : switch view mode (2d <-> 3d)\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -184,6 +183,9 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         {
             static double pre = 0.0;
             const double dif = static_cast<double>(clock() - pre) / CLOCKS_PER_SEC;

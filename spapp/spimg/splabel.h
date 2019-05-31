@@ -46,7 +46,7 @@ namespace sp{
                     const int ru = u + link[i][0];
                     const int rv = v + link[i][1];
 
-                    if (inRect2(rect, ru, rv) == false) continue;
+                    if (inRect(rect, ru, rv) == false) continue;
                     if (pBin[rv * step + ru] == 0) continue;
 
                     const int refLabel = table[pMap[rv * step + ru]];
@@ -229,7 +229,7 @@ namespace sp{
                         const int t = (s + j) % 8;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
-                        if (inRect2(rect, x, y) == false) continue;
+                        if (inRect(rect, x, y) == false) continue;
 
                         if (map(x, y) == i) {
                             vec[0] = x - cx;
@@ -275,7 +275,7 @@ namespace sp{
                         const int t = (s + j) % 4;
                         const int x = cx + order[t][0];
                         const int y = cy + order[t][1];
-                        if (inRect2(trect, x, y) == false) continue;
+                        if (inRect(trect, x, y) == false) continue;
 
                         if (edge[t] == true) {
                             vec[0] = x - cx;

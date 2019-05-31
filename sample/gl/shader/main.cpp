@@ -23,7 +23,6 @@ class RenderGUI : public BaseWindow {
 private:
 
     void help() {
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -158,6 +157,8 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         edge();
 

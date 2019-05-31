@@ -435,7 +435,7 @@ namespace sp{
     SP_GENFUNC Pose invPose(const Pose &pose){
         Pose dst;
         dst.rot = invRot(pose.rot);
-        dst.trn = mulVec3(mulRot(dst.rot, pose.trn), -1.0);
+        dst.trn = mulVec(mulRot(dst.rot, pose.trn), -1.0);
 
         return dst;
     }
@@ -443,7 +443,7 @@ namespace sp{
     SP_GENFUNC Pose mulPose(const Pose &pose0, const Pose &pose1){
         Pose dst;
         dst.rot = mulRot(pose0.rot, pose1.rot);
-        dst.trn = addVec3(mulRot(pose0.rot, pose1.trn), pose0.trn);
+        dst.trn = addVec(mulRot(pose0.rot, pose1.trn), pose0.trn);
 
         return dst;
     }
@@ -483,7 +483,7 @@ namespace sp{
     SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL) {
         bool ret = true;
         ret &= cmpRot(pose0.rot, pose1.rot, tr);
-        ret &= cmpVec3(pose0.trn, pose1.trn, tt);
+        ret &= cmpVec(pose0.trn, pose1.trn, tt);
         return ret;
     }
 

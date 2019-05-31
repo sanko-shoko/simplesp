@@ -330,42 +330,42 @@ namespace sp{
         return true;
     }
 
-    SP_GENFUNC bool inRect2(const Rect2 &rect, const double d0, const double d1) {
+    SP_GENFUNC bool inRect(const Rect2 &rect, const double d0, const double d1) {
         const double d[] = { d0, d1 };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect2(const int *dsize, const double d0, const double d1) {
+    SP_GENFUNC bool inRect(const int *dsize, const double d0, const double d1) {
         const double d[] = { d0, d1 };
         return inRect(getRect2(dsize), d);
     }
 
-    SP_GENFUNC bool inRect2(const Rect2 &rect, const Vec2 &vec) {
+    SP_GENFUNC bool inRect(const Rect2 &rect, const Vec2 &vec) {
         const double d[] = { vec.x, vec.y };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect2(const int *dsize, const Vec2 &vec) {
+    SP_GENFUNC bool inRect(const int *dsize, const Vec2 &vec) {
         const double d[] = { vec.x, vec.y };
         return inRect(getRect2(dsize), d);
     }
 
-    SP_GENFUNC bool inRect3(const Rect3 &rect, const double d0, const double d1, const double d2) {
+    SP_GENFUNC bool inRect(const Rect3 &rect, const double d0, const double d1, const double d2) {
         const double d[] = { d0, d1, d2 };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect3(const int *dsize, const double d0, const double d1, const double d2) {
+    SP_GENFUNC bool inRect(const int *dsize, const double d0, const double d1, const double d2) {
         const double d[] = { d0, d1, d2 };
         return inRect(getRect3(dsize), d);
     }
 
-    SP_GENFUNC bool inRect3(const Rect3 &rect, const Vec3 &vec) {
+    SP_GENFUNC bool inRect(const Rect3 &rect, const Vec3 &vec) {
         const double d[] = { vec.x, vec.y, vec.z };
         return inRect(rect, d);
     }
 
-    SP_GENFUNC bool inRect3(const int *dsize, const Vec3 &vec) {
+    SP_GENFUNC bool inRect(const int *dsize, const Vec3 &vec) {
         const double d[] = { vec.x, vec.y, vec.z };
         return inRect(getRect3(dsize), d);
     }
@@ -468,6 +468,11 @@ namespace sp{
         return ret;
     }
 
+
+    //--------------------------------------------------------------------------------
+    // rect operator
+    //--------------------------------------------------------------------------------
+    
     SP_GENFUNC Rect2 operator + (const Rect2 &rect, const int val) {
         return adjustRect(rect, +val);
     }
@@ -538,6 +543,7 @@ namespace sp{
         return !cmpRect(rect0, rect1);
     }
 
+
     //--------------------------------------------------------------------------------
     // check memory ptr
     //--------------------------------------------------------------------------------
@@ -556,7 +562,6 @@ namespace sp{
     SP_GENFUNC bool isValid(const ExPtr<TYPE> &src) {
         return isValid(src, src.dim);
     }
-
 
 
     //--------------------------------------------------------------------------------

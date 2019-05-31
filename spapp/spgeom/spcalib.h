@@ -794,7 +794,7 @@ namespace sp{
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int j = 0; j < pixs0[i].size(); j++) {
                 for (int k = 0; k < pixs1[i].size(); k++) {
-                    if (cmpVec2(objs0[i][j], objs1[i][k]) == true) {
+                    if (cmpVec(objs0[i][j], objs1[i][k]) == true) {
                         tpixs0.push(pixs0[i][j]);
                         tpixs1.push(pixs1[i][k]);
                         tobjs.push(objs0[i][j]);

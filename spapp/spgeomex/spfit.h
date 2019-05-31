@@ -36,7 +36,7 @@ namespace sp{
                 const Vec2 drc2 = mulMat(jNpxToDist, 2, 2, getVec2(drc.x, drc.y));
                 const Vec2 nrm = unitVec(getVec2(-drc2.y, drc2.x));
 
-                if (inRect2(rect, pix.x, pix.y) == false) continue;
+                if (inRect(rect, pix.x, pix.y) == false) continue;
 
                 SP_REAL maxv = 0.0;
                 SP_REAL minv = SP_BYTEMAX;

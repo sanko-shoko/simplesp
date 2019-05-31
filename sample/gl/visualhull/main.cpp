@@ -33,7 +33,6 @@ private:
     void help() {
         printf("'v' key : execute visual hull\n");
         printf("'s' key : switch mode (original model <-> reconstructed model)\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -105,6 +104,8 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render model
         {

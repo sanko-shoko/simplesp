@@ -94,7 +94,7 @@ namespace sp {
         char getv(const int x, const int y, const int z) const {
             char val = SP_VOXEL_NULL;
 
-            if (inRect3(dsize, x, y, z) == true) {
+            if (inRect(dsize, x, y, z) == true) {
                 val = vmap(x, y, z);
             }
             return val;
@@ -103,7 +103,7 @@ namespace sp {
         char getw(const int x, const int y, const int z) const {
             char wei = 0;
 
-            if (inRect3(dsize, x, y, z) == true) {
+            if (inRect(dsize, x, y, z) == true) {
                 wei = wmap(x, y, z);
             }
             return wei;
@@ -155,7 +155,7 @@ namespace sp {
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
-                        if (inRect2(pnmap.dsize, pix.x, pix.y) == false) continue;
+                        if (inRect(pnmap.dsize, pix.x, pix.y) == false) continue;
 
                         const Vec3 &pos = pnmap(round(pix.x), round(pix.y)).pos;
                         const Vec3 &nrm = pnmap(round(pix.x), round(pix.y)).nrm;
@@ -831,7 +831,7 @@ namespace sp {
                         const Vec3 cpos = pose * ((mpos - cent) * unit);
 
                         const Vec2 pix = mulCam(cam, prjVec(cpos));
-                        if (inRect2(img.dsize, pix.x, pix.y) == false) continue;
+                        if (inRect(img.dsize, pix.x, pix.y) == false) continue;
 
                         const Byte &val = img(round(pix.x), round(pix.y));
 
@@ -868,7 +868,7 @@ namespace sp {
                     const Vec3 cpos = pose * ((mpos - cent) * voxel.unit);
 
                     const Vec2 pix = mulCam(cam, prjVec(cpos));
-                    if (inRect2(depth.dsize, pix.x, pix.y) == false) continue;
+                    if (inRect(depth.dsize, pix.x, pix.y) == false) continue;
 
                     const SP_REAL d = depth(round(pix.x), round(pix.y));
                     if (d == 0.0) continue;
@@ -915,7 +915,7 @@ namespace sp {
                     const int y = round(mpos.y);
                     const int z = round(mpos.z);
 
-                    if (inRect3(voxel.dsize, x, y, z) == false) continue;
+                    if (inRect(voxel.dsize, x, y, z) == false) continue;
 
                     const char val = voxel.vmap(x, y, z);
                     const char wei = voxel.wmap(x, y, z);

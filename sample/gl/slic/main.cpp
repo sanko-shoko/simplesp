@@ -23,7 +23,6 @@ private:
 
     void help() {
         printf("'s' key : switch image\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -49,6 +48,8 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // view 2D
         glLoadView2D(m_view->dsize, m_viewPos, m_viewScale);

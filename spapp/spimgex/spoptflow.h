@@ -96,7 +96,7 @@ namespace sp{
                         const Vec2 pix1 = pixs[i] * scale;
                         const Vec2 pix0 = pix1 + flows[i] * scale;
 
-                        if (inRect2(rect0, pix0.x, pix0.y) == false || inRect2(rect1, pix1.x, pix1.y) == false) {
+                        if (inRect(rect0, pix0.x, pix0.y) == false || inRect(rect1, pix1.x, pix1.y) == false) {
                             mask[i] = false;
                             continue;
                         }
@@ -135,7 +135,7 @@ namespace sp{
                                 const int i0y = ipix0y + (y - whalf);
                                 const int i1x = ipix1x + (x - whalf);
                                 const int i1y = ipix1y + (y - whalf);
-                                if (inRect2(rect0, i0x, i0y) == false || inRect2(rect1, i1x, i1y) == false) continue;
+                                if (inRect(rect0, i0x, i0y) == false || inRect(rect1, i1x, i1y) == false) continue;
 
                                 const SP_REAL gx = acs2(dX, i1x, i1y);
                                 const SP_REAL gy = acs2(dY, i1x, i1y);
@@ -216,7 +216,7 @@ namespace sp{
                     {
                         const Vec2 pix0 = (pixs[i] + flows[i]) * scale;
 
-                        if (inRect2(rect0, pix0.x, pix0.y) == false) {
+                        if (inRect(rect0, pix0.x, pix0.y) == false) {
                             mask[i] = false;
                             break;
                         }
