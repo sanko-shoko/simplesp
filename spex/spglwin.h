@@ -22,22 +22,24 @@
 #include "spcore/spcore.h"
 
 #include <string>
-#include <chrono>
 #include <map>
 
 namespace sp {
 
     //--------------------------------------------------------------------------------
-    // mouse
+    // additional define
     //--------------------------------------------------------------------------------
-
-#define GLFW_DOUBLECLICK 3
 
 #define GLFW_KEY_SHIFT (GLFW_KEY_LAST + 1)
 #define GLFW_KEY_CONTROL (GLFW_KEY_LAST + 2)
 #define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
 #define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
 
+
+    //--------------------------------------------------------------------------------
+    // mouse
+    //--------------------------------------------------------------------------------
+    
     class Mouse {
 
     public:
@@ -65,18 +67,6 @@ namespace sp {
         void setButton(const int button, const int action, const int mods) {
 
             int _action = action;
-
-            if (_action == GLFW_PRESS) {
-                using namespace std::chrono;
-
-                static system_clock::time_point prev = system_clock::now();
-                const system_clock::time_point crnt = system_clock::now();
-                const double diff = duration <double, std::milli>(crnt - prev).count();
-                if (diff > 10.0 && diff < 400.0) {
-                    _action = GLFW_DOUBLECLICK;
-                }
-                prev = crnt;
-            }
 
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 buttonL = _action;
