@@ -102,7 +102,9 @@ namespace sp{
     // get random uniform (-1.0, 1.0)
     SP_GENFUNC SP_REAL randu() {
         const int maxv = 2000;
-        return SP_CAST(2.0 * (rand() % (maxv + 1) + 1) / (maxv + 2) - 1.0);
+        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double u = 2.0 * a - 1.0;
+        return SP_CAST(u);
     }
 
     // get random gauss
@@ -110,7 +112,8 @@ namespace sp{
         const int maxv = 2000;
         const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
         const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
-        return SP_CAST(sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b));
+        const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
+        return SP_CAST(g);
     }
 
     // x * x

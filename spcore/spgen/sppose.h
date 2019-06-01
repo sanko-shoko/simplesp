@@ -552,7 +552,7 @@ namespace sp{
 
 
     SP_GENFUNC Pose getGeodesicPose(const int level, const int id, const SP_REAL distance = 0.0) {
-        const Vec3 v = getMeshPos(getGeodesicMesh(level, id)) * (-1.0);
+        const Vec3 v = getMeshCent(getGeodesicMesh(level, id)) * (-1.0);
         const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
         return pose;
     }

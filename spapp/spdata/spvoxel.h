@@ -14,7 +14,7 @@ namespace sp {
 #define SP_VOXEL_WMAX 20
 #define SP_VOXEL_NULL -127
 
-    template<typename TYPE = char>
+    template<typename CELM = char>
     class Voxel {
 
     public:
@@ -24,14 +24,14 @@ namespace sp {
         // voxel unit length
         SP_REAL unit;
 
-        // value map
-        Mem3<char> vmap;
-
         // weight map
         Mem3<char> wmap;
 
+        // value map
+        Mem3<char> vmap;
+
         // color map
-        Mem3<TYPE> cmap;
+        Mem3<CELM> cmap;
     public:
 
         Voxel() {

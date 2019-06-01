@@ -19,19 +19,38 @@ namespace sp {
     private:
         GLuint m_buffer;
 
+        int m_size;
+
+    private:
+        VertexBufferObject(const VertexBufferObject &vbo) {}
+        VertexBufferObject& operator =(const VertexBufferObject &vbo) {}
+
     public:
 
         VertexBufferObject() {
-            m_buffer = 0;
+            m_size = 0;
+            glGenBuffers(1, &m_buffer);
         }
 
-        void set(const void *vtx, const int size) {
-            if (m_buffer == 0) {
-                glGenBuffers(1, &m_buffer);
-            }
+        ~VertexBufferObject() {
+            glDeleteBuffers(1, &m_buffer);
+        }
 
-            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+        void data(const void *vtx, const int size) {
+            bind();
+            m_size = size;
             glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
+            unbind();
+        }
+
+        void bind() {
+            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+        }
+        void unbind() {
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+        int size() {
+            return m_size;
         }
     };
 
@@ -244,7 +263,7 @@ namespace sp {
         }
 
         template<typename DEPTH>
-        void readz(DEPTH *zbf, bool orth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readz(DEPTH *zbf, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
             glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
@@ -257,7 +276,7 @@ namespace sp {
                 for (int u = 0; u < dsize[0]; u++) {
                     const float t = tmp[(dsize[1] - 1 - v) * dsize[0] + u];
                     double d = 0.0;
-                    if (orth == false) {
+                    if (pers == true) {
                         const double div = (farPlane - t * (farPlane - nearPlane));
                         if (div < 0.001) continue;
 

@@ -27,7 +27,7 @@ namespace sp{
     SP_CPUFUNC Vec3 getModelCenter(const Mem1<Mesh3> &model){
         Vec3 sum = zero<Vec3>();
         for (int i = 0; i < model.size(); i++){
-            sum += getMeshPos(model[i]);
+            sum += getMeshCent(model[i]);
         }
 
         return sum / model.size();
@@ -36,7 +36,7 @@ namespace sp{
     SP_CPUFUNC SP_REAL getModelRadius(const Mem1<Mesh3> &model){
         Mem1<SP_REAL> mem(model.size());
         for (int i = 0; i < mem.size(); i++){
-            mem[i] = normVec(getMeshPos(model[i]));
+            mem[i] = normVec(getMeshCent(model[i]));
         }
 
         return maxval(mem);
@@ -57,7 +57,7 @@ namespace sp{
         Mem1<VecPN3> tmp;
         const int num = getGeodesicMeshNum(0);
         for (int i = 0; i < num; i++){
-            const Vec3 v = getMeshPos(getGeodesicMesh(0, i)) * (-1.0);
+            const Vec3 v = getMeshCent(getGeodesicMesh(0, i)) * (-1.0);
             const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
             Mem2<VecPN3> map;
             renderVecPN(map, cam, pose, model);
@@ -202,7 +202,7 @@ namespace sp{
             pmodels.resize(num);
 
             for (int i = 0; i < num; i++) {
-                const Vec3 v = getMeshPos(getGeodesicMesh(level, i)) * (-1.0);
+                const Vec3 v = getMeshCent(getGeodesicMesh(level, i)) * (-1.0);
                 const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
                
                 pmodels[i].pose = pose;

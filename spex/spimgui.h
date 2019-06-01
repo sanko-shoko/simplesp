@@ -77,8 +77,7 @@ namespace ImGui {
     }
 
     static Rect2 GetWindowRect() {
-        ImGuiContext& g = *GImGui;
-        ImGuiWindow* window = g.CurrentWindow;
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
 
         return getRect2(sp::round(window->Pos.x), sp::round(window->Pos.y), sp::round(window->Size.x), sp::round(window->Size.y));
     }
@@ -95,7 +94,7 @@ namespace ImGui {
         char name[32] = { 0 };
         const int maxv = 100;
         for (int i = 0; i < maxv; i++) {
-            sprintf(name, "showtext%04d", i);
+            sprintf(name, "##showtext%04d", i);
             const ImGuiWindow* window = ImGui::FindWindowByName(name);
             if (window == NULL || window->Active == false) {
                 break;
