@@ -294,13 +294,44 @@ namespace sp {
     }
 
     // round
-    SP_GENFUNC Vec2 round(const Vec2 &vec) {
+    SP_GENFUNC Vec2 roundVec(const Vec2 &vec) {
         return getVec2(round(vec.x), round(vec.y));
     }
 
     // round
-    SP_GENFUNC Vec3 round(const Vec3 &vec) {
+    SP_GENFUNC Vec3 roundVec(const Vec3 &vec) {
         return getVec3(round(vec.x), round(vec.y), round(vec.z));
+    }
+
+    // round
+    SP_GENFUNC Vec2 roundNrm(const Vec2 &nrm) {
+        Vec2 rnrm = getVec2(0.0, 0.0);
+        if (normVec(nrm) == SP_CAST(0.0)) return rnrm;
+
+        if (fabs(nrm.x) >= fabs(nrm.y)) {
+            rnrm.x = sign(nrm.x);
+        }
+        else {
+            rnrm.y = sign(nrm.y);
+        }
+        return rnrm;
+    }
+
+    // round
+    SP_GENFUNC Vec3 roundNrm(const Vec3 &nrm) {
+        Vec3 rnrm = getVec3(0.0, 0.0, 0.0);
+        if (normVec(nrm) == SP_CAST(0.0)) return rnrm;
+
+        if (fabs(nrm.x) >= maxval(fabs(nrm.y), fabs(nrm.z))) {
+            rnrm.x = sign(nrm.x);
+        }
+        else if (fabs(nrm.y) >= fabs(nrm.z)) {
+            rnrm.y = sign(nrm.y);
+        }
+        else {
+            rnrm.z = sign(nrm.z);
+        }
+        return rnrm;
     }
 
     // angle

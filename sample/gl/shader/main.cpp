@@ -44,11 +44,6 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
     }
-    
-    virtual void keyFun(int key, int scancode, int action, int mods) {
-        
-
-    }
 
     void edge() {
         static Shader shader;
@@ -90,7 +85,11 @@ private:
         }
 
         {
+            static FrameBufferObject dfbo;
+            dfbo.resize(m_wcam.dsize);
+            
             shader.enable();
+            shader.setUniformTexture("depth", 0, dfbo.getTexId(1));
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
             shader.setUniform1f("dx", 1.0 / m_wcam.dsize[0]);
@@ -99,7 +98,6 @@ private:
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, fbo.m_tx[1]);
 
             glBegin(GL_QUADS);
             glVertex2d(-1.0, -1.0);
@@ -108,6 +106,66 @@ private:
             glVertex2d(-1.0, +1.0);
             glEnd();
             
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_BLEND);
+            shader.disable();
+        }
+    }
+
+    void edge2() {
+        static Shader shader;
+
+        if (shader.valid() == false) {
+
+            const char* vert =
+#include "spex/spshader/edge.vert"
+                ;
+            const char* frag =
+#include "spex/spshader/edge.frag"
+                ;
+            shader.load(vert, frag);
+        }
+
+        {
+            glLoadView3D(m_wcam, m_viewPos, m_viewScale);
+
+            glLoadMatrix(m_pose);
+            glRenderSurface(m_model);
+        }
+
+        {
+            static FrameBufferObject dfbo;
+            dfbo.resize(m_wcam.dsize);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dfbo.getFrameId());
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dfbo.getTexId(0), 0);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dfbo.getTexId(1), 0);
+
+            glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            shader.enable();
+            shader.setUniformTexture("depth", 0, dfbo.getTexId(1));
+            shader.setUniform1f("nearPlane", 1.0);
+            shader.setUniform1f("farPlane", 10000.0);
+            shader.setUniform1f("dx", 1.0 / m_wcam.dsize[0]);
+            shader.setUniform1f("dy", 1.0 / m_wcam.dsize[1]);
+
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+            glBegin(GL_QUADS);
+            glVertex2d(-1.0, -1.0);
+            glVertex2d(+1.0, -1.0);
+            glVertex2d(+1.0, +1.0);
+            glVertex2d(-1.0, +1.0);
+            glEnd();
+
             glBindTexture(GL_TEXTURE_2D, 0);
 
             glEnable(GL_DEPTH_TEST);
@@ -160,7 +218,7 @@ private:
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        edge();
+        edge2();
 
     }
 
