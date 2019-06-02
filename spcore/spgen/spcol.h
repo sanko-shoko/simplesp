@@ -32,29 +32,21 @@ namespace sp{
 
     // get color
     SP_GENFUNC Col4 getCol4(const Col3 &col, const Byte a) {
-        Col4 dst;
-        dst.r = col.r; dst.g = col.g; dst.b = col.b; dst.a = a;
-        return dst;
+        return getCol4(col.r, col.g, col.b, a);
     }
 
     // get color
     SP_GENFUNC Col3 getCol3(const Vec3 &vec) {
-        Col3 dst;
-        cnvVal(dst.r, vec.x * SP_BYTEMAX);
-        cnvVal(dst.g, vec.y * SP_BYTEMAX);
-        cnvVal(dst.b, vec.z * SP_BYTEMAX);
-        return dst;
+        return getCol3(static_cast<Byte>(vec.x * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.y * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.z * SP_BYTEMAX + 0.5));
     }
 
     // get color
-    SP_GENFUNC Col4 getCol3(const Vec3 &vec, const double a) {
-        Col4 dst = getCol4(getCol3(vec), 0);
-        cnvVal(dst.a, a * SP_BYTEMAX);
-        return dst;
+    SP_GENFUNC Col4 getCol4(const Vec3 &vec, const double a) {
+        return getCol4(static_cast<Byte>(vec.x * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.y * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.z * SP_BYTEMAX + 0.5), static_cast<Byte>(a * SP_BYTEMAX + 0.5));;
     }
     
     // multiple
-    SP_GENFUNC Col3 mulCol3(const Col3 &col, const double val) {
+    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
         const Byte r = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.r * val))));
         const Byte g = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.g * val))));
         const Byte b = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.b * val))));
@@ -62,16 +54,16 @@ namespace sp{
     }
 
     // division
-    SP_GENFUNC Col3 divCol3(const Col3 &col, const double val) {
-        return (val != 0.0) ? mulCol3(col, 1.0 / val) : col;
+    SP_GENFUNC Col3 divCol(const Col3 &col, const double val) {
+        return (val != 0.0) ? mulCol(col, 1.0 / val) : col;
     }
 
     // compare
-    SP_GENFUNC bool cmpCol3(const Col3 &col0, const Col3 &col1) {
+    SP_GENFUNC bool cmpCol(const Col3 &col0, const Col3 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
     }
     // compare
-    SP_GENFUNC bool cmpCol4(const Col4 &col0, const Col4 &col1) {
+    SP_GENFUNC bool cmpCol(const Col4 &col0, const Col4 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
     }
     
@@ -99,30 +91,30 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
-        return mulCol3(col, val);
+        return mulCol(col, val);
     }
     SP_GENFUNC Col3 operator / (const Col3 &col, const double val) {
-        return divCol3(col, val);
+        return divCol(col, val);
     }
     SP_GENFUNC void operator *= (Col3 &col, const double val) {
-        col = mulCol3(col, val);
+        col = mulCol(col, val);
     }
     SP_GENFUNC void operator /= (Col3 &col, const double val) {
-        col = divCol3(col, val);
+        col = divCol(col, val);
     }
 
     SP_GENFUNC bool operator == (const Col3 &col0, const Col3 &col1) {
-        return cmpCol3(col0, col1);
+        return cmpCol(col0, col1);
     }
-    SP_GENFUNC bool operator != (const Col3 &col0, const Col3 &col1) {
-        return !cmpCol3(col0, col1);
-    }
-
     SP_GENFUNC bool operator == (const Col4 &col0, const Col4 &col1) {
-        return cmpCol4(col0, col1);
+        return cmpCol(col0, col1);
+    }
+    
+    SP_GENFUNC bool operator != (const Col3 &col0, const Col3 &col1) {
+        return !cmpCol(col0, col1);
     }
     SP_GENFUNC bool operator != (const Col4 &col0, const Col4 &col1) {
-        return !cmpCol4(col0, col1);
+        return !cmpCol(col0, col1);
     }
 
     //--------------------------------------------------------------------------------
@@ -162,7 +154,6 @@ namespace sp{
         case 4: col = getCol3(uc, ua, uv); break;
         case 5: col = getCol3(uv, ua, ub); break;
         }
-
     }
 
     // convert col3 to hsv, hsv = Vec3(h = [0, 2 * PI], s = [0, 1], v = [0, 1])

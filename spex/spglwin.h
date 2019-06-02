@@ -47,9 +47,6 @@ namespace sp {
         // cursor position and move
         Vec2 pos, move;
 
-        // drag
-        Vec2 drag;
-
         // scroll value
         double scroll;
 
@@ -77,17 +74,12 @@ namespace sp {
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 buttonM = _action;
             }
-
-            if (_action == 0) {
-                drag = getVec2(0.0, 0.0);
-            }
         }
 
         void setPos(const double x, const double y) {
 
             if (buttonL || buttonR || buttonM) {
                 move = getVec2(x, y) - pos;
-                drag += move;
             }
             pos = getVec2(x, y);
         }

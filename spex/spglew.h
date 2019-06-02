@@ -62,13 +62,12 @@ namespace sp {
         GLuint m_msfb;
         GLuint m_mstx[2];
 
+        GLuint m_fb;
+        GLuint m_tx[2];
+
     public:
         int dsize[2];
        
-        GLuint m_fb;
-        GLuint m_tx[2];
-        bool m_bind;
-
     private:
         void reset() {
             memset(this, 0, sizeof(FrameBufferObject));
@@ -192,6 +191,7 @@ namespace sp {
         }
 
         void bind() {
+            if (dsize[0] == 0 || dsize[1] == 0)return;
             glPushAttrib(GL_VIEWPORT_BIT);
             ::glViewport(0, 0, dsize[0], dsize[1]);
 
@@ -206,12 +206,12 @@ namespace sp {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
             }
 
-            m_bind = true;
             //glClearColor(0.0, 0.0, 0.0, 1.0);
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void unbind() {
+            if (dsize[0] == 0 || dsize[1] == 0)return;
             if (m_msfb != 0) {
                 glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
@@ -228,7 +228,6 @@ namespace sp {
             }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glPopAttrib();
-            m_bind = false;
         }
 
         void readi(void *img, const int ch) {
@@ -292,6 +291,14 @@ namespace sp {
             }
             delete[]tmp;
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
+        GLuint getFrameId() const {
+            return m_fb;
+        }
+
+        GLuint getTexId(const int i) const {
+            return m_tx[i];
         }
 
     };
@@ -417,6 +424,22 @@ namespace sp {
 
         void disable() {
             glUseProgram(0);
+        }
+
+        void setUniformTexture(const char *name, const int index, const GLuint texid) {
+            switch (index) {
+            case 0: glActiveTexture(GL_TEXTURE0); break;
+            case 1: glActiveTexture(GL_TEXTURE1); break;
+            case 2: glActiveTexture(GL_TEXTURE2); break;
+            case 3: glActiveTexture(GL_TEXTURE3); break;
+            case 4: glActiveTexture(GL_TEXTURE4); break;
+            default: return;
+            }
+
+            glBindTexture(GL_TEXTURE_2D, texid);
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1i(location, index);
+            //glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         template<typename TYPE>

@@ -24,7 +24,7 @@ namespace sp{
     // model util
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Vec3 getModelCenter(const Mem1<Mesh3> &model){
+    SP_CPUFUNC Vec3 getModelCent(const Mem1<Mesh3> &model){
         Vec3 sum = zero<Vec3>();
         for (int i = 0; i < model.size(); i++){
             sum += getMeshCent(model[i]);
@@ -347,7 +347,7 @@ namespace sp{
         Mem1<Mesh3> model;
         if (loadPLY(path, model) == false) return model;
 
-        Vec3 center = getModelCenter(model);
+        Vec3 center = getModelCent(model);
         for (int i = 0; i < model.size(); i++) {
             model[i] -= center;
 
