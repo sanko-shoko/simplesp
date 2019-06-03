@@ -51,7 +51,7 @@
 //--------------------------------------------------------------------------------
 
 #ifndef SP_REAL
-#define SP_REAL double
+#define SP_REAL float
 #endif
 
 #define SP_CAST(V) static_cast<SP_REAL>(V)
@@ -243,16 +243,6 @@ namespace sp{
 
     struct Col4 : public Col3 {
         Byte a;
-    };
-
-
-    //--------------------------------------------------------------------------------
-    // disparity data
-    //--------------------------------------------------------------------------------
-
-    struct Disp {
-        float disp;
-        float eval;
     };
 
 

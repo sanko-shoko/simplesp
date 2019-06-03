@@ -149,10 +149,10 @@ namespace sp{
                 const uint16_t *dframe = reinterpret_cast<const uint16_t*>(m_dev->get_frame_data(stream::depth));
 
                 // -> mm scale
-                const SP_REAL scale = m_dev->get_depth_scale() * 1000.0;
+                const double scale = m_dev->get_depth_scale() * 1000.0;
                 
                 for (int i = 0; i < m_depth.size(); i++){
-                    m_depth[i] = (*dframe++) * scale;
+                    cnvVal(m_depth[i], (*dframe++) * scale);
                 }
             }
         }

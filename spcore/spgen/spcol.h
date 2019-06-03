@@ -335,13 +335,13 @@ namespace sp{
         dst.b = static_cast<Byte>(255 * (1.0 - nrm.z) / 2);
     }
 
-    SP_GENFUNC void cnvDispToCol(Byte &dst, const Disp &disp, const int maxDisp, const int minDisp) {
-        const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+    SP_GENFUNC void cnvDispToCol(Byte &dst, const float &disp, const int maxDisp, const int minDisp) {
+        const double rate = 1.0 - (disp - minDisp) / (maxDisp - minDisp);
         dst = static_cast<Byte>(255 * rate + 0.5);
     }
 
-    SP_GENFUNC void cnvDispToCol(Col3 &dst, const Disp &disp, const int maxDisp, const int minDisp) {
-        const double rate = 1.0 - (disp.disp - minDisp) / (maxDisp - minDisp);
+    SP_GENFUNC void cnvDispToCol(Col3 &dst, const float &disp, const int maxDisp, const int minDisp) {
+        const double rate = 1.0 - (disp - minDisp) / (maxDisp - minDisp);
         cnvPhaseToCol(dst, rate);
     }
 

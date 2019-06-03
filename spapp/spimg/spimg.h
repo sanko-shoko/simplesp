@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const SP_REAL dscale0, const SP_REAL dscale1){
+    SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const double dscale0, const double dscale1){
         SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -28,8 +28,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
-                const SP_REAL su = u / dscale0;
-                const SP_REAL sv = v / dscale1;
+                const double su = u / dscale0;
+                const double sv = v / dscale1;
 
                 for (int c = 0; c < ch; c++){
                     cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, su, sv, c));
@@ -48,7 +48,7 @@ namespace sp{
         rescale<TYPE, ELEM>(dst, src, dscale0, dscale1);
     }
 
-    SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const SP_REAL dscale0, const SP_REAL dscale1) {
+    SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
         SP_ASSERT(isValid(src, 2));
 
         const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
@@ -64,8 +64,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v++) {
             for (int u = 0; u < dst.dsize[0]; u++) {
-                const SP_REAL su = u / dscale0;
-                const SP_REAL sv = v / dscale1;
+                const double su = u / dscale0;
+                const double sv = v / dscale1;
 
                 cnvVal(*pDst++, acs2<Byte>(tmp, su, sv));
             }
@@ -148,7 +148,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE>
-    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect2 &rect, const SP_REAL angle = 0.0){
+    SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect2 &rect, const double angle = 0.0){
         SP_ASSERT(isValid(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -222,7 +222,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const SP_REAL rate = 0.5) {
+    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
         SP_ASSERT(isValid(src0, 2));
         SP_ASSERT(isValid(src1, 2));
         SP_ASSERT(cmpSize(2, src0.dsize, src1.dsize));
@@ -397,7 +397,7 @@ namespace sp{
     }
         
     template <typename TYPE0, typename TYPE1>
-    SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
+    SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
@@ -413,7 +413,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const SP_REAL nearPlane = 100.0, const SP_REAL farPlane = 10000.0){
+    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
@@ -429,18 +429,28 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<Disp> &src, const int maxDisp, const int minDisp) {
+    SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const Mem<float> &eval, const int maxDisp, const int minDisp) {
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
 
         for (int i = 0; i < dst.size(); i++) {
-            const Disp &disp = src[i];
-
-            if (disp.eval > 0.0) {
-                cnvDispToCol(dst[i], disp, maxDisp, minDisp);
+            if (eval[i] > 0.0) {
+                cnvDispToCol(dst[i], src[i], maxDisp, minDisp);
             }
+        }
+    }
+
+    template <typename TYPE>
+    SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const int maxDisp, const int minDisp) {
+        SP_ASSERT(isValid(src, 2));
+
+        dst.resize(2, src.dsize);
+        dst.zero();
+
+        for (int i = 0; i < dst.size(); i++) {
+            cnvDispToCol(dst[i], src[i], maxDisp, minDisp);
         }
     }
 

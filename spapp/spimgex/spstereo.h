@@ -31,7 +31,10 @@ namespace sp{
         SP_REAL m_baseLine;
 
         // disparity map
-        Mem2<Disp> m_dispMap[2];
+        Mem2<float> m_dispMap[2];
+
+        // eval map
+        Mem2<float> m_evalMap[2];
 
         // depth map
         Mem2<Vec3> m_depthMap[2];
@@ -76,7 +79,7 @@ namespace sp{
             m_winSize = winSize;
         }
 
-        Mem2<Disp>& getDispMap(const Order &order) {
+        Mem2<float>& getDispMap(const Order &order) {
             return m_dispMap[order == Order::StereoL ? 0 : 1];
         }
 
@@ -114,16 +117,16 @@ namespace sp{
             m_dsize[0] = srcL.dsize[0];
             m_dsize[1] = srcL.dsize[1];
             {
-                correspBM(m_dispMap[0], srcL, srcR, StereoL);
-                correspBM(m_dispMap[1], srcR, srcL, StereoR);
+                correspBM(m_dispMap[0], m_evalMap[0], srcL, srcR, StereoL);
+                correspBM(m_dispMap[1], m_evalMap[1], srcR, srcL, StereoR);
 
-                consistencyCheck(m_dispMap[0], m_dispMap[1], 2.0, StereoL);
-                consistencyCheck(m_dispMap[1], m_dispMap[0], 2.0, StereoR);
+                consistencyCheck(m_dispMap[0], m_evalMap[0], m_dispMap[1], m_evalMap[1], 2.0, StereoL);
+                consistencyCheck(m_dispMap[1], m_evalMap[1], m_dispMap[0], m_evalMap[0], 2.0, StereoR);
             }
 
             if (cmpSize(2, m_cam[0].dsize, m_dsize) == true && cmpSize(2, m_cam[1].dsize, m_dsize) == true) {
-                cnvDispToDepth(m_depthMap[0], m_dispMap[0], StereoL);
-                cnvDispToDepth(m_depthMap[1], m_dispMap[1], StereoR);
+                cnvDispToDepth(m_depthMap[0], m_dispMap[0], m_evalMap[0], StereoL);
+                cnvDispToDepth(m_depthMap[1], m_dispMap[1], m_evalMap[1], StereoR);
             }
             return true;
         }
@@ -145,12 +148,14 @@ namespace sp{
             return rect;
         }
 
-        void correspBM(Mem2<Disp> &dispMap, const Mem2<Byte> &src, const Mem2<Byte> &ref, const int order) {
+        void correspBM(Mem2<float> &dispMap, Mem2<float> &evalMap, const Mem2<Byte> &src, const Mem2<Byte> &ref, const int order) {
 
             const Rect2 rect = getDispRect(order);
 
             dispMap.resize(m_dsize);
             dispMap.zero();
+            evalMap.resize(m_dsize);
+            evalMap.zero();
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -160,37 +165,38 @@ namespace sp{
 
                     int sad = -1;
                     for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
-                        Disp &disp = dispMap(u, v);
+                        float &disp = dispMap(u, v);
+                        float &eval = evalMap(u, v);
 
                         sad = calcSAD(src, ref, u, v, d, order, sad);
-                        const int eval = (SP_BYTEMAX * m_winSize * m_winSize) - sad;
+                        const int e = (SP_BYTEMAX * m_winSize * m_winSize) - sad;
 
-                        if (eval > disp.eval) {
-                            disp.eval = static_cast<float>(eval);
-                            disp.disp = static_cast<float>(d);
+                        if (e > eval) {
+                            eval = static_cast<float>(e);
+                            disp = static_cast<float>(d);
                         }
                     }
                 }
             }
         }
 
-        void consistencyCheck(Mem2<Disp> &src, const Mem2<Disp> &ref, const SP_REAL thresh, const int order) {
+        void consistencyCheck(Mem2<float> &dispMap0, Mem2<float> &evalMap0, const Mem2<float> &dispMap1, const Mem2<float> &evalMap1, const double thresh, const int order) {
 
             const Rect2 rect = getDispRect(order);
 
             for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
                 for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
-                    Disp &disp0 = src(u, v);
-                    const Disp &disp1 = ref(u - order * round(disp0.disp), v);
+                    const float &disp0 = dispMap0(u, v);
+                    const float &disp1 = dispMap1(u - order * round(disp0), v);
 
-                    if (fabs(disp0.disp - disp1.disp) > thresh) {
-                        disp0.eval = 0.0f;
+                    if (fabs(disp0 - disp1) > thresh) {
+                        evalMap0(u, v) = 0.0f;
                     }
                 }
             }
         }
 
-        void cnvDispToDepth(Mem2<Vec3> &dst, const Mem2<Disp> &src, const int order) {
+        void cnvDispToDepth(Mem2<Vec3> &dst, const Mem2<float> &dispMap, const Mem2<float> &evalMap, const int order) {
 
             dst.resize(m_dsize);
             dst.zero();
@@ -199,17 +205,18 @@ namespace sp{
 
             const Rect2 rect = getDispRect(order);
 
-            const SP_REAL f = m_cam[0].fx;
-            const SP_REAL b = m_baseLine;
-            const SP_REAL cx0 = (order > 0) ? m_cam[0].cx : m_cam[1].cx;
-            const SP_REAL cx1 = (order > 0) ? m_cam[1].cx : m_cam[0].cx;
+            const double f = m_cam[0].fx;
+            const double b = m_baseLine;
+            const double cx0 = (order > 0) ? m_cam[0].cx : m_cam[1].cx;
+            const double cx1 = (order > 0) ? m_cam[1].cx : m_cam[0].cx;
 
             for (int v = rect.dbase[1]; v < rect.dbase[1] + rect.dsize[1]; v++) {
                 for (int u = rect.dbase[0]; u < rect.dbase[0] + rect.dsize[0]; u++) {
                     const Vec2 npx = invCam(cam, getVec2(u, v));
-                    const Disp disp = src(u, v);
-                    if (disp.eval > 0.0) {
-                        const SP_REAL depth = f * b / (disp.disp - (cx0 - cx1));
+                    const float disp = dispMap(u, v);
+                    const float eval = evalMap(u, v);
+                    if (eval > 0.0) {
+                        const double depth = f * b / (disp - (cx0 - cx1));
                         dst(u, v) = getVec3(npx.x, npx.y, 1.0) * depth;
                     }
                 }
