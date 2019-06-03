@@ -352,8 +352,8 @@ namespace sp{
     }
 
     // f = cs[0] * x^(n) + cs[1] * x^(n-1) + ... + cs[n]
-    template<typename TYPE>
-    SP_GENFUNC SP_REAL funcX(const TYPE x, const int csize, const TYPE *cs) {
+    template<typename DST>
+    SP_GENFUNC SP_REAL funcX(const DST x, const int csize, const DST *cs) {
         const int n = csize - 1;
 
         SP_REAL f = cs[n];
@@ -363,9 +363,9 @@ namespace sp{
         return f;
     }
 
-    // f = sc[0] * x^(n-1) + cs[1] * x^(n-2) + ... + cs[n]
-    template<typename TYPE>
-    SP_GENFUNC Cmp funcX(const Cmp &x, const int csize, const TYPE *cs) {
+    // f = cs[0] * x^(n) + cs[1] * x^(n-1) + ... + cs[n]
+    template<typename DST>
+    SP_GENFUNC Cmp funcX(const Cmp &x, const int csize, const DST *cs) {
         const int n = csize - 1;
 
         Cmp f = getCmp(cs[n], 0.0);
@@ -376,8 +376,8 @@ namespace sp{
     }
 
     // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
-    template<typename TYPE>
-    SP_GENFUNC SP_REAL dfuncX(const TYPE x, const int csize, const TYPE *cs) {
+    template<typename DST>
+    SP_GENFUNC SP_REAL dfuncX(const DST x, const int csize, const DST *cs) {
         const int n = csize - 1;
 
         SP_REAL df = cs[n - 1];
@@ -388,8 +388,8 @@ namespace sp{
     }
 
     // f' = cs[0] * (n) * x^(n-1) + cs[1] * (n-1) * x^(n-2) + ... + cs[n-1]
-    template<typename TYPE>
-    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int csize, const TYPE *cs) {
+    template<typename DST>
+    SP_GENFUNC Cmp dfuncX(const Cmp &x, const int csize, const DST *cs) {
         const int n = csize - 1;
 
         Cmp df = getCmp(cs[n - 1], 0.0);
@@ -406,48 +406,48 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     // set
-    template <typename TYPE, typename TYPE0>
-    SP_GENFUNC void setMem(TYPE *dst, const int size, const TYPE0 *mem0){
+    template <typename DST, typename SRC>
+    SP_GENFUNC void setMem(DST *dst, const int size, const SRC *mem0){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i];
         }
     }
 
     // convert
-    template <typename TYPE, typename TYPE0>
-    SP_GENFUNC void cnvMem(TYPE *dst, const int size, const TYPE0 *mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0) {
+    template <typename DST, typename SRC>
+    SP_GENFUNC void cnvMem(DST *dst, const int size, const SRC *mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0) {
         for (int i = 0; i < size; i++) {
             cnvVal(dst[i], (mem0[i] - base) * scale);
         }
     }
 
     // addition
-    template <typename TYPE, typename TYPE0, typename TYPE1>
-    SP_GENFUNC void addMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+    template <typename DST, typename SRC0, typename SRC1>
+    SP_GENFUNC void addMem(DST *dst, const int size, const SRC0 *mem0, const SRC1 *mem1){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] + mem1[i];
         }
     }
 
     // subtraction
-    template <typename TYPE, typename TYPE0, typename TYPE1>
-    SP_GENFUNC void subMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+    template <typename DST, typename SRC0, typename SRC1>
+    SP_GENFUNC void subMem(DST *dst, const int size, const SRC0 *mem0, const SRC1 *mem1){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] - mem1[i];
         }
     }
 
     // multiple
-    template <typename TYPE, typename TYPE0, typename TYPE1>
-    SP_GENFUNC void mulMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+    template <typename DST, typename SRC0, typename SRC1>
+    SP_GENFUNC void mulMem(DST *dst, const int size, const SRC0 *mem0, const SRC1 *mem1){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] * mem1[i];
         }
     }
 
     // division
-    template <typename TYPE, typename TYPE0, typename TYPE1>
-    SP_GENFUNC void divMem(TYPE *dst, const int size, const TYPE0 *mem0, const TYPE1 *mem1){
+    template <typename DST, typename SRC0, typename SRC1>
+    SP_GENFUNC void divMem(DST *dst, const int size, const SRC0 *mem0, const SRC1 *mem1){
         for (int i = 0; i < size; i++){
             if (mem1[i] == 0.0) continue;
             dst[i] = mem0[i] / mem1[i];
@@ -456,40 +456,40 @@ namespace sp{
 
 
     // set
-    template <typename TYPE, typename ELEM>
-    SP_GENFUNC void setElm(TYPE *dst, const int size, const ELEM &elm){
+    template <typename DST, typename ELEM>
+    SP_GENFUNC void setElm(DST *dst, const int size, const ELEM &elm){
         for (int i = 0; i < size; i++){
             dst[i] = elm;
         }
     }
 
     // addition
-    template <typename TYPE, typename TYPE0, typename ELEM>
-    SP_GENFUNC void addElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+    template <typename DST, typename SRC, typename ELEM>
+    SP_GENFUNC void addElm(DST *dst, const int size, const SRC *mem0, const ELEM &elm){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] + elm;
         }
     }
 
     // subtraction
-    template <typename TYPE, typename TYPE0, typename ELEM>
-    SP_GENFUNC void subElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+    template <typename DST, typename SRC, typename ELEM>
+    SP_GENFUNC void subElm(DST *dst, const int size, const SRC *mem0, const ELEM &elm){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] - elm;
         }
     }
 
     // multiple
-    template <typename TYPE, typename TYPE0, typename ELEM>
-    SP_GENFUNC void mulElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+    template <typename DST, typename SRC, typename ELEM>
+    SP_GENFUNC void mulElm(DST *dst, const int size, const SRC *mem0, const ELEM &elm){
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] * elm;
         }
     }
 
     // division
-    template <typename TYPE, typename TYPE0, typename ELEM>
-    SP_GENFUNC void divElm(TYPE *dst, const int size, const TYPE0 *mem0, const ELEM &elm){
+    template <typename DST, typename SRC, typename ELEM>
+    SP_GENFUNC void divElm(DST *dst, const int size, const SRC *mem0, const ELEM &elm){
         if (elm == 0.0) return;
         for (int i = 0; i < size; i++){
             dst[i] = mem0[i] / elm;
@@ -1400,8 +1400,8 @@ namespace sp{
     }
 
     // newton method
-    template<typename TYPE>
-    SP_GENFUNC bool newton(TYPE &x, const int csize, const TYPE *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    template<typename DST>
+    SP_GENFUNC bool newton(DST &x, const int csize, const DST *cs, const int maxit = 20, const double eps = 1.0e-10) {
 
         double pre = SP_INFINITY;
 
@@ -1426,8 +1426,8 @@ namespace sp{
     }
 
     // newton method (Durand-Kerner method)
-    template<typename TYPE>
-    SP_GENFUNC bool newton(Cmp *xs, const int csize, const TYPE *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    template<typename DST>
+    SP_GENFUNC bool newton(Cmp *xs, const int csize, const DST *cs, const int maxit = 20, const double eps = 1.0e-10) {
         const int n = csize - 1;
 
         Cmp pre[100];
@@ -1472,8 +1472,8 @@ namespace sp{
         return true;
     }
 
-    template<typename TYPE>
-    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const TYPE *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    template<typename DST>
+    SP_GENFUNC bool aberth(Cmp *xs, const int csize, const DST *cs, const int maxit = 20, const double eps = 1.0e-10) {
 
         const int n = csize - 1;
 
@@ -1509,8 +1509,8 @@ namespace sp{
 
 
     // f(x) = 0, f(x) = cs[0] * x^(n-1) + cs[1] * x^(n-2) + ...
-    template<typename TYPE>
-    SP_GENFUNC int eqn(Cmp xs[], const int csize, const TYPE *cs, const int maxit = 20, const double eps = 1.0e-10) {
+    template<typename DST>
+    SP_GENFUNC int eqn(Cmp xs[], const int csize, const DST *cs, const int maxit = 20, const double eps = 1.0e-10) {
         if (csize < 2) return 0;
 
         if (fabs(cs[0]) < SP_SMALL) {
