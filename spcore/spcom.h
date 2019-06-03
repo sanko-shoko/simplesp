@@ -57,7 +57,7 @@
 #define SP_CAST(V) static_cast<SP_REAL>(V)
 
 // pi
-#define SP_PI SP_CAST(3.14159265358979323846)
+#define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
 
 // limit value regarded as zero
 #define SP_SMALL SP_CAST(1.0e-20)
