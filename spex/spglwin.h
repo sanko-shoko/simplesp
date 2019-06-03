@@ -22,21 +22,23 @@
 #include "spcore/spcore.h"
 
 #include <string>
-#include <chrono>
 #include <map>
 
 namespace sp {
 
     //--------------------------------------------------------------------------------
-    // mouse
+    // additional define
     //--------------------------------------------------------------------------------
-
-#define GLFW_DOUBLECLICK 3
 
 #define GLFW_KEY_SHIFT (GLFW_KEY_LAST + 1)
 #define GLFW_KEY_CONTROL (GLFW_KEY_LAST + 2)
 #define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
 #define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
+
+
+    //--------------------------------------------------------------------------------
+    // mouse
+    //--------------------------------------------------------------------------------
 
     class Mouse {
 
@@ -44,9 +46,6 @@ namespace sp {
 
         // cursor position and move
         Vec2 pos, move;
-
-        // drag
-        Vec2 drag;
 
         // scroll value
         double scroll;
@@ -66,18 +65,6 @@ namespace sp {
 
             int _action = action;
 
-            if (_action == GLFW_PRESS) {
-                using namespace std::chrono;
-
-                static system_clock::time_point prev = system_clock::now();
-                const system_clock::time_point crnt = system_clock::now();
-                const double diff = duration <double, std::milli>(crnt - prev).count();
-                if (diff > 10.0 && diff < 400.0) {
-                    _action = GLFW_DOUBLECLICK;
-                }
-                prev = crnt;
-            }
-
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 buttonL = _action;
             }
@@ -87,17 +74,12 @@ namespace sp {
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 buttonM = _action;
             }
-
-            if (_action == 0) {
-                drag = getVec2(0.0, 0.0);
-            }
         }
 
         void setPos(const double x, const double y) {
 
             if (buttonL || buttonR || buttonM) {
                 move = getVec2(x, y) - pos;
-                drag += move;
             }
             pos = getVec2(x, y);
         }
@@ -105,7 +87,6 @@ namespace sp {
         void setScroll(const double x, const double y) {
             scroll = y;
         }
-
     };
 
 
@@ -160,7 +141,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // base window
     //--------------------------------------------------------------------------------
-  
+
     class BaseWindow {
 
     protected:
@@ -195,11 +176,11 @@ namespace sp {
         virtual void display() {
         }
 
- 
+
     protected:
 
         // window ptr
-        GLFWwindow *m_win;
+        GLFWwindow * m_win;
 
         // parent window
         BaseWindow *m_parent;
@@ -224,14 +205,8 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
-        // back gournd color
-        const Col4 *m_bgcol;
-
-        // control view flag
-        bool m_space;
-
-        // escape flag
-        bool m_escape;
+        // use default ui
+        bool m_usedui;
 
     public:
 
@@ -242,13 +217,9 @@ namespace sp {
             m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
 
-            const static Col4 col = getCol4(24, 32, 32, 255);
-            m_bgcol = &col;
-
             memset(m_key, 0, sizeof(m_key));
-            
-            m_space = true;
-            m_escape = true;
+
+            m_usedui = true;
         }
 
 
@@ -262,6 +233,7 @@ namespace sp {
                 // glfw create window
                 m_win = glfwCreateWindow(width, height, name, NULL, NULL);
             }
+
             if (m_win == NULL) {
                 SP_PRINTF(" Can't create GLFW window.\n");
                 glfwTerminate();
@@ -290,7 +262,7 @@ namespace sp {
                 ImGui::GetIO().IniFilename = NULL;
             }
 #endif
- 
+
             init();
 
             if (parent != NULL) {
@@ -310,7 +282,7 @@ namespace sp {
 
             SP_ASSERT(create(name, width, height) == true);
 
-            while (!glfwWindowShouldClose(m_win) && (m_escape == false || !glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
+            while (!glfwWindowShouldClose(m_win)) {
 
                 if (main() == false) break;
 
@@ -360,7 +332,7 @@ namespace sp {
 
         bool main() {
 
-            if (glfwWindowShouldClose(m_win) || (m_escape == true && glfwGetKey(m_win, GLFW_KEY_ESCAPE))) {
+            if (glfwWindowShouldClose(m_win)) {
                 glfwDestroyWindow(m_win);
                 m_win = NULL;
                 return false;
@@ -384,15 +356,6 @@ namespace sp {
                 ImGui::NewFrame();
             }
 #endif
-            if (m_bgcol != NULL) {
-                glClearColor(m_bgcol->r / 255.f, m_bgcol->g / 255.f, m_bgcol->b / 255.f, m_bgcol->a / 255.f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            }
-            {
-                double xpos, ypos;
-                glfwGetCursorPos(m_win, &xpos, &ypos);
-                m_mouse.setPos(xpos, ypos);
-            }
 
             display();
 
@@ -411,6 +374,7 @@ namespace sp {
                 }
             }
 
+            m_mouse.setScroll(0.0, 0.0);
             return true;
         }
 
@@ -418,7 +382,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
         // focus
         //--------------------------------------------------------------------------------
-        
+
         bool isFocused() {
             return glfwGetWindowAttrib(m_win, GLFW_FOCUSED);
         }
@@ -454,7 +418,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                     return;
                 }
@@ -466,18 +430,22 @@ namespace sp {
 
         void _mousePos(double x, double y) {
 
+            m_mouse.setPos(x, y);
+
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     return;
                 }
             }
 #endif
 
-            // control view
-            if (m_space == true && m_key[GLFW_KEY_SPACE] > 0) {
-                controlView(m_viewPos, m_viewScale, m_mouse);
-                return;
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
             }
 
             mousePos(x, y);
@@ -489,7 +457,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
-                if ((m_space == false || m_key[GLFW_KEY_SPACE] == 0) && ImGui::GetIO().WantCaptureMouse) {
+                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
                     ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                     m_mouse.setScroll(0.0, 0.0);
                     return;
@@ -497,15 +465,15 @@ namespace sp {
             }
 #endif
 
-            // control view
-            if (m_space == true && m_key[GLFW_KEY_SPACE] > 0) {
-                controlView(m_viewPos, m_viewScale, m_mouse);
-                m_mouse.setScroll(0.0, 0.0);
-                return;
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
             }
 
             mouseScroll(x, y);
-            m_mouse.setScroll(0.0, 0.0);
         }
 
         void _keyFun(int key, int scancode, int action, int mods) {

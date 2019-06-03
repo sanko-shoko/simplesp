@@ -28,7 +28,6 @@ private:
     void help() {
         printf("'r' key : reset kinect fusion\n");
         printf("'s' key : output ply\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -65,6 +64,9 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         Mem2<SP_REAL> depth;
 
         // render depth

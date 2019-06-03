@@ -636,11 +636,11 @@ namespace sp {
         const Vec3 n1 = unitVec(m1);
 
         const Vec3 Z = unitVec(crsVec(n0, n1));
-        const Vec3 A = unitVec(addVec3(n0, n1));
+        const Vec3 A = unitVec(addVec(n0, n1));
         const Vec3 B = unitVec(crsVec(A, Z));
 
-        const Vec3 X = unitVec(addVec3(A, B));
-        const Vec3 Y = unitVec(subVec3(A, B));
+        const Vec3 X = unitVec(addVec(A, B));
+        const Vec3 Y = unitVec(subVec(A, B));
 
         pose = getPose(getRotAxis(X, Y, Z), m2 / sqrt(normVec(m0) * normVec(m1)));
         return true;

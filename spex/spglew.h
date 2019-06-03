@@ -12,8 +12,6 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
-#include "GLFW/glfw3.h"
-
 namespace sp {
 
     class VertexBufferObject {
@@ -21,38 +19,55 @@ namespace sp {
     private:
         GLuint m_buffer;
 
+        int m_size;
+
+    private:
+        VertexBufferObject(const VertexBufferObject &vbo) {}
+        VertexBufferObject& operator =(const VertexBufferObject &vbo) {}
+
     public:
 
         VertexBufferObject() {
-            m_buffer = 0;
+            m_size = 0;
+            glGenBuffers(1, &m_buffer);
         }
 
-        void set(const void *vtx, const int size) {
-            if (m_buffer == 0) {
-                glGenBuffers(1, &m_buffer);
-            }
+        ~VertexBufferObject() {
+            glDeleteBuffers(1, &m_buffer);
+        }
 
-            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+        void data(const void *vtx, const int size) {
+            bind();
+            m_size = size;
             glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
+            unbind();
+        }
+
+        void bind() {
+            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+        }
+        void unbind() {
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+        int size() {
+            return m_size;
         }
     };
 
 
     class FrameBufferObject {
 
-    public:
-        int dsize[2];
-        int samples;
-
     private:
+        int samples;
         GLuint m_msfb;
         GLuint m_mstx[2];
 
-    public:
         GLuint m_fb;
         GLuint m_tx[2];
-        bool m_bind;
 
+    public:
+        int dsize[2];
+       
     private:
         void reset() {
             memset(this, 0, sizeof(FrameBufferObject));
@@ -176,6 +191,7 @@ namespace sp {
         }
 
         void bind() {
+            if (dsize[0] == 0 || dsize[1] == 0)return;
             glPushAttrib(GL_VIEWPORT_BIT);
             ::glViewport(0, 0, dsize[0], dsize[1]);
 
@@ -190,12 +206,12 @@ namespace sp {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
             }
 
-            m_bind = true;
             //glClearColor(0.0, 0.0, 0.0, 1.0);
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void unbind() {
+            if (dsize[0] == 0 || dsize[1] == 0)return;
             if (m_msfb != 0) {
                 glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
@@ -212,7 +228,6 @@ namespace sp {
             }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glPopAttrib();
-            m_bind = false;
         }
 
         void readi(void *img, const int ch) {
@@ -247,7 +262,7 @@ namespace sp {
         }
 
         template<typename DEPTH>
-        void readz(DEPTH *zbf, bool orth, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        void readz(DEPTH *zbf, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
             glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
@@ -260,7 +275,7 @@ namespace sp {
                 for (int u = 0; u < dsize[0]; u++) {
                     const float t = tmp[(dsize[1] - 1 - v) * dsize[0] + u];
                     double d = 0.0;
-                    if (orth == false) {
+                    if (pers == true) {
                         const double div = (farPlane - t * (farPlane - nearPlane));
                         if (div < 0.001) continue;
 
@@ -276,6 +291,14 @@ namespace sp {
             }
             delete[]tmp;
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
+        GLuint getFrameId() const {
+            return m_fb;
+        }
+
+        GLuint getTexId(const int i) const {
+            return m_tx[i];
         }
 
     };
@@ -401,6 +424,22 @@ namespace sp {
 
         void disable() {
             glUseProgram(0);
+        }
+
+        void setUniformTexture(const char *name, const int index, const GLuint texid) {
+            switch (index) {
+            case 0: glActiveTexture(GL_TEXTURE0); break;
+            case 1: glActiveTexture(GL_TEXTURE1); break;
+            case 2: glActiveTexture(GL_TEXTURE2); break;
+            case 3: glActiveTexture(GL_TEXTURE3); break;
+            case 4: glActiveTexture(GL_TEXTURE4); break;
+            default: return;
+            }
+
+            glBindTexture(GL_TEXTURE_2D, texid);
+            const GLint location = glGetUniformLocation(m_program, name);
+            glUniform1i(location, index);
+            //glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         template<typename TYPE>

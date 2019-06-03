@@ -327,7 +327,7 @@ namespace sp{
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
                 const Vec2 &vec = acs2(table, u, v);
-                if (useExt == false && inRect2(rect, u + vec.x, v + vec.y) == false) continue;
+                if (useExt == false && inRect(rect, u + vec.x, v + vec.y) == false) continue;
                 
                 for (int c = 0; c < ch; c++){
                     cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, u + vec.x, v + vec.y, c));
@@ -361,7 +361,7 @@ namespace sp{
         for (int v = 0; v < dst.dsize[1]; v++){
             for (int u = 0; u < dst.dsize[0]; u++){
                 const Vec2 vec = imat * getVec2(u, v);
-                if (inRect2(rect, vec.x, vec.y) == false) continue;
+                if (inRect(rect, vec.x, vec.y) == false) continue;
 
                 for (int c = 0; c < ch; c++){
                     cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, vec.x, vec.y, c));

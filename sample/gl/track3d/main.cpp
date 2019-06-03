@@ -32,7 +32,6 @@ private:
         printf("'t' key : training\n");
         printf("'s' key : start & stop moving\n");
         printf("'a' key : estimate one step\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -74,6 +73,9 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // render depth map
         {
             static double s = 0.0;

@@ -563,7 +563,7 @@ namespace sp{
                     const Vec2 obj = map(x, y);
                     const Vec2 pix = hom * obj;
 
-                    if (inRect2(rect, floor(pix.x), floor(pix.y)) == false){
+                    if (inRect(rect, floor(pix.x), floor(pix.y)) == false){
                         evalMap(x, y) = 0.3;
                     }
 
@@ -652,7 +652,7 @@ namespace sp{
             for (int y = 0; y < cmap.dsize[1]; y++) {
                 for (int x = 0; x < cmap.dsize[0]; x++) {
                     const Vec2 pix = hom * (getVec2(x, y) - offset);
-                    if (inRect2(img.dsize, pix.x, pix.y) == false) continue;
+                    if (inRect(img.dsize, pix.x, pix.y) == false) continue;
 
                     acsc(cmap, x, y) = acsc(img, pix.x, pix.y);
                     valid(x, y) = true;

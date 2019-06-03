@@ -41,7 +41,6 @@ private:
         printf("'d' key : track 2d (edge based)\n");
         printf("'f' key : track 3d (depth based)\n");
         printf("'r' key : reset pose\n");
-        printf("'ESC' key : exit\n");
         printf("\n");
     }
 
@@ -92,6 +91,9 @@ private:
     }
 
     virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // render
         {
             static double s = 0.0;

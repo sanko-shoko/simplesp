@@ -198,7 +198,7 @@ int main() {
             const Rect2 rect = getRect2(gry.dsize) - 200;
             for (int v = 0; v < gry.dsize[1]; v++) {
                 for (int u = 0; u < gry.dsize[0]; u++) {
-                    if (inRect2(rect, u, v) == false) {
+                    if (inRect(rect, u, v) == false) {
                         re(u, v) = 0.0;
                         im(u, v) = 0.0;
                     }

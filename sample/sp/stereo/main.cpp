@@ -41,7 +41,7 @@ int main() {
     
     // make remap table
     {
-        rectify(rects[1], rects[0], cam[1], stereo, cam[0], zeroPose());
+        rectify(rects[0], rects[1], cam[0], zeroPose(), cam[1], stereo);
 
         for (int i = 0; i < 2; i++) {
             makeRemapTable(tables[i], rects[i]);
