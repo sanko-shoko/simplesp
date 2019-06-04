@@ -103,7 +103,7 @@ namespace sp{
     }
 
     SP_CPUFUNC bool fit2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<Vec2> &objs, const Mem1<Vec2> &drcs, const int searchLng = 10, const int maxit = 10){
-        return fit2D(pose, img, cam, extVec(objs, 0.0), extVec(drcs, 0.0), searchLng, maxit);
+        return fit2D(pose, img, cam, getVec3(objs, 0.0), getVec3(drcs, 0.0), searchLng, maxit);
     }
 
     SP_CPUFUNC bool fit2D(Pose &pose, const Mem2<Byte> &img, const CamParam &cam, const Mem1<PoseModel> &pmodels, const int searchLng = 10, const int maxit = 10) {

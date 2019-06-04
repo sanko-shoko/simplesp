@@ -374,7 +374,7 @@ namespace sp {
 
     // 2D-2D pose (planar object)
     SP_CPUFUNC bool refinePose(Pose &pose, const CamParam &cam, const Mem1<Vec2> &pixs, const Mem1<Vec2> &objs, const int maxit = 10) {
-        return refinePose(pose, cam, pixs, extVec(objs, 0.0), maxit);
+        return refinePose(pose, cam, pixs, getVec3(objs, 0.0), maxit);
     }
 
     // 2D-2D pose (stereo camera)
@@ -661,7 +661,7 @@ namespace sp {
         if (calcPose(pose, cam, hom) == false) return false;
 
         if (maxit - 1 > 0) {
-            if (refinePose(pose, cam, pixs, extVec(objs, 0.0), maxit) == false) return false;
+            if (refinePose(pose, cam, pixs, getVec3(objs, 0.0), maxit) == false) return false;
         }
 
         return true;
@@ -886,7 +886,7 @@ namespace sp {
             Pose test;
             if (calcPose(test, cam, rpixs, robjs, 1) == false) continue;
 
-            const Mem1<SP_REAL> errs = calcPrjErr(test, cam, pixs, extVec(objs, 0.0));
+            const Mem1<SP_REAL> errs = calcPrjErr(test, cam, pixs, getVec3(objs, 0.0));
             const SP_REAL eval = ransacEval(errs, unit, thresh);
 
             if (eval > maxe) {
@@ -902,7 +902,7 @@ namespace sp {
 
         // refine
         {
-            const Mem1<SP_REAL> errs = calcPrjErr(pose, cam, pixs, extVec(objs, 0.0));
+            const Mem1<SP_REAL> errs = calcPrjErr(pose, cam, pixs, getVec3(objs, 0.0));
             const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
             const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
 

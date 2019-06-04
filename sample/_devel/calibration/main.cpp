@@ -20,13 +20,13 @@ int main(){
     const Mem2<Vec2> mrkMap = mrk.map * mrk.distance;
     
     {
-        cam.cx = 300;
-        cam.cy = 250;
-        cam.k1 = 0.1;
-        cam.k2 = 0.1;
-        cam.k3 = 0.1;
-        cam.p1 = 0.1;
-        cam.p2 = 0.1;
+        cam.cx = 300.0f;
+        cam.cy = 250.0f;
+        cam.k1 = 0.1f;
+        cam.k2 = 0.1f;
+        cam.k3 = 0.1f;
+        cam.p1 = 0.1f;
+        cam.p2 = 0.1f;
 
         printf("grand truth\n");
         print(cam);

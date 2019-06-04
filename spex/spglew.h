@@ -52,6 +52,10 @@ namespace sp {
         int size() {
             return m_size;
         }
+
+        GLuint getId() const {
+            return m_buffer;
+        }
     };
 
 
@@ -308,7 +312,6 @@ namespace sp {
 
     private:
         GLuint m_program;
-        GLuint m_buffer[SHADER_BUFFER_MAX];
 
     private:
         void reset() {
@@ -319,18 +322,12 @@ namespace sp {
             if (m_program) {
                 glDeleteProgram(m_program);
             }
-            for (int i = 0; i < SHADER_BUFFER_MAX; i++) {
-                if (m_buffer[i] == 0) continue;
-                glDisableVertexAttribArray(i);
-                glDeleteBuffers(1, &m_buffer[i]);
-            }
             reset();
         }
 
     public:
         Shader() {
             m_program = 0;
-            memset(m_buffer, 0, sizeof(GLuint) * SHADER_BUFFER_MAX);
         }
 
         ~Shader() {
@@ -490,34 +487,11 @@ namespace sp {
             glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 
-
-        //template<typename TYPE>
-        //void setVertex3f(const int id, const TYPE *vtxs, const int size) {
-        //    if (m_buffer[id] == 0) {
-        //        glGenBuffers(1, &m_buffer[id]);
-        //    }
-
-        //    glBindBuffer(GL_ARRAY_BUFFER, m_buffer[id]);
-        //    glBufferData(GL_ARRAY_BUFFER, sizeof(TYPE) * size, vtxs, GL_STATIC_DRAW);
-
+        //void setVertex(const int id, const VertexBufferObject &vbo, const int type = GL_FLOAT) {
         //    glEnableVertexAttribArray(id);
-        //    glBindBuffer(GL_ARRAY_BUFFER, m_buffer[id]);
-        //    glVertexAttribPointer(id, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        //    glBindBuffer(GL_ARRAY_BUFFER, vbo.getId());
+        //    glVertexAttribPointer(id, 3, type, GL_FALSE, 0, NULL);
         //}
-
-        //void setVertex(const int id, const Vec2 *vtxs, const int size) {
-        //    GLuint buffer;
-        //    glGenBuffers(1, &buffer);
-        //    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        //    glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2) * size, vtxs, GL_STATIC_DRAW);
-
-        //    glEnableVertexAttribArray(id);
-        //    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        //    glVertexAttribPointer(id, 2, GL_DOUBLE, GL_FALSE, 0, NULL);
-
-        //    m_buffer.push(buffer);
-        //}
-
 
     private:
 

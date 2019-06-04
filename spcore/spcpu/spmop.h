@@ -353,7 +353,7 @@ namespace sp{
         return dst;
     }
 
-    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const SP_REAL angle) {
+    SP_GENFUNC Mat getMatRodrigues(const Vec3 &vec, const double angle) {
         Mat dst(3, 3);
 
         getMatRodrigues(dst.ptr, dst.rows(), dst.cols(), vec, angle);
@@ -670,7 +670,7 @@ namespace sp{
         return getVec3(vec[0], vec[1], vec[2]);
     }
 
-    SP_CPUFUNC Mem1<Vec3> extVec(const Mem1<Vec2> &vec, const double z) {
+    SP_CPUFUNC Mem1<Vec3> getVec3(const Mem1<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = getVec3(vec[i].x, vec[i].y, z);

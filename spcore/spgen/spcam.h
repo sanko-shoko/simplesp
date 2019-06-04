@@ -326,17 +326,17 @@ namespace sp{
     // rescale 
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC void rescale(CamParam &dst, const CamParam &cam, const SP_REAL dscale0, const SP_REAL dscale1) {
+    SP_CPUFUNC void rescale(CamParam &dst, const CamParam &cam, const double dscale0, const double dscale1) {
         dst = cam;
 
         dst.dsize[0] = round(cam.dsize[0] * dscale0);
         dst.dsize[1] = round(cam.dsize[1] * dscale1);
 
-        dst.fx *= dscale0;
-        dst.fy *= dscale1;
+        dst.fx = static_cast<SP_REAL>(dst.fx * dscale0);
+        dst.fy = static_cast<SP_REAL>(dst.fy * dscale1);
 
-        dst.cx *= dscale0;
-        dst.cy *= dscale1;
+        dst.cx = static_cast<SP_REAL>(dst.cx * dscale0);
+        dst.cy = static_cast<SP_REAL>(dst.cy * dscale1);
     }
     
     //--------------------------------------------------------------------------------
