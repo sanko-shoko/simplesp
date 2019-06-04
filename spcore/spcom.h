@@ -51,7 +51,7 @@
 //--------------------------------------------------------------------------------
 
 #ifndef SP_REAL
-#define SP_REAL float
+#define SP_REAL double
 #endif
 
 #define SP_CAST(V) static_cast<SP_REAL>(V)

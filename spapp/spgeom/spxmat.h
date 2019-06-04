@@ -148,8 +148,8 @@ namespace sp{
 
         Mat T0, T1;
         Mem1<Vec2> data0, data1;
-        if (solver::normalize(T0, data0, pixs) == false) return false;
-        if (solver::normalize(T1, data1, objs) == false) return false;
+        if (solver::normalize(data0, T0, pixs) == false) return false;
+        if (solver::normalize(data1, T1, objs) == false) return false;
 
         Mat A(pixs.size() * 2, 9);
         for (int i = 0; i < pixs.size(); i++){
@@ -591,8 +591,8 @@ namespace sp{
 
         Mat T0, T1;
         Mem1<Vec2> data0, data1;
-        if (solver::normalize(T0, data0, npxs0) == false) return false;
-        if (solver::normalize(T1, data1, npxs1) == false) return false;
+        if (solver::normalize(data0, T0, npxs0) == false) return false;
+        if (solver::normalize(data1, T1, npxs1) == false) return false;
 
         Mat A(num, 9);
         for (int i = 0; i < num; i++) {

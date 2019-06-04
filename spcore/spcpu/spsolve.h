@@ -18,7 +18,7 @@ namespace sp{
     namespace solver {
 
         template<typename TYPE, typename ELEM = SP_REAL>
-        SP_CPUFUNC bool normalize(Mat &T, Mem<TYPE> &dst, const Mem<TYPE> &mem) {
+        SP_CPUFUNC bool normalize(Mem<TYPE> &dst, Mat &T, const Mem<TYPE> &mem) {
 
             const int dim = sizeof(TYPE) / sizeof(ELEM);
 

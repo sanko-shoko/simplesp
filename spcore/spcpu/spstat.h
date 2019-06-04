@@ -332,21 +332,21 @@ namespace sp{
     // eval
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC SP_REAL evalErr(const Mem1<SP_REAL> &errs, const SP_REAL thresh = 5.0) {
-        SP_REAL eval = 0.0;
+    SP_CPUFUNC SP_REAL evalErr(const Mem1<SP_REAL> &errs, const double thresh = 5.0) {
+        double eval = 0.0;
         for (int i = 0; i < errs.size(); i++) {
             if (errs[i] < thresh) eval += 1.0;
         }
         return eval / errs.size();
     }
 
-    SP_CPUFUNC SP_REAL evalErr(const SP_REAL err, const SP_REAL thresh = 5.0) {
+    SP_CPUFUNC SP_REAL evalErr(const SP_REAL err, const double thresh = 5.0) {
         return (err < thresh) ? 1.0 : 0.0;
     }
 
     
     template<typename TYPE>
-    SP_CPUFUNC Mem1<TYPE> denoise(const Mem<TYPE> &src, const Mem<SP_REAL> &errs, const SP_REAL thresh = 5.0) {
+    SP_CPUFUNC Mem1<TYPE> denoise(const Mem<TYPE> &src, const Mem<SP_REAL> &errs, const double thresh = 5.0) {
         Mem1<TYPE> dst;
         dst.reserve(src.size());
         for (int i = 0; i < src.size(); i++) {
