@@ -384,7 +384,7 @@ namespace sp {
             return *this;
         }
 
-        GLuint getid() {
+        GLuint getId() {
             return m_id;
         }
 
@@ -402,25 +402,31 @@ namespace sp {
             default: return false;
             }
 
-            free();
+            if (this->dsize[0] != dsize[0] || this->dsize[1] != dsize[1]) {
+                if (mem != NULL) delete[]mem;
+                mem = new char[dsize[0] * dsize[1] * ch];
+            }
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
             this->ch = ch;
 
-            mem = new char[dsize[0] * dsize[1] * ch];
             memcpy(mem, img, dsize[0] * dsize[1] * ch);
 
-            glGenTextures(1, &m_id);
+            if (m_id == 0) {
+                glGenTextures(1, &m_id);
+
+                glBindTexture(GL_TEXTURE_2D, m_id);
+
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+            }
 
             glBindTexture(GL_TEXTURE_2D, m_id);
-
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, format, GL_UNSIGNED_BYTE, mem);
 
@@ -726,7 +732,7 @@ namespace sp {
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glBindTexture(GL_TEXTURE_2D, tex.getid());
+            glBindTexture(GL_TEXTURE_2D, tex.getId());
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
