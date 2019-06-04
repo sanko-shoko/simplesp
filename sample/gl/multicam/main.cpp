@@ -77,7 +77,7 @@ private:
 
             const Mem1<BitMarkerParam> mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
 
-            Mem1<Vec3> unit = extVec(grid(2, 2), 0) * length;
+            Mem1<Vec3> unit = getVec3(grid(2, 2), 0) * length;
             unit -= meanVec(unit);
 
             m_pnts.clear();
