@@ -728,7 +728,7 @@ namespace sp{
         }
 
         MemP& operator = (const MemP &mem) {
-            init(mem.m_unit, mem.m_block);
+            init(mem.m_unit);
 
             for (int i = 0; i < mem.size(); i++) {
                 *malloc() = mem[i];
@@ -740,11 +740,11 @@ namespace sp{
             clear();
         }
 
-        void init(const int unit = 1, const int block = 100){
+        void init(const int unit = 1){
             clear();
 
             m_unit = maxval(1, unit);
-            m_block = block;
+            m_block = 100;
         }
 
         void clear(){

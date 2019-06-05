@@ -136,7 +136,7 @@ namespace sp{
                 const TYPE a21 = psrc2[su1];
                 const TYPE a22 = psrc2[su2];
 
-                const SP_REAL d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
+                const double d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
                 cnvVal(*pd++, d);
             }
         }

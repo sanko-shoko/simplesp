@@ -1,4 +1,5 @@
 ﻿#define SP_USE_GLEW 1
+#define SP_USE_DEBUG 1
 
 #include "simplesp.h"
 #include "spex/spgl.h"
@@ -49,7 +50,7 @@ private:
         static Shader shader;
         static FrameBufferObject fbo;
 
-        if (shader.valid() == false) {
+        if (shader.sdid() == 0) {
 
             const char* vert =
                 #include "spex/spshader/edge.vert"
@@ -89,7 +90,8 @@ private:
             dfbo.resize(m_wcam.dsize);
             
             shader.enable();
-            shader.setUniformTexture("depth", 0, dfbo.getTexId(1));
+            shader.setUniformTexture("depth", 0, dfbo.txid(1));
+            shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
             shader.setUniform1f("dx", 1.0 / m_wcam.dsize[0]);
@@ -117,7 +119,7 @@ private:
     void edge2() {
         static Shader shader;
 
-        if (shader.valid() == false) {
+        if (shader.sdid() == 0) {
 
             const char* vert =
 #include "spex/spshader/edge.vert"
@@ -140,16 +142,17 @@ private:
             dfbo.resize(m_wcam.dsize);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dfbo.getFrameId());
-            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dfbo.getTexId(0), 0);
-            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dfbo.getTexId(1), 0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dfbo.fbid());
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dfbo.txid(0), 0);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dfbo.txid(1), 0);
 
             glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             shader.enable();
-            shader.setUniformTexture("depth", 0, dfbo.getTexId(1));
+            shader.setUniformTexture("depth", 0, dfbo.txid(1));
+            shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
             shader.setUniform1f("dx", 1.0 / m_wcam.dsize[0]);
@@ -198,7 +201,7 @@ private:
             ;
 
         static Shader shader;
-        if (shader.valid() == false) {
+        if (shader.sdid() == 0) {
             shader.load(vert, flag);
         }
 

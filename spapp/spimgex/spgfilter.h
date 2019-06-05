@@ -41,8 +41,8 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const TYPE &g = src[i];
 
-                I[i] = SP_CAST(g);
-                I2[i] = SP_CAST(g * g);
+                I[i] = SP_RCAST(g);
+                I2[i] = SP_RCAST(g * g);
             }
 
             boxFilter(mean_I, I, winSize);
@@ -51,7 +51,7 @@ namespace sp{
             inv.resize(src.size());
             for (int i = 0; i < src.size(); i++) {
                 const double var = mean_I2[i] - mean_I[i] * mean_I[i];
-                inv[i] = SP_CAST(1.0 / (var + epsilon));
+                inv[i] = SP_RCAST(1.0 / (var + epsilon));
             }
         }
     };
@@ -80,17 +80,17 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const Col3 &g = src[i];
 
-                I[i].x = SP_CAST(g.r);
-                I[i].y = SP_CAST(g.g);
-                I[i].z = SP_CAST(g.b);
+                I[i].x = SP_RCAST(g.r);
+                I[i].y = SP_RCAST(g.g);
+                I[i].z = SP_RCAST(g.b);
 
-                I2[i].x = SP_CAST(g.r * g.r);
-                I2[i].y = SP_CAST(g.g * g.g);
-                I2[i].z = SP_CAST(g.b * g.b);
+                I2[i].x = SP_RCAST(g.r * g.r);
+                I2[i].y = SP_RCAST(g.g * g.g);
+                I2[i].z = SP_RCAST(g.b * g.b);
 
-                Ic[i].x = SP_CAST(g.r * g.g);
-                Ic[i].y = SP_CAST(g.g * g.b);
-                Ic[i].z = SP_CAST(g.b * g.r);
+                Ic[i].x = SP_RCAST(g.r * g.g);
+                Ic[i].y = SP_RCAST(g.g * g.b);
+                Ic[i].z = SP_RCAST(g.b * g.r);
             }
 
             boxFilter<Vec3, SP_REAL>(mean_I, I, winSize);

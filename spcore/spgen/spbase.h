@@ -62,7 +62,7 @@ namespace sp{
 
     // get max value
     SP_GENFUNC const SP_REAL maxval(const double a, const double b){
-        return SP_CAST((a > b) ? a : b);
+        return SP_RCAST((a > b) ? a : b);
     }
 
     // get min value
@@ -72,7 +72,7 @@ namespace sp{
 
     // get min value
     SP_GENFUNC const SP_REAL minval(const double a, const double b){
-        return SP_CAST((a < b) ? a : b);
+        return SP_RCAST((a < b) ? a : b);
     }
 
     // get limit value
@@ -82,7 +82,7 @@ namespace sp{
 
     // get limit value
     SP_GENFUNC const SP_REAL limval(const double v, const double maxv, const double minv) {
-        return SP_CAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
+        return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
 

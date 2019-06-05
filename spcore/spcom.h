@@ -54,16 +54,16 @@
 #define SP_REAL double
 #endif
 
-#define SP_CAST(V) static_cast<SP_REAL>(V)
+#define SP_RCAST(V) static_cast<SP_REAL>(V)
 
 // pi
 #define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
 
 // limit value regarded as zero
-#define SP_SMALL SP_CAST(1.0e-20)
+#define SP_SMALL SP_RCAST(1.0e-20)
 
 // limit value regarded as infinity
-#define SP_INFINITY SP_CAST(1.0e+20)
+#define SP_INFINITY SP_RCAST(1.0e+20)
 
 // maximal value (unsigned char)
 #define SP_BYTEMAX 255

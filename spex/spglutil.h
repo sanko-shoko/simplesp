@@ -67,13 +67,6 @@ namespace sp {
         glColor4ub(col.r, col.g, col.b, col.a);
     }
 
-    SP_CPUFUNC void glColor(const int label){
-        srand(maxval(label, 0));
-        Col3 col;
-        cnvHSVToCol(col, getVec3((randu() + 1.0) * SP_PI, 1.0, 1.0));
-        glColor(col);
-    }
-
     SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 col) {
         GLfloat param[4] = { static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, 1.f };
         glMaterialfv(face, pname, param);
@@ -93,18 +86,19 @@ namespace sp {
         ::glViewport(rect.dbase[0], wh - (rect.dbase[1] + rect.dsize[1]), rect.dsize[0], rect.dsize[1]);
     }
 
+
     //--------------------------------------------------------------------------------
-    // get
+    // get gl param
     //--------------------------------------------------------------------------------
 
+    // ex. GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
     SP_CPUFUNC Mat glGetMat(const int type) {
         Mat mat(4, 4);
 
-        // GL_MODELVIEW_MATRIX, GL_PROJECTION_MATRIX
         double t[4 * 4];
         glGetDoublev(type, t);
         for (int i = 0; i < 4 * 4; i++) {
-            mat[i] = SP_CAST(t[i]);
+            mat[i] = SP_RCAST(t[i]);
         }
         return trnMat(mat);
     }
@@ -117,9 +111,9 @@ namespace sp {
 
 		int ww, wh;
 		glfwGetWindowSize(win, &ww, &wh);
-		const double pixScale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
+		const double pscale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
 
-		return pixScale;
+		return pscale;
 	}
 
     //--------------------------------------------------------------------------------
@@ -135,21 +129,21 @@ namespace sp {
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
 
         Mat vmat = eyeMat(4, 4);
-        vmat(0, 0) = SP_CAST(viewScale);
-        vmat(1, 1) = SP_CAST(viewScale);
+        vmat(0, 0) = SP_RCAST(viewScale);
+        vmat(1, 1) = SP_RCAST(viewScale);
         vmat(0, 3) = shift.x;
         vmat(1, 3) = shift.y;
 
         Mat _vmat = vmat;
 
         {// for retina display
-            const double pixScale = glGetPixelScale();
+            const double pscale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = SP_CAST(pixScale);
-            pmat(1, 1) = SP_CAST(pixScale);
-            pmat(0, 3) = SP_CAST((1.0 - pixScale) * viewCenter.x);
-            pmat(1, 3) = SP_CAST((1.0 - pixScale) * viewCenter.y);
+            pmat(0, 0) = SP_RCAST(pscale);
+            pmat(1, 1) = SP_RCAST(pscale);
+            pmat(0, 3) = SP_RCAST((1.0 - pscale) * viewCenter.x);
+            pmat(1, 3) = SP_RCAST((1.0 - pscale) * viewCenter.y);
 
             _vmat = pmat * vmat;
         }
@@ -171,8 +165,8 @@ namespace sp {
 			const double pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = SP_CAST(1.0 / pixScale);
-            pmat(1, 1) = SP_CAST(1.0 / pixScale);
+            pmat(0, 0) = SP_RCAST(1.0 / pixScale);
+            pmat(1, 1) = SP_RCAST(1.0 / pixScale);
 
             _vmat = pmat * vmat;
         }
@@ -228,11 +222,9 @@ namespace sp {
     // load view 3d
     //--------------------------------------------------------------------------------
 
-    // default near 
-#define SP_DEFAULT_NEAR 1.0
-
-    // default far
-#define SP_DEFAULT_FAR 10000.0
+    // default near & far
+#define SP_DEFAULT_NEAR SP_RCAST(1.0)
+#define SP_DEFAULT_FAR SP_RCAST(10000.0)
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR, const bool pers = true){
         glEnable(GL_DEPTH_TEST);
@@ -261,16 +253,16 @@ namespace sp {
             const double n = nearPlane;
             const double f = farPlane;
 
-            mat(0, 0) = SP_CAST(2 * n / (r - l));
-            mat(1, 1) = SP_CAST(2 * n / (t - b));
+            mat(0, 0) = SP_RCAST(2 * n / (r - l));
+            mat(1, 1) = SP_RCAST(2 * n / (t - b));
 
-            mat(0, 2) = SP_CAST(-(r + l) / (r - l));
-            mat(1, 2) = SP_CAST(-(t + b) / (t - b));
-            mat(2, 2) = SP_CAST(+(f + n) / (f - n));
+            mat(0, 2) = SP_RCAST(-(r + l) / (r - l));
+            mat(1, 2) = SP_RCAST(-(t + b) / (t - b));
+            mat(2, 2) = SP_RCAST(+(f + n) / (f - n));
 
-            mat(2, 3) = SP_CAST(-2 * f * n / (f - n));
+            mat(2, 3) = SP_RCAST(-2 * f * n / (f - n));
 
-            mat(3, 2) = SP_CAST(1.0);
+            mat(3, 2) = SP_RCAST(1.0);
         }
         else {
             const double nx = 1.0 / cam.fx;
@@ -286,15 +278,15 @@ namespace sp {
             const double n = nearPlane;
             const double f = farPlane;
 
-            mat(0, 0) = SP_CAST(2 / (r - l));
-            mat(1, 1) = SP_CAST(2 / (t - b));
-            mat(2, 2) = SP_CAST(2 / (f - n));
+            mat(0, 0) = SP_RCAST(2 / (r - l));
+            mat(1, 1) = SP_RCAST(2 / (t - b));
+            mat(2, 2) = SP_RCAST(2 / (f - n));
 
-            mat(0, 3) = SP_CAST(-(r + l) / (r - l));
-            mat(1, 3) = SP_CAST(-(t + b) / (t - b));
-            mat(2, 3) = SP_CAST(-(f + n) / (f - n));
+            mat(0, 3) = SP_RCAST(-(r + l) / (r - l));
+            mat(1, 3) = SP_RCAST(-(t + b) / (t - b));
+            mat(2, 3) = SP_RCAST(-(f + n) / (f - n));
 
-            mat(3, 3) = SP_CAST(1.0);
+            mat(3, 3) = SP_RCAST(1.0);
         }
 
         glMatrixMode(GL_PROJECTION);
@@ -302,22 +294,6 @@ namespace sp {
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-    }
-
-    SP_CPUFUNC float glGetDepth(double zbf, bool orth, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
-        double d = 0.0;
-        if (orth == false) {
-            const double div = (farPlane - zbf * (farPlane - nearPlane));
-            if (div > 0.001) {
-                d = farPlane * nearPlane / div;
-            }
-        }
-        else {
-            const double p2 = 2.0 / (farPlane - nearPlane);
-            const double p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
-            d = (zbf * 2 - 1 - p3) / p2;
-        }
-        return static_cast<float>((d > nearPlane && d < farPlane) ? d : 0.0);
     }
 
 
@@ -329,15 +305,16 @@ namespace sp {
     private:
 
         // texture id
-        GLuint m_id;
+        GLuint m_tx;
 
+        // backup
         char *mem;
 
     private:
 
         void free() {
-            if (m_id > 0) {
-                glDeleteTextures(1, &m_id);
+            if (m_tx > 0) {
+                glDeleteTextures(1, &m_tx);
             }
             if (mem != NULL) {
                 delete[]mem;
@@ -348,6 +325,9 @@ namespace sp {
         void reset() {
             memset(this, 0, sizeof(Texture));
         }
+
+        Texture(const Texture &tex) {}
+        Texture& operator = (const Texture &tex) {}
 
     public:
 
@@ -362,37 +342,23 @@ namespace sp {
             free();
         }
 
-        Texture(const Texture &tex) {
-            reset();
-            *this = tex;
-        }
-
         template<typename TYPE>
         Texture(const TYPE *img, const int *dsize) {
             reset();
-            setimg(img, dsize);
+            set(img, dsize);
         }
         template <typename TYPE>
         Texture(const void *img, const int *dsize, const int ch) {
             reset();
-            setimg(img, dsize, ch);
-        }
-
-        Texture& operator = (const Texture &tex) {
-            free();
-            setimg(tex.mem, tex.dsize, tex.ch);
-            return *this;
-        }
-
-        GLuint getId() {
-            return m_id;
+            set(img, dsize, ch);
         }
 
         template<typename TYPE>
-        bool setimg(const TYPE *img, const int *dsize) {
-            return setimg(img, dsize, sizeof(TYPE));
+        bool set(const TYPE *img, const int *dsize) {
+            return set(img, dsize, sizeof(TYPE));
         }
-        bool setimg(const void *img, const int *dsize, const int ch) {
+
+        bool set(const void *img, const int *dsize, const int ch) {
 
             int format;
             switch (ch) {
@@ -402,20 +368,21 @@ namespace sp {
             default: return false;
             }
 
-            if (this->dsize[0] != dsize[0] || this->dsize[1] != dsize[1]) {
+            if ((this->dsize[0] * this->dsize[1] * this->ch) != (dsize[0] * dsize[1] * ch)) {
                 if (mem != NULL) delete[]mem;
                 mem = new char[dsize[0] * dsize[1] * ch];
             }
+
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
             this->ch = ch;
 
             memcpy(mem, img, dsize[0] * dsize[1] * ch);
 
-            if (m_id == 0) {
-                glGenTextures(1, &m_id);
+            if (m_tx == 0) {
+                glGenTextures(1, &m_tx);
 
-                glBindTexture(GL_TEXTURE_2D, m_id);
+                glBindTexture(GL_TEXTURE_2D, m_tx);
 
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -426,14 +393,19 @@ namespace sp {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
             }
 
-            glBindTexture(GL_TEXTURE_2D, m_id);
+            glBindTexture(GL_TEXTURE_2D, m_tx);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dsize[0], dsize[1], 0, format, GL_UNSIGNED_BYTE, mem);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
-            return (m_id > 0) ? true : false;
+            return (m_tx > 0) ? true : false;
         }
+
+        GLuint txid() {
+            return m_tx;
+        }
+
     };
 
 
@@ -724,7 +696,7 @@ namespace sp {
         if (src.size() == 0) return;
 
         Texture tex;
-        if (tex.setimg(src.ptr, src.dsize) == false) return;
+        if (tex.set(src.ptr, src.dsize) == false) return;
 
         glPushAttrib(GL_ENABLE_BIT);
         glEnable(GL_TEXTURE_2D);
@@ -732,7 +704,7 @@ namespace sp {
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glBindTexture(GL_TEXTURE_2D, tex.getId());
+            glBindTexture(GL_TEXTURE_2D, tex.txid());
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -117,8 +117,8 @@ namespace sp {
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
             const double s = ((pers == true) ? cpose.trn.z : 1.0) / viewScale;
-            cpose.trn.x += SP_CAST(mouse.move.x / cam.fx * s);
-            cpose.trn.y += SP_CAST(mouse.move.y / cam.fy * s);
+            cpose.trn.x += SP_RCAST(mouse.move.x / cam.fx * s);
+            cpose.trn.y += SP_RCAST(mouse.move.y / cam.fy * s);
 
             ret = true;
         }
@@ -235,7 +235,7 @@ namespace sp {
             }
 
             if (m_win == NULL) {
-                SP_PRINTF(" Can't create GLFW window.\n");
+                SP_PRINTD(" Can't create GLFW window.\n");
                 glfwTerminate();
                 return false;
             }
@@ -245,7 +245,9 @@ namespace sp {
 
             // glfw make context
             glfwMakeContextCurrent(m_win);
-            glfwSwapInterval(1); // vsync
+
+            // vsync
+            glfwSwapInterval(1); 
 
 #if SP_USE_GLEW
             // glew init
@@ -584,7 +586,6 @@ namespace sp {
 
     template<typename TYPE>
     class ImgWindow : public BaseWindow {
-
 
     private:
 

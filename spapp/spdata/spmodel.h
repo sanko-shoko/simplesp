@@ -47,7 +47,7 @@ namespace sp{
         const double radius = getModelRadius(model);
         const double distance = 1.2 * maxval(cam.fx, cam.fy) * radius / (0.5 * minval(cam.dsize[0], cam.dsize[1]));
     
-        return SP_CAST(distance);
+        return SP_RCAST(distance);
     }
 
     SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){

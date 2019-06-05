@@ -21,7 +21,7 @@ namespace sp{
     }
 
     SP_GENFUNC SP_REAL fabs(const double x) {
-        return SP_CAST(::fabs(x));
+        return SP_RCAST(::fabs(x));
     }
 
     static unsigned int SP_RANDSEED = 0;
@@ -104,7 +104,7 @@ namespace sp{
         const int maxv = 2000;
         const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
         const double u = 2.0 * a - 1.0;
-        return SP_CAST(u);
+        return SP_RCAST(u);
     }
 
     // get random gauss
@@ -113,7 +113,7 @@ namespace sp{
         const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
         const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
         const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
-        return SP_CAST(g);
+        return SP_RCAST(g);
     }
 
     // x * x
@@ -129,7 +129,7 @@ namespace sp{
     // cubic root
     SP_GENFUNC SP_REAL cbrt(const double x) {
         const double z = pow(fabs(x), 1.0 / 3.0);
-        return SP_CAST((x >= 0.0) ? z : -z);
+        return SP_RCAST((x >= 0.0) ? z : -z);
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
@@ -144,7 +144,7 @@ namespace sp{
         else {
             ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
         }
-        return SP_CAST(ret);
+        return SP_RCAST(ret);
     }
 
     // combination
@@ -335,7 +335,7 @@ namespace sp{
         SP_REAL ret = 0.0;
 
         if (fabs(sigma) > 0){
-            ret = SP_CAST(exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma));
+            ret = SP_RCAST(exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma));
         }
         return ret;
     }
@@ -346,7 +346,7 @@ namespace sp{
 
         if (fabs(x) < t){
             const double v = 1.0 - (x * x) / (t * t);
-            ret = SP_CAST(v * v);
+            ret = SP_RCAST(v * v);
         }
         return ret;
     }
@@ -505,7 +505,7 @@ namespace sp{
     SP_GENFUNC void eyeMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                dst[r * cols + c] = SP_CAST((r == c) ? 1.0 : 0.0);
+                dst[r * cols + c] = SP_RCAST((r == c) ? 1.0 : 0.0);
             }
         }
     }
@@ -514,7 +514,7 @@ namespace sp{
     SP_GENFUNC void zeroMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                dst[r * cols + c] = SP_CAST(0.0);
+                dst[r * cols + c] = SP_RCAST(0.0);
             }
         }
     }
@@ -785,7 +785,7 @@ namespace sp{
 
         for (int r = 0; r < size; r++){
             for (int c = 0; c < size; c++){
-                eigVec[r * size + c] = SP_CAST((r == c) ? 1.0 : 0.0);
+                eigVec[r * size + c] = SP_RCAST((r == c) ? 1.0 : 0.0);
                 eigVal[r * size + c] = mat[r * size + c];
             }
         }
@@ -831,22 +831,22 @@ namespace sp{
                 const double tmpa = cosv * eigVal[p * size + i] - sinv * eigVal[q * size + i];
                 const double tmpb = sinv * eigVal[p * size + i] + cosv * eigVal[q * size + i];
 
-                eigVal[i * size + p] = eigVal[p * size + i] = SP_CAST(tmpa);
-                eigVal[i * size + q] = eigVal[q * size + i] = SP_CAST(tmpb);
+                eigVal[i * size + p] = eigVal[p * size + i] = SP_RCAST(tmpa);
+                eigVal[i * size + q] = eigVal[q * size + i] = SP_RCAST(tmpb);
             }
             {
-                eigVal[p * size + p] = SP_CAST(cosv * cosv * app + sinv * sinv * aqq - 2 * sinv * cosv * apq);
-                eigVal[p * size + q] = SP_CAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
-                eigVal[q * size + p] = SP_CAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
-                eigVal[q * size + q] = SP_CAST(sinv * sinv * app + cosv * cosv * aqq + 2 * sinv * cosv * apq);
+                eigVal[p * size + p] = SP_RCAST(cosv * cosv * app + sinv * sinv * aqq - 2 * sinv * cosv * apq);
+                eigVal[p * size + q] = SP_RCAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
+                eigVal[q * size + p] = SP_RCAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
+                eigVal[q * size + q] = SP_RCAST(sinv * sinv * app + cosv * cosv * aqq + 2 * sinv * cosv * apq);
             }
 
             for (int i = 0; i < size; i++){
                 const double tmpa = cosv * eigVec[i * size + p] - sinv * eigVec[i * size + q];
                 const double tmpb = sinv * eigVec[i * size + p] + cosv * eigVec[i * size + q];
 
-                eigVec[i * size + p] = SP_CAST(tmpa);
-                eigVec[i * size + q] = SP_CAST(tmpb);
+                eigVec[i * size + p] = SP_RCAST(tmpa);
+                eigVec[i * size + q] = SP_RCAST(tmpb);
             }
         }
 
@@ -1032,7 +1032,7 @@ namespace sp{
 
             double g = Q[i];
             if (g) {
-                g = SP_CAST(1.0 / g);
+                g = SP_RCAST(1.0 / g);
                 for (int j = i + 1; j < cols; j++) {
                     double s = 0.0;
                     for (int k = i + 1; k < rows; k++){
@@ -1412,7 +1412,7 @@ namespace sp{
             const double dx = f / (df + 1e-10);
 
             const double backup = x;
-            x = SP_CAST(x - dx);
+            x = SP_RCAST(x - dx);
             
             const double err = fabs(funcX(x, csize, cs));
 

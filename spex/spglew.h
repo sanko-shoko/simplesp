@@ -17,9 +17,7 @@ namespace sp {
     class VertexBufferObject {
 
     private:
-        GLuint m_buffer;
-
-        int m_size;
+        GLuint m_vb;
 
     private:
         VertexBufferObject(const VertexBufferObject &vbo) {}
@@ -28,33 +26,28 @@ namespace sp {
     public:
 
         VertexBufferObject() {
-            m_size = 0;
-            glGenBuffers(1, &m_buffer);
+            glGenBuffers(1, &m_vb);
         }
 
         ~VertexBufferObject() {
-            glDeleteBuffers(1, &m_buffer);
+            glDeleteBuffers(1, &m_vb);
         }
 
-        void data(const void *vtx, const int size) {
+        void set(const void *vtx, const int size) {
             bind();
-            m_size = size;
             glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
             unbind();
         }
 
         void bind() {
-            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, m_vb);
         }
         void unbind() {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        int size() {
-            return m_size;
-        }
 
-        GLuint getId() const {
-            return m_buffer;
+        GLuint vbid() const {
+            return m_vb;
         }
     };
 
@@ -97,35 +90,32 @@ namespace sp {
         }
 
         void free() {
-            if (m_fb) {
-                glDeleteFramebuffers(1, &m_fb);
+            {
+                if (m_fb) {
+                    glDeleteFramebuffers(1, &m_fb);
+                }
+                if (m_msfb) {
+                    glDeleteFramebuffers(1, &m_msfb);
+                }
             }
-            if (m_msfb) {
-                glDeleteFramebuffers(1, &m_msfb);
-            }
-            if (m_tx[0]) {
-                glDeleteTextures(1, &m_tx[0]);
-            }
-            if (m_tx[1]) {
-                glDeleteTextures(1, &m_tx[1]);
-            }
-            if (m_mstx[0]) {
-                glDeleteTextures(1, &m_mstx[0]);
-            }
-            if (m_mstx[1]) {
-                glDeleteTextures(1, &m_mstx[1]);
+            for (int i = 0; i < 2; i++) {
+                if (m_tx[i]) {
+                    glDeleteTextures(1, &m_tx[i]);
+                }
+                if (m_mstx[i]) {
+                    glDeleteTextures(1, &m_mstx[i]);
+                }
             }
             reset();
         }
 
         void resize(const int dsize[2], const int samples = 1) {
-            const int s = maxval(1, samples);
-            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1] && this->samples == s) return;
+            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1] && this->samples == samples) return;
 
             free();
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
-            this->samples = s;
+            this->samples = samples;
 
             {
                 glGenFramebuffers(1, &m_fb);
@@ -156,7 +146,7 @@ namespace sp {
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
             }
-            if (s > 1) {
+            if (samples > 1) {
                 glGenFramebuffers(1, &m_msfb);
                 glGenTextures(2, m_mstx);
 
@@ -164,7 +154,7 @@ namespace sp {
                 glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0]);
 
                 glPixelStorei(GL_PACK_ALIGNMENT, 1);
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_RGBA, dsize[0], dsize[1], false);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA, dsize[0], dsize[1], false);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -184,7 +174,7 @@ namespace sp {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
                 glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_DEPTH_COMPONENT, dsize[0], dsize[1], false);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT, dsize[0], dsize[1], false);
             }
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -220,12 +210,10 @@ namespace sp {
                 glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
-                //glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
 
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
-                //glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
 
                 glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
                 glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -244,7 +232,6 @@ namespace sp {
 
             unsigned char *dst = (unsigned char *)img;
 
-#pragma omp parallel for
             for (int v = 0; v < dsize[1]; v++) {
                 for (int u = 0; u < dsize[0]; u++) {
                     const int d = (v * dsize[0] + u) * ch;
@@ -274,7 +261,6 @@ namespace sp {
             float *tmp = new float[dsize[0] * dsize[1]];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp);
 
-#pragma omp parallel for
             for (int v = 0; v < dsize[1]; v++) {
                 for (int u = 0; u < dsize[0]; u++) {
                     const float t = tmp[(dsize[1] - 1 - v) * dsize[0] + u];
@@ -297,11 +283,11 @@ namespace sp {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        GLuint getFrameId() const {
+        GLuint fbid() const {
             return m_fb;
         }
 
-        GLuint getTexId(const int i) const {
+        GLuint txid(const int i) const {
             return m_tx[i];
         }
 
@@ -311,31 +297,31 @@ namespace sp {
 #define SHADER_BUFFER_MAX 100
 
     private:
-        GLuint m_program;
+        GLuint m_sdid;
 
     private:
         void reset() {
-            memset(this, 0, sizeof(Shader));
+            m_sdid = 0;
         }
 
         void free() {
-            if (m_program) {
-                glDeleteProgram(m_program);
+            if (m_sdid) {
+                glDeleteProgram(m_sdid);
             }
             reset();
         }
 
     public:
         Shader() {
-            m_program = 0;
+            reset();
         }
 
         ~Shader() {
             free();
         }
 
-        bool valid() {
-            return m_program != 0 ? true : false;
+        bool sdid() {
+            return m_sdid;
         }
 
         //bool load(File &vert, File &frag, File &geom = File()) {
@@ -382,7 +368,7 @@ namespace sp {
                 pGeomShader = &geomShader;
             }
 
-            m_program = getProgram(pVertShader, pFragShader, pGeomShader);
+            m_sdid = getProgram(pVertShader, pFragShader, pGeomShader);
 
             if (pVertShader != NULL) {
                 glDeleteShader(*pVertShader);
@@ -398,7 +384,7 @@ namespace sp {
         }
 
         void enable() {
-            glUseProgram(m_program);
+            glUseProgram(m_sdid);
 
 
             //Mat proj(4, 4);
@@ -434,31 +420,31 @@ namespace sp {
             }
 
             glBindTexture(GL_TEXTURE_2D, texid);
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniform1i(location, index);
             //glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         template<typename TYPE>
         void setUniform1i(const char *name, const TYPE val) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniform1i(location, static_cast<int>(val));
         }
 
         template<typename TYPE>
         void setUniform1f(const char *name, const TYPE val) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniform1f(location, static_cast<float>(val));
         }
 
         template<typename TYPE>
         void setUniform2f(const char *name, const TYPE *vec) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniform2f(location, static_cast<float>(vec[0]), static_cast<float>(vec[1]));
         }
         template<typename TYPE>
         void setUniform3f(const char *name, const TYPE *vec) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniform3f(location, static_cast<float>(vec[0]), static_cast<float>(vec[1]), static_cast<float>(vec[2]));
         }
 
@@ -471,7 +457,7 @@ namespace sp {
                 }
             }
 
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniformMatrix3fv(location, 1, GL_FALSE, matf);
         }
 
@@ -483,7 +469,7 @@ namespace sp {
                     matf[r * 4 + c] = static_cast<float>(mat[c * 4 + r]);
                 }
             }
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_sdid, name);
             glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 

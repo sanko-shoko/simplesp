@@ -6,6 +6,8 @@ out vec4 color;
 
 uniform sampler2D depth;
 
+uniform int pers;
+
 uniform float nearPlane;
 uniform float farPlane;
 
@@ -13,9 +15,23 @@ uniform float dx;
 uniform float dy;
 
 float getDepth(const in vec2 vec) {
-    float d = float(texture2D(depth, vec));
-    return farPlane * nearPlane / (farPlane - d * (farPlane - nearPlane));
+    const float zbf = float(texture2D(depth, vec));
+
+    float d = 0.0;
+    if (pers == 1) {
+        const float div = (farPlane - zbf * (farPlane - nearPlane));
+        if (div > 0.001) {
+            d = farPlane * nearPlane / div;
+        }
+    }
+    else {
+        const float p2 = 2.0 / (farPlane - nearPlane);
+        const float p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+        d = (zbf * 2 - 1 - p3) / p2;
+    }
+    return (d > nearPlane && d < farPlane) ? d : 0.0;
 }
+
 float sobelX(const in vec2 vec) {
     return getDepth(vec + vec2(dx, 0.0)) - getDepth(vec - vec2(dx, 0.0));
 }
