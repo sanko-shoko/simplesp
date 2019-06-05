@@ -8,6 +8,9 @@
 #include "spcore/spcom.h"
 #include "spcore/spgen/spbase.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 namespace sp{
 
     //--------------------------------------------------------------------------------

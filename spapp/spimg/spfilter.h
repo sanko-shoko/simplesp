@@ -24,7 +24,7 @@ namespace sp{
         const int halfX = kernel.dsize[0] / 2;
         const int halfY = kernel.dsize[1] / 2;
 
-        const Rect rect = getRect2(dst.dsize);
+        const Rect2 rect = getRect2(dst.dsize);
 
 #if SP_USE_OMP
 #pragma omp parallel for
