@@ -37,7 +37,7 @@ int main(){
             //SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", imgs[1]));
         }
 
-        merge(imgM, imgs[0], imgs[1]);
+        concat(imgM, imgs[0], imgs[1]);
         saveBMP("input.bmp", imgM);
     }
 
@@ -88,7 +88,7 @@ int main(){
             }
         }
 
-        merge(imgM, imgs[0], imgs[1]);
+        concat(imgM, imgs[0], imgs[1]);
         saveBMP("sift.bmp", imgM);
    
         const int w = imgs[0].dsize[0];

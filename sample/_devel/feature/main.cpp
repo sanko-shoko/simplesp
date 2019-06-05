@@ -48,14 +48,14 @@ private:
             const Mat hom(3, 3, mat);
 
             warp<Col3, Byte>(m_imgs[1], m_imgs[0], hom);
-            merge(m_imgs[0], m_imgs[0], m_imgs[1]);
+            concat(m_imgs[0], m_imgs[0], m_imgs[1]);
         }
         else {
 
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba00.bmp", m_imgs[0]));
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/shiba03.bmp", m_imgs[1]));
 
-            merge(m_imgs[0], m_imgs[0], m_imgs[1]);
+            concat(m_imgs[0], m_imgs[0], m_imgs[1]);
         }
 
         switch (m_mode) {

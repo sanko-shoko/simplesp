@@ -187,11 +187,11 @@ namespace sp{
     }
 
     //--------------------------------------------------------------------------------
-    // merge 
+    // concat 
     //--------------------------------------------------------------------------------
 
     template <typename TYPE>
-    SP_CPUFUNC void merge(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const bool horizon = true){
+    SP_CPUFUNC void concat(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const bool horizon = true){
         SP_ASSERT(isValid(src0, 2));
         SP_ASSERT(isValid(src1, 2));
 
@@ -375,24 +375,14 @@ namespace sp{
     // convert 
     //--------------------------------------------------------------------------------
 
-    template<typename TYPE0, typename TYPE1>
-    SP_CPUFUNC void cnvImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src){
+    template<typename DST, typename SRC>
+    SP_CPUFUNC void cnvImg(Mem<DST> &dst, const Mem<SRC> &src){
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
 
         for (int i = 0; i < dst.size(); i++){
             cnvCol(dst[i], src[i]);
-        }
-    }
-
-    SP_CPUFUNC void cnvImgToHSV(Mem<Vec3> &dst, const Mem<Col3> &src) {
-        SP_ASSERT(isValid(src, 2));
-
-        dst.resize(2, src.dsize);
-
-        for (int i = 0; i < dst.size(); i++) {
-            cnvColToHSV(dst[i], src[i]);
         }
     }
         
@@ -513,6 +503,13 @@ namespace sp{
             Mem2<Col3> col;
             cnvImg(col, src);
             memcpy(dst, col.ptr, col.size() * 3);
+            break;
+        }
+        case 4:
+        {
+            Mem2<Col4> col;
+            cnvImg(col, src);
+            memcpy(dst, col.ptr, col.size() * 4);
             break;
         }
         default:
