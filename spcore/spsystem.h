@@ -87,8 +87,10 @@ namespace sp {
         int ret = 0;
 #if defined(_WIN32)
         ret = _mkdir(dir);
-#else
+#elif defined(__APPLE__) || defined(__linux__)
         ret = mkdir(dir, 0755);
+#else
+
 #endif
         return ret;
     }
@@ -97,8 +99,10 @@ namespace sp {
         static char dir[512] = { 0 };
 #if defined(_WIN32)
         GetCurrentDirectory(sizeof(dir) - 1, dir);
-#else
+#elif defined(__APPLE__) || defined(__linux__)
         getcwd(dir, sizeof(dir) - 1);
+#else
+
 #endif
         return dir;
     }
@@ -162,7 +166,7 @@ namespace sp {
     }
 
     SP_CPUFUNC char* extset(char *path, const char *ext) {
-        if (ext == false) return NULL;
+        if (ext == NULL) return NULL;
         if (extcmp(path, ext) == false) {
             char tmp[SP_STRMAX];
             sprintf(tmp, "%s.%s", path, ext);
