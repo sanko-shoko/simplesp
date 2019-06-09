@@ -40,16 +40,16 @@ namespace sp {
             reset();
         }
 
-        File(const char *path, const char *mode, const ByteOrder endian = getByteOrder()) {
+        File(const char *path, const char *mode, const ByteOrder endian = ByteOrder::LittleEndian) {
             reset();
-            open(path, mode);
+            open(path, mode, endian);
         }
 
         ~File() {
             close();
         }
 
-        bool open(const char *path, const char *mode, const ByteOrder endian = getByteOrder()) {
+        bool open(const char *path, const char *mode, const ByteOrder endian = ByteOrder::LittleEndian) {
             close();
 
             m_fp = ::fopen(path, mode);
@@ -79,8 +79,8 @@ namespace sp {
             reset();
         }
 
-        bool valid() const {
-            return (m_fp != NULL) ? true : false;
+        FILE* fp() {
+            return m_fp;
         }
 
         void seek(const int origin) {

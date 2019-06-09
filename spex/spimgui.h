@@ -83,8 +83,9 @@ namespace ImGui {
     }
 
     static void Spacing(const float space) {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, space / 2.0f));
-        ImGui::Spacing();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        ImGui::Dummy(ImVec2(0.0f, space));
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
         ImGui::PopStyleVar();
     }

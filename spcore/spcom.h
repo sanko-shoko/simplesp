@@ -50,12 +50,6 @@
 // const value
 //--------------------------------------------------------------------------------
 
-#ifndef SP_REAL
-#define SP_REAL double
-#endif
-
-#define SP_RCAST(V) static_cast<SP_REAL>(V)
-
 // pi
 #define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
 
@@ -79,22 +73,23 @@
 
 
 //--------------------------------------------------------------------------------
-// once 
-//--------------------------------------------------------------------------------
-
-#define SP_ONCE(func) { static bool once = true; if(once){ once = false; func; } }
-
-
-//--------------------------------------------------------------------------------
 // shader
 //--------------------------------------------------------------------------------
 
 #define SP_SHADER(...)  #__VA_ARGS__
 
 
+//--------------------------------------------------------------------------------
+// real number type
+//--------------------------------------------------------------------------------
+
+#ifndef SP_REAL
+#define SP_REAL double
+#endif
+
 
 //--------------------------------------------------------------------------------
-// base struct
+// struct
 //--------------------------------------------------------------------------------
 
 namespace sp{
@@ -151,7 +146,6 @@ namespace sp{
     };
 
 
-
     //--------------------------------------------------------------------------------
     // vector
     //--------------------------------------------------------------------------------
@@ -203,6 +197,7 @@ namespace sp{
         Vec3 pos[3];
     };
 
+
     //--------------------------------------------------------------------------------
     // 3d transform
     //--------------------------------------------------------------------------------
@@ -250,11 +245,133 @@ namespace sp{
     // byte order
     //--------------------------------------------------------------------------------
     
-    enum ByteOrder {
-        BigEndian,
-        LittleEndian,
-    };
+    enum ByteOrder { BigEndian, LittleEndian };
 
+}
+
+
+//--------------------------------------------------------------------------------
+// cast
+//--------------------------------------------------------------------------------
+
+#define SP_RCAST(V) static_cast<SP_REAL>(V)
+
+namespace sp {
+
+    //--------------------------------------------------------------------------------
+    // basic type
+    //--------------------------------------------------------------------------------
+  
+    template<typename TYPE> SP_GENFUNC void _cast(char &dst, const TYPE &src) {
+        dst = static_cast<char>(src + 0.5 - (src < 0));
+    }
+
+    template<typename TYPE> SP_GENFUNC void _cast(short &dst, const TYPE &src) {
+        dst = static_cast<short>(src + 0.5 - (src < 0));
+    }
+
+    template<typename TYPE> SP_GENFUNC void _cast(int &dst, const TYPE &src) {
+        dst = static_cast<int>(src + 0.5 - (src < 0));
+    }
+
+    template<typename TYPE> SP_GENFUNC void _cast(float &dst, const TYPE &src) {
+        dst = static_cast<float>(src);
+    }
+
+    template<typename TYPE> SP_GENFUNC void _cast(double &dst, const TYPE &src) {
+        dst = static_cast<double>(src);
+    }
+
+    //--------------------------------------------------------------------------------
+    // byte
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC void _cast(Byte &dst, const int &src) {
+        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
+    }
+
+    SP_GENFUNC void _cast(Byte &dst, const double &src) {
+        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
+    }
+
+    SP_GENFUNC void _cast(Byte &dst, const Byte &src) {
+        dst = src;
+    }
+
+    SP_GENFUNC void _cast(Byte &dst, const Col3 &src) {
+        dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
+    }
+
+    //--------------------------------------------------------------------------------
+    // color 3
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC void _cast(Col3 &dst, const Byte &src) {
+        dst.r = src;
+        dst.g = src;
+        dst.b = src;
+    }
+
+    SP_GENFUNC void _cast(Col3 &dst, const Col3 &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+    }
+
+    SP_GENFUNC void _cast(Col3 &dst, const Vec3 &src) {
+        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+    }
+    
+    //--------------------------------------------------------------------------------
+    // color 4
+    //--------------------------------------------------------------------------------
+  
+    SP_GENFUNC void _cast(Col4 &dst, const Byte &src) {
+        dst.r = src;
+        dst.g = src;
+        dst.b = src;
+        dst.a = SP_BYTEMAX;
+    }
+
+    SP_GENFUNC void _cast(Col4 &dst, const Col3 &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+        dst.a = SP_BYTEMAX;
+    }
+
+    SP_GENFUNC void _cast(Col4 &dst, const Col4 &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+        dst.a = src.a;
+    }
+
+    SP_GENFUNC void _cast(Col4 &dst, const Vec3 &src) {
+        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+        dst.a = SP_BYTEMAX;
+    }
+
+    //--------------------------------------------------------------------------------
+    // vector 3
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC void _cast(Vec3 &dst, const Col3 &src) {
+        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
+        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
+        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+    }
+
+  
+    template<typename DST, typename SRC> SP_GENFUNC DST cast(const SRC &src) {
+        DST dst;
+        _cast(dst, src);
+        return dst;
+    }
 }
 
 #endif

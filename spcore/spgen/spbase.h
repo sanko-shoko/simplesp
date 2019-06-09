@@ -6,8 +6,78 @@
 #define __SP_BASE_H__
 
 #include "spcore/spcom.h"
+#include <math.h>
 
 namespace sp{
+#if SP_USE_WRAPPER
+
+    //--------------------------------------------------------------------------------
+    // wrapper
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC int abs(const int x) {
+        return ::abs(x);
+    }
+
+    SP_GENFUNC SP_REAL fabs(const double x) {
+        return SP_RCAST(::fabs(x));
+    }
+
+    SP_GENFUNC SP_REAL pow(const double x, const double y) {
+        return static_cast<SP_REAL>(::pow(x, y));
+    }
+
+    SP_GENFUNC SP_REAL sin(const double x) {
+        return static_cast<SP_REAL>(::sin(x));
+    }
+
+    SP_GENFUNC SP_REAL asin(const double x) {
+        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+        return static_cast<SP_REAL>(::asin(t));
+    }
+
+    SP_GENFUNC SP_REAL cos(const double x) {
+        return static_cast<SP_REAL>(::cos(x));
+    }
+
+    SP_GENFUNC SP_REAL acos(const double x) {
+        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
+        return static_cast<SP_REAL>(::acos(t));
+    }
+
+    SP_GENFUNC SP_REAL tan(const double x) {
+        return static_cast<SP_REAL>(::tan(x));
+    }
+
+    SP_GENFUNC SP_REAL atan(const double x) {
+        return static_cast<SP_REAL>(::atan(x));
+    }
+
+    SP_GENFUNC SP_REAL atan2(const double y, const double x) {
+        return static_cast<SP_REAL>(::atan2(y, x));
+    }
+
+    SP_GENFUNC SP_REAL sqrt(const double x) {
+        return static_cast<SP_REAL>(::sqrt(x));
+    }
+
+    SP_GENFUNC SP_REAL exp(const double x) {
+        return static_cast<SP_REAL>(::exp(x));
+    }
+
+    SP_GENFUNC SP_REAL log(const double x) {
+        return static_cast<SP_REAL>(::log(x));
+    }
+
+    SP_GENFUNC SP_REAL log2(const double x) {
+        return static_cast<SP_REAL>(::log(x) / ::log(2.0));
+    }
+
+    SP_GENFUNC SP_REAL log10(const double x) {
+        return static_cast<SP_REAL>(::log(x) / ::log(10.0));
+    }
+
+#endif
 
     //--------------------------------------------------------------------------------
     // util
@@ -85,6 +155,82 @@ namespace sp{
         return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
+     // x * x
+    SP_GENFUNC SP_REAL square(const double x) {
+        return x * x;
+    }
+
+    // x * x * x
+    SP_GENFUNC SP_REAL cubic(const double x) {
+        return x * x * x;
+    }
+
+    // cubic root
+    SP_GENFUNC SP_REAL cbrt(const double x) {
+        const double z = pow(fabs(x), 1.0 / 3.0);
+        return SP_RCAST((x >= 0.0) ? z : -z);
+    }
+
+    // sqrt(a * a + b * b) without destructive underflow or overflow
+    SP_GENFUNC SP_REAL pythag(const double a, const double b) {
+        const double x = fabs(a);
+        const double y = fabs(b);
+
+        double ret = 0.0;
+        if (x > y) {
+            ret = x * sqrt(1.0 + (y / x) * (y / x));
+        }
+        else {
+            ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
+        }
+        return SP_RCAST(ret);
+    }
+
+    // combination
+    SP_GENFUNC int nCk(const int n, const int k) {
+        int ret = 1;
+        for (int i = 1; i <= k; i++) {
+            ret = ret * (n - i + 1) / i;
+        }
+        return ret;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // random
+    //--------------------------------------------------------------------------------
+    
+    static unsigned int SP_RANDSEED = 0;
+    SP_GENFUNC void srand(const int seed) {
+        SP_RANDSEED = static_cast<unsigned int>(seed);
+    }
+
+    SP_GENFUNC int rand() {
+        unsigned int x = SP_RANDSEED + 1;
+        x ^= (x << 13);
+        x ^= (x >> 17);
+        x ^= (x << 15);
+        SP_RANDSEED = x;
+        return static_cast<int>(x >> 1);
+    }
+
+    // get random uniform (-1.0, 1.0)
+    SP_GENFUNC SP_REAL randu() {
+        const int maxv = 2000;
+        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double u = 2.0 * a - 1.0;
+        return SP_RCAST(u);
+    }
+
+    // get random gauss
+    SP_GENFUNC SP_REAL randg() {
+        const int maxv = 2000;
+        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
+        return SP_RCAST(g);
+    }
+
 
     //--------------------------------------------------------------------------------
     // compare
@@ -109,42 +255,6 @@ namespace sp{
     }
 
 
-
-    //--------------------------------------------------------------------------------
-    // convert value
-    //--------------------------------------------------------------------------------
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(char &dst, const TYPE &src){
-        dst = static_cast<char>(src + 0.5 - (src < 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(unsigned char &dst, const TYPE &src){
-        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(short &dst, const TYPE &src){
-        dst = static_cast<short>(src + 0.5 - (src < 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(unsigned short &dst, const TYPE &src){
-        dst = static_cast<unsigned short>((src + 0.5) * (src > 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(int &dst, const TYPE &src){
-        dst = static_cast<int>(src + 0.5 - (src < 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(unsigned int &dst, const TYPE &src){
-        dst = static_cast<unsigned int>((src + 0.5) * (src > 0));
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(float &dst, const TYPE &src){
-        dst = static_cast<float>(src);
-    }
-
-    template<typename TYPE> SP_GENFUNC void cnvVal(double &dst, const TYPE &src){
-        dst = static_cast<double>(src);
-    }
 
 
     //--------------------------------------------------------------------------------

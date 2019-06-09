@@ -49,8 +49,9 @@ private:
     void edge() {
         static Shader shader;
         static FrameBufferObject fbo;
-
-        if (shader.sdid() == 0) {
+        static bool once = true;
+        if (once) {
+            once = false;
 
             const char* vert =
                 #include "spex/spshader/edge.vert"
@@ -60,7 +61,7 @@ private:
                 #include "spex/spshader/edge.frag"
                 ;
 
-            shader.load(vert, frag);
+            shader.load(vert, frag, NULL, NULL);
         }
 
         {
@@ -90,7 +91,7 @@ private:
             dfbo.resize(m_wcam.dsize);
             
             shader.enable();
-            shader.setUniformTexture("depth", 0, dfbo.txid(1));
+            shader.setUniformTx("depth", 0, dfbo.txid(1));
             shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
@@ -118,8 +119,9 @@ private:
 
     void edge2() {
         static Shader shader;
-
-        if (shader.sdid() == 0) {
+        static bool once = true;
+        if (once) {
+            once = false;
 
             const char* vert =
 #include "spex/spshader/edge.vert"
@@ -127,7 +129,12 @@ private:
             const char* frag =
 #include "spex/spshader/edge.frag"
                 ;
-            shader.load(vert, frag);
+            char log[1024] = { 0 };
+            shader.load(vert, frag, NULL, log);
+
+            if (::strlen(log) > 0) {
+                printf("%s\n", log);
+            }
         }
 
         {
@@ -151,7 +158,7 @@ private:
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             shader.enable();
-            shader.setUniformTexture("depth", 0, dfbo.txid(1));
+            shader.setUniformTx("depth", 0, dfbo.txid(1));
             shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
@@ -201,8 +208,10 @@ private:
             ;
 
         static Shader shader;
-        if (shader.sdid() == 0) {
-            shader.load(vert, flag);
+        static bool once = true;
+        if (once) {
+            once = false;
+            shader.load(vert, flag, NULL, NULL);
         }
 
         glLoadView3D(m_cam, m_viewPos, m_viewScale);

@@ -30,7 +30,7 @@ namespace sp{
     SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const double scale = 1.0, const double base = 0.0){
         dst.resize(mem0.dim, mem0.dsize);
         for (int i = 0; i < mem0.size(); i++){
-            cnvVal(dst[i], (mem0[i] - base) * scale);
+            dst[i] = cast<TYPE>((mem0[i] - base) * scale);
         }
     }
 

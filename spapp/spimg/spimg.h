@@ -32,7 +32,7 @@ namespace sp{
                 const double sv = v / dscale1;
 
                 for (int c = 0; c < ch; c++){
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, su, sv, c));
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(acs2<TYPE, ELEM>(tmp, su, sv, c));
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace sp{
                 const double su = u / dscale0;
                 const double sv = v / dscale1;
 
-                cnvVal(*pDst++, acs2<Byte>(tmp, su, sv));
+                *pDst++ = cast<Byte>(acs2<Byte>(tmp, su, sv));
             }
         }
     }
@@ -137,7 +137,7 @@ namespace sp{
                 const TYPE a22 = psrc2[su2];
 
                 const double d = ((a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22)) / 16.0;
-                cnvVal(*pd++, d);
+                *pd++ = cast<TYPE>(d);
             }
         }
     }
@@ -161,25 +161,25 @@ namespace sp{
             for (int v = 0; v < rect.dsize[1]; v++){
                 for (int u = 0; u < rect.dsize[0]; u++){
                     for (int c = 0; c < ch; c++){
-                        cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, u + rect.dbase[0], v + rect.dbase[1], c));
+                        acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(acs2<TYPE, ELEM>(tmp, u + rect.dbase[0], v + rect.dbase[1], c));
                     }
                 }
             }
         }
         else{
-            const SP_REAL cv = cos(-angle);
-            const SP_REAL sv = sin(-angle);
+            const double cv = cos(-angle);
+            const double sv = sin(-angle);
             const Vec2 cent = getVec2((rect.dbase[0] + rect.dsize[0] - 1) * 0.5, (rect.dbase[1] + rect.dsize[1] - 1) * 0.5);
             for (int v = 0; v < rect.dsize[1]; v++){
                 for (int u = 0; u < rect.dsize[0]; u++){
-                    const SP_REAL x = u + rect.dbase[0] - cent.x;
-                    const SP_REAL y = v + rect.dbase[1] - cent.y;
+                    const double x = u + rect.dbase[0] - cent.x;
+                    const double y = v + rect.dbase[1] - cent.y;
 
-                    const SP_REAL rx = cv * x - sv * y;
-                    const SP_REAL ry = sv * x + cv * y;
+                    const double rx = cv * x - sv * y;
+                    const double ry = sv * x + cv * y;
 
                     for (int c = 0; c < ch; c++){
-                        cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, cent.x + rx, cent.y + ry, c));
+                        acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(acs2<TYPE, ELEM>(tmp, cent.x + rx, cent.y + ry, c));
                     }
                 }
             }
@@ -330,7 +330,7 @@ namespace sp{
                 if (useExt == false && inRect(rect, u + vec.x, v + vec.y) == false) continue;
                 
                 for (int c = 0; c < ch; c++){
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, u + vec.x, v + vec.y, c));
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(acs2<TYPE, ELEM>(tmp, u + vec.x, v + vec.y, c));
                 }
             }
         }
@@ -364,7 +364,7 @@ namespace sp{
                 if (inRect(rect, vec.x, vec.y) == false) continue;
 
                 for (int c = 0; c < ch; c++){
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), acs2<TYPE, ELEM>(tmp, vec.x, vec.y, c));
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(acs2<TYPE, ELEM>(tmp, vec.x, vec.y, c));
                 }
             }
         }
@@ -382,7 +382,7 @@ namespace sp{
         dst.resize(2, src.dsize);
 
         for (int i = 0; i < dst.size(); i++){
-            cnvCol(dst[i], src[i]);
+            dst[i] = cast<DST>(src[i]);
         }
     }
         

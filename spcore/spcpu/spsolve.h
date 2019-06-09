@@ -40,7 +40,7 @@ namespace sp{
             dst.resize(mem.dim, mem.dsize);
             ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
             for (int i = 0; i < dim * dst.size(); i++) {
-                cnvVal(ptr[i], data[i]);
+                ptr[i] = cast<ELEM>(data[i]);
             }
             return true;
         }

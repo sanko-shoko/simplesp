@@ -1,5 +1,5 @@
 SP_SHADER(
-#version 420 core \n
+#version 400 core \n
 
 in vec2 uv;
 out vec4 color;
@@ -15,18 +15,18 @@ uniform float dx;
 uniform float dy;
 
 float getDepth(const in vec2 vec) {
-    const float zbf = float(texture2D(depth, vec));
+    float zbf = float(texture2D(depth, vec));
 
     float d = 0.0;
     if (pers == 1) {
-        const float div = (farPlane - zbf * (farPlane - nearPlane));
+        float div = (farPlane - zbf * (farPlane - nearPlane));
         if (div > 0.001) {
             d = farPlane * nearPlane / div;
         }
     }
     else {
-        const float p2 = 2.0 / (farPlane - nearPlane);
-        const float p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
+        float p2 = 2.0 / (farPlane - nearPlane);
+        float p3 = -(farPlane + nearPlane) / (farPlane - nearPlane);
         d = (zbf * 2 - 1 - p3) / p2;
     }
     return (d > nearPlane && d < farPlane) ? d : 0.0;

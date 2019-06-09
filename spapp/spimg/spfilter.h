@@ -85,7 +85,7 @@ namespace sp{
                         div += fabs(s);
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), (div > 0.0) ? sum / div : 0.0);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>((div > 0.0) ? sum / div : 0.0);
                 }
             }
         }
@@ -123,7 +123,7 @@ namespace sp{
                         div += fabs(s);
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), (div > 0.0) ? sum / div : 0.0);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>((div > 0.0) ? sum / div : 0.0);
                 }
             }
         }
@@ -200,7 +200,7 @@ namespace sp{
                 const TYPE0 a22 = psrc2[u2];
 
                 const double d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
-                cnvVal(*pd++, d / 16.0);
+                *pd++ = cast<TYPE>(d / 16.0);
             }
         }
     }
@@ -300,7 +300,7 @@ namespace sp{
                     }
                 }
 
-                cnvVal(acs2(dst, u, v), maxv);
+                acs2(dst, u, v) = cast<TYPE>(maxv);
             }
         }
     }
@@ -451,8 +451,8 @@ namespace sp{
                 const double dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
                 const double dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
 
-                cnvVal(*pdx++, dx);
-                cnvVal(*pdy++, dy);
+                *pdx++ = cast<TYPE>(dx);
+                *pdy++ = cast<TYPE>(dy);
             }
         }
     }
@@ -505,8 +505,8 @@ namespace sp{
                 const double dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
                 const double dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
 
-                cnvVal(*pdx++, dx);
-                cnvVal(*pdy++, dy);
+                *pdx++ = cast<TYPE>(dx);
+                *pdy++ = cast<TYPE>(dy);
             }
         }
     }
@@ -636,7 +636,7 @@ namespace sp{
                         }
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / div);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(sum / div);
                 }
             }
         }

@@ -35,16 +35,6 @@ namespace sp{
         return getCol4(col.r, col.g, col.b, a);
     }
 
-    // get color
-    SP_GENFUNC Col3 getCol3(const Vec3 &vec) {
-        return getCol3(static_cast<Byte>(vec.x * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.y * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.z * SP_BYTEMAX + 0.5));
-    }
-
-    // get color
-    SP_GENFUNC Col4 getCol4(const Vec3 &vec, const double a) {
-        return getCol4(static_cast<Byte>(vec.x * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.y * SP_BYTEMAX + 0.5), static_cast<Byte>(vec.z * SP_BYTEMAX + 0.5), static_cast<Byte>(a * SP_BYTEMAX + 0.5));;
-    }
-    
     // multiple
     SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
         const Byte r = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.r * val))));
@@ -259,7 +249,7 @@ namespace sp{
         val.y = minval(1.0, f(val.y));
         val.z = minval(1.0, f(val.z));
 
-        col = getCol3(val);
+        col = cast<Col3>(val);
     }
 
     SP_GENFUNC void cnvColToLab(Vec3 &lab, const Col3 &col){
@@ -272,41 +262,6 @@ namespace sp{
         Vec3 xyz;
         cnvLabToXYZ(xyz, lab);
         cnvXYZToCol(col, xyz);
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // convert color
-    //--------------------------------------------------------------------------------
-
-    template <typename TYPE>
-    SP_GENFUNC void cnvCol(TYPE &dst, const TYPE &src){
-        dst = src;
-    }
-
-    SP_GENFUNC void cnvCol(Col3 &dst, const Byte &src){
-        dst = getCol3(src, src, src);
-    }
-
-    SP_GENFUNC void cnvCol(Byte &dst, const Col3 &src){
-        dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
-    }
-
-    SP_GENFUNC void cnvCol(Byte &dst, const Col4 &src) {
-        dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
-    }
-
-    SP_GENFUNC void cnvCol(Col3 &dst, const Col4 &src) {
-        dst.r = src.r;
-        dst.g = src.g;
-        dst.b = src.b;
-    }
-
-    SP_GENFUNC void cnvCol(Col4 &dst, const Col3 &src) {
-        dst.r = src.r;
-        dst.g = src.g;
-        dst.b = src.b;
-        dst.a = SP_BYTEMAX;
     }
 
     

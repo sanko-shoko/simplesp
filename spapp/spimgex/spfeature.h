@@ -220,10 +220,10 @@ namespace sp {
 
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = ftrs[i]->pix;
-                vec += getVec3(acsc(views[i]->img, pix.x, pix.y));
+                vec += cast<Vec3>(acsc(views[i]->img, pix.x, pix.y));
             }
 
-            col = getCol3(vec / (num));
+            col = cast<Col3>(vec / (num));
         }
     };
 

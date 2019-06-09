@@ -7,7 +7,6 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/spmath.h"
 
 namespace sp {
 
@@ -47,15 +46,6 @@ namespace sp {
     // get vector
     SP_GENFUNC Vec3 getVec3(const Vec2 &vec, const double z) {
         return getVec3(vec.x, vec.y, z);
-    }
-
-    // get vector
-    SP_GENFUNC Vec3 getVec3(const Col3 &col) {
-        Vec3 dst;
-        dst.x = static_cast<SP_REAL>(col.r) / SP_BYTEMAX;
-        dst.y = static_cast<SP_REAL>(col.g) / SP_BYTEMAX;
-        dst.z = static_cast<SP_REAL>(col.b) / SP_BYTEMAX;
-        return dst;
     }
 
     // random uniform
@@ -661,7 +651,7 @@ namespace sp {
         return getLine2(prjVec(line.pos[0], pers), prjVec(line.pos[1], pers));
     }
 
-    // norm from line to
+    // norm
     SP_GENFUNC double normVecToLine(const Vec2 &vec, const Line2 &line) {
         double ret = 0.0;
 

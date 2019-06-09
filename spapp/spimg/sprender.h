@@ -167,10 +167,9 @@ namespace sp{
     SP_CPUFUNC void renderAxis(Mem<TYPE> &dst, const CamParam &cam, const Pose &pose, const double length, const double thick = 1.0){
         SP_ASSERT(isValid(dst, 2));
 
-        TYPE r, g, b;
-        cnvCol(r, getCol3(255, 50, 50));
-        cnvCol(g, getCol3(50, 255, 50));
-        cnvCol(b, getCol3(50, 50, 255));
+        const TYPE r = cast<TYPE>(getCol3(255, 50, 50));
+        const TYPE g = cast<TYPE>(getCol3(50, 255, 50));
+        const TYPE b = cast<TYPE>(getCol3(50, 50, 255));
 
         renderLine(dst, cam, pose, getVec3(0.0, 0.0, 0.0), getVec3(length, 0.0, 0.0), r, thick);
         renderLine(dst, cam, pose, getVec3(0.0, 0.0, 0.0), getVec3(0.0, length, 0.0), g, thick);
@@ -569,7 +568,7 @@ namespace sp{
 
                 const Vec3 nrm = cam2prj.rot * cmap(u, v).nrm;
                 if (nrm.z < 0.0) {
-                    cnvVal(dst(u, v), -nrm.z * val * 0.9);
+                    dst(u, v) = cast<Byte>(-nrm.z * val * 0.9);
                 }
 
             }
