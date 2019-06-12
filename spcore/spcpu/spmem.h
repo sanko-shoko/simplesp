@@ -854,6 +854,68 @@ namespace sp{
         }
     };
 
+
+    //--------------------------------------------------------------------------------
+    // mem ring 
+    //--------------------------------------------------------------------------------
+
+    template <typename TYPE> class MemR {
+    private:
+        int size;
+
+        int minId;
+        int maxId;
+        int crntId;
+        sp::Mem1<TYPE> mem;
+
+    public:
+        MemR() {
+            reset(10);
+        }
+
+        void reset(const int size) {
+            this->size = size;
+
+            minId = 0;
+            maxId = 0;
+            crntId = 0;
+
+            mem.clear();
+            mem.resize(size);
+        }
+
+        TYPE &data() {
+            return mem[crntId % size];
+        }
+        const TYPE &data() const {
+            return mem[crntId % size];
+        }
+
+        int id() {
+            return crntId;
+        }
+
+        void next() {
+            TYPE &backup = data();
+            crntId++;
+            maxId = crntId;
+            if (crntId - minId >= size) minId++;
+
+            data() = backup;
+        }
+
+        void prev() {
+            crntId--;
+            if (crntId < minId) crntId++;
+            maxId = crntId;
+        }
+
+        void shift(const int i) {
+            crntId += i;
+            if (crntId > maxId) crntId = maxId;
+            if (crntId < minId) crntId = minId;
+        }
+    };
 }
 
 #endif

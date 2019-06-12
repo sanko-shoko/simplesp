@@ -66,6 +66,17 @@ namespace sp{
         divMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
     }
 
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool cmpMem(const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1) {
+        if (cmpSize(mem0, mem1) == false) return false;
+
+        bool ret = true;
+        for (int i = 0; ret == true && i < mem0.size(); i++) {
+            ret &= (mem0[i] == mem1[i]);
+        }
+        return ret;
+    }
+
 
     template<typename TYPE, typename ELEM>
     SP_CPUFUNC void setElm(Mem<TYPE> &dst, const ELEM &elm){
@@ -171,6 +182,21 @@ namespace sp{
         }
         return ret;
     }
+
+    //--------------------------------------------------------------------------------
+    // mem operator
+    //--------------------------------------------------------------------------------
+  
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator == (const Mem1<TYPE0> &mem0, const Mem1<TYPE1> &mem1) {
+        return cmpMem(mem0, mem1);
+    }
+
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator != (const Mem1<TYPE0> &mem0, const Mem1<TYPE1> &mem1) {
+        return !cmpMem(mem0, mem1);
+    }
+
 
     //--------------------------------------------------------------------------------
     // mem1 operator
