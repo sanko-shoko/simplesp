@@ -116,6 +116,13 @@ namespace sp {
 		return pscale;
 	}
 
+    SP_CPUFUNC float glGetBasicLineWidth() {
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        return  static_cast<float>(log10(2.0 * minval(viewport[2], viewport[3]))) * 0.5f;
+    }
+
     //--------------------------------------------------------------------------------
     // load view 2d
     //--------------------------------------------------------------------------------

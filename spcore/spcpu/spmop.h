@@ -682,6 +682,22 @@ namespace sp{
         return dst;
     }
 
+    SP_CPUFUNC Mem1<VecPN3> operator * (const Pose &pose, const Mem1<VecPN3> &vecs) {
+        Mem1<VecPN3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = pose * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Mesh3> operator * (const Pose &pose, const Mem1<Mesh3> &meshes) {
+        Mem1<Mesh3> dst(meshes.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = pose * meshes[i];
+        }
+        return dst;
+    }
+
     //--------------------------------------------------------------------------------
     // vector util
     //--------------------------------------------------------------------------------

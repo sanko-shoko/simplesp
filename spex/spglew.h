@@ -12,6 +12,8 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
+#define SP_SHADER(...)  #__VA_ARGS__
+
 
 namespace sp {
 
@@ -56,9 +58,11 @@ namespace sp {
     class FrameBufferObject {
 
     private:
+        // multi sampling
         GLuint m_msfb;
         GLuint m_mstx[2];
 
+        // normal
         GLuint m_fb;
         GLuint m_tx[2];
 

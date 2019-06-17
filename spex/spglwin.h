@@ -47,6 +47,9 @@ namespace sp {
         // cursor position and move
         Vec2 pos, move;
 
+        // dragged point
+        Vec2 press;
+
         // scroll value
         double scroll;
 
@@ -63,16 +66,18 @@ namespace sp {
 
         void setButton(const int button, const int action, const int mods) {
 
-            int _action = action;
-
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                buttonL = _action;
+                buttonL = action;
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                buttonR = _action;
+                buttonR = action;
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-                buttonM = _action;
+                buttonM = action;
+            }
+
+            if (action == 1) {
+                press = pos;
             }
         }
 
@@ -87,6 +92,7 @@ namespace sp {
         void setScroll(const double x, const double y) {
             scroll = y;
         }
+
     };
 
 
