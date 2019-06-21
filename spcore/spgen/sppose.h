@@ -119,7 +119,7 @@ namespace sp{
         return mulRot(rot, getVec3(vec.x, vec.y, 0.0));
     }
 
-    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const SP_REAL t = SP_SMALL) {
+    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const double t = 1.0e-6) {
         bool ret = true;
         ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
         ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
@@ -480,7 +480,7 @@ namespace sp{
         return mulMat(poseMat, 3, 4, mesh);
     }
 
-    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const SP_REAL tr = SP_SMALL, const SP_REAL tt = SP_SMALL) {
+    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const double tr = 1.0e-6, const double tt = 1.0e-6) {
         bool ret = true;
         ret &= cmpRot(pose0.rot, pose1.rot, tr);
         ret &= cmpVec(pose0.trn, pose1.trn, tt);

@@ -237,7 +237,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     // compare
-    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-10){
+    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-6){
         return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 
