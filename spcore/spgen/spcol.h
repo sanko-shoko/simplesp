@@ -311,6 +311,23 @@ namespace sp{
         return col;
     }
 
+    SP_GENFUNC Col3 revCol(const Col3 &col) {
+        Vec3 hsv;
+        cnvColToHSV(hsv, col);
+        hsv.z = SP_RCAST((hsv.z > 0.5) ? hsv.z - 0.5 : hsv.z + 0.5);
+
+        Col3 tmp;
+        cnvHSVToCol(tmp, hsv);
+
+        return tmp;
+    }
+
+    SP_GENFUNC Col4 revCol(const Col4 &col) {
+        Col3 c3 = revCol(getCol3(col.r, col.g, col.b));
+        return getCol4(c3.r, c3.g, c3.b, col.a);
+    }
+
+
 }
 
 #endif
