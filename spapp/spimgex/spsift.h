@@ -386,10 +386,10 @@ namespace sp{
             // filtering
             for (int i = 0; i < BINS; i++) {
                 const SP_REAL hi = hist(i);
-                const SP_REAL hp1 = hist(i + BINS - 1, true);
-                const SP_REAL hp2 = hist(i + BINS - 2, true);
-                const SP_REAL hn1 = hist(i + BINS + 1, true);
-                const SP_REAL hn2 = hist(i + BINS + 2, true);
+                const SP_REAL hp1 = hist.lacs(i + BINS - 1);
+                const SP_REAL hp2 = hist.lacs(i + BINS - 2);
+                const SP_REAL hn1 = hist.lacs(i + BINS + 1);
+                const SP_REAL hn2 = hist.lacs(i + BINS + 2);
 
                 fhist[i] = (hi * 6.0 + (hn1 + hp1) * 4.0 + (hn2 + hp2)) / 16.0;
             }
@@ -400,8 +400,8 @@ namespace sp{
             drcs.reserve(BINS);
             for (int i = 0; i < BINS; i++) {
                 const SP_REAL hi = fhist(i);
-                const SP_REAL hp1 = fhist(i + BINS - 1, true);
-                const SP_REAL hn1 = fhist(i + BINS + 1, true);
+                const SP_REAL hp1 = fhist.lacs(i + BINS - 1);
+                const SP_REAL hn1 = fhist.lacs(i + BINS + 1);
 
                 if (hi > phresh && hi > maxval(hp1, hn1)) {
                     const SP_REAL finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);

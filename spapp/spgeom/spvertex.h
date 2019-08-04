@@ -31,13 +31,13 @@ namespace sp{
                 }
             }
 
-            const SP_REAL drc = crsVec(tmps(p - 1, true) - tmps(p, true), tmps(p + 1, true) - tmps(p, true)).z;
+            const SP_REAL drc = crsVec(tmps.lacs(p - 1) - tmps.lacs(p), tmps.lacs(p + 1) - tmps.lacs(p)).z;
 
             for (int i = 0; i < tmps.size(); i++) {
                 const int pi = p + i;
-                const Vec2 A = tmps(pi - 1, true);
-                const Vec2 B = tmps(pi + 0, true);
-                const Vec2 C = tmps(pi + 1, true);
+                const Vec2 A = tmps.lacs(pi - 1);
+                const Vec2 B = tmps.lacs(pi + 0);
+                const Vec2 C = tmps.lacs(pi + 1);
 
                 const Vec2 X = A - B;
                 const Vec2 Y = C - B;
@@ -51,7 +51,7 @@ namespace sp{
 
                 bool check = false;
                 for (int j = 0; j < tmps.size() - 3; j++) {
-                    const Vec2 V = tmps((pi + 2) + j, true) - B;
+                    const Vec2 V = tmps.lacs((pi + 2) + j) - B;
 
                     Mat vec(2, 1);
                     vec(0, 0) = V.x;

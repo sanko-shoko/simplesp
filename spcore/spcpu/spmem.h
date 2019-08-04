@@ -244,14 +244,21 @@ namespace sp{
             return *this;
         }
 
-        TYPE& operator () (const int d0, const bool loop = false){
-            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
+        TYPE& operator () (const int d0){
+            return acs1(*this, d0);
         }
 
-        const TYPE& operator () (const int d0, const bool loop = false) const{
-            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
+        const TYPE& operator () (const int d0) const{
+            return acs1(*this, d0);
         }
 
+        TYPE& lacs(const int d0) {
+            return lacs1(*this, d0);
+        }
+
+        const TYPE& lacs(const int d0) const {
+            return lacs1(*this, d0);
+        }
 
         //--------------------------------------------------------------------------------
         // util
