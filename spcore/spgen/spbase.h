@@ -195,14 +195,6 @@ namespace sp{
         return ret;
     }
 
-    SP_GENFUNC double radian(const double degree) {
-        return degree * SP_PI / 180.0;
-    }
-
-    SP_GENFUNC double degree(const double radian) {
-        return radian * 180.0 / SP_PI;
-    }
-
     //--------------------------------------------------------------------------------
     // random
     //--------------------------------------------------------------------------------
