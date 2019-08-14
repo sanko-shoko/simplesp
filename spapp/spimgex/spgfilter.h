@@ -41,8 +41,8 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const TYPE &g = src[i];
 
-                I[i] = SP_CAST(g);
-                I2[i] = SP_CAST(g * g);
+                I[i] = SP_RCAST(g);
+                I2[i] = SP_RCAST(g * g);
             }
 
             boxFilter(mean_I, I, winSize);
@@ -51,7 +51,7 @@ namespace sp{
             inv.resize(src.size());
             for (int i = 0; i < src.size(); i++) {
                 const double var = mean_I2[i] - mean_I[i] * mean_I[i];
-                inv[i] = SP_CAST(1.0 / (var + epsilon));
+                inv[i] = SP_RCAST(1.0 / (var + epsilon));
             }
         }
     };
@@ -80,17 +80,17 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const Col3 &g = src[i];
 
-                I[i].x = SP_CAST(g.r);
-                I[i].y = SP_CAST(g.g);
-                I[i].z = SP_CAST(g.b);
+                I[i].x = SP_RCAST(g.r);
+                I[i].y = SP_RCAST(g.g);
+                I[i].z = SP_RCAST(g.b);
 
-                I2[i].x = SP_CAST(g.r * g.r);
-                I2[i].y = SP_CAST(g.g * g.g);
-                I2[i].z = SP_CAST(g.b * g.b);
+                I2[i].x = SP_RCAST(g.r * g.r);
+                I2[i].y = SP_RCAST(g.g * g.g);
+                I2[i].z = SP_RCAST(g.b * g.b);
 
-                Ic[i].x = SP_CAST(g.r * g.g);
-                Ic[i].y = SP_CAST(g.g * g.b);
-                Ic[i].z = SP_CAST(g.b * g.r);
+                Ic[i].x = SP_RCAST(g.r * g.g);
+                Ic[i].y = SP_RCAST(g.g * g.b);
+                Ic[i].z = SP_RCAST(g.b * g.r);
             }
 
             boxFilter<Vec3, SP_REAL>(mean_I, I, winSize);
@@ -153,7 +153,7 @@ namespace sp{
 
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
-            cnvVal(dst[i], a[i] * guide.I[i] + b[i]);
+            dst[i] = cast<TYPE>(a[i] * guide.I[i] + b[i]);
         }
     }
 
@@ -206,7 +206,7 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            cnvVal(dst[i], minval(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
+            dst[i] = cast<Byte>(minval(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
         }
     }
 
@@ -290,9 +290,9 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            cnvVal(dst[i].r, minval(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
-            cnvVal(dst[i].g, minval(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
-            cnvVal(dst[i].b, minval(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
+            dst[i].r = cast<Byte>(minval(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
+            dst[i].g = cast<Byte>(minval(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
+            dst[i].b = cast<Byte>(minval(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
         }
     }
 

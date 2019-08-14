@@ -47,6 +47,9 @@ namespace sp {
         // cursor position and move
         Vec2 pos, move;
 
+        // dragged point
+        Vec2 press;
+
         // scroll value
         double scroll;
 
@@ -63,16 +66,18 @@ namespace sp {
 
         void setButton(const int button, const int action, const int mods) {
 
-            int _action = action;
-
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
-                buttonL = _action;
+                buttonL = action;
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-                buttonR = _action;
+                buttonR = action;
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-                buttonM = _action;
+                buttonM = action;
+            }
+
+            if (action == 1) {
+                press = pos;
             }
         }
 
@@ -87,6 +92,7 @@ namespace sp {
         void setScroll(const double x, const double y) {
             scroll = y;
         }
+
     };
 
 
@@ -117,8 +123,8 @@ namespace sp {
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
             const double s = ((pers == true) ? cpose.trn.z : 1.0) / viewScale;
-            cpose.trn.x += SP_CAST(mouse.move.x / cam.fx * s);
-            cpose.trn.y += SP_CAST(mouse.move.y / cam.fy * s);
+            cpose.trn.x += SP_RCAST(mouse.move.x / cam.fx * s);
+            cpose.trn.y += SP_RCAST(mouse.move.y / cam.fy * s);
 
             ret = true;
         }
@@ -235,7 +241,7 @@ namespace sp {
             }
 
             if (m_win == NULL) {
-                SP_PRINTF(" Can't create GLFW window.\n");
+                SP_PRINTD(" Can't create GLFW window.\n");
                 glfwTerminate();
                 return false;
             }
@@ -245,7 +251,9 @@ namespace sp {
 
             // glfw make context
             glfwMakeContextCurrent(m_win);
-            glfwSwapInterval(1); // vsync
+
+            // vsync
+            glfwSwapInterval(1); 
 
 #if SP_USE_GLEW
             // glew init
@@ -272,12 +280,14 @@ namespace sp {
             return true;
         }
 
-        void execute(const char *name, const int width, const int height) {
+        void execute(const char *name, const int width, const int height, const int samples = 1) {
 
             // glfw init
             SP_ASSERT(glfwInit());
 
-            glfwWindowHint(GLFW_SAMPLES, 4);
+            if (samples > 1) {
+                glfwWindowHint(GLFW_SAMPLES, samples);
+            }
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             SP_ASSERT(create(name, width, height) == true);
@@ -584,7 +594,6 @@ namespace sp {
 
     template<typename TYPE>
     class ImgWindow : public BaseWindow {
-
 
     private:
 

@@ -301,7 +301,7 @@ namespace sp{
                 }
                 gain -= sum * cnt[s] / index.size();
             }
-            return SP_CAST(gain);
+            return SP_RCAST(gain);
         }
 
 

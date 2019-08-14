@@ -678,7 +678,7 @@ namespace sp{
                     }
                     if (cnt > 0) {
                         for (int c = 0; c < 3; c++) {
-                            cnvVal(acs2<Col3, Byte>(cmap, x, y, c), sum[c] / cnt);
+                            acs2<Col3, Byte>(cmap, x, y, c) = cast<Byte>(sum[c] / cnt);
                         }
                     }
                 }

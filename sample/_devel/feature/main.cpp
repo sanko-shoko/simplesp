@@ -172,7 +172,7 @@ private:
             if (myftrs1 != NULL) {
 
                 glBegin(GL_LINES);
-                glColor(0);
+                glColor(getCol3(0));
 
                 for (int i = 0; i < myftrs1->size(); i++) {
                     if ((*myftrs1)[i].pyid + 1 != m_ival) continue;
@@ -184,7 +184,7 @@ private:
            if (myftrs1 != NULL) {
 
                 glBegin(GL_LINES);
-                glColor(0);
+                glColor(getCol3(0));
 
                 for (int i = 0; i < myftrs1->size(); i++) {
                     if ((*myftrs1)[i].pyid != m_ival) continue;
@@ -196,7 +196,7 @@ private:
             if (myftrs2 != NULL) {
 
                 glBegin(GL_LINES);
-                glColor(1);
+                glColor(getCol3(1));
 
                 for (int i = 0; i < myftrs2->size(); i++) {
                     if ((*myftrs2)[i].pyid != m_ival) continue;
@@ -207,7 +207,7 @@ private:
             }
             if (m_ival < 0 && myftrs3 != NULL) {
                 glBegin(GL_LINES);
-                glColor(2);
+                glColor(getCol3(2));
 
                 for (int i = 0; i < myftrs3->size(); i++) {
                     //if ((*myftrs3)[i].stat < 0) continue;
@@ -235,7 +235,7 @@ private:
             glLoadView2D(dsize, m_viewPos + getVec2(img.dsize[0] * p, 0.0) * m_viewScale, m_viewScale);
             glBegin(GL_LINES);
 
-            glColor(1);
+            glColor(getCol3(1));
             for (int i = 0; i < m_ftrs[p].size(); i++) {
                 glCircle(m_ftrs[p][i].pix, m_ftrs[p][i].scl);
             }

@@ -40,7 +40,7 @@ namespace sp{
             dst.resize(mem.dim, mem.dsize);
             ELEM *ptr = reinterpret_cast<ELEM*>(dst.ptr);
             for (int i = 0; i < dim * dst.size(); i++) {
-                cnvVal(ptr[i], data[i]);
+                ptr[i] = cast<ELEM>(data[i]);
             }
             return true;
         }
@@ -177,7 +177,7 @@ namespace sp{
         }
         const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
      
-        return SP_CAST(eval);
+        return SP_RCAST(eval);
     }
 
     template<typename TYPE>

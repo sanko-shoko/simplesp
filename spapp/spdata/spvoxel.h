@@ -87,7 +87,7 @@ namespace sp {
             char &val = vmap(x, y, z);
             char &wei = wmap(x, y, z);
 
-            cnvVal(val, (val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
+            val = cast<char>((val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
             wei = minval(wei + 1, SP_VOXEL_WMAX);
         }
 

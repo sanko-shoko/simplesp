@@ -74,7 +74,7 @@ private:
             }
             else {
                 for (int i = 0; i < m_pnts.size(); i++) {
-                    glColor(m_index[i]);
+                    glColor(getCol3(m_index[i]));
                     glVertex(m_pnts[i]);
                 }
             }

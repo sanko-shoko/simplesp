@@ -6,156 +6,11 @@
 #define __SP_MATH_H__
 
 #include "spcore/spcom.h"
-#include <math.h>
+#include "spcore/spgen/spbase.h"
 
 namespace sp{
 
-#if SP_USE_WRAPPER
 
-    //--------------------------------------------------------------------------------
-    // math wrapper
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC int abs(const int x) {
-        return ::abs(x);
-    }
-
-    SP_GENFUNC SP_REAL fabs(const double x) {
-        return SP_CAST(::fabs(x));
-    }
-
-    static unsigned int SP_RANDSEED = 0;
-    SP_GENFUNC void srand(const int seed) {
-        SP_RANDSEED = static_cast<unsigned int>(seed);
-    }
-
-    SP_GENFUNC int rand() {
-        unsigned int x = SP_RANDSEED + 1;
-        x ^= (x << 13);
-        x ^= (x >> 17);
-        x ^= (x << 15);
-        SP_RANDSEED = x;
-        return static_cast<int>(x >> 1);
-    }
-    
-    SP_GENFUNC SP_REAL pow(const double x, const double y) {
-        return static_cast<SP_REAL>(::pow(x, y));
-    }
-
-    SP_GENFUNC SP_REAL sin(const double x) {
-        return static_cast<SP_REAL>(::sin(x));
-    }
-
-    SP_GENFUNC SP_REAL asin(const double x) {
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
-        return static_cast<SP_REAL>(::asin(t));
-    }
-
-    SP_GENFUNC SP_REAL cos(const double x) {
-        return static_cast<SP_REAL>(::cos(x));
-    }
-
-    SP_GENFUNC SP_REAL acos(const double x) {
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
-        return static_cast<SP_REAL>(::acos(t));
-    }
-
-    SP_GENFUNC SP_REAL tan(const double x) {
-        return static_cast<SP_REAL>(::tan(x));
-    }
-
-    SP_GENFUNC SP_REAL atan(const double x) {
-        return static_cast<SP_REAL>(::atan(x));
-    }
-
-    SP_GENFUNC SP_REAL atan2(const double y, const double x) {
-        return static_cast<SP_REAL>(::atan2(y, x));
-    }
-
-    SP_GENFUNC SP_REAL sqrt(const double x) {
-        return static_cast<SP_REAL>(::sqrt(x));
-    }
-
-    SP_GENFUNC SP_REAL exp(const double x) {
-        return static_cast<SP_REAL>(::exp(x));
-    }
-
-    SP_GENFUNC SP_REAL log(const double x) {
-        return static_cast<SP_REAL>(::log(x));
-    }
-
-    SP_GENFUNC SP_REAL log2(const double x) {
-        return static_cast<SP_REAL>(::log(x) / ::log(2.0));
-    }
-
-    SP_GENFUNC SP_REAL log10(const double x) {
-        return static_cast<SP_REAL>(::log(x) / ::log(10.0));
-    }
-
-#endif
-
-
-    //--------------------------------------------------------------------------------
-    // util
-    //--------------------------------------------------------------------------------
-
-    // get random uniform (-1.0, 1.0)
-    SP_GENFUNC SP_REAL randu() {
-        const int maxv = 2000;
-        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double u = 2.0 * a - 1.0;
-        return SP_CAST(u);
-    }
-
-    // get random gauss
-    SP_GENFUNC SP_REAL randg() {
-        const int maxv = 2000;
-        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
-        return SP_CAST(g);
-    }
-
-    // x * x
-    SP_GENFUNC SP_REAL square(const double x) {
-        return x * x;
-    }
-
-    // x * x * x
-    SP_GENFUNC SP_REAL cubic(const double x) {
-        return x * x * x;
-    }
-
-    // cubic root
-    SP_GENFUNC SP_REAL cbrt(const double x) {
-        const double z = pow(fabs(x), 1.0 / 3.0);
-        return SP_CAST((x >= 0.0) ? z : -z);
-    }
-
-    // sqrt(a * a + b * b) without destructive underflow or overflow
-    SP_GENFUNC SP_REAL pythag(const double a, const double b) {
-        const double x = fabs(a);
-        const double y = fabs(b);
-
-        double ret = 0.0;
-        if (x > y) {
-            ret = x * sqrt(1.0 + (y / x) * (y / x));
-        }
-        else {
-            ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
-        }
-        return SP_CAST(ret);
-    }
-
-    // combination
-    SP_GENFUNC int nCk(const int n, const int k) {
-        int ret = 1;
-        for (int i = 1; i <= k; i++) {
-            ret = ret * (n - i + 1) / i;
-        }
-        return ret;
-    }
-    
     //--------------------------------------------------------------------------------
     // complex
     //--------------------------------------------------------------------------------
@@ -335,7 +190,7 @@ namespace sp{
         SP_REAL ret = 0.0;
 
         if (fabs(sigma) > 0){
-            ret = SP_CAST(exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma));
+            ret = SP_RCAST(exp(-(x - mean) * (x - mean) / (2 * sigma * sigma)) / (sqrt(2 * SP_PI) * sigma));
         }
         return ret;
     }
@@ -346,7 +201,7 @@ namespace sp{
 
         if (fabs(x) < t){
             const double v = 1.0 - (x * x) / (t * t);
-            ret = SP_CAST(v * v);
+            ret = SP_RCAST(v * v);
         }
         return ret;
     }
@@ -505,7 +360,7 @@ namespace sp{
     SP_GENFUNC void eyeMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                dst[r * cols + c] = SP_CAST((r == c) ? 1.0 : 0.0);
+                dst[r * cols + c] = SP_RCAST((r == c) ? 1.0 : 0.0);
             }
         }
     }
@@ -514,7 +369,7 @@ namespace sp{
     SP_GENFUNC void zeroMat(SP_REAL *dst, const int rows, const int cols){
         for (int r = 0; r < rows; r++){
             for (int c = 0; c < cols; c++){
-                dst[r * cols + c] = SP_CAST(0.0);
+                dst[r * cols + c] = SP_RCAST(0.0);
             }
         }
     }
@@ -785,7 +640,7 @@ namespace sp{
 
         for (int r = 0; r < size; r++){
             for (int c = 0; c < size; c++){
-                eigVec[r * size + c] = SP_CAST((r == c) ? 1.0 : 0.0);
+                eigVec[r * size + c] = SP_RCAST((r == c) ? 1.0 : 0.0);
                 eigVal[r * size + c] = mat[r * size + c];
             }
         }
@@ -831,22 +686,22 @@ namespace sp{
                 const double tmpa = cosv * eigVal[p * size + i] - sinv * eigVal[q * size + i];
                 const double tmpb = sinv * eigVal[p * size + i] + cosv * eigVal[q * size + i];
 
-                eigVal[i * size + p] = eigVal[p * size + i] = SP_CAST(tmpa);
-                eigVal[i * size + q] = eigVal[q * size + i] = SP_CAST(tmpb);
+                eigVal[i * size + p] = eigVal[p * size + i] = SP_RCAST(tmpa);
+                eigVal[i * size + q] = eigVal[q * size + i] = SP_RCAST(tmpb);
             }
             {
-                eigVal[p * size + p] = SP_CAST(cosv * cosv * app + sinv * sinv * aqq - 2 * sinv * cosv * apq);
-                eigVal[p * size + q] = SP_CAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
-                eigVal[q * size + p] = SP_CAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
-                eigVal[q * size + q] = SP_CAST(sinv * sinv * app + cosv * cosv * aqq + 2 * sinv * cosv * apq);
+                eigVal[p * size + p] = SP_RCAST(cosv * cosv * app + sinv * sinv * aqq - 2 * sinv * cosv * apq);
+                eigVal[p * size + q] = SP_RCAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
+                eigVal[q * size + p] = SP_RCAST(sinv * cosv * (app - aqq) + (cosv * cosv - sinv * sinv) * apq);
+                eigVal[q * size + q] = SP_RCAST(sinv * sinv * app + cosv * cosv * aqq + 2 * sinv * cosv * apq);
             }
 
             for (int i = 0; i < size; i++){
                 const double tmpa = cosv * eigVec[i * size + p] - sinv * eigVec[i * size + q];
                 const double tmpb = sinv * eigVec[i * size + p] + cosv * eigVec[i * size + q];
 
-                eigVec[i * size + p] = SP_CAST(tmpa);
-                eigVec[i * size + q] = SP_CAST(tmpb);
+                eigVec[i * size + p] = SP_RCAST(tmpa);
+                eigVec[i * size + q] = SP_RCAST(tmpb);
             }
         }
 
@@ -1032,7 +887,7 @@ namespace sp{
 
             double g = Q[i];
             if (g) {
-                g = SP_CAST(1.0 / g);
+                g = SP_RCAST(1.0 / g);
                 for (int j = i + 1; j < cols; j++) {
                     double s = 0.0;
                     for (int k = i + 1; k < rows; k++){
@@ -1412,7 +1267,7 @@ namespace sp{
             const double dx = f / (df + 1e-10);
 
             const double backup = x;
-            x = SP_CAST(x - dx);
+            x = SP_RCAST(x - dx);
             
             const double err = fabs(funcX(x, csize, cs));
 

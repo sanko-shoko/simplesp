@@ -12,14 +12,15 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 
+#define SP_SHADER(...)  #__VA_ARGS__
+
+
 namespace sp {
 
     class VertexBufferObject {
 
     private:
-        GLuint m_buffer;
-
-        int m_size;
+        GLuint m_vb;
 
     private:
         VertexBufferObject(const VertexBufferObject &vbo) {}
@@ -28,33 +29,28 @@ namespace sp {
     public:
 
         VertexBufferObject() {
-            m_size = 0;
-            glGenBuffers(1, &m_buffer);
+            glGenBuffers(1, &m_vb);
         }
 
         ~VertexBufferObject() {
-            glDeleteBuffers(1, &m_buffer);
+            glDeleteBuffers(1, &m_vb);
         }
 
-        void data(const void *vtx, const int size) {
+        void set(const int size, const void *vtx) {
             bind();
-            m_size = size;
             glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
             unbind();
         }
 
         void bind() {
-            glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, m_vb);
         }
         void unbind() {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-        int size() {
-            return m_size;
-        }
 
-        GLuint getId() const {
-            return m_buffer;
+        GLuint vbid() const {
+            return m_vb;
         }
     };
 
@@ -62,14 +58,16 @@ namespace sp {
     class FrameBufferObject {
 
     private:
-        int samples;
+        // multi sampling
         GLuint m_msfb;
         GLuint m_mstx[2];
 
+        // normal
         GLuint m_fb;
         GLuint m_tx[2];
 
     public:
+        int samples;
         int dsize[2];
        
     private:
@@ -82,14 +80,14 @@ namespace sp {
             reset();
         }
 
-        FrameBufferObject(const int *dsize) {
+        FrameBufferObject(const int *dsize, const int samples = 1) {
             reset();
-            resize(dsize);
+            resize(dsize, samples);
         }
 
-        FrameBufferObject(const int dsize0, const int dsize1) {
+        FrameBufferObject(const int dsize0, const int dsize1, const int samples = 1) {
             reset();
-            resize(dsize0, dsize1);
+            resize(dsize0, dsize1, samples);
         }
 
         ~FrameBufferObject() {
@@ -97,35 +95,32 @@ namespace sp {
         }
 
         void free() {
-            if (m_fb) {
-                glDeleteFramebuffers(1, &m_fb);
+            {
+                if (m_fb) {
+                    glDeleteFramebuffers(1, &m_fb);
+                }
+                if (m_msfb) {
+                    glDeleteFramebuffers(1, &m_msfb);
+                }
             }
-            if (m_msfb) {
-                glDeleteFramebuffers(1, &m_msfb);
-            }
-            if (m_tx[0]) {
-                glDeleteTextures(1, &m_tx[0]);
-            }
-            if (m_tx[1]) {
-                glDeleteTextures(1, &m_tx[1]);
-            }
-            if (m_mstx[0]) {
-                glDeleteTextures(1, &m_mstx[0]);
-            }
-            if (m_mstx[1]) {
-                glDeleteTextures(1, &m_mstx[1]);
+            for (int i = 0; i < 2; i++) {
+                if (m_tx[i]) {
+                    glDeleteTextures(1, &m_tx[i]);
+                }
+                if (m_mstx[i]) {
+                    glDeleteTextures(1, &m_mstx[i]);
+                }
             }
             reset();
         }
 
         void resize(const int dsize[2], const int samples = 1) {
-            const int s = maxval(1, samples);
-            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1] && this->samples == s) return;
+            if (this->dsize[0] == dsize[0] && this->dsize[1] == dsize[1] && this->samples == samples) return;
 
             free();
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
-            this->samples = s;
+            this->samples = samples;
 
             {
                 glGenFramebuffers(1, &m_fb);
@@ -156,7 +151,7 @@ namespace sp {
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
             }
-            if (s > 1) {
+            if (samples > 1) {
                 glGenFramebuffers(1, &m_msfb);
                 glGenTextures(2, m_mstx);
 
@@ -164,7 +159,7 @@ namespace sp {
                 glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0]);
 
                 glPixelStorei(GL_PACK_ALIGNMENT, 1);
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_RGBA, dsize[0], dsize[1], false);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA, dsize[0], dsize[1], false);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -184,7 +179,7 @@ namespace sp {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
                 glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
 
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, s, GL_DEPTH_COMPONENT, dsize[0], dsize[1], false);
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT, dsize[0], dsize[1], false);
             }
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -220,12 +215,10 @@ namespace sp {
                 glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
                 glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
-                //glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
 
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
-                //glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
 
                 glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
                 glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -244,7 +237,6 @@ namespace sp {
 
             unsigned char *dst = (unsigned char *)img;
 
-#pragma omp parallel for
             for (int v = 0; v < dsize[1]; v++) {
                 for (int u = 0; u < dsize[0]; u++) {
                     const int d = (v * dsize[0] + u) * ch;
@@ -274,7 +266,6 @@ namespace sp {
             float *tmp = new float[dsize[0] * dsize[1]];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp);
 
-#pragma omp parallel for
             for (int v = 0; v < dsize[1]; v++) {
                 for (int u = 0; u < dsize[0]; u++) {
                     const float t = tmp[(dsize[1] - 1 - v) * dsize[0] + u];
@@ -297,108 +288,137 @@ namespace sp {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        GLuint getFrameId() const {
+        GLuint fbid() const {
             return m_fb;
         }
 
-        GLuint getTexId(const int i) const {
+        GLuint txid(const int i) const {
             return m_tx[i];
         }
 
     };
 
     class Shader {
-#define SHADER_BUFFER_MAX 100
 
     private:
-        GLuint m_program;
+        GLuint m_pgid;
 
     private:
         void reset() {
-            memset(this, 0, sizeof(Shader));
+            m_pgid = 0;
         }
 
         void free() {
-            if (m_program) {
-                glDeleteProgram(m_program);
+            if (m_pgid) {
+                glDeleteProgram(m_pgid);
             }
             reset();
         }
 
+    private:
+
+        GLuint compile(const GLuint pgid, const int type, const char *code, char *log = NULL) {
+            const GLuint shader = glCreateShader(type);
+
+            glShaderSource(shader, 1, &code, NULL);
+            glCompileShader(shader);
+
+            GLint result;
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+
+            GLint length;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+            if (length > 0 && log != NULL) {
+                const int offset = strlen(log);
+                glGetShaderInfoLog(shader, length, NULL, &log[offset]);
+            }
+
+            if (result == GL_TRUE) {
+                return shader;
+            }
+            else {
+                glDeleteShader(shader);
+                return 0;
+            }
+        }
+
+        GLuint link(const GLuint vertShader, const GLuint fragShader, const GLuint geomShader, char *log = NULL) {
+            const GLuint pgid = glCreateProgram();
+            
+            if (vertShader != 0) glAttachShader(pgid, vertShader);
+            if (fragShader != 0) glAttachShader(pgid, fragShader);
+            if (geomShader != 0) glAttachShader(pgid, geomShader);
+
+            glLinkProgram(pgid);
+
+            GLint result;
+            glGetProgramiv(pgid, GL_LINK_STATUS, &result);
+
+            GLint length;
+            glGetProgramiv(pgid, GL_INFO_LOG_LENGTH, &length);
+
+            if (length > 0 && log != NULL) {
+                const int offset = strlen(log);
+                glGetProgramInfoLog(pgid, length, NULL, &log[offset]);
+            }
+
+            if (result == GL_TRUE) {
+                return pgid;
+            }
+            else {
+                glDeleteProgram(pgid);
+                return 0;
+            }
+        }
+
     public:
         Shader() {
-            m_program = 0;
+            reset();
         }
 
         ~Shader() {
             free();
         }
 
-        bool valid() {
-            return m_program != 0 ? true : false;
+        bool pgid() {
+            return m_pgid;
         }
 
-        //bool load(File &vert, File &frag, File &geom = File()) {
-        //    File *flies[3] = { &vert, &frag, &geom };
-        //    string texts[3];
-
-        //    for (int i = 0; i < 3; i++) {
-        //        File &file = *flies[i];
-        //        string &text = texts[i];
-        //        text = "";
-        //        if (file.valid() == false) continue;
-
-        //        char str[SP_STRMAX];
-
-        //        const int pos = file.tell();
-        //        file.seek(0);
-        //        while (file.gets(str)) {
-        //            text += str;
-        //        }
-        //        file.seek(pos);
-        //    }
-        //    return load(texts[0].c_str(), texts[1].c_str(), texts[2].c_str());
-        //}
-        bool load(const char *vert, const char *frag, const char *geom = NULL) {
+        bool load(const char *vertCode, const char *fragCode, const char *geomCode, char *log = NULL) {
             free();
 
             GLuint vertShader = 0;
             GLuint fragShader = 0;
             GLuint geomShader = 0;
-            GLuint *pVertShader = NULL;
-            GLuint *pFragShader = NULL;
-            GLuint *pGeomShader = NULL;
 
-            if (vert != NULL && vert[0] != '\0') {
-                vertShader = getShader(vert, GL_VERTEX_SHADER);
-                pVertShader = &vertShader;
+            if (vertCode != NULL && vertCode[0] != '\0') {
+                vertShader = compile(m_pgid, GL_VERTEX_SHADER  , vertCode, log);
             }
-            if (frag != NULL && frag[0] != '\0') {
-                fragShader = getShader(frag, GL_FRAGMENT_SHADER);
-                pFragShader = &fragShader;
+            if (fragCode != NULL && fragCode[0] != '\0') {
+                fragShader = compile(m_pgid, GL_FRAGMENT_SHADER, fragCode, log);
             }
-            if (geom != NULL && geom[0] != '\0') {
-                geomShader = getShader(geom, GL_GEOMETRY_SHADER_EXT);
-                pGeomShader = &geomShader;
+            if (geomCode != NULL && geomCode[0] != '\0') {
+                geomShader = compile(m_pgid, GL_GEOMETRY_SHADER, geomCode, log);
             }
 
-            m_program = getProgram(pVertShader, pFragShader, pGeomShader);
+            m_pgid = link(vertShader, fragShader, geomShader, log);
 
-            if (pVertShader != NULL) {
-                glDeleteShader(*pVertShader);
+            if (vertShader != 0) {
+                glDeleteShader(vertShader);
             }
-            if (pFragShader != NULL) {
-                glDeleteShader(*pFragShader);
+            if (fragShader != 0) {
+                glDeleteShader(fragShader);
             }
-            if (pGeomShader != NULL) {
-                glDeleteShader(*pGeomShader);
+            if (geomShader != 0) {
+                glDeleteShader(geomShader);
             }
 
-            return true;
+            return (m_pgid != 0) ? true : false;
         }
 
         void enable() {
-            glUseProgram(m_program);
+            glUseProgram(m_pgid);
 
 
             //Mat proj(4, 4);
@@ -420,10 +440,11 @@ namespace sp {
         }
 
         void disable() {
+            glActiveTexture(GL_TEXTURE0);
             glUseProgram(0);
         }
 
-        void setUniformTexture(const char *name, const int index, const GLuint texid) {
+        void setUniformTx(const char *name, const int index, const GLuint txid) {
             switch (index) {
             case 0: glActiveTexture(GL_TEXTURE0); break;
             case 1: glActiveTexture(GL_TEXTURE1); break;
@@ -433,32 +454,31 @@ namespace sp {
             default: return;
             }
 
-            glBindTexture(GL_TEXTURE_2D, texid);
-            const GLint location = glGetUniformLocation(m_program, name);
+            glBindTexture(GL_TEXTURE_2D, txid);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniform1i(location, index);
-            //glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         template<typename TYPE>
         void setUniform1i(const char *name, const TYPE val) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniform1i(location, static_cast<int>(val));
         }
 
         template<typename TYPE>
         void setUniform1f(const char *name, const TYPE val) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniform1f(location, static_cast<float>(val));
         }
 
         template<typename TYPE>
         void setUniform2f(const char *name, const TYPE *vec) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniform2f(location, static_cast<float>(vec[0]), static_cast<float>(vec[1]));
         }
         template<typename TYPE>
         void setUniform3f(const char *name, const TYPE *vec) {
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniform3f(location, static_cast<float>(vec[0]), static_cast<float>(vec[1]), static_cast<float>(vec[2]));
         }
 
@@ -471,7 +491,7 @@ namespace sp {
                 }
             }
 
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniformMatrix3fv(location, 1, GL_FALSE, matf);
         }
 
@@ -483,58 +503,14 @@ namespace sp {
                     matf[r * 4 + c] = static_cast<float>(mat[c * 4 + r]);
                 }
             }
-            const GLint location = glGetUniformLocation(m_program, name);
+            const GLint location = glGetUniformLocation(m_pgid, name);
             glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
         }
 
-        //void setVertex(const int id, const VertexBufferObject &vbo, const int type = GL_FLOAT) {
-        //    glEnableVertexAttribArray(id);
-        //    glBindBuffer(GL_ARRAY_BUFFER, vbo.getId());
-        //    glVertexAttribPointer(id, 3, type, GL_FALSE, 0, NULL);
-        //}
-
-    private:
-
-
-        GLuint getProgram(GLuint *pVertShader, GLuint *pFragShader, GLuint *pGeomShader) {
-            GLuint program = glCreateProgram();
-
-            if (pVertShader != NULL) glAttachShader(program, *pVertShader);
-            if (pFragShader != NULL) glAttachShader(program, *pFragShader);
-            if (pGeomShader != NULL) glAttachShader(program, *pGeomShader);
-
-            glLinkProgram(program);
-
-            GLint result, length;
-            glGetProgramiv(program, GL_LINK_STATUS, &result);
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-            if (length > 0) {
-                char *info = new char[length + 1];
-                glGetProgramInfoLog(program, length, NULL, info);
-                //printf("%s\n", info);
-                delete[]info;
-            }
-
-            return program;
-        }
-
-        GLuint getShader(const char *code, const int type) {
-            const GLuint shader = glCreateShader(type);
-
-            glShaderSource(shader, 1, &code, NULL);
-            glCompileShader(shader);
-
-            GLint result, length;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-            if (length > 0) {
-                char *info = new char[length + 1];
-                glGetShaderInfoLog(shader, length, NULL, info);
-                //printf("%s\n", info);
-                delete[]info;
-            }
-
-            return shader;
+        void setVertex(const int id, const int unit, const int type, const VertexBufferObject &vbo) {
+            glEnableVertexAttribArray(id);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo.vbid());
+            glVertexAttribPointer(id, unit, type, GL_FALSE, 0, NULL);
         }
 
     };

@@ -244,14 +244,21 @@ namespace sp{
             return *this;
         }
 
-        TYPE& operator () (const int d0, const bool loop = false){
-            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
+        TYPE& operator () (const int d0){
+            return acs1(*this, d0);
         }
 
-        const TYPE& operator () (const int d0, const bool loop = false) const{
-            return (loop == false) ? acs1(*this, d0) : lacs1(*this, d0);
+        const TYPE& operator () (const int d0) const{
+            return acs1(*this, d0);
         }
 
+        TYPE& lacs(const int d0) {
+            return lacs1(*this, d0);
+        }
+
+        const TYPE& lacs(const int d0) const {
+            return lacs1(*this, d0);
+        }
 
         //--------------------------------------------------------------------------------
         // util
@@ -728,7 +735,7 @@ namespace sp{
         }
 
         MemP& operator = (const MemP &mem) {
-            init(mem.m_unit, mem.m_block);
+            init(mem.m_unit);
 
             for (int i = 0; i < mem.size(); i++) {
                 *malloc() = mem[i];
@@ -740,11 +747,11 @@ namespace sp{
             clear();
         }
 
-        void init(const int unit = 1, const int block = 100){
+        void init(const int unit = 1){
             clear();
 
             m_unit = maxval(1, unit);
-            m_block = block;
+            m_block = 100;
         }
 
         void clear(){
@@ -854,6 +861,68 @@ namespace sp{
         }
     };
 
+
+    //--------------------------------------------------------------------------------
+    // mem ring 
+    //--------------------------------------------------------------------------------
+
+    template <typename TYPE> class MemR {
+    private:
+        int size;
+
+        int minId;
+        int maxId;
+        int crntId;
+        sp::Mem1<TYPE> mem;
+
+    public:
+        MemR() {
+            reset(10);
+        }
+
+        void reset(const int size) {
+            this->size = size;
+
+            minId = 0;
+            maxId = 0;
+            crntId = 0;
+
+            mem.clear();
+            mem.resize(size);
+        }
+
+        TYPE &data() {
+            return mem[crntId % size];
+        }
+        const TYPE &data() const {
+            return mem[crntId % size];
+        }
+
+        int id() {
+            return crntId;
+        }
+
+        void next() {
+            TYPE &backup = data();
+            crntId++;
+            maxId = crntId;
+            if (crntId - minId >= size) minId++;
+
+            data() = backup;
+        }
+
+        void prev() {
+            crntId--;
+            if (crntId < minId) crntId++;
+            maxId = crntId;
+        }
+
+        void shift(const int i) {
+            crntId += i;
+            if (crntId > maxId) crntId = maxId;
+            if (crntId < minId) crntId = minId;
+        }
+    };
 }
 
 #endif

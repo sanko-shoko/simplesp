@@ -1,5 +1,5 @@
 SP_SHADER(
-#version 420 core \n
+#version 400 core \n
 
 layout(location = 0) in vec2 vtx;
 out vec2 uv;

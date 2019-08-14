@@ -56,7 +56,11 @@ void sample(cv::Mat &cvimg, const int key){
 
         mrks = getBitMarkerParam(0, block, length, dsize[0], dsize[1], interval);
 
-        SP_ONCE(saveBitMarkerParamSVG("mrks.svg", 0, block, length, dsize[0], dsize[1], interval));
+        static bool once = true;
+        if (once) {
+            once = false;
+            saveBitMarkerParamSVG("mrks.svg", 0, block, length, dsize[0], dsize[1], interval);
+        }
     }
 
 

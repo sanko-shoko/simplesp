@@ -223,7 +223,7 @@ namespace sp{
             val = tmp[tmp.size() / 2];
         }
         else {
-            cnvVal(val, 0);
+            val = cast<TYPE>(0);
         }
 
         return val;

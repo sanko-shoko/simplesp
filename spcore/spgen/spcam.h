@@ -21,16 +21,16 @@ namespace sp{
         dst.dsize[0] = dsize0;
         dst.dsize[1] = dsize1;
 
-        dst.fx = SP_CAST(fx);
-        dst.fy = SP_CAST(fy);
-        dst.cx = SP_CAST(cx);
-        dst.cy = SP_CAST(cy);
+        dst.fx = SP_RCAST(fx);
+        dst.fy = SP_RCAST(fy);
+        dst.cx = SP_RCAST(cx);
+        dst.cy = SP_RCAST(cy);
 
-        dst.k1 = SP_CAST(0.0);
-        dst.k2 = SP_CAST(0.0);
-        dst.k3 = SP_CAST(0.0);
-        dst.p1 = SP_CAST(0.0);
-        dst.p2 = SP_CAST(0.0);
+        dst.k1 = SP_RCAST(0.0);
+        dst.k2 = SP_RCAST(0.0);
+        dst.k3 = SP_RCAST(0.0);
+        dst.p1 = SP_RCAST(0.0);
+        dst.p2 = SP_RCAST(0.0);
         return dst;
     }
     
@@ -87,28 +87,28 @@ namespace sp{
         const double k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
 
         Vec2 dist;
-        dist.x = SP_CAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
-        dist.y = SP_CAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
+        dist.x = SP_RCAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+        dist.y = SP_RCAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
 
-        jacob[0 * 9 + 0] = SP_CAST(dist.x);
-        jacob[0 * 9 + 1] = SP_CAST(0.0);
-        jacob[0 * 9 + 2] = SP_CAST(1.0);
-        jacob[0 * 9 + 3] = SP_CAST(0.0);
-        jacob[0 * 9 + 4] = SP_CAST(cam.fx * (npx.x * r2));
-        jacob[0 * 9 + 5] = SP_CAST(cam.fx * (npx.x * r4));
-        jacob[0 * 9 + 6] = SP_CAST(cam.fx * (npx.x * r6));
-        jacob[0 * 9 + 7] = SP_CAST(cam.fx * (2.0 * xy));
-        jacob[0 * 9 + 8] = SP_CAST(cam.fx * (2.0 * x2 + r2));
+        jacob[0 * 9 + 0] = SP_RCAST(dist.x);
+        jacob[0 * 9 + 1] = SP_RCAST(0.0);
+        jacob[0 * 9 + 2] = SP_RCAST(1.0);
+        jacob[0 * 9 + 3] = SP_RCAST(0.0);
+        jacob[0 * 9 + 4] = SP_RCAST(cam.fx * (npx.x * r2));
+        jacob[0 * 9 + 5] = SP_RCAST(cam.fx * (npx.x * r4));
+        jacob[0 * 9 + 6] = SP_RCAST(cam.fx * (npx.x * r6));
+        jacob[0 * 9 + 7] = SP_RCAST(cam.fx * (2.0 * xy));
+        jacob[0 * 9 + 8] = SP_RCAST(cam.fx * (2.0 * x2 + r2));
 
-        jacob[1 * 9 + 0] = SP_CAST(0.0);
-        jacob[1 * 9 + 1] = SP_CAST(dist.y);
-        jacob[1 * 9 + 2] = SP_CAST(0.0);
-        jacob[1 * 9 + 3] = SP_CAST(1.0);
-        jacob[1 * 9 + 4] = SP_CAST(cam.fy * (npx.y * r2));
-        jacob[1 * 9 + 5] = SP_CAST(cam.fy * (npx.y * r4));
-        jacob[1 * 9 + 6] = SP_CAST(cam.fy * (npx.y * r6));
-        jacob[1 * 9 + 7] = SP_CAST(cam.fy * (2.0 * y2 + r2));
-        jacob[1 * 9 + 8] = SP_CAST(cam.fy * (2.0 * xy));
+        jacob[1 * 9 + 0] = SP_RCAST(0.0);
+        jacob[1 * 9 + 1] = SP_RCAST(dist.y);
+        jacob[1 * 9 + 2] = SP_RCAST(0.0);
+        jacob[1 * 9 + 3] = SP_RCAST(1.0);
+        jacob[1 * 9 + 4] = SP_RCAST(cam.fy * (npx.y * r2));
+        jacob[1 * 9 + 5] = SP_RCAST(cam.fy * (npx.y * r4));
+        jacob[1 * 9 + 6] = SP_RCAST(cam.fy * (npx.y * r6));
+        jacob[1 * 9 + 7] = SP_RCAST(cam.fy * (2.0 * y2 + r2));
+        jacob[1 * 9 + 8] = SP_RCAST(cam.fy * (2.0 * xy));
     }
 
     SP_GENFUNC void jacobNpxToDist(SP_REAL *jacob, const CamParam &cam, const Vec2 &npx) {
@@ -123,11 +123,11 @@ namespace sp{
         const double k1 = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
         const double k2 = 2.0 * cam.k1 + 4.0 * cam.k2 * r2 + 6.0 * cam.k3 * r4;
 
-        jacob[0 * 2 + 0] = SP_CAST(x2 * k2 + k1 + 2.0 * cam.p1 * npx.y + 6.0 * cam.p2 * npx.x);
-        jacob[1 * 2 + 1] = SP_CAST(y2 * k2 + k1 + 6.0 * cam.p1 * npx.y + 2.0 * cam.p2 * npx.x);
+        jacob[0 * 2 + 0] = SP_RCAST(x2 * k2 + k1 + 2.0 * cam.p1 * npx.y + 6.0 * cam.p2 * npx.x);
+        jacob[1 * 2 + 1] = SP_RCAST(y2 * k2 + k1 + 6.0 * cam.p1 * npx.y + 2.0 * cam.p2 * npx.x);
 
-        jacob[0 * 2 + 1] = SP_CAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
-        jacob[1 * 2 + 0] = SP_CAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
+        jacob[0 * 2 + 1] = SP_RCAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
+        jacob[1 * 2 + 0] = SP_RCAST(xy * k2 + 2.0 * cam.p1 * npx.x + 2.0 * cam.p2 * npx.y);
     }
 
     SP_GENFUNC void jacobNpxToPix(SP_REAL *jacob, const CamParam &cam, const Vec2 &npx) {
@@ -188,8 +188,8 @@ namespace sp{
         const double k = 1.0 + cam.k1 * r2 + cam.k2 * r4 + cam.k3 * r6;
 
         Vec2 dist;
-        dist.x = SP_CAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
-        dist.y = SP_CAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
+        dist.x = SP_RCAST(npx.x * k + cam.p1 * (2.0 * xy) + cam.p2 * (2.0 * x2 + r2));
+        dist.y = SP_RCAST(npx.y * k + cam.p1 * (2.0 * y2 + r2) + cam.p2 * (2.0 * xy));
 
         return dist;
     }

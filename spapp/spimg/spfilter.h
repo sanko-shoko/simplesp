@@ -33,7 +33,7 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    SP_REAL sum = 0.0, div = 0.0;
+                    double sum = 0.0, div = 0.0;
 
                     for (int ky = -halfY; ky <= halfY; ky++){
                         for (int kx = -halfX; kx <= halfX; kx++){
@@ -73,7 +73,7 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    SP_REAL sum = 0.0, div = 0.0;
+                    double sum = 0.0, div = 0.0;
 
                     for (int kx = -halfX; kx <= halfX; kx++){
                         if (inRect(rect, u + kx, v) == false) continue;
@@ -85,7 +85,7 @@ namespace sp{
                         div += fabs(s);
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), (div > 0.0) ? sum / div : 0.0);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>((div > 0.0) ? sum / div : 0.0);
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace sp{
             for (int u = 0; u < dst.dsize[0]; u++){
 
                 for (int c = 0; c < ch; c++){
-                    SP_REAL sum = 0.0, div = 0.0;
+                    double sum = 0.0, div = 0.0;
 
                     for (int ky = -halfY; ky <= halfY; ky++){
                         if (inRect(rect, u, v + ky) == false) continue;
@@ -123,7 +123,7 @@ namespace sp{
                         div += fabs(s);
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), (div > 0.0) ? sum / div : 0.0);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>((div > 0.0) ? sum / div : 0.0);
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace sp{
 
         Mem1<SP_REAL> kernel(2 * half + 1);
         for (int k = -half; k <= half; k++){
-            const SP_REAL r = k * k;
+            const double r = k * k;
             kernel(k + half) = exp(-r / (2.0 * square(sigma)));
         }
 
@@ -199,8 +199,8 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const SP_REAL d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
-                cnvVal(*pd++, d / 16.0);
+                const double d = (a00 + 2.0 * a01 + a02) + 2.0 * (a10 + 2.0 * a11 + a12) + (a20 + 2.0 * a21 + a22);
+                *pd++ = cast<TYPE>(d / 16.0);
             }
         }
     }
@@ -215,7 +215,7 @@ namespace sp{
 
         Mem1<SP_REAL> kernel(winSize);
         for (int k = 0; k < winSize; k++) {
-            kernel(k) = 1.0;
+            kernel(k) = SP_RCAST(1.0);
         }
 
         Mem2<TYPE> tmp;
@@ -300,7 +300,7 @@ namespace sp{
                     }
                 }
 
-                cnvVal(acs2(dst, u, v), maxv);
+                acs2(dst, u, v) = cast<TYPE>(maxv);
             }
         }
     }
@@ -346,8 +346,8 @@ namespace sp{
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= half; y++){
             for (int x = -half; x <= half; x++){
-                const SP_REAL r = x * x + y * y;
-                kernel(x + half, y + half) = (r - 2 * square(sigma)) * exp(-r / (2 * square(sigma)));
+                const double r = x * x + y * y;
+                kernel(x + half, y + half) = SP_RCAST((r - 2 * square(sigma)) * exp(-r / (2 * square(sigma))));
             }
         }
 
@@ -397,7 +397,7 @@ namespace sp{
                 const TYPE0 a21 = psrc2[u1];
                 const TYPE0 a22 = psrc2[u2];
 
-                const SP_REAL d = (8 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22)) / 16.0;
+                const double d = (8 * a11 - (a00 + a01 + a02 + a10 + a12 + a20 + a21 + a22)) / 16.0;
                 cnvVal(*pd++, d);
             }
         }
@@ -451,8 +451,8 @@ namespace sp{
                 const double dx = ((a02 + 2 * a12 + a22) - (a00 + 2 * a10 + a20)) / 8.0;
                 const double dy = ((a20 + 2 * a21 + a22) - (a00 + 2 * a01 + a02)) / 8.0;
 
-                cnvVal(*pdx++, dx);
-                cnvVal(*pdy++, dy);
+                *pdx++ = cast<TYPE>(dx);
+                *pdy++ = cast<TYPE>(dy);
             }
         }
     }
@@ -505,8 +505,8 @@ namespace sp{
                 const double dx = ((3 * a02 + 10 * a12 + 3 * a22) - (3 * a00 + 10 * a10 + 3 * a20)) / 32.0;
                 const double dy = ((3 * a20 + 10 * a21 + 3 * a22) - (3 * a00 + 10 * a01 + 3 * a02)) / 32.0;
 
-                cnvVal(*pdx++, dx);
-                cnvVal(*pdy++, dy);
+                *pdx++ = cast<TYPE>(dx);
+                *pdy++ = cast<TYPE>(dy);
             }
         }
     }
@@ -559,7 +559,7 @@ namespace sp{
         {
             Mem1<SP_REAL> kernel(winSize);
             for (int k = 0; k < winSize; k++) {
-                kernel(k) = 1.0;
+                kernel(k) = SP_RCAST(1.0);
             }
 
             filterX<TYPE, ELEM>(tmp, src, kernel);
@@ -603,9 +603,9 @@ namespace sp{
         const SP_REAL expscale = 10.0;
         Mem1<SP_REAL> exptable(100);
         for (int i = 0; i < exptable.size(); i++){
-            const SP_REAL r = square(i / expscale);
-            const SP_REAL v = exp(-r / 2.0);
-            exptable[i] = v;
+            const double r = square(i / expscale);
+            const double v = exp(-r / 2.0);
+            exptable[i] = SP_RCAST(v);
         }
 
         const Rect2 rect = getRect2(dst.dsize);
@@ -636,7 +636,7 @@ namespace sp{
                         }
                     }
 
-                    cnvVal(acs2<TYPE, ELEM>(dst, u, v, c), sum / div);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = cast<ELEM>(sum / div);
                 }
             }
         }

@@ -30,7 +30,7 @@ namespace sp{
     SP_CPUFUNC void cnvMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const double scale = 1.0, const double base = 0.0){
         dst.resize(mem0.dim, mem0.dsize);
         for (int i = 0; i < mem0.size(); i++){
-            cnvVal(dst[i], (mem0[i] - base) * scale);
+            dst[i] = cast<TYPE>((mem0[i] - base) * scale);
         }
     }
 
@@ -64,6 +64,17 @@ namespace sp{
 
         dst.resize(mem0.dim, mem0.dsize);
         divMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
+    }
+
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool cmpMem(const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1) {
+        if (cmpSize(mem0, mem1) == false) return false;
+
+        bool ret = true;
+        for (int i = 0; ret == true && i < mem0.size(); i++) {
+            ret &= (mem0[i] == mem1[i]);
+        }
+        return ret;
     }
 
 
@@ -171,6 +182,21 @@ namespace sp{
         }
         return ret;
     }
+
+    //--------------------------------------------------------------------------------
+    // mem operator
+    //--------------------------------------------------------------------------------
+  
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator == (const Mem1<TYPE0> &mem0, const Mem1<TYPE1> &mem1) {
+        return cmpMem(mem0, mem1);
+    }
+
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator != (const Mem1<TYPE0> &mem0, const Mem1<TYPE1> &mem1) {
+        return !cmpMem(mem0, mem1);
+    }
+
 
     //--------------------------------------------------------------------------------
     // mem1 operator
@@ -525,138 +551,6 @@ namespace sp{
     }
 
     //--------------------------------------------------------------------------------
-    // matrix operator
-    //--------------------------------------------------------------------------------
-    
-    SP_CPUFUNC Mat operator * (const Mat &mat0, const Mat &mat1){
-        Mat dst;
-        mulMat(dst, mat0, mat1);
-        return dst;
-    }
-
-    SP_CPUFUNC Mat operator + (const Mat &mat0, const Mat &mat1){
-        Mat dst;
-        addMat(dst, mat0, mat1);
-        return dst;
-    }
-
-    SP_CPUFUNC Mat operator - (const Mat &mat0, const Mat &mat1){
-        Mat dst;
-        subMat(dst, mat0, mat1);
-        return dst;
-    }
-
-    SP_CPUFUNC void operator += (Mat &dst, const Mat &mat0){
-        addMat(dst, dst, mat0);
-    }
-
-    SP_CPUFUNC void operator -= (Mat &dst, const Mat &mat0){
-        subMat(dst, dst, mat0);
-    }
-
-    SP_CPUFUNC Mat operator + (const Mat &mat0, const double val){
-        Mat dst;
-        addElm(dst, mat0, val);
-        return dst;
-    }
-
-    SP_CPUFUNC Mat operator - (const Mat &mat0, const double val){
-        Mat dst;
-        subElm(dst, mat0, val);
-        return dst;
-    }
-
-    SP_CPUFUNC Mat operator * (const Mat &mat0, const double val){
-        Mat dst;
-        mulElm(dst, mat0, val);
-        return dst;
-    }
-
-    SP_CPUFUNC Mat operator / (const Mat &mat0, const double val){
-        Mat dst;
-        divElm(dst, mat0, val);
-        return dst;
-    }
-
-    SP_CPUFUNC void operator += (Mat &dst, const double val){
-        addElm(dst, dst, val);
-    }
-
-    SP_CPUFUNC void operator -= (Mat &dst, const double val){
-        subElm(dst, dst, val);
-    }
-
-    SP_CPUFUNC void operator *= (Mat &dst, const double val){
-        mulElm(dst, dst, val);
-    }
-
-    SP_CPUFUNC void operator /= (Mat &dst, const double val){
-        divElm(dst, dst, val);
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // vector operator
-    //--------------------------------------------------------------------------------
-
-    SP_CPUFUNC Vec2 operator * (const Mat &mat, const Vec2 vec){
-        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
-    }
-
-    SP_CPUFUNC Vec3 operator * (const Mat &mat, const Vec3 vec){
-        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
-    }
-
-    SP_CPUFUNC VecPN2 operator * (const Mat &mat, const VecPN2 vec){
-        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
-    }
-
-    SP_CPUFUNC VecPN3 operator * (const Mat &mat, const VecPN3 vec){
-        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
-    }
-
-    SP_CPUFUNC Mesh3 operator * (const Mat &mat, const Mesh3 mesh){
-        return mulMat(mat.ptr, mat.rows(), mat.cols(), mesh);
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // vectors operator
-    //--------------------------------------------------------------------------------
-
-    SP_CPUFUNC Mem1<Vec2> operator * (const Mat &mat, const Mem1<Vec2> &vecs) {
-        Mem1<Vec2> dst(vecs.size());
-        for (int i = 0; i < dst.size(); i++) {
-            dst[i] = mat * vecs[i];
-        }
-        return dst;
-    }
-
-    SP_CPUFUNC Mem1<Vec3> operator * (const Mat &mat, const Mem1<Vec3> &vecs) {
-        Mem1<Vec3> dst(vecs.size());
-        for (int i = 0; i < dst.size(); i++) {
-            dst[i] = mat * vecs[i];
-        }
-        return dst;
-    }
-
-    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec2> &vecs) {
-        Mem1<Vec3> dst(vecs.size());
-        for (int i = 0; i < dst.size(); i++) {
-            dst[i] = pose * getVec3(vecs[i].x, vecs[i].y, 0.0);
-        }
-        return dst;
-    }
-
-    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec3> &vecs) {
-        Mem1<Vec3> dst(vecs.size());
-        for (int i = 0; i < dst.size(); i++) {
-            dst[i] = pose * vecs[i];
-        }
-        return dst;
-    }
-
-    //--------------------------------------------------------------------------------
     // vector util
     //--------------------------------------------------------------------------------
     
@@ -723,7 +617,6 @@ namespace sp{
     SP_GENFUNC Pose getPose(const Mat &mat) {
         return getPose(mat.ptr, mat.rows(), mat.cols());
     }
-
 
     //--------------------------------------------------------------------------------
     // camera
@@ -792,6 +685,174 @@ namespace sp{
         }
         return npxs;
     }
+
+
+    //--------------------------------------------------------------------------------
+    // matrix operator
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Mat operator * (const Mat &mat0, const Mat &mat1) {
+        Mat dst;
+        mulMat(dst, mat0, mat1);
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator + (const Mat &mat0, const Mat &mat1) {
+        Mat dst;
+        addMat(dst, mat0, mat1);
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator - (const Mat &mat0, const Mat &mat1) {
+        Mat dst;
+        subMat(dst, mat0, mat1);
+        return dst;
+    }
+
+    SP_CPUFUNC void operator += (Mat &dst, const Mat &mat0) {
+        addMat(dst, dst, mat0);
+    }
+
+    SP_CPUFUNC void operator -= (Mat &dst, const Mat &mat0) {
+        subMat(dst, dst, mat0);
+    }
+
+    SP_CPUFUNC Mat operator + (const Mat &mat0, const double val) {
+        Mat dst;
+        addElm(dst, mat0, val);
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator - (const Mat &mat0, const double val) {
+        Mat dst;
+        subElm(dst, mat0, val);
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator * (const Mat &mat0, const double val) {
+        Mat dst;
+        mulElm(dst, mat0, val);
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator / (const Mat &mat0, const double val) {
+        Mat dst;
+        divElm(dst, mat0, val);
+        return dst;
+    }
+
+    SP_CPUFUNC void operator += (Mat &dst, const double val) {
+        addElm(dst, dst, val);
+    }
+
+    SP_CPUFUNC void operator -= (Mat &dst, const double val) {
+        subElm(dst, dst, val);
+    }
+
+    SP_CPUFUNC void operator *= (Mat &dst, const double val) {
+        mulElm(dst, dst, val);
+    }
+
+    SP_CPUFUNC void operator /= (Mat &dst, const double val) {
+        divElm(dst, dst, val);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // matrix - pose operator
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Mat operator * (const Mat &mat, const Pose &pose) {
+        SP_ASSERT((mat.rows() == 3 || mat.rows() == 4) && mat.cols() == 4);
+
+        Mat dst = mat * getMat(pose, mat.rows(), mat.cols());
+        return dst;
+    }
+
+    SP_CPUFUNC Mat operator * (const Pose &pose, const Mat &mat) {
+        SP_ASSERT((mat.rows() == 3 || mat.rows() == 4) && mat.cols() == 4);
+
+        Mat dst = getMat(pose, mat.rows(), mat.cols()) * mat;
+        return dst;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // matrix - vector operator
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC Vec2 operator * (const Mat &mat, const Vec2 vec) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
+    }
+
+    SP_CPUFUNC Vec3 operator * (const Mat &mat, const Vec3 vec) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
+    }
+
+    SP_CPUFUNC VecPN2 operator * (const Mat &mat, const VecPN2 vec) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
+    }
+
+    SP_CPUFUNC VecPN3 operator * (const Mat &mat, const VecPN3 vec) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
+    }
+
+    SP_CPUFUNC Line3 operator * (const Mat &mat, const Line3 line) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), line);
+    }
+
+    SP_CPUFUNC Mesh3 operator * (const Mat &mat, const Mesh3 mesh) {
+        return mulMat(mat.ptr, mat.rows(), mat.cols(), mesh);
+    }
+
+    SP_CPUFUNC Mem1<Vec2> operator * (const Mat &mat, const Mem1<Vec2> &vecs) {
+        Mem1<Vec2> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Mat &mat, const Mem1<Vec3> &vecs) {
+        Mem1<Vec3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<VecPN3> operator * (const Mat &mat, const Mem1<VecPN3> &vecs) {
+        Mem1<VecPN3> dst(vecs.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * vecs[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Mesh3> operator * (const Mat &mat, const Mem1<Mesh3> &meshes) {
+        Mem1<Mesh3> dst(meshes.size());
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = mat * meshes[i];
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec2> &vecs) {
+        return getMat(pose) * getVec3(vecs, 0.0);
+    }
+
+    SP_CPUFUNC Mem1<Vec3> operator * (const Pose &pose, const Mem1<Vec3> &vecs) {
+        return getMat(pose) * vecs;
+    }
+
+    SP_CPUFUNC Mem1<VecPN3> operator * (const Pose &pose, const Mem1<VecPN3> &vecs) {
+        return getMat(pose) * vecs;
+    }
+
+    SP_CPUFUNC Mem1<Mesh3> operator * (const Pose &pose, const Mem1<Mesh3> &meshes) {
+        return getMat(pose) * meshes;
+    }
+
 
 }
 

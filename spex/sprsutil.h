@@ -152,7 +152,7 @@ namespace sp{
                 const double scale = m_dev->get_depth_scale() * 1000.0;
                 
                 for (int i = 0; i < m_depth.size(); i++){
-                    cnvVal(m_depth[i], (*dframe++) * scale);
+                    m_depth[i] = cast<double>((*dframe++) * scale);
                 }
             }
         }
