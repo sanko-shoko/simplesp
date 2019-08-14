@@ -280,12 +280,14 @@ namespace sp {
             return true;
         }
 
-        void execute(const char *name, const int width, const int height) {
+        void execute(const char *name, const int width, const int height, const int samples = 1) {
 
             // glfw init
             SP_ASSERT(glfwInit());
 
-            glfwWindowHint(GLFW_SAMPLES, 4);
+            if (samples > 1) {
+                glfwWindowHint(GLFW_SAMPLES, samples);
+            }
             glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
             SP_ASSERT(create(name, width, height) == true);
