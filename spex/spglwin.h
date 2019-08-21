@@ -214,6 +214,9 @@ namespace sp {
         // use default ui
         bool m_usedui;
 
+        // call back flag;
+        bool m_callback;
+
     public:
 
         BaseWindow() {
@@ -385,6 +388,7 @@ namespace sp {
             }
 
             m_mouse.setScroll(0.0, 0.0);
+            m_callback = false;
             return true;
         }
 
@@ -415,6 +419,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         void _windowSize(int width, int height) {
+            m_callback = true;
             m_wcam = getCamParam(width, height);
 
             ::glViewport(0, 0, width, height);
@@ -423,6 +428,7 @@ namespace sp {
         }
 
         void _mouseButton(int button, int action, int mods) {
+            m_callback = true;
 
             m_mouse.setButton(button, action, mods);
 
@@ -439,6 +445,7 @@ namespace sp {
         }
 
         void _mousePos(double x, double y) {
+            m_callback = true;
 
             m_mouse.setPos(x, y);
 
@@ -462,6 +469,7 @@ namespace sp {
         }
 
         void _mouseScroll(double x, double y) {
+            m_callback = true;
 
             m_mouse.setScroll(x, y);
 
@@ -488,6 +496,7 @@ namespace sp {
 
         void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
+            m_callback = true;
 
             m_key[key] = static_cast<char>(action);
 
@@ -517,6 +526,7 @@ namespace sp {
         }
 
         void _charFun(unsigned int charInfo) {
+            m_callback = true;
 
 #if SP_USE_IMGUI
             if (m_parent == NULL) {
@@ -531,10 +541,14 @@ namespace sp {
         }
 
         void _drop(int num, const char **paths) {
+            m_callback = true;
+
             drop(num, paths);
         }
 
         void _focus(int focused) {
+            m_callback = true;
+
             focus(focused);
         }
 
