@@ -220,8 +220,7 @@ namespace sp {
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
                 glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
 
-                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
-                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glPopAttrib();
@@ -292,8 +291,16 @@ namespace sp {
             return m_fb;
         }
 
+        GLuint msfbid() const {
+            return (m_msfb != 0) ? m_msfb : m_fb;
+        }
+
         GLuint txid(const int i) const {
             return m_tx[i];
+        }
+
+        GLuint mstxid(const int i) const {
+            return (m_msfb != 0) ? m_mstx[i] : m_tx[i];
         }
 
     };

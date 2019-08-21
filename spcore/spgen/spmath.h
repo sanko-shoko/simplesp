@@ -272,7 +272,7 @@ namespace sp{
     template <typename DST, typename SRC>
     SP_GENFUNC void cnvMem(DST *dst, const int size, const SRC *mem0, const SP_REAL scale = 1.0, const SP_REAL base = 0.0) {
         for (int i = 0; i < size; i++) {
-            cnvVal(dst[i], (mem0[i] - base) * scale);
+            dst[i] = cast<DST>((mem0[i] - base) * scale);
         }
     }
 

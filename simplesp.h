@@ -6,7 +6,7 @@
 #define __SIMPLESP_H__
 
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning(disable:4996)
 #pragma warning(disable:4819)
 #pragma warning(disable:4101)
@@ -30,7 +30,7 @@
 #include "spcore/spcore.h"
 #include "spapp/spapp.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning(pop)
 #endif
 
