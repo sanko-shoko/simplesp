@@ -195,6 +195,11 @@ namespace sp{
         return ret;
     }
 
+    SP_GENFUNC int sdiv(const double v, const double d) {
+        return (d != 0.0) ? v / d : SP_INFINITY;
+    }
+    
+    
     //--------------------------------------------------------------------------------
     // random
     //--------------------------------------------------------------------------------
@@ -204,30 +209,58 @@ namespace sp{
         SP_RANDSEED = static_cast<unsigned int>(seed);
     }
 
+    SP_GENFUNC unsigned int nextseed(const unsigned int seed) {
+        unsigned int s = seed + 1;
+        s ^= (s << 13);
+        s ^= (s >> 17);
+        s ^= (s << 15);
+        return s;
+    }
+
+    SP_GENFUNC int rand(const unsigned int seed) {
+        const unsigned int s = nextseed(seed);
+        return static_cast<int>(s >> 1);
+    }
+
     SP_GENFUNC int rand() {
-        unsigned int x = SP_RANDSEED + 1;
-        x ^= (x << 13);
-        x ^= (x >> 17);
-        x ^= (x << 15);
-        SP_RANDSEED = x;
-        return static_cast<int>(x >> 1);
+        SP_RANDSEED = nextseed(SP_RANDSEED);
+        return static_cast<int>(SP_RANDSEED >> 1);
     }
 
     // get random uniform (-1.0, 1.0)
-    SP_GENFUNC SP_REAL randu() {
+    SP_GENFUNC SP_REAL randu(const unsigned int seed) {
+        const unsigned s = seed;
+
         const int maxv = 2000;
-        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double a = static_cast<double>(rand(s) % (maxv + 1) + 1) / (maxv + 2);
         const double u = 2.0 * a - 1.0;
         return SP_RCAST(u);
     }
 
+    // get random uniform (-1.0, 1.0)
+    SP_GENFUNC SP_REAL randu() {
+        const unsigned s = SP_RANDSEED;
+        SP_RANDSEED = nextseed(s);
+        return randu(s);
+    }
+
     // get random gauss
-    SP_GENFUNC SP_REAL randg() {
+    SP_GENFUNC SP_REAL randg(const unsigned int seed) {
+        const unsigned s0 = seed;
+        const unsigned s1 = nextseed(s0);
+
         const int maxv = 2000;
-        const double a = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
-        const double b = static_cast<double>(rand() % (maxv + 1) + 1) / (maxv + 2);
+        const double a = static_cast<double>(rand(s0) % (maxv + 1) + 1) / (maxv + 2);
+        const double b = static_cast<double>(rand(s1) % (maxv + 1) + 1) / (maxv + 2);
         const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
         return SP_RCAST(g);
+    }
+
+    // get random gauss
+    SP_GENFUNC SP_REAL randg() {
+        const unsigned s = SP_RANDSEED;
+        SP_RANDSEED = nextseed(s);
+        return randg(s);
     }
 
 
@@ -672,6 +705,24 @@ namespace sp{
         return isValid(src, src.dim);
     }
 
+
+    //--------------------------------------------------------------------------------
+    // access vector
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC SP_REAL& acsv(Vec2 &vec, const int i) {
+        return ((SP_REAL*)&vec)[i];
+    }
+    SP_GENFUNC const SP_REAL& acsv(const Vec2 &vec, const int i) {
+        return ((SP_REAL*)&vec)[i];
+    }
+
+    SP_GENFUNC SP_REAL& acsv(Vec3 &vec, const int i) {
+        return ((SP_REAL*)&vec)[i];
+    }
+    SP_GENFUNC const SP_REAL& acsv(const Vec3 &vec, const int i) {
+        return ((SP_REAL*)&vec)[i];
+    }
 
     //--------------------------------------------------------------------------------
     // access ptr 1d (multi channel)
