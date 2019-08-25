@@ -77,40 +77,100 @@ namespace sp {
     SP_GENFUNC Vec2 addVec(const Vec2 &vec0, const Vec2 &vec1) {
         return getVec2(vec0.x + vec1.x, vec0.y + vec1.y);
     }
-
     // addition
     SP_GENFUNC Vec3 addVec(const Vec3 &vec0, const Vec3 &vec1) {
         return getVec3(vec0.x + vec1.x, vec0.y + vec1.y, vec0.z + vec1.z);
+    }
+    // addition
+    SP_GENFUNC Vec2 addVec(const Vec2 &vec, const double val) {
+        return getVec2(vec.x + val, vec.y + val);
+    }
+    // addition
+    SP_GENFUNC Vec3 addVec(const Vec3 &vec, const double val) {
+        return getVec3(vec.x + val, vec.y + val, vec.z + val);
+    }
+    // addition
+    SP_GENFUNC Vec2 addVec(const double val, const Vec2 &vec) {
+        return getVec2(val + vec.x, val + vec.y);
+    }
+    // addition
+    SP_GENFUNC Vec3 addVec(const double val, const Vec3 &vec) {
+        return getVec3(val + vec.x, val + vec.y, val + vec.z);
     }
 
     // subtraction
     SP_GENFUNC Vec2 subVec(const Vec2 &vec0, const Vec2 &vec1) {
         return getVec2(vec0.x - vec1.x, vec0.y - vec1.y);
     }
-
     // subtraction
     SP_GENFUNC Vec3 subVec(const Vec3 &vec0, const Vec3 &vec1) {
         return getVec3(vec0.x - vec1.x, vec0.y - vec1.y, vec0.z - vec1.z);
     }
+    // subtraction
+    SP_GENFUNC Vec2 subVec(const Vec2 &vec, const double val) {
+        return getVec2(vec.x - val, vec.y - val);
+    }
+    // subtraction
+    SP_GENFUNC Vec3 subVec(const Vec3 &vec, const double val) {
+        return getVec3(vec.x - val, vec.y - val, vec.z - val);
+    }
+    // subtraction
+    SP_GENFUNC Vec2 subVec(const double val, const Vec2 &vec) {
+        return getVec2(val - vec.x, val - vec.y);
+    }
+    // subtraction
+    SP_GENFUNC Vec3 subVec(const double val, const Vec3 &vec) {
+        return getVec3(val - vec.x, val - vec.y, val - vec.z);
+    }
 
+    // multiple
+    SP_GENFUNC Vec2 mulVec(const Vec2 &vec0, const Vec2 &vec1) {
+        return getVec2(vec0.x * vec1.x, vec0.y * vec1.y);
+    }
+    // multiple
+    SP_GENFUNC Vec3 mulVec(const Vec3 &vec0, const Vec3 &vec1) {
+        return getVec3(vec0.x * vec1.x, vec0.y * vec1.y, vec0.z * vec1.z);
+    }
     // multiple
     SP_GENFUNC Vec2 mulVec(const Vec2 &vec, const double val) {
         return getVec2(vec.x * val, vec.y * val);
     }
-
     // multiple
     SP_GENFUNC Vec3 mulVec(const Vec3 &vec, const double val) {
         return getVec3(vec.x * val, vec.y * val, vec.z * val);
     }
+    // multiple
+    SP_GENFUNC Vec2 mulVec(const double val, const Vec2 &vec) {
+        return getVec2(val * vec.x, val * vec.y);
+    }
+    // multiple
+    SP_GENFUNC Vec3 mulVec(const double val, const Vec3 &vec) {
+        return getVec3(val * vec.x, val * vec.y, val * vec.z);
+    }
 
+    // division
+    SP_GENFUNC Vec2 divVec(const Vec2 &vec0, const Vec2 &vec1) {
+        return getVec2(vec0.x / vec1.x, vec0.y / vec1.y);
+    }
+    // division
+    SP_GENFUNC Vec3 divVec(const Vec3 &vec0, const Vec3 &vec1) {
+        return getVec3(vec0.x / vec1.x, vec0.y / vec1.y, vec0.z / vec1.z);
+    }
     // division
     SP_GENFUNC Vec2 divVec(const Vec2 &vec, const double val) {
         return (val != 0.0) ? mulVec(vec, 1.0 / val) : vec;
     }
-
     // division
     SP_GENFUNC Vec3 divVec(const Vec3 &vec, const double val) {
         return (val != 0.0) ? mulVec(vec, 1.0 / val) : vec;
+    }
+    // division
+    SP_GENFUNC Vec2 divVec(const double val, const Vec2 &vec) {
+        return getVec2(val / vec.x, val / vec.y);
+    }
+    // division
+    SP_GENFUNC Vec3 divVec(const double val, const Vec3 &vec) {
+        return getVec3(val / vec.x, val / vec.y, val / vec.z);
     }
 
     // compare
@@ -133,7 +193,24 @@ namespace sp {
     SP_GENFUNC Vec3 operator + (const Vec3 &vec0, const Vec3 &vec1) {
         return addVec(vec0, vec1);
     }
-
+    SP_GENFUNC Vec2 operator + (const Vec2 &vec, const double &val) {
+        return addVec(vec, val);
+    }
+    SP_GENFUNC Vec3 operator + (const Vec3 &vec, const double &val) {
+        return addVec(vec, val);
+    }
+    SP_GENFUNC Vec2 operator + (const double &val, const Vec2 &vec) {
+        return addVec(val, vec);
+    }
+    SP_GENFUNC Vec3 operator + (const double &val, const Vec3 &vec) {
+        return addVec(val, vec);
+    }
+    SP_GENFUNC void operator += (Vec2 &vec0, const Vec2 &vec1) {
+        vec0 = addVec(vec0, vec1);
+    }
+    SP_GENFUNC void operator += (Vec3 &vec0, const Vec3 &vec1) {
+        vec0 = addVec(vec0, vec1);
+    }
     SP_GENFUNC Vec2 operator + (const Vec2 &vec) {
         return vec;
     }
@@ -147,7 +224,24 @@ namespace sp {
     SP_GENFUNC Vec3 operator - (const Vec3 &vec0, const Vec3 &vec1) {
         return subVec(vec0, vec1);
     }
-
+    SP_GENFUNC Vec2 operator - (const Vec2 &vec, const double &val) {
+        return subVec(vec, val);
+    }
+    SP_GENFUNC Vec3 operator - (const Vec3 &vec, const double &val) {
+        return subVec(vec, val);
+    }
+    SP_GENFUNC Vec2 operator - (const double &val, const Vec2 &vec) {
+        return subVec(val, vec);
+    }
+    SP_GENFUNC Vec3 operator - (const double &val, const Vec3 &vec) {
+        return subVec(val, vec);
+    }
+    SP_GENFUNC void operator -= (Vec2 &vec0, const Vec2 &vec1) {
+        vec0 = subVec(vec0, vec1);
+    }
+    SP_GENFUNC void operator -= (Vec3 &vec0, const Vec3 &vec1) {
+        vec0 = subVec(vec0, vec1);
+    }
     SP_GENFUNC Vec2 operator - (const Vec2 &vec) {
         return mulVec(vec, -1.0);
     }
@@ -155,41 +249,24 @@ namespace sp {
         return mulVec(vec, -1.0);
     }
 
+    SP_GENFUNC Vec2 operator * (const Vec2 &vec0, const Vec2 &vec1) {
+        return mulVec(vec0, vec1);
+    }
+    SP_GENFUNC Vec3 operator * (const Vec3 &vec0, const Vec3 &vec1) {
+        return mulVec(vec0, vec1);
+    }
     SP_GENFUNC Vec2 operator * (const Vec2 &vec, const double val) {
         return mulVec(vec, val);
     }
     SP_GENFUNC Vec3 operator * (const Vec3 &vec, const double val) {
         return mulVec(vec, val);
     }
-
     SP_GENFUNC Vec2 operator * (const double val, const Vec2 &vec) {
         return mulVec(vec, val);
     }
     SP_GENFUNC Vec3 operator * (const double val, const Vec3 &vec) {
         return mulVec(vec, val);
     }
-
-    SP_GENFUNC Vec2 operator / (const Vec2 &vec, const double val){
-        return divVec(vec, val);
-    }
-    SP_GENFUNC Vec3 operator / (const Vec3 &vec, const double val){
-        return divVec(vec, val);
-    }
-
-    SP_GENFUNC void operator += (Vec2 &vec0, const Vec2 &vec1) {
-        vec0 = addVec(vec0, vec1);
-    }
-    SP_GENFUNC void operator += (Vec3 &vec0, const Vec3 &vec1) {
-        vec0 = addVec(vec0, vec1);
-    }
-
-    SP_GENFUNC void operator -= (Vec2 &vec0, const Vec2 &vec1) {
-        vec0 = subVec(vec0, vec1);
-    }
-    SP_GENFUNC void operator -= (Vec3 &vec0, const Vec3 &vec1) {
-        vec0 = subVec(vec0, vec1);
-    }
-
     SP_GENFUNC void operator *= (Vec2 &vec, const double val) {
         vec = mulVec(vec, val);
     }
@@ -197,6 +274,24 @@ namespace sp {
         vec = mulVec(vec, val);
     }
 
+    SP_GENFUNC Vec2 operator / (const Vec2 &vec0, const Vec2 &vec1) {
+        return divVec(vec0, vec1);
+    }
+    SP_GENFUNC Vec3 operator / (const Vec3 &vec0, const Vec3 &vec1) {
+        return divVec(vec0, vec1);
+    }
+    SP_GENFUNC Vec2 operator / (const Vec2 &vec, const double val){
+        return divVec(vec, val);
+    }
+    SP_GENFUNC Vec3 operator / (const Vec3 &vec, const double val){
+        return divVec(vec, val);
+    }
+    SP_GENFUNC Vec2 operator / (const double val, const Vec2 &vec) {
+        return divVec(val, vec);
+    }
+    SP_GENFUNC Vec3 operator / (const double val, const Vec3 &vec) {
+        return divVec(val, vec);
+    }
     SP_GENFUNC void operator /= (Vec2 &vec, const double val) {
         vec = divVec(vec, val);
     }
