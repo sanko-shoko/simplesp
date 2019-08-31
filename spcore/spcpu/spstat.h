@@ -129,7 +129,7 @@ namespace sp{
         Mem<TYPE> dst(mem.dim, mem.dsize);
 
         for (int i = 0; i < mem.size(); i++){
-            dst[i] = square(mem[i]);
+            dst[i] = sq(mem[i]);
         }
         return dst;
     }
@@ -170,7 +170,7 @@ namespace sp{
         SP_REAL sum = 0.0;
 
         for (int i = 0; i < mem.size(); i++){
-            sum += square(mem[i]);
+            sum += sq(mem[i]);
         }
         return sum;
     }
@@ -265,7 +265,7 @@ namespace sp{
 
         for (int r = 0; r < mat.rows(); r++){
             for (int c = 0; c < mat.cols(); c++){
-                sum[(axis == 0) ? c : r] += square(*pMat++);
+                sum[(axis == 0) ? c : r] += sq(*pMat++);
             }
         }
         return sum;

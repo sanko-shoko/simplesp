@@ -447,7 +447,7 @@ namespace sp {
     SP_CPUFUNC void glLine(const Mem1<VEC> &vtxs, const bool loop = false) {
         for (int i = 0; i < vtxs.size(); i++) {
             if (i == vtxs.size() - 1 && loop == false) break;
-            glLine(vtxs(i + 0, true), vtxs(i + 1, true));
+            glLine(vtxs.lacs(i + 0), vtxs.lacs(i + 1));
         }
     }
 

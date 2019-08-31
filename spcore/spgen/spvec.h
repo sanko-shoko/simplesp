@@ -348,12 +348,12 @@ namespace sp {
         return (pers == true) ? getVec3(vec.x, vec.y, 1.0) * z : getVec3(vec.x, vec.y, z);
     }
 
-    // square
+    // sq
     SP_GENFUNC SP_REAL sqVec(const Vec2 &vec) {
         return dotVec(vec, vec);
     }
 
-    // square
+    // sq
     SP_GENFUNC SP_REAL sqVec(const Vec3 &vec) {
         return dotVec(vec, vec);
     }
@@ -417,28 +417,6 @@ namespace sp {
             rnrm.z = sign(nrm.z);
         }
         return rnrm;
-    }
-
-    // angle
-    SP_GENFUNC SP_REAL getAngle(const Vec2 &vec0, const Vec2 &vec1) {
-        double ret = 0.0;
-        const double a = normVec(vec0);
-        const double b = normVec(vec1);
-        if (a > SP_SMALL && b > SP_SMALL) {
-            ret = acos(dotVec(vec0, vec1) / (a * b));
-        }
-        return SP_RCAST(ret);
-    }
-
-    // angle
-    SP_GENFUNC SP_REAL getAngle(const Vec3 &vec0, const Vec3 &vec1) {
-        double ret = 0.0;
-        const double a = normVec(vec0);
-        const double b = normVec(vec1);
-        if (a > SP_SMALL && b > SP_SMALL) {
-            ret = acos(dotVec(vec0, vec1) / (a * b));
-        }
-        return SP_RCAST(ret);
     }
 
 
@@ -984,11 +962,6 @@ namespace sp {
         return unitVec(crsVec(mesh.pos[1] - mesh.pos[0], mesh.pos[2] - mesh.pos[0]));
     }
 
-
-    //--------------------------------------------------------------------------------
-    // Center of area
-    //--------------------------------------------------------------------------------
-
     // get center vector
     SP_GENFUNC Vec2 getMeshCent(const Mesh2 &mesh) {
         return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
@@ -999,16 +972,6 @@ namespace sp {
         return (mesh.pos[0] + mesh.pos[1] + mesh.pos[2]) / 3.0;
     }
 
-    // get center vector
-    SP_GENFUNC Vec2 getRectCent(const Rect2 &rect) {
-        return getVec2(rect.dbase) + getVec2(rect.dsize[0] - 1, rect.dsize[1] - 1) / 2.0;
-    }
-
-    // get center vector
-    SP_GENFUNC Vec3 getRectCent(const Rect3 &rect) {
-        return getVec3(rect.dbase) + getVec3(rect.dsize[0] - 1, rect.dsize[1] - 1, rect.dsize[2] - 1) / 2.0;
-    }
-    
     
     //--------------------------------------------------------------------------------
     // geodesic dorm
@@ -1087,6 +1050,76 @@ namespace sp {
         }
         return dst;
     }
+
+    
+    //--------------------------------------------------------------------------------
+    // box
+    //--------------------------------------------------------------------------------
+
+    // get box
+    SP_GENFUNC Box2 getBox2(const Vec2 &vec0, const Vec2 &vec1) {
+        Box2 dst;
+        dst.pos[0] = vec0;
+        dst.pos[1] = vec1;
+        return dst;
+    }
+
+    // get box
+    SP_GENFUNC Box3 getBox3(const Vec3 &vec0, const Vec3 &vec1) {
+        Box3 dst;
+        dst.pos[0] = vec0;
+        dst.pos[1] = vec1;
+        return dst;
+    }
+
+    //--------------------------------------------------------------------------------
+    // box util
+    //--------------------------------------------------------------------------------
+
+    Box2 orBox(const Box2 &box0, const Box2 &box1) {
+        Box2 dst;
+        for (int i = 0; i < 2; i++) {
+            acsv(dst.pos[0], i) = minval(acsv(box0.pos[0], i), acsv(box1.pos[0], i));
+            acsv(dst.pos[1], i) = maxval(acsv(box0.pos[1], i), acsv(box1.pos[1], i));
+        }
+        return dst;
+    }
+
+    Box3 orBox(const Box3 &box0, const Box3 &box1) {
+        Box3 dst;
+        for (int i = 0; i < 3; i++) {
+            acsv(dst.pos[0], i) = minval(acsv(box0.pos[0], i), acsv(box1.pos[0], i));
+            acsv(dst.pos[1], i) = maxval(acsv(box0.pos[1], i), acsv(box1.pos[1], i));
+        }
+        return dst;
+    }
+
+    Box3 orBox(const Box3 &box, const Vec3 &vec) {
+        Box3 dst = box;
+        for (int i = 0; i < 3; i++) {
+            acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(vec, i));
+            acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(vec, i));
+        }
+        return dst;
+    }
+
+    Box3 orBox(const Box3 &box, const Mesh3 &mesh) {
+        Box3 dst = box;
+        for (int p = 0; p < 3; p++) {
+            const Vec3 &pos = mesh.pos[p];
+            for (int i = 0; i < 3; i++) {
+                acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(pos, i));
+                acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(pos, i));
+            }
+        }
+        return dst;
+    }
+
+    SP_REAL getBoxArea(const Box3 &box) {
+        const Vec3 d = box.pos[1] - box.pos[0];
+        return (d.x * d.y + d.y * d.z + d.z * d.x) * 2.0;
+    }
+
 
 }
 

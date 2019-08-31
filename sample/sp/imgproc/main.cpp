@@ -83,12 +83,12 @@ int main() {
         // guided filter
         {
             Mem2<Byte> dst;
-            guidedFilter(dst, gry, 11, square(0.2 * SP_BYTEMAX));
+            guidedFilter(dst, gry, 11, sq(0.2 * SP_BYTEMAX));
             saveBMP("guidedfilter_g.bmp", dst);
         }
         {
             Mem2<Col3> dst;
-            guidedFilter(dst, col, 11, square(0.2 * SP_BYTEMAX));
+            guidedFilter(dst, col, 11, sq(0.2 * SP_BYTEMAX));
             saveBMP("guidedfilter_c.bmp", dst);
         }
 

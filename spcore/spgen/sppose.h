@@ -285,15 +285,6 @@ namespace sp{
         return vec;
     }
 
-    SP_GENFUNC SP_REAL getAngle(const Rot &rot, const int axis) {
-        SP_ASSERT(axis >= 0 && axis < 3);
-
-        const Vec3 v0 = getVec3(axis == 0 ? 1.0 : 0.0, axis == 1 ? 1.0 : 0.0, axis == 2 ? 1.0 : 0.0);
-        const Vec3 v1 = rot * v0;
-        const SP_REAL angle = acos(dotVec(v0, v1));
-        return angle;
-    }
-
     SP_GENFUNC Rot getRotDirection(const Vec3 &vec){
         const Vec3 nrm = unitVec(vec);
 
@@ -361,6 +352,38 @@ namespace sp{
     // update
     SP_GENFUNC Rot updateRot(const Rot &rot, const SP_REAL *delta){
         return getRotAngle(getVec3(delta[0], delta[1], delta[2])) * rot;
+    }
+
+    // angle
+    SP_GENFUNC SP_REAL getAngle(const Rot &rot, const int axis) {
+        SP_ASSERT(axis >= 0 && axis < 3);
+
+        const Vec3 v0 = getVec3(axis == 0 ? 1.0 : 0.0, axis == 1 ? 1.0 : 0.0, axis == 2 ? 1.0 : 0.0);
+        const Vec3 v1 = rot * v0;
+        const SP_REAL angle = acos(dotVec(v0, v1));
+        return angle;
+    }
+
+    // angle
+    SP_GENFUNC SP_REAL getAngle(const Vec2 &vec0, const Vec2 &vec1) {
+        double ret = 0.0;
+        const double a = normVec(vec0);
+        const double b = normVec(vec1);
+        if (a > SP_SMALL && b > SP_SMALL) {
+            ret = acos(dotVec(vec0, vec1) / (a * b));
+        }
+        return SP_RCAST(ret);
+    }
+
+    // angle
+    SP_GENFUNC SP_REAL getAngle(const Vec3 &vec0, const Vec3 &vec1) {
+        double ret = 0.0;
+        const double a = normVec(vec0);
+        const double b = normVec(vec1);
+        if (a > SP_SMALL && b > SP_SMALL) {
+            ret = acos(dotVec(vec0, vec1) / (a * b));
+        }
+        return SP_RCAST(ret);
     }
 
     // dif

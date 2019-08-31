@@ -166,7 +166,7 @@ namespace sp{
 
                         const SP_REAL mineig = (a + c - sqrt((a - c) * (a - c) + 4.0 * b * b)) / 2.0;
 
-                        if (mineig / area < square(EIG_THRESH) || fabs(D) < SP_SMALL) {
+                        if (mineig / area < sq(EIG_THRESH) || fabs(D) < SP_SMALL) {
                             if(p == stop) mask[i] = false;
                             continue;
                         }

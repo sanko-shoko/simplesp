@@ -6,6 +6,7 @@
 #define __SP_IMAGE_H__
 
 #include "spcore/spcore.h"
+#include "spapp/spgeom/spray.h"
 
 namespace sp{
 
@@ -396,7 +397,7 @@ namespace sp{
         for (int i = 0; i < dst.size(); i++){
             const SP_REAL depth = extractZ(src[i]);
 
-            if (depth >= nearPlane && depth <= farPlane){
+            if (depth > 0.0 && depth >= nearPlane && depth <= farPlane){
                 cnvDepthToCol(dst[i], depth, nearPlane, farPlane);
             }
         }

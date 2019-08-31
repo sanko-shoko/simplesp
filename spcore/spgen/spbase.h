@@ -156,12 +156,12 @@ namespace sp{
     }
 
      // x * x
-    SP_GENFUNC SP_REAL square(const double x) {
+    SP_GENFUNC SP_REAL sq(const double x) {
         return x * x;
     }
 
     // x * x * x
-    SP_GENFUNC SP_REAL cubic(const double x) {
+    SP_GENFUNC SP_REAL cb(const double x) {
         return x * x * x;
     }
 
@@ -195,10 +195,6 @@ namespace sp{
         return ret;
     }
 
-    SP_GENFUNC int sdiv(const double v, const double d) {
-        return (d != 0.0) ? v / d : SP_INFINITY;
-    }
-    
     
     //--------------------------------------------------------------------------------
     // random
@@ -209,7 +205,7 @@ namespace sp{
         SP_RANDSEED = static_cast<unsigned int>(seed);
     }
 
-    SP_GENFUNC unsigned int nextseed(const unsigned int seed) {
+    SP_GENFUNC unsigned int snext(const unsigned int seed) {
         unsigned int s = seed + 1;
         s ^= (s << 13);
         s ^= (s >> 17);
@@ -218,12 +214,12 @@ namespace sp{
     }
 
     SP_GENFUNC int rand(const unsigned int seed) {
-        const unsigned int s = nextseed(seed);
+        const unsigned int s = snext(seed);
         return static_cast<int>(s >> 1);
     }
 
     SP_GENFUNC int rand() {
-        SP_RANDSEED = nextseed(SP_RANDSEED);
+        SP_RANDSEED = snext(SP_RANDSEED);
         return static_cast<int>(SP_RANDSEED >> 1);
     }
 
@@ -231,7 +227,7 @@ namespace sp{
     SP_GENFUNC SP_REAL randu(const unsigned int seed) {
         const unsigned s = seed;
 
-        const int maxv = 2000;
+        const int maxv = 20000;
         const double a = static_cast<double>(rand(s) % (maxv + 1) + 1) / (maxv + 2);
         const double u = 2.0 * a - 1.0;
         return SP_RCAST(u);
@@ -240,16 +236,16 @@ namespace sp{
     // get random uniform (-1.0, 1.0)
     SP_GENFUNC SP_REAL randu() {
         const unsigned s = SP_RANDSEED;
-        SP_RANDSEED = nextseed(s);
+        SP_RANDSEED = snext(s);
         return randu(s);
     }
 
     // get random gauss
     SP_GENFUNC SP_REAL randg(const unsigned int seed) {
         const unsigned s0 = seed;
-        const unsigned s1 = nextseed(s0);
+        const unsigned s1 = snext(s0);
 
-        const int maxv = 2000;
+        const int maxv = 20000;
         const double a = static_cast<double>(rand(s0) % (maxv + 1) + 1) / (maxv + 2);
         const double b = static_cast<double>(rand(s1) % (maxv + 1) + 1) / (maxv + 2);
         const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
@@ -259,33 +255,9 @@ namespace sp{
     // get random gauss
     SP_GENFUNC SP_REAL randg() {
         const unsigned s = SP_RANDSEED;
-        SP_RANDSEED = nextseed(s);
+        SP_RANDSEED = snext(s);
         return randg(s);
     }
-
-
-    //--------------------------------------------------------------------------------
-    // compare
-    //--------------------------------------------------------------------------------
-
-    // compare
-    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-6){
-        return ((a - b) < +t && (a - b) > -t) ? true : false;
-    }
-
-    SP_GENFUNC bool cmpSize(const int dim, const int *dsize0, const int *dsize1){
-        for (int i = 0; i < dim; i++){
-            if (dsize0[i] != dsize1[i]) return false;
-        }
-        return true;
-    }
-
-    template<typename TYPE0, typename TYPE1>
-    SP_GENFUNC bool cmpSize(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1){
-        if (mem0.dim != mem1.dim) return false;
-        return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
-    }
-
 
 
 
@@ -388,303 +360,26 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // get rect
+    // compare
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC Rect2 getRect2(const int dbase0, const int dbase1, const int dsize0, const int dsize1) {
-        Rect2 rect;
-        rect.dbase[0] = dbase0;
-        rect.dbase[1] = dbase1;
-        rect.dsize[0] = dsize0;
-        rect.dsize[1] = dsize1;
-        return rect;
+    // compare
+    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-6) {
+        return ((a - b) < +t && (a - b) > -t) ? true : false;
     }
 
-    SP_GENFUNC Rect2 getRect2(const int *dbase, const int *dsize) {
-        return getRect2(dbase[0], dbase[1], dsize[0], dsize[1]);
-    }
-
-    SP_GENFUNC Rect2 getRect2(const int *dsize) {
-        return getRect2(0, 0, dsize[0], dsize[1]);
-    }
-
-    SP_GENFUNC Rect2 getRect2(const Vec2 &vec) {
-        return getRect2(round(vec.x), round(vec.y), 1, 1);
-    }
-
-    SP_GENFUNC Rect3 getRect3(const int dbase0, const int dbase1, const int dbase2, const int dsize0, const int dsize1, const int dsize2) {
-        Rect3 rect;
-        rect.dbase[0] = dbase0;
-        rect.dbase[1] = dbase1;
-        rect.dbase[2] = dbase2;
-        rect.dsize[0] = dsize0;
-        rect.dsize[1] = dsize1;
-        rect.dsize[2] = dsize2;
-        return rect;
-    }
-
-    SP_GENFUNC Rect3 getRect3(const int *dbase, const int *dsize) {
-        return getRect3(dbase[0], dbase[1], dbase[2], dsize[0], dsize[1], dsize[2]);
-    }
-
-    SP_GENFUNC Rect3 getRect3(const int *dsize) {
-        return getRect3(0, 0, 0, dsize[0], dsize[1], dsize[2]);
-    }
-
-    SP_GENFUNC Rect3 getRect3(const Vec3 &vec) {
-        return getRect3(round(vec.x), round(vec.y), round(vec.z), 1, 1, 1);
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // check in rect
-    //--------------------------------------------------------------------------------
-
-    template<typename TYPE>
-    SP_GENFUNC bool inRect(const Rect2 &rect, const TYPE *d) {
-        for (int i = 0; i < 2; i++) {
-            if (d[i] < static_cast<TYPE>(rect.dbase[i])) return false;
-            if (d[i] > static_cast<TYPE>(rect.dbase[i] + rect.dsize[i] - 1)) return false;
-        }
-        return true;
-    }
-    template<typename TYPE>
-    SP_GENFUNC bool inRect(const Rect3 &rect, const TYPE *d) {
-        for (int i = 0; i < 3; i++) {
-            if (d[i] < static_cast<TYPE>(rect.dbase[i])) return false;
-            if (d[i] > static_cast<TYPE>(rect.dbase[i] + rect.dsize[i] - 1)) return false;
-        }
-        return true;
-    }
-    
-    SP_GENFUNC bool inRect(const Rect2 &rect, const Rect2 &test) {
-        for (int i = 0; i < 2; i++) {
-            if (test.dbase[i] < rect.dbase[i]) return false;
-            if (test.dbase[i] + test.dsize[i] > rect.dbase[i] + rect.dsize[i]) return false;
-        }
-        return true;
-    }
-    SP_GENFUNC bool inRect(const Rect3 &rect, const Rect3 &test) {
-        for (int i = 0; i < 3; i++) {
-            if (test.dbase[i] < rect.dbase[i]) return false;
-            if (test.dbase[i] + test.dsize[i] > rect.dbase[i] + rect.dsize[i]) return false;
+    SP_GENFUNC bool cmpSize(const int dim, const int *dsize0, const int *dsize1) {
+        for (int i = 0; i < dim; i++) {
+            if (dsize0[i] != dsize1[i]) return false;
         }
         return true;
     }
 
-    SP_GENFUNC bool inRect(const Rect2 &rect, const double d0, const double d1) {
-        const double d[] = { d0, d1 };
-        return inRect(rect, d);
+    template<typename TYPE0, typename TYPE1>
+    SP_GENFUNC bool cmpSize(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+        if (mem0.dim != mem1.dim) return false;
+        return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
-
-    SP_GENFUNC bool inRect(const int *dsize, const double d0, const double d1) {
-        const double d[] = { d0, d1 };
-        return inRect(getRect2(dsize), d);
-    }
-
-    SP_GENFUNC bool inRect(const Rect2 &rect, const Vec2 &vec) {
-        const double d[] = { vec.x, vec.y };
-        return inRect(rect, d);
-    }
-
-    SP_GENFUNC bool inRect(const int *dsize, const Vec2 &vec) {
-        const double d[] = { vec.x, vec.y };
-        return inRect(getRect2(dsize), d);
-    }
-
-    SP_GENFUNC bool inRect(const Rect3 &rect, const double d0, const double d1, const double d2) {
-        const double d[] = { d0, d1, d2 };
-        return inRect(rect, d);
-    }
-
-    SP_GENFUNC bool inRect(const int *dsize, const double d0, const double d1, const double d2) {
-        const double d[] = { d0, d1, d2 };
-        return inRect(getRect3(dsize), d);
-    }
-
-    SP_GENFUNC bool inRect(const Rect3 &rect, const Vec3 &vec) {
-        const double d[] = { vec.x, vec.y, vec.z };
-        return inRect(rect, d);
-    }
-
-    SP_GENFUNC bool inRect(const int *dsize, const Vec3 &vec) {
-        const double d[] = { vec.x, vec.y, vec.z };
-        return inRect(getRect3(dsize), d);
-    }
-
-    //--------------------------------------------------------------------------------
-    // rect util
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC Rect2 andRect(const Rect2 &rect0, const Rect2 &rect1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            dbase[i] = maxval(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = minval(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-        }
-        return getRect2(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect3 andRect(const Rect3 &rect0, const Rect3 &rect1) {
-        int dbase[3] = { 0 }, dsize[3] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            dbase[i] = maxval(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = minval(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-        }
-        return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect2 orRect(const Rect2 &rect0, const Rect2 &rect1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            dbase[i] = minval(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = maxval(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-            dsize[i] = maxval(0, dsize[i]);
-        }
-        return getRect2(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect3 orRect(const Rect3 &rect0, const Rect3 &rect1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            dbase[i] = minval(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = maxval(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-            dsize[i] = maxval(0, dsize[i]);
-        }
-        return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect2 adjustRect(const Rect2 &rect, const int val) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            const int t = maxval(val, -rect.dsize[i] / 2);
-            dbase[i] = rect.dbase[i] - t;
-            dsize[i] = rect.dsize[i] + 2 * t;
-        }
-        return getRect2(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect3 adjustRect(const Rect3 &rect, const int val) {
-        int dbase[3] = { 0 }, dsize[3] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            const int t = maxval(val, -rect.dsize[i] / 2);
-            dbase[i] = rect.dbase[i] - t;
-            dsize[i] = rect.dsize[i] + 2 * t;
-        }
-        return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect2 shiftRect(const Rect2 &rect, const int *shift, int s = +1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            dbase[i] = rect.dbase[i] + s * shift[i];
-            dsize[i] = rect.dsize[i];
-        }
-        return getRect2(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect3 shiftRect(const Rect3 &rect, const int *shift, int s = +1) {
-        int dbase[3] = { 0 }, dsize[3] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            dbase[i] = rect.dbase[i] + s * shift[i];
-            dsize[i] = rect.dsize[i];
-        }
-        return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC bool cmpRect(const Rect2 &rect0, const Rect2 &rect1) {
-        bool ret = true;
-        for (int i = 0; i < 2; i++) {
-            ret &= (rect0.dbase[i] == rect1.dbase[i]);
-            ret &= (rect0.dsize[i] == rect1.dsize[i]);
-        }
-        return ret;
-    }
-
-    SP_GENFUNC bool cmpRect(const Rect3 &rect0, const Rect3 &rect1) {
-        bool ret = true;
-        for (int i = 0; i < 3; i++) {
-            ret &= (rect0.dbase[i] == rect1.dbase[i]);
-            ret &= (rect0.dsize[i] == rect1.dsize[i]);
-        }
-        return ret;
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // rect operator
-    //--------------------------------------------------------------------------------
-    
-    SP_GENFUNC Rect2 operator + (const Rect2 &rect, const int val) {
-        return adjustRect(rect, +val);
-    }
-    SP_GENFUNC Rect3 operator + (const Rect3 &rect, const int val) {
-        return adjustRect(rect, +val);
-    }
-
-    SP_GENFUNC Rect2 operator + (const Rect2 &rect, const int *shift) {
-        return shiftRect(rect, shift, +1);
-    }
-    SP_GENFUNC Rect3 operator + (const Rect3 &rect, const int *shift) {
-        return shiftRect(rect, shift, +1);
-    }
-
-    SP_GENFUNC Rect2 operator - (const Rect2 &rect, const int val) {
-        return adjustRect(rect, -val);
-    }
-    SP_GENFUNC Rect3 operator - (const Rect3 &rect, const int val) {
-        return adjustRect(rect, -val);
-    }
-
-    SP_GENFUNC Rect2 operator - (const Rect2 &rect, const int *shift) {
-        return shiftRect(rect, shift, -1);
-    }
-    SP_GENFUNC Rect3 operator - (const Rect3 &rect, const int *shift) {
-        return shiftRect(rect, shift, -1);
-    }
-
-    SP_GENFUNC void operator += (Rect2 &rect, const int val) {
-        rect = adjustRect(rect, +val);
-    }
-    SP_GENFUNC void operator += (Rect3 &rect, const int val) {
-        rect = adjustRect(rect, +val);
-    }
-
-    SP_GENFUNC void operator += (Rect2 &rect, const int *shift) {
-        rect = shiftRect(rect, shift +1);
-    }
-    SP_GENFUNC void operator += (Rect3 &rect, const int *shift) {
-        rect = shiftRect(rect, shift +1);
-    }
-
-    SP_GENFUNC void operator -= (Rect2 &rect, const int val) {
-        rect = adjustRect(rect, -val);
-    }
-    SP_GENFUNC void operator -= (Rect3 &rect, const int val) {
-        rect = adjustRect(rect, -val);
-    }
-
-    SP_GENFUNC void operator -= (Rect2 &rect, const int *shift) {
-        rect = shiftRect(rect, shift, -1);
-    }
-    SP_GENFUNC void operator -= (Rect3 &rect, const int *shift) {
-        rect = shiftRect(rect, shift, -1);
-    }
-
-    SP_GENFUNC bool operator == (const Rect2 &rect0, const Rect2 &rect1) {
-        return cmpRect(rect0, rect1);
-    }
-    SP_GENFUNC bool operator == (const Rect3 &rect0, const Rect3 &rect1) {
-        return cmpRect(rect0, rect1);
-    }
-
-    SP_GENFUNC bool operator != (const Rect2 &rect0, const Rect2 &rect1) {
-        return !cmpRect(rect0, rect1);
-    }
-    SP_GENFUNC bool operator != (const Rect3 &rect0, const Rect3 &rect1) {
-        return !cmpRect(rect0, rect1);
-    }
-
 
     //--------------------------------------------------------------------------------
     // check memory ptr

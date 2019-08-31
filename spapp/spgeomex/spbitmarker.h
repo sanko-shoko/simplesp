@@ -644,7 +644,7 @@ namespace sp{
 
                         for (int v = margin; v < mimg.dsize[1] - margin; v++) {
                             for (int u = margin; u < mimg.dsize[0] - margin; u++) {
-                                sqsum += square(mimg(u, v) - pimg(u, v));
+                                sqsum += sq(mimg(u, v) - pimg(u, v));
                                 cnt++;
                             }
                         }

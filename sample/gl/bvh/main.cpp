@@ -1,0 +1,192 @@
+﻿//#define SP_USE_DEBUG 1
+
+#include "simplesp.h"
+#include "spex/spgl.h"
+
+using namespace sp;
+
+class BVHGUI : public BaseWindow {
+
+private:
+
+    CamParam m_cam;
+
+    // image
+    Mem2<Col3> m_img;
+
+    // object mesh model
+    Mem1<Mesh3> m_model;
+
+    // object to cam pose
+    Pose m_pose;
+
+    BVH m_bvh;
+
+    int m_level;
+    bool m_stop;
+private:
+
+    void help() {
+    }
+
+    virtual void init() {
+
+        help();
+        m_level = 1;
+        m_stop = false;
+        m_cam = getCamParam(640, 480);
+
+        m_img.resize(m_cam.dsize);
+        m_img.zero();
+
+        m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
+        //m_model = loadGeodesicDorm(100, 2);
+        SP_ASSERT(m_model.size() > 0);
+
+        m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
+        m_bvh.build(m_model);
+
+        //{
+
+        //    Mem2<SP_REAL> depth;
+
+        //    // render depth
+        //    {
+        //        renderDepth(depth, m_cam, m_pose, m_model);
+
+        //        cnvDepthToImg(m_img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+        //    }
+        //    saveBMP("test00.bmp", m_img);
+
+        //    {
+
+        //        depth.resize(m_cam.dsize);
+        //        depth.zero();
+
+        //        Pose ipose = invPose(m_pose);
+
+        //        for (int v = 0; v < depth.dsize[1]; v++) {
+        //            for (int u = 0; u < depth.dsize[0]; u++) {
+        //                const Vec2 prj = invCam(m_cam, getVec2(u, v));
+        //                const Vec3 vec = getVec3(prj.x, prj.y, 1.0);
+        //                Ray ray;
+        //                ray.pos = ipose.trn;
+        //                ray.drc = ipose.rot * (vec);
+        //                BVH::Hit hit;
+        //                bool ret = m_bvh.trace(hit, ray, -m_pose.trn.z, m_pose.trn.z + 500.0);
+        //                if (ret) {
+        //                    depth(u, v) = hit.len * vec.z;
+        //                }
+        //            }
+        //        }
+        //        cnvDepthToImg(m_img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
+        //    }
+        //    saveBMP("test01.bmp", m_img);
+        //}
+    }
+
+    virtual void keyFun(int key, int scancode, int action, int mods) {
+        if (m_key[GLFW_KEY_S] == 1) {
+            m_level = maxval(0, m_level + 1);
+        }
+        if (m_key[GLFW_KEY_A] == 1) {
+            m_level = maxval(0, m_level - 1);
+        }
+        if (m_key[GLFW_KEY_D] == 1) {
+            m_stop ^= true;
+        }
+    }
+
+    virtual void display() {
+        glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        Mem2<SP_REAL> depth;
+        {
+            depth.resize(m_cam.dsize);
+            depth.zero();
+
+            Pose ipose = invPose(m_pose);
+            Mat mrot = getMat(ipose.rot);
+
+            for (int v = 0; v < depth.dsize[1]; v++) {
+                for (int u = 0; u < depth.dsize[0]; u++) {
+                    const Vec2 prj = invCam(m_cam, getVec2(u, v));
+                    const Vec3 vec = getVec3(prj.x, prj.y, 1.0);
+                    Ray ray;
+                    ray.pos = ipose.trn;
+                    ray.drc = mrot * (vec);
+                    BVH::Hit hit;
+                    bool ret = m_bvh.trace(hit, ray, 0, 1500.0);
+                    if (ret) {
+                        depth(u, v) = hit.norm * vec.z;
+                        depth(u, v) = m_pose.trn.z;
+                    }
+                }
+            }
+            cnvDepthToImg(m_img, depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+        }
+        //// render depth
+        if(m_stop == false){
+            static double s = 0.0;
+            m_pose *= getRotAngle(getVec3(+0.0, +::sin(s), +::cos(s)), 0.02);
+            s += 0.01;
+
+            //renderDepth(depth, m_cam, m_pose, m_model);
+
+        }
+        glLoadView2D(m_cam);
+        glTexImg(m_img);
+
+        glTexDepth(depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+
+        if(1){
+            glLoadView3D(m_cam);
+            glLoadMatrix(m_pose);
+
+            //glRenderSurface(m_model);
+
+            const Mem1<const BVH::Node*> nodes = m_bvh.getNode(m_level);
+
+            glLineWidth(2.0);
+            for (int i = 0; i < nodes.size(); i++) {
+                glColor(getCol3(i));
+                const Vec3 A = nodes[i]->box.pos[0];
+                const Vec3 B = nodes[i]->box.pos[1];
+
+                glBegin(GL_LINE_LOOP);
+                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+                glEnd();
+
+                glBegin(GL_LINE_LOOP);
+                glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+                glEnd();
+
+                glBegin(GL_LINES);
+                glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z));
+                glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, B.z));
+                glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z));
+                glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z));
+                glEnd();
+            }
+        }
+    }
+    virtual void mousePos(double x, double y) {
+        if (controlPose(m_pose, m_mouse, m_wcam, m_viewScale) == true) {
+        }
+    }
+
+    virtual void mouseScroll(double x, double y) {
+        if (controlPose(m_pose, m_mouse, m_wcam, m_viewScale) == true) {
+        }
+    }
+};
+
+
+int main() {
+
+    BVHGUI win;
+    win.execute("bvh", 800, 600);
+
+    return 0;
+}
