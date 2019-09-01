@@ -5,7 +5,7 @@
 
 using namespace sp;
 
-class ICPGUI : public BaseWindow {
+class ICPGUI : public BaseWindowIMGUI {
 
     // camera
     CamParam m_cam;

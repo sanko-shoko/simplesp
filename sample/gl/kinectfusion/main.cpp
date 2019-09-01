@@ -23,6 +23,8 @@ private:
     // object to cam pose
     Pose m_pose;
 
+    ImgWindow<Col3> m_subwin;
+
 private:
 
     void help() {
@@ -50,6 +52,8 @@ private:
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
+
+        m_subwin.create("input depth map", m_cam.dsize[0], m_cam.dsize[1]);
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -128,9 +132,13 @@ private:
             Mem2<Col3> img;
             cnvDepthToImg(img, depth, m_pose.trn.z - 500.0, m_pose.trn.z + 500.0);
 
-            glShowImg(this, "input depth map", img);
+            m_subwin.set(img);
         }
 
+    }
+
+    virtual void post() {
+        m_subwin.main();
     }
 };
 

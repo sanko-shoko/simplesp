@@ -148,7 +148,7 @@ namespace sp{
         Mem1<SP_REAL> kernel(2 * half + 1);
         for (int k = -half; k <= half; k++){
             const double r = k * k;
-            kernel(k + half) = exp(-r / (2.0 * square(sigma)));
+            kernel(k + half) = exp(-r / (2.0 * sq(sigma)));
         }
 
         Mem2<TYPE> tmp;
@@ -347,7 +347,7 @@ namespace sp{
         for (int y = -half; y <= half; y++){
             for (int x = -half; x <= half; x++){
                 const double r = x * x + y * y;
-                kernel(x + half, y + half) = SP_RCAST((r - 2 * square(sigma)) * exp(-r / (2 * square(sigma))));
+                kernel(x + half, y + half) = SP_RCAST((r - 2 * sq(sigma)) * exp(-r / (2 * sq(sigma))));
             }
         }
 
@@ -595,15 +595,15 @@ namespace sp{
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= +half; y++) {
             for (int x = -half; x <= +half; x++) {
-                const SP_REAL r2 = square(x) + square(y);
-                kernel(x + half, y + half) = exp(-r2 / (2.0 * square(sigma_s)));
+                const SP_REAL r2 = sq(x) + sq(y);
+                kernel(x + half, y + half) = exp(-r2 / (2.0 * sq(sigma_s)));
             }
         }
 
         const SP_REAL expscale = 10.0;
         Mem1<SP_REAL> exptable(100);
         for (int i = 0; i < exptable.size(); i++){
-            const double r = square(i / expscale);
+            const double r = sq(i / expscale);
             const double v = exp(-r / 2.0);
             exptable[i] = SP_RCAST(v);
         }

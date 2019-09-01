@@ -82,7 +82,7 @@ void DotMarkerGUI::display(){
             }
         }
 
-        glShowImg(this, "addImg", mimg);
+        //glShowImg(this, "addImg", mimg);
     }
 
     {

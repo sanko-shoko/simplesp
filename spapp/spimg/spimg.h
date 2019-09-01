@@ -6,6 +6,7 @@
 #define __SP_IMAGE_H__
 
 #include "spcore/spcore.h"
+#include "spapp/spgeom/spray.h"
 
 namespace sp{
 
@@ -225,7 +226,7 @@ namespace sp{
     SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
         SP_ASSERT(isValid(src0, 2));
         SP_ASSERT(isValid(src1, 2));
-        SP_ASSERT(cmpSize(2, src0.dsize, src1.dsize));
+        SP_ASSERT(cmp(2, src0.dsize, src1.dsize));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
@@ -314,7 +315,7 @@ namespace sp{
     SP_CPUFUNC void remap(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<Vec2> &table, const bool useExt = false){
         SP_ASSERT(isValid(src, 2));
         SP_ASSERT(isValid(table, 2));
-        SP_ASSERT(cmpSize(2, src.dsize, table.dsize));
+        SP_ASSERT(cmp(2, src.dsize, table.dsize));
         
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -396,7 +397,7 @@ namespace sp{
         for (int i = 0; i < dst.size(); i++){
             const SP_REAL depth = extractZ(src[i]);
 
-            if (depth >= nearPlane && depth <= farPlane){
+            if (depth > 0.0 && depth >= nearPlane && depth <= farPlane){
                 cnvDepthToCol(dst[i], depth, nearPlane, farPlane);
             }
         }

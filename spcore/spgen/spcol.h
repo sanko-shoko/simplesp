@@ -45,18 +45,10 @@ namespace sp{
 
     // division
     SP_GENFUNC Col3 divCol(const Col3 &col, const double val) {
+        SP_ASSERT(fabs(val) > SP_SMALL);
         return (val != 0.0) ? mulCol(col, 1.0 / val) : col;
     }
 
-    // compare
-    SP_GENFUNC bool cmpCol(const Col3 &col0, const Col3 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
-    }
-    // compare
-    SP_GENFUNC bool cmpCol(const Col4 &col0, const Col4 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
-    }
-    
     //--------------------------------------------------------------------------------
     // blend
     //--------------------------------------------------------------------------------
@@ -91,20 +83,6 @@ namespace sp{
     }
     SP_GENFUNC void operator /= (Col3 &col, const double val) {
         col = divCol(col, val);
-    }
-
-    SP_GENFUNC bool operator == (const Col3 &col0, const Col3 &col1) {
-        return cmpCol(col0, col1);
-    }
-    SP_GENFUNC bool operator == (const Col4 &col0, const Col4 &col1) {
-        return cmpCol(col0, col1);
-    }
-    
-    SP_GENFUNC bool operator != (const Col3 &col0, const Col3 &col1) {
-        return !cmpCol(col0, col1);
-    }
-    SP_GENFUNC bool operator != (const Col4 &col0, const Col4 &col1) {
-        return !cmpCol(col0, col1);
     }
 
     //--------------------------------------------------------------------------------

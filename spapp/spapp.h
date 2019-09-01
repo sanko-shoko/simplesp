@@ -51,6 +51,7 @@
 #include "spapp/spgeom/spdepth.h"
 #include "spapp/spgeom/spcalib.h"
 #include "spapp/spgeom/spicp.h"
+#include "spapp/spgeom/spray.h"
 #include "spapp/spgeom/spvertex.h"
 
 #include "spapp/spgeomex/spsfm.h"

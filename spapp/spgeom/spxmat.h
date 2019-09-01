@@ -268,8 +268,8 @@ namespace sp{
 
             SP_REAL ep2[36], ep3[36];
             for (int i = 0; i < 36; i++) {
-                ep2[i] = square(e[i]);
-                ep3[i] = cubic(e[i]);
+                ep2[i] = sq(e[i]);
+                ep3[i] = cb(e[i]);
             }
 
             A(0, 0) = SP_RCAST(e[6] * e[1] * e[5] - e[6] * e[4] * e[2] + e[3] * e[7] * e[2] + e[0] * e[4] * e[8] - e[0] * e[5] * e[7] - e[3] * e[1] * e[8]);

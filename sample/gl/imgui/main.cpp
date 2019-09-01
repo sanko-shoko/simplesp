@@ -5,7 +5,7 @@
 
 using namespace sp;
 
-class SampleGUI : public BaseWindow {
+class SampleGUI : public BaseWindowIMGUI {
 
 private:
 

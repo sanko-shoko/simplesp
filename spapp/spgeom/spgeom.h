@@ -485,17 +485,17 @@ namespace sp {
         const double cos2_b = cos_b * cos_b;
         const double cos2_c = cos_c * cos_c;
         
-        const double na = square(a / b);
-        const double nc = square(c / b);
+        const double na = sq(a / b);
+        const double nc = sq(c / b);
 
         const double s = na + nc;
         const double t = na - nc;
 
-        const double A4 = square(t - 1.0) - 4.0 * nc * cos2_a;
+        const double A4 = sq(t - 1.0) - 4.0 * nc * cos2_a;
         const double A3 = 4.0 * (t * (1.0 - t) * cos_b - (1.0 - s) * cos_a * cos_c + 2.0 * nc * cos2_a * cos_b);
         const double A2 = 2.0 * (t * t - 1.0 + 2.0 * t * t * cos2_b + 2.0 * (1.0 - nc) * cos2_a - 4.0 * s * cos_a * cos_b * cos_c + 2.0 * (1.0 - na) * cos2_c);
         const double A1 = 4.0 * (-t * (1.0 + t) * cos_b + 2.0 * na * cos2_c * cos_b - (1.0 - s) * cos_a * cos_c);
-        const double A0 = square(1.0 + t) - 4.0 * na * cos2_c;
+        const double A0 = sq(1.0 + t) - 4.0 * na * cos2_c;
 
         Cmp vs[4];
         const int n = eq4(vs, A4, A3, A2, A1, A0);
@@ -583,7 +583,7 @@ namespace sp {
 
             double scale = 1.0;
             for (int i = 0; i < 3; i++) {
-                scale *= sqrt(square(R(0, i)) + square(R(1, i)) + square(R(2, i)));
+                scale *= sqrt(sq(R(0, i)) + sq(R(1, i)) + sq(R(2, i)));
             }
             scale = pow(scale, 1.0 / 3.0);
 

@@ -165,7 +165,7 @@ namespace sp{
         SP_REAL normData(const TYPE *data, const TYPE *base) const {
             SP_REAL norm = 0.0;
             for (int i = 0; i < m_dim; i++) {
-                norm += square(data[i] - base[i]);
+                norm += sq(data[i] - base[i]);
             }
             return sqrt(norm);
         }
@@ -177,7 +177,7 @@ namespace sp{
                 if (base[i] >= rect(i, 0) && base[i] <= rect(i, 1)) continue;
 
                 const int t = (base[i] < rect(i, 0)) ? 0 : 1;
-                norm += square(rect(i, t) - base[i]);
+                norm += sq(rect(i, t) - base[i]);
             }
 
             return sqrt(norm);

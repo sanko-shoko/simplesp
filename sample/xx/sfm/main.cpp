@@ -129,7 +129,7 @@ private:
             static cv::VideoCapture cap(0);
             cvCaptureImg(m_img, cap);
 
-            glShowImg(this, "input image", m_img);
+            //glShowImg(this, "input image", m_img);
         }
 
         {

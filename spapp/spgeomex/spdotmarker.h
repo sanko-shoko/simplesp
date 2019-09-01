@@ -151,7 +151,7 @@ namespace sp{
         bool _execute(const Mem2<Byte> &img){
 
             // set default camera parameter
-            if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
+            if (cmp(2, m_cam.dsize, img.dsize) == false) {
                 m_cam = getCamParam(img.dsize);
             }
 

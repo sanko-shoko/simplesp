@@ -237,7 +237,7 @@ namespace sp{
             SP_REAL gain = 0.0;
             for (int n = 0; n < index.size(); n++) {
                 const int s = Xs[index[n]][param] < thresh ? 0 : 1;
-                gain -= square(Ys[index[n]] - mean[s]);
+                gain -= sq(Ys[index[n]] - mean[s]);
             }
             return gain;
         }

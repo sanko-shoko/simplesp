@@ -1,4 +1,5 @@
 add_subdirectory(render)
+add_subdirectory(bvh)
 add_subdirectory(shader)
 add_subdirectory(imgui)
 add_subdirectory(icp)

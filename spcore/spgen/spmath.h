@@ -441,7 +441,7 @@ namespace sp{
     SP_GENFUNC SP_REAL normMat(const SP_REAL *mat, const int rows, const int cols, const SP_REAL *base = NULL){
         SP_REAL norm = 0.0;
         for (int i = 0; i < rows * cols; i++){
-            norm += (base == NULL) ? square(mat[i]) : square(mat[i] - base[i]);
+            norm += (base == NULL) ? sq(mat[i]) : sq(mat[i] - base[i]);
         }
         return sqrt(norm);
     }
@@ -1132,7 +1132,7 @@ namespace sp{
         const double p = nc - nb * nb / 3.0;
         const double q = nd - nb * nc / 3.0 + 2.0 * nb * nb * nb / 27.0;
 
-        const double D = -square(q / 2.0) - cubic(p / 3.0);
+        const double D = -sq(q / 2.0) - cb(p / 3.0);
 
         const double A = -nb / 3.0;
         const double B = q / 2.0;

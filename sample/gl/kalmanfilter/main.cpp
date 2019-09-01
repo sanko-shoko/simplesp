@@ -65,7 +65,7 @@ private:
 
             // Q (system noize covariance)
             {
-                const double a = square(dt * dt / 2.0);
+                const double a = sq(dt * dt / 2.0);
                 const double b = (dt * dt / 2.0) * dt;
                 const double c = dt * dt;
 
@@ -77,7 +77,7 @@ private:
                 };
                 Q.resize(4, 4, m);
 
-                Q *= square(snoize);
+                Q *= sq(snoize);
             }
 
             // P (state covariance)
@@ -90,7 +90,7 @@ private:
                     0.0, 1.0
                 };
                 R.resize(2, 2, m);
-                R *= square(onoize);
+                R *= sq(onoize);
             }
 
             // F (prediction matrix)

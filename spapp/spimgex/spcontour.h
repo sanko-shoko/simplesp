@@ -81,7 +81,7 @@ namespace sp{
                         const int ix = round(tA.x);
                         const int iy = round(tA.y);
 
-                        const SP_REAL e_len = square(mean - normVec(C - tA));
+                        const SP_REAL e_len = sq(mean - normVec(C - tA));
                         const SP_REAL e_crv = sqVec(B + C - tA * 2.0);
 
                         int maxv = 0;

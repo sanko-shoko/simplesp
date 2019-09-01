@@ -396,7 +396,7 @@ namespace sp{
                     const SP_REAL dA = dotVec(A, t);
                     const SP_REAL dB = dotVec(B, t);
 
-                    if (dA < dB || (cmpVal(dA, dB) && (A.y < B.y)) ) {
+                    if (dA < dB || (cmp(dA, dB) && (A.y < B.y)) ) {
                         for (int k = a + 1; ; k++) {
                             const int c = k % tmps.size();
                             if (c == b) break;
