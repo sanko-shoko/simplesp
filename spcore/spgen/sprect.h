@@ -168,7 +168,7 @@ namespace sp{
     }
 
     SP_GENFUNC Rect3 orRect(const Rect3 &rect0, const Rect3 &rect1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
+        int dbase[3] = { 0 }, dsize[3] = { 0 };
         for (int i = 0; i < 3; i++) {
             dbase[i] = minval(rect0.dbase[i], rect1.dbase[i]);
             dsize[i] = maxval(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
@@ -213,24 +213,6 @@ namespace sp{
             dsize[i] = rect.dsize[i];
         }
         return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC bool cmpRect(const Rect2 &rect0, const Rect2 &rect1) {
-        bool ret = true;
-        for (int i = 0; i < 2; i++) {
-            ret &= (rect0.dbase[i] == rect1.dbase[i]);
-            ret &= (rect0.dsize[i] == rect1.dsize[i]);
-        }
-        return ret;
-    }
-
-    SP_GENFUNC bool cmpRect(const Rect3 &rect0, const Rect3 &rect1) {
-        bool ret = true;
-        for (int i = 0; i < 3; i++) {
-            ret &= (rect0.dbase[i] == rect1.dbase[i]);
-            ret &= (rect0.dsize[i] == rect1.dsize[i]);
-        }
-        return ret;
     }
 
     // get center vector
@@ -308,20 +290,6 @@ namespace sp{
     }
     SP_GENFUNC void operator -= (Rect3 &rect, const int *shift) {
         rect = shiftRect(rect, shift, -1);
-    }
-
-    SP_GENFUNC bool operator == (const Rect2 &rect0, const Rect2 &rect1) {
-        return cmpRect(rect0, rect1);
-    }
-    SP_GENFUNC bool operator == (const Rect3 &rect0, const Rect3 &rect1) {
-        return cmpRect(rect0, rect1);
-    }
-
-    SP_GENFUNC bool operator != (const Rect2 &rect0, const Rect2 &rect1) {
-        return !cmpRect(rect0, rect1);
-    }
-    SP_GENFUNC bool operator != (const Rect3 &rect0, const Rect3 &rect1) {
-        return !cmpRect(rect0, rect1);
     }
 
 }

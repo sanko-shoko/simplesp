@@ -9,6 +9,7 @@
 #include <math.h>
 
 namespace sp{
+
 #if SP_USE_WRAPPER
 
     //--------------------------------------------------------------------------------
@@ -146,12 +147,12 @@ namespace sp{
     }
 
     // get limit value
-    SP_GENFUNC const int limval(const int v, const int maxv, const int minv) {
+    SP_GENFUNC const int limval(const int v, const int minv, const int maxv) {
         return (v > maxv) ? maxv : ((v < minv) ? minv : v);
     }
 
     // get limit value
-    SP_GENFUNC const SP_REAL limval(const double v, const double maxv, const double minv) {
+    SP_GENFUNC const SP_REAL limval(const double v, const double minv, const int maxv) {
         return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
@@ -356,29 +357,6 @@ namespace sp{
                 setBit(&bytes[i / 8], i % 8, 1);
             }
         }
-    }
-
-
-    //--------------------------------------------------------------------------------
-    // compare
-    //--------------------------------------------------------------------------------
-
-    // compare
-    SP_GENFUNC bool cmpVal(const double a, const double b, const double t = 1.0e-6) {
-        return ((a - b) < +t && (a - b) > -t) ? true : false;
-    }
-
-    SP_GENFUNC bool cmpSize(const int dim, const int *dsize0, const int *dsize1) {
-        for (int i = 0; i < dim; i++) {
-            if (dsize0[i] != dsize1[i]) return false;
-        }
-        return true;
-    }
-
-    template<typename TYPE0, typename TYPE1>
-    SP_GENFUNC bool cmpSize(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
-        if (mem0.dim != mem1.dim) return false;
-        return cmpSize(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
     //--------------------------------------------------------------------------------

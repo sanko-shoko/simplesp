@@ -207,7 +207,7 @@ namespace sp{
 
         const Pose* getPose(const int i) const {
             if (i < 0 || i >= m_poses.size()) return NULL;
-            return (cmpPose(m_poses[i], zeroPose()) == false) ? &m_poses[i] : NULL;
+            return (cmp(m_poses[i], zeroPose()) == false) ? &m_poses[i] : NULL;
         }
 
         const Mem1<Vec2>* getCrspPixs(const int i) const {
@@ -245,7 +245,7 @@ namespace sp{
         bool _execute(const Mem2<Byte> &img){
 
             // set default camera parameter
-            if (cmpSize(2, m_cam.dsize, img.dsize) == false) {
+            if (cmp(2, m_cam.dsize, img.dsize) == false) {
                 m_cam = getCamParam(img.dsize);
             }
 

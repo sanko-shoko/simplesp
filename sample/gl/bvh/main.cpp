@@ -44,7 +44,8 @@ private:
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
-        m_bvh.build(m_model);
+        m_bvh.add(m_model);
+        m_bvh.build();
 
         //{
 
@@ -117,30 +118,17 @@ private:
                     ray.pos = ipose.trn;
                     ray.drc = mrot * (vec);
                     BVH::Hit hit;
-                    bool ret = m_bvh.trace(hit, ray, 0, 1500.0);
-                    if (ret) {
+                    if (m_bvh.trace(hit, ray, 0, 1500.0)) {
                         depth(u, v) = hit.norm * vec.z;
-                        depth(u, v) = m_pose.trn.z;
                     }
                 }
             }
-            cnvDepthToImg(m_img, depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+            glLoadView2D(m_cam);
+            glTexDepth(depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
         }
-        //// render depth
-        if(m_stop == false){
-            static double s = 0.0;
-            m_pose *= getRotAngle(getVec3(+0.0, +::sin(s), +::cos(s)), 0.02);
-            s += 0.01;
 
-            //renderDepth(depth, m_cam, m_pose, m_model);
 
-        }
-        glLoadView2D(m_cam);
-        glTexImg(m_img);
-
-        glTexDepth(depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
-
-        if(1){
+        {
             glLoadView3D(m_cam);
             glLoadMatrix(m_pose);
 
@@ -150,7 +138,7 @@ private:
 
             glLineWidth(2.0);
             for (int i = 0; i < nodes.size(); i++) {
-                glColor(getCol3(i));
+                glColor(getCol3(i + nodes.size()));
                 const Vec3 A = nodes[i]->box.pos[0];
                 const Vec3 B = nodes[i]->box.pos[1];
 

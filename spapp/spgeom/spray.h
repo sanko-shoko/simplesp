@@ -66,161 +66,160 @@ namespace sp {
 
     public:
         struct Node {
-            int s, size;
+            int level;
+
+            int base;
+            int size;
+
             Box3 box;
             Node *n0, *n1;
         };
 
-        struct Idx {
+        struct Index {
+            int a;
             int i;
             Vec3 c;
             const Mesh3 *m;
 
-            Idx() {
+            Index() {
             }
 
-            Idx(const Idx &idx) {
-                this->i = i;
-                this->c = c;
+            Index(const Index &idx) {
+                *this = idx;
             }
 
-            Idx& operator = (const Idx &idx) {
-                this->i = i;
-                this->c = c;
+            Index& operator = (const Index &idx) {
+                a = idx.a;
+                i = idx.i;
+                c = idx.c;
+                m = idx.m;
                 return *this;
             }
         };
 
     private:
 
+        int m_lsize;
         Mem1<Node> m_nodes;
-        Mem1<Idx> m_idxs;
+        Mem1<Index> m_idxs;
 
     public:
+        BVH() {
+            clear();
+        }
 
         Mem1<const Node*> getNode(const int level) const {
             Mem1<const Node*> nodes;
 
-            const Node *s[32] = { 0 };
-            s[0] = &m_nodes[0];
-
-            int l[99] = { 0 };
-
-            for (int si = 0; si >= 0; si--) {
-                const Node& n = *s[si];
-                const int ll = l[si];
-                if (ll == level) {
-                    nodes.push(&n);
-                }
-                if (ll >= level) continue;
-
-                if (n.n0 != NULL && n.n1 != NULL) {
-                    s[si + 0] = n.n0;
-                    s[si + 1] = n.n1;
-                    l[si + 0] = ll + 1;
-                    l[si + 1] = ll + 1;
-                    si += 2;
+            for (int i = 0; i < m_nodes.size(); i++) {
+                if (m_nodes[i].level == level) {
+                    nodes.push(&m_nodes[i]);
                 }
             }
             return nodes;
         }
 
-        void build(const Mem1<Mesh3> &meshes) {
+        void clear() {
+            m_lsize = 0;
+            m_nodes.clear();
+            m_idxs.clear();
+        }
 
-            m_idxs.resize(meshes.size());
+        void add(const Mem1<Mesh3> &meshes) {
+            const int offset = m_idxs.size();
+            m_idxs.extend(meshes.size());
             for (int i = 0; i < m_idxs.size(); i++) {
-                m_idxs[i].i = i;
-                m_idxs[i].m = &meshes[i];
-                m_idxs[i].c = getMeshCent(meshes[i]);
+                m_idxs[offset + i].a = m_lsize;
+                m_idxs[offset + i].i = i;
+                m_idxs[offset + i].m = &meshes[i];
+                m_idxs[offset + i].c = getMeshCent(meshes[i]);
             }
+            m_lsize++;
+        }
 
-            m_nodes.reserve(2 * meshes.size() - 1);
-            
-            Box3 lbox;
-            lbox.pos[0] = getVec3(1.0, 1.0, 1.0) * (+SP_INFINITY);
-            lbox.pos[1] = getVec3(1.0, 1.0, 1.0) * (-SP_INFINITY);
+        void build() {
 
-            auto initn = [&](const int s, const int size) -> Node*{
-                Node &n = *m_nodes.extend();
-                n.s = s;
-                n.size = size;
-                n.n0 = NULL;
-                n.n1 = NULL;
-                n.box = lbox;
+            m_nodes.clear();
+            m_nodes.reserve(2 * m_idxs.size() - 1);
 
-                for (int i = s; i < s + size; i++) {
-                    n.box = orBox(n.box, *m_idxs[i].m);
+            auto initn = [&](const int level, const int base, const int size) -> Node*{
+                Node *n = m_nodes.extend();
+                n->level = level;
+                n->base = base;
+                n->size = size;
+                n->n0 = NULL;
+                n->n1 = NULL;
+                n->box = nullBox3();
+
+                for (int i = base; i < base + size; i++) {
+                    n->box = orBox(n->box, *m_idxs[i].m);
                 }
-                return &n;
+                return n;
             };
 
-            initn(0, meshes.size());
+            auto bsort = [&](Node &n, const int ax) {
+                typedef int(*CMP)(const void*, const void*);
 
-            Mem2<SP_REAL> map(meshes.size(), 2);
+                CMP cmp[3];
+                cmp[0] = [](const void* i1, const void* i2) -> int {
+                    return (((Index*)i1)->c.x < ((Index*)i2)->c.x) ? +1 : -1;
+                };
+                cmp[1] = [](const void* i1, const void* i2) -> int {
+                    return (((Index*)i1)->c.y < ((Index*)i2)->c.y) ? +1 : -1;
+                };
+                cmp[2] = [](const void* i1, const void* i2) -> int {
+                    return (((Index*)i1)->c.z < ((Index*)i2)->c.z) ? +1 : -1;
+                };
+
+                sort(&m_idxs[n.base], n.size, cmp[ax]);
+            };
+
+            initn(0, 0, m_idxs.size());
+
+            Mem2<SP_REAL> map(m_idxs.size(), 2);
             
             for(int ni = 0; ni < m_nodes.size(); ni++){
                 Node& n = m_nodes[ni];
+                if (n.size == 1) continue;
 
-                auto bsort = [&](int ax) {
-                    typedef int(*CMP)(const void*, const void*);
+                int di = 0;
+                int da = 0;
+                {
+                    double mina = SP_INFINITY;
+                    for (int a = 0; a < 3; a++) {
+                        bsort(n, a);
+                        Box3 bl = nullBox3();
+                        Box3 br = nullBox3();
 
-                    CMP cmp[3];
-                    cmp[0] = [](const void* i1, const void* i2) -> int {
-                        return (((Idx*)i1)->c.x < ((Idx*)i2)->c.x) ? +1 : -1;
-                    };
-                    cmp[1] = [](const void* i1, const void* i2) -> int {
-                        return (((Idx*)i1)->c.y < ((Idx*)i2)->c.y) ? +1 : -1;
-                    };
-                    cmp[2] = [](const void* i1, const void* i2) -> int {
-                        return (((Idx*)i1)->c.z < ((Idx*)i2)->c.z) ? +1 : -1;
-                    };
+                        for (int i = 1; i < n.size; i++) {
+                            const int l = i;
+                            const int r = n.size - i;
+                            bl = orBox(bl, *m_idxs[n.base + l - 1].m);
+                            br = orBox(br, *m_idxs[n.base + r].m);
+                            map(l, 0) = getBoxArea(bl) * i;
+                            map(r, 1) = getBoxArea(br) * i;
+                        }
 
-                    sort(&m_idxs[n.s], n.size, cmp[ax]);
-                };
-
-                if (n.size < 2) {
-                    continue;
-                }
-
-                SP_REAL b = SP_INFINITY;
-                int bi, ba;
-                for (int a = 0; a < 3; a++) {
-                    bsort(a);
-                    Box3 bl = lbox;
-                    Box3 br = lbox;
-                    for (int i = 0; i < n.size; i++) {
-                        int j = n.size - i;
-                        map(i, 0) = getBoxArea(bl) * i;
-                        map(j, 1) = getBoxArea(br) * i;
-
-                        bl = orBox(bl, *m_idxs[n.s + 0 + i].m);
-                        br = orBox(br, *m_idxs[n.s - 1 + j].m);
-                    }
-
-                    for (int i = 1; i < n.size; i++) {
-                        SP_REAL c = 1 + (map(i, 0) + map(i, 1)) / getBoxArea(n.box);
-                        if (c < b) {
-                            b = c;
-                            bi = i;
-                            ba = a;
+                        for (int i = 1; i < n.size; i++) {
+                            const double area = 1.0 + (map(i, 0) + map(i, 1)) / getBoxArea(n.box);
+                            if (area < mina) {
+                                mina = area;
+                                di = i;
+                                da = a;
+                            }
                         }
                     }
                 }
 
-                if (b > n.size) {
-                }
-                else {
-                    bsort(ba);
-
-                    n.n0 = initn(n.s, bi);
-                    n.n1 = initn(n.s + bi, n.size - bi);
-                }
+                bsort(n, da);
+                n.n0 = initn(n.level + 1, n.base, di);
+                n.n1 = initn(n.level + 1, n.base + di, n.size - di);
             }
 
         }
 
         struct Hit {
-            int i;
+            const Index *idx;
             SP_REAL norm;
         };
 
@@ -233,19 +232,19 @@ namespace sp {
 
             double norm = maxv;
             while (que.size() > 0) {
-                const Node& n = **que.last();
+                const Node *n = *que.last();
                 que.pop();
                 {
-                    if (checkHit(n.box, ray, minv, norm) == false) {
+                    if (checkHit(n->box, ray, minv, norm) == false) {
                         continue;
                     }
                 }
-                if (n.n0 != NULL && n.n1 != NULL) {
-                    que.push(n.n0);
-                    que.push(n.n1);
+                if (n->n0 != NULL && n->n1 != NULL) {
+                    que.push(n->n0);
+                    que.push(n->n1);
                     continue;
                 }
-                for (int i = n.s; i < n.s + n.size; i++) {
+                for (int i = n->base; i < n->base + n->size; i++) {
                     SP_REAL result[3] = { 0 };
                     if (traceMesh(result, *m_idxs[i].m, ray, minv, norm) == true) {
                         norm = result[0];
@@ -256,7 +255,7 @@ namespace sp {
             if (minid < 0) {
                 return false;
             }
-            hit.i = m_idxs[minid].i;
+            hit.idx = &m_idxs[minid];
             hit.norm = norm;
             return true;
         }

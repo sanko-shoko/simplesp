@@ -794,7 +794,7 @@ namespace sp{
             Mem1<Vec2> tpixs0, tpixs1, tobjs;
             for (int j = 0; j < pixs0[i].size(); j++) {
                 for (int k = 0; k < pixs1[i].size(); k++) {
-                    if (cmpVec(objs0[i][j], objs1[i][k]) == true) {
+                    if (cmp(objs0[i][j], objs1[i][k]) == true) {
                         tpixs0.push(pixs0[i][j]);
                         tpixs1.push(pixs1[i][k]);
                         tobjs.push(objs0[i][j]);
@@ -878,7 +878,7 @@ namespace sp{
     };
     
     SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const Pose &pose0, const CamParam &cam1, const Pose &pose1, const SP_REAL fixFocal = 0.0){
-        SP_ASSERT(cmpSize(2, cam0.dsize, cam1.dsize));
+        SP_ASSERT(cmp(2, cam0.dsize, cam1.dsize));
 
         // pre parameter
         {

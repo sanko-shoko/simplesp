@@ -119,15 +119,6 @@ namespace sp{
         return mulRot(rot, getVec3(vec.x, vec.y, 0.0));
     }
 
-    SP_GENFUNC bool cmpRot(const Rot &rot0, const Rot &rot1, const double t = 1.0e-6) {
-        bool ret = true;
-        ret &= cmpVal(rot0.qx * sign(rot0.qw), rot1.qx * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qy * sign(rot0.qw), rot1.qy * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qz * sign(rot0.qw), rot1.qz * sign(rot1.qw), t);
-        ret &= cmpVal(rot0.qw * sign(rot0.qw), rot1.qw * sign(rot1.qw), t);
-        return ret;
-    }
-
 
     //--------------------------------------------------------------------------------
     // rotation operator
@@ -147,14 +138,6 @@ namespace sp{
 
     SP_GENFUNC void operator *= (Rot &rot0, const Rot &rot1) {
         rot0 = mulRot(rot0, rot1);
-    }
-
-    SP_GENFUNC bool operator == (const Rot &rot0, const Rot &rot1) {
-        return cmpRot(rot0, rot1);
-    }
-
-    SP_GENFUNC bool operator != (const Rot &rot0, const Rot &rot1) {
-        return !cmpRot(rot0, rot1);
     }
 
     //--------------------------------------------------------------------------------
@@ -241,9 +224,9 @@ namespace sp{
 
     SP_GENFUNC Rot getRotAngle(const Vec3 &vec) {
         const SP_REAL angle = normVec(vec);
-        const Vec3 nrm = unitVec(vec);
-
         if (angle > SP_SMALL) {
+            const Vec3 nrm = unitVec(vec);
+            
             const SP_REAL s = sin(angle * 0.5);
             const SP_REAL c = cos(angle * 0.5);
             return getRot(s * nrm.x, s * nrm.y, s * nrm.z, c);
@@ -272,10 +255,10 @@ namespace sp{
     SP_GENFUNC Vec3 getAngle(const Rot &rot) {
         Vec3 vec = getVec3(0.0, 0.0, 0.0);
 
-        if (cmpRot(rot, getRot(0.0, 0.0, 0.0, 1.0)) == false) {
+        if (cmp(rot, getRot(0.0, 0.0, 0.0, 1.0)) == false) {
             const SP_REAL angle = acos(rot.qw) * 2.0;
 
-            if (cmpVal(angle, 0.0) == false) {
+            if (cmp(angle, 0.0) == false) {
                 const SP_REAL s = sin(angle * 0.5);
                 vec.x = rot.qx / s * angle;
                 vec.y = rot.qy / s * angle;
@@ -503,13 +486,6 @@ namespace sp{
         return mulMat(poseMat, 3, 4, mesh);
     }
 
-    SP_GENFUNC bool cmpPose(const Pose &pose0, const Pose &pose1, const double tr = 1.0e-6, const double tt = 1.0e-6) {
-        bool ret = true;
-        ret &= cmpRot(pose0.rot, pose1.rot, tr);
-        ret &= cmpVec(pose0.trn, pose1.trn, tt);
-        return ret;
-    }
-
 
     //--------------------------------------------------------------------------------
     // pose operator
@@ -543,14 +519,6 @@ namespace sp{
         pose0 = mulPose(pose0, pose1);
     }
 
-    SP_GENFUNC bool operator == (const Pose &pose0, const Pose &pose1) {
-        return cmpPose(pose0, pose1);
-    }
-
-    SP_GENFUNC bool operator != (const Pose &pose0, const Pose &pose1) {
-        return !cmpPose(pose0, pose1);
-    }
-    
     //--------------------------------------------------------------------------------
     // pose util
     //--------------------------------------------------------------------------------

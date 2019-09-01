@@ -322,7 +322,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         void addView(Mem1<ViewEx*> &views, const CamParam &cam, const Mem2<Col3> &img, const Pose *hint) {
-            if (cmpSize(2, cam.dsize, img.dsize) == false) return;
+            if (cmp(2, cam.dsize, img.dsize) == false) return;
 
             ViewEx &view = *_viewsPool.malloc();
             view.img = img;

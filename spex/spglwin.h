@@ -615,7 +615,7 @@ namespace sp {
 
         virtual void display() {
             if (m_img.size() > 0) {
-                if (cmpSize(2, m_img.dsize, m_wcam.dsize) == false) {
+                if (cmp(2, m_img.dsize, m_wcam.dsize) == false) {
                     glfwSetWindowSize(m_win, m_img.dsize[0], m_img.dsize[1]);
                 }
                 glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);
