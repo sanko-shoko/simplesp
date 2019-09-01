@@ -36,6 +36,47 @@ namespace sp {
 #define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
 
 
+    SP_CPUFUNC void initGLEW() {
+        static bool init = false;
+        if (init == true) return;
+
+#if SP_USE_GLEW
+        // glew init
+        SP_ASSERT(glewInit() == GLEW_OK);
+#endif
+        init = true;
+    }
+
+    SP_CPUFUNC void initIMGUI() {
+        static bool init = false;
+        if (init == true) return;
+
+        GLFWwindow *win = glfwGetCurrentContext();
+
+#if SP_USE_IMGUI
+        // imgui init
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(win, true) == true);
+        SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
+        ImGui::GetIO().IniFilename = NULL;
+#endif
+        init = true;
+    }
+
+    SP_CPUFUNC void finishMGUI() {
+        static bool init = false;
+        if (init == true) return;
+
+#if SP_USE_IMGUI
+        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+#endif
+        init = true;
+    }
+
+
     //--------------------------------------------------------------------------------
     // mouse
     //--------------------------------------------------------------------------------
@@ -176,10 +217,14 @@ namespace sp {
         virtual void focus(int focused) {
         }
 
+
         virtual void init() {
         }
 
         virtual void display() {
+        }
+
+        virtual void post() {
         }
 
 
@@ -187,12 +232,6 @@ namespace sp {
 
         // window ptr
         GLFWwindow * m_win;
-
-        // parent window
-        BaseWindow *m_parent;
-
-        // child windows
-        Mem1<BaseWindow*> m_cwins;
 
     public:
 
@@ -221,7 +260,6 @@ namespace sp {
 
         BaseWindow() {
             m_win = NULL;
-            m_parent = NULL;
 
             m_viewPos = getVec2(0.0, 0.0);
             m_viewScale = 1.0;
@@ -236,7 +274,7 @@ namespace sp {
         // main window
         //--------------------------------------------------------------------------------
 
-        bool create(const char *name, const int width, const int height, BaseWindow *parent = NULL) {
+        bool create(const char *name, const int width, const int height) {
 
             if (m_win == NULL) {
                 // glfw create window
@@ -250,94 +288,15 @@ namespace sp {
             }
 
             m_wcam = getCamParam(width, height);
-            m_parent = parent;
 
             // glfw make context
             glfwMakeContextCurrent(m_win);
 
             // vsync
-            glfwSwapInterval(1); 
-
-#if SP_USE_GLEW
-            // glew init
-            SP_ASSERT(glewInit() == GLEW_OK);
-#endif
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                // imgui init
-                IMGUI_CHECKVERSION();
-                ImGui::CreateContext();
-                SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(m_win, true) == true);
-                SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
-                ImGui::GetIO().IniFilename = NULL;
-            }
-#endif
-
-            init();
-
-            if (parent != NULL) {
-                parent->addSubWindow(this);
-            }
+            glfwSwapInterval(1);
 
             return true;
         }
-
-        void execute(const char *name, const int width, const int height, const int samples = 1) {
-
-            // glfw init
-            SP_ASSERT(glfwInit());
-
-            if (samples > 1) {
-                glfwWindowHint(GLFW_SAMPLES, samples);
-            }
-            glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
-            SP_ASSERT(create(name, width, height) == true);
-
-            while (!glfwWindowShouldClose(m_win)) {
-
-                if (main() == false) break;
-
-                if (findFocused() == NULL) glfwPollEvents();
-            }
-
-            // glfw terminate
-            glfwTerminate();
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                ImGui_ImplOpenGL2_Shutdown();
-                ImGui_ImplGlfw_Shutdown();
-                ImGui::DestroyContext();
-            }
-#endif
-        }
-
-
-        //--------------------------------------------------------------------------------
-        // sub window
-        //--------------------------------------------------------------------------------
-
-        void addSubWindow(BaseWindow *bw) {
-            for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i] == bw) {
-                    return;
-                }
-            }
-            m_cwins.push(bw);
-        }
-
-        void delSubWindow(BaseWindow *bw) {
-            for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i] == bw) {
-                    m_cwins.del(i);
-                    break;
-                }
-            }
-        }
-
-    protected:
 
         //--------------------------------------------------------------------------------
         // main loop
@@ -362,36 +321,49 @@ namespace sp {
                 glfwPollEvents();
             }
 
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                ImGui_ImplOpenGL2_NewFrame();
-                ImGui_ImplGlfw_NewFrame();
-                ImGui::NewFrame();
-            }
-#endif
-
             display();
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                ImGui::Render();
-                ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-            }
-#endif
 
             glfwSwapBuffers(m_win);
 
-            for (int i = 0; i < m_cwins.size(); i++) {
-                if (m_cwins[i]->main() == false) {
-                    m_cwins.del(i);
-                }
-            }
-
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
+
+
             return true;
         }
 
+        void execute(const char *name, const int width, const int height, const int samples = 1) {
+
+            // glfw init
+            SP_ASSERT(glfwInit());
+
+            if (samples > 1) {
+                glfwWindowHint(GLFW_SAMPLES, samples);
+            }
+            glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+            SP_ASSERT(create(name, width, height) == true);
+
+            // init glew
+            initGLEW();
+
+            init();
+
+            while (!glfwWindowShouldClose(m_win)) {
+
+                if (main() == false) break;
+
+                glfwPollEvents();
+
+                post();
+            }
+
+            // glfw terminate
+            glfwTerminate();
+        }
+
+
+    protected:
 
         //--------------------------------------------------------------------------------
         // focus
@@ -401,24 +373,13 @@ namespace sp {
             return glfwGetWindowAttrib(m_win, GLFW_FOCUSED);
         }
 
-        GLFWwindow* findFocused() {
-            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
-                return m_win;
-            }
-            for (int i = 0; i < m_cwins.size(); i++) {
-                GLFWwindow *w = m_cwins[i]->findFocused();
-                if (w != NULL) return w;
-            }
-            return NULL;
-        }
-
     public:
 
         //--------------------------------------------------------------------------------
         // event process
         //--------------------------------------------------------------------------------
 
-        void _windowSize(int width, int height) {
+        virtual void _windowSize(int width, int height) {
             m_callback = true;
             m_wcam = getCamParam(width, height);
 
@@ -427,35 +388,18 @@ namespace sp {
             windowSize(width, height);
         }
 
-        void _mouseButton(int button, int action, int mods) {
+        virtual void _mouseButton(int button, int action, int mods) {
             m_callback = true;
 
             m_mouse.setButton(button, action, mods);
 
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                    ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
-                    return;
-                }
-            }
-#endif
-
             mouseButton(button, action, mods);
         }
 
-        void _mousePos(double x, double y) {
+        virtual void _mousePos(double x, double y) {
             m_callback = true;
 
             m_mouse.setPos(x, y);
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                    return;
-                }
-            }
-#endif
 
             if (m_usedui == true) {
                 // control view
@@ -468,20 +412,10 @@ namespace sp {
             mousePos(x, y);
         }
 
-        void _mouseScroll(double x, double y) {
+        virtual void _mouseScroll(double x, double y) {
             m_callback = true;
 
             m_mouse.setScroll(x, y);
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                    ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
-                    m_mouse.setScroll(0.0, 0.0);
-                    return;
-                }
-            }
-#endif
 
             if (m_usedui == true) {
                 // control view
@@ -494,7 +428,7 @@ namespace sp {
             mouseScroll(x, y);
         }
 
-        void _keyFun(int key, int scancode, int action, int mods) {
+        virtual void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
             m_callback = true;
 
@@ -509,46 +443,21 @@ namespace sp {
             if (key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) {
                 m_key[GLFW_KEY_ALT] = action;
             }
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                static bool prev = false;
-                if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
-                    prev = ImGui::GetIO().WantCaptureKeyboard;
-                    ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
-                    return;
-                }
-                prev = false;
-            }
-#endif
-
             keyFun(key, scancode, action, mods);
         }
 
-        void _charFun(unsigned int charInfo) {
+        virtual void _charFun(unsigned int charInfo) {
             m_callback = true;
-
-#if SP_USE_IMGUI
-            if (m_parent == NULL) {
-                if (ImGui::GetIO().WantCaptureKeyboard == true) {
-                    ImGui_ImplGlfw_CharCallback(NULL, charInfo);
-                    return;
-                }
-            }
-#endif
-
             charFun(charInfo);
         }
 
-        void _drop(int num, const char **paths) {
+        virtual void _drop(int num, const char **paths) {
             m_callback = true;
-
             drop(num, paths);
         }
 
-        void _focus(int focused) {
+        virtual void _focus(int focused) {
             m_callback = true;
-
             focus(focused);
         }
 
@@ -604,7 +513,232 @@ namespace sp {
             getThisPtr(window)->_focus(focused);
         }
     };
+    
+    
 
+    //--------------------------------------------------------------------------------
+    // base window imgui
+    //--------------------------------------------------------------------------------
+
+    class BaseWindowIMGUI : public BaseWindow {
+
+    public:
+
+        BaseWindowIMGUI() : BaseWindow() {
+        }
+
+        //--------------------------------------------------------------------------------
+        // main loop
+        //--------------------------------------------------------------------------------
+
+        bool main() {
+
+            if (glfwWindowShouldClose(m_win)) {
+                glfwDestroyWindow(m_win);
+                m_win = NULL;
+                return false;
+            }
+
+            // glfw set context
+            glfwMakeContextCurrent(m_win);
+
+            // glfw set event callbacks
+            setCallback(m_win);
+
+            // check events
+            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
+                glfwPollEvents();
+            }
+
+#if SP_USE_IMGUI
+            ImGui_ImplOpenGL2_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+#endif
+
+            display();
+
+#if SP_USE_IMGUI
+            ImGui::Render();
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+#endif
+
+            glfwSwapBuffers(m_win);
+
+            m_mouse.setScroll(0.0, 0.0);
+            m_callback = false;
+
+            return true;
+        }
+
+        void execute(const char *name, const int width, const int height, const int samples = 1) {
+
+            // glfw init
+            SP_ASSERT(glfwInit());
+
+            if (samples > 1) {
+                glfwWindowHint(GLFW_SAMPLES, samples);
+            }
+            glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+            SP_ASSERT(create(name, width, height) == true);
+
+            // init glew
+            initGLEW();
+
+            // init imgui
+            initIMGUI();
+
+            init();
+            
+            while (!glfwWindowShouldClose(m_win)) {
+
+                if (main() == false) break;
+
+                glfwPollEvents();
+
+                post();
+            }
+
+            // glfw terminate
+            glfwTerminate();
+
+            // finish imgui
+            finishMGUI();
+        }
+
+
+    public:
+
+        //--------------------------------------------------------------------------------
+        // event process
+        //--------------------------------------------------------------------------------
+
+        virtual void _windowSize(int width, int height) {
+            m_callback = true;
+            m_wcam = getCamParam(width, height);
+
+            ::glViewport(0, 0, width, height);
+
+            windowSize(width, height);
+        }
+
+        virtual void _mouseButton(int button, int action, int mods) {
+            m_callback = true;
+
+            m_mouse.setButton(button, action, mods);
+
+#if SP_USE_IMGUI
+            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
+                return;
+            }
+#endif
+
+            mouseButton(button, action, mods);
+        }
+
+        virtual void _mousePos(double x, double y) {
+            m_callback = true;
+
+            m_mouse.setPos(x, y);
+
+#if SP_USE_IMGUI
+            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                return;
+            }
+#endif
+
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
+            }
+
+            mousePos(x, y);
+        }
+
+        virtual void _mouseScroll(double x, double y) {
+            m_callback = true;
+
+            m_mouse.setScroll(x, y);
+
+#if SP_USE_IMGUI
+            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
+                m_mouse.setScroll(0.0, 0.0);
+                return;
+            }
+#endif
+
+            if (m_usedui == true) {
+                // control view
+                if (m_key[GLFW_KEY_SPACE] > 0) {
+                    controlView(m_viewPos, m_viewScale, m_mouse);
+                    return;
+                }
+            }
+
+            mouseScroll(x, y);
+        }
+
+        virtual void _keyFun(int key, int scancode, int action, int mods) {
+            if (key < 0) return;
+            m_callback = true;
+
+            m_key[key] = static_cast<char>(action);
+
+            if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
+                m_key[GLFW_KEY_SHIFT] = action;
+            }
+            if (key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) {
+                m_key[GLFW_KEY_CONTROL] = action;
+            }
+            if (key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) {
+                m_key[GLFW_KEY_ALT] = action;
+            }
+
+#if SP_USE_IMGUI
+            {
+                static bool prev = false;
+                if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
+                    prev = ImGui::GetIO().WantCaptureKeyboard;
+                    ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
+                    return;
+                }
+                prev = false;
+            }
+#endif
+
+            keyFun(key, scancode, action, mods);
+        }
+
+        virtual void _charFun(unsigned int charInfo) {
+            m_callback = true;
+
+#if SP_USE_IMGUI
+            if (ImGui::GetIO().WantCaptureKeyboard == true) {
+                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
+                return;
+            }
+#endif
+
+            charFun(charInfo);
+        }
+
+        virtual void _drop(int num, const char **paths) {
+            m_callback = true;
+            drop(num, paths);
+        }
+
+        virtual void _focus(int focused) {
+            m_callback = true;
+            focus(focused);
+        }
+
+    };
 
     template<typename TYPE>
     class ImgWindow : public BaseWindow {
@@ -623,10 +757,6 @@ namespace sp {
             }
         };
 
-        virtual void keyFun(int key, int scancode, int action, int mods) {
-            BaseWindow *p = static_cast<BaseWindow*>(m_parent);
-            p->_keyFun(key, scancode, action, mods);
-        }
 
     public:
 
@@ -639,26 +769,6 @@ namespace sp {
 
     };
 
-    template<typename TYPE>
-    SP_CPUFUNC void glShowImg(BaseWindow *win, const char *name, const Mem2<TYPE> &img) {
-        static Mem1<const char*> names;
-        static MemP<ImgWindow<TYPE> > pool;
-
-        ImgWindow<TYPE> *ptr = NULL;
-        for (int i = 0; i < names.size(); i++) {
-            if (strcmp(names[i], name) == 0) {
-                ptr = &pool[i];
-                break;
-            }
-        }
-        if (ptr == NULL) {
-            ptr = pool.malloc();
-            ptr->create(name, img.dsize[0], img.dsize[1], win);
-            names.push(name);
-        }
-
-        ptr->set(img);
-    }
 }
 
 #endif

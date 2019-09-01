@@ -1070,7 +1070,7 @@ namespace sp {
     // box util
     //--------------------------------------------------------------------------------
 
-    Box2 orBox(const Box2 &box0, const Box2 &box1) {
+    SP_GENFUNC Box2 orBox(const Box2 &box0, const Box2 &box1) {
         Box2 dst = box0;
         for (int i = 0; i < 2; i++) {
             acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
@@ -1079,7 +1079,7 @@ namespace sp {
         return dst;
     }
 
-    Box3 orBox(const Box3 &box0, const Box3 &box1) {
+    SP_GENFUNC Box3 orBox(const Box3 &box0, const Box3 &box1) {
         Box3 dst = box0;
         for (int i = 0; i < 3; i++) {
             acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
@@ -1088,7 +1088,7 @@ namespace sp {
         return dst;
     }
 
-    Box3 orBox(const Box3 &box, const Vec3 &vec) {
+    SP_GENFUNC Box3 orBox(const Box3 &box, const Vec3 &vec) {
         Box3 dst = box;
         for (int i = 0; i < 3; i++) {
             acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(vec, i));
@@ -1097,7 +1097,7 @@ namespace sp {
         return dst;
     }
 
-    Box3 orBox(const Box3 &box, const Mesh3 &mesh) {
+    SP_GENFUNC Box3 orBox(const Box3 &box, const Mesh3 &mesh) {
         Box3 dst = box;
         for (int p = 0; p < 3; p++) {
             const Vec3 &pos = mesh.pos[p];
@@ -1109,7 +1109,7 @@ namespace sp {
         return dst;
     }
 
-    SP_REAL getBoxArea(const Box3 &box) {
+    SP_GENFUNC SP_REAL getBoxArea(const Box3 &box) {
         const Vec3 d = box.pos[1] - box.pos[0];
         return (d.x * d.y + d.y * d.z + d.z * d.x) * 2.0;
     }

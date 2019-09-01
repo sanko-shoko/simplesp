@@ -65,7 +65,7 @@ private:
 
         static VideoGUI video;
         video.create("video", 640, 480, this);
-        addSubWindow(&video);
+        //addSubWindow(&video);
 
     }
 
@@ -151,7 +151,7 @@ private:
 
             const Mem2<Col3> *wimg = SP_HOLDER_GET("warp image", Mem2<Col3>);
             if (wimg) {
-                glShowImg(this, "warped image", *wimg);
+                //glShowImg(this, "warped image", *wimg);
             }
         }
 
