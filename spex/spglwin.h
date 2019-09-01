@@ -35,6 +35,19 @@ namespace sp {
 #define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
 #define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
 
+    
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC void initGLFW() {
+        static bool init = false;
+        if (init == true) return;
+        SP_ASSERT(glfwInit());
+
+        //glfwWindowHint(GLFW_SAMPLES, 4);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    }
 
     SP_CPUFUNC void initGLEW() {
         static bool init = false;
@@ -64,7 +77,7 @@ namespace sp {
         init = true;
     }
 
-    SP_CPUFUNC void finishMGUI() {
+    SP_CPUFUNC void finishIMGUI() {
         static bool init = false;
         if (init == true) return;
 
@@ -250,9 +263,6 @@ namespace sp {
         // window cam
         CamParam m_wcam;
 
-        // use default ui
-        bool m_usedui;
-
         // call back flag;
         bool m_callback;
 
@@ -265,8 +275,6 @@ namespace sp {
             m_viewScale = 1.0;
 
             memset(m_key, 0, sizeof(m_key));
-
-            m_usedui = true;
         }
 
 
@@ -295,6 +303,9 @@ namespace sp {
             // vsync
             glfwSwapInterval(1);
 
+            // glfw set event callbacks
+            setCallback(m_win);
+
             return true;
         }
 
@@ -303,6 +314,7 @@ namespace sp {
         //--------------------------------------------------------------------------------
 
         bool main() {
+            if (m_win == NULL) return false;
 
             if (glfwWindowShouldClose(m_win)) {
                 glfwDestroyWindow(m_win);
@@ -310,15 +322,9 @@ namespace sp {
                 return false;
             }
 
-            // glfw set context
-            glfwMakeContextCurrent(m_win);
-
-            // glfw set event callbacks
-            setCallback(m_win);
-
-            // check events
-            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
-                glfwPollEvents();
+            // glfw make context
+            if (m_win != glfwGetCurrentContext()) {
+                glfwMakeContextCurrent(m_win);
             }
 
             display();
@@ -328,19 +334,13 @@ namespace sp {
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
 
-
             return true;
         }
 
-        void execute(const char *name, const int width, const int height, const int samples = 1) {
+        void execute(const char *name, const int width, const int height) {
 
-            // glfw init
-            SP_ASSERT(glfwInit());
-
-            if (samples > 1) {
-                glfwWindowHint(GLFW_SAMPLES, samples);
-            }
-            glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+            // init glfw
+            initGLFW();
 
             SP_ASSERT(create(name, width, height) == true);
 
@@ -350,7 +350,6 @@ namespace sp {
             init();
 
             while (!glfwWindowShouldClose(m_win)) {
-
                 if (main() == false) break;
 
                 glfwPollEvents();
@@ -376,59 +375,69 @@ namespace sp {
     public:
 
         //--------------------------------------------------------------------------------
-        // event process
+        // event process (internal)
         //--------------------------------------------------------------------------------
+        
+        virtual bool _pwindowSize(int width, int height) {
+            return false;
+        }
+        virtual bool _pmouseButton(int button, int action, int mods) {
+            return false;
+        }
+        virtual bool _pmousePos(double x, double y) {
+            return false;
+        }
+        virtual bool _pmouseScroll(double x, double y) {
+            return false;
+        }
+        virtual bool _pkeyFun(int key, int scancode, int action, int mods) {
+            return false;
+        }
+        virtual bool _pcharFun(unsigned int charInfo) {
+            return false;
+        }
+        virtual bool _pdrop(int num, const char **paths) {
+            return false;
+        }
+        virtual bool _pfocus(int focused) {
+            return false;
+        }
 
-        virtual void _windowSize(int width, int height) {
+        void _windowSize(int width, int height) {
             m_callback = true;
             m_wcam = getCamParam(width, height);
 
             ::glViewport(0, 0, width, height);
 
+            if (_pwindowSize(width, height) == true)return;
             windowSize(width, height);
         }
 
-        virtual void _mouseButton(int button, int action, int mods) {
+        void _mouseButton(int button, int action, int mods) {
             m_callback = true;
-
             m_mouse.setButton(button, action, mods);
 
+            if (_pmouseButton(button, action, mods) == true) return;
             mouseButton(button, action, mods);
         }
 
-        virtual void _mousePos(double x, double y) {
+        void _mousePos(double x, double y) {
             m_callback = true;
-
             m_mouse.setPos(x, y);
 
-            if (m_usedui == true) {
-                // control view
-                if (m_key[GLFW_KEY_SPACE] > 0) {
-                    controlView(m_viewPos, m_viewScale, m_mouse);
-                    return;
-                }
-            }
-
+            if (_pmousePos(x, y) == true) return;
             mousePos(x, y);
         }
 
-        virtual void _mouseScroll(double x, double y) {
+        void _mouseScroll(double x, double y) {
             m_callback = true;
-
             m_mouse.setScroll(x, y);
 
-            if (m_usedui == true) {
-                // control view
-                if (m_key[GLFW_KEY_SPACE] > 0) {
-                    controlView(m_viewPos, m_viewScale, m_mouse);
-                    return;
-                }
-            }
-
+            if (_pmouseScroll(x, y) == true) return;
             mouseScroll(x, y);
         }
 
-        virtual void _keyFun(int key, int scancode, int action, int mods) {
+        void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
             m_callback = true;
 
@@ -443,21 +452,28 @@ namespace sp {
             if (key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) {
                 m_key[GLFW_KEY_ALT] = action;
             }
+            if (_pkeyFun(key, scancode, action, mods) == true) return;
             keyFun(key, scancode, action, mods);
         }
 
-        virtual void _charFun(unsigned int charInfo) {
+        void _charFun(unsigned int charInfo) {
             m_callback = true;
+
+            if (_pcharFun(charInfo) == true) return;
             charFun(charInfo);
         }
 
-        virtual void _drop(int num, const char **paths) {
+        void _drop(int num, const char **paths) {
             m_callback = true;
+
+            if (_pdrop(num, paths) == true) return;
             drop(num, paths);
         }
 
-        virtual void _focus(int focused) {
+        void _focus(int focused) {
             m_callback = true;
+
+            if (_pfocus(focused) == true) return;
             focus(focused);
         }
 
@@ -513,8 +529,6 @@ namespace sp {
             getThisPtr(window)->_focus(focused);
         }
     };
-    
-    
 
     //--------------------------------------------------------------------------------
     // base window imgui
@@ -524,14 +538,13 @@ namespace sp {
 
     public:
 
-        BaseWindowIMGUI() : BaseWindow() {
-        }
-
         //--------------------------------------------------------------------------------
         // main loop
         //--------------------------------------------------------------------------------
 
         bool main() {
+
+            if (m_win == NULL) return false;
 
             if (glfwWindowShouldClose(m_win)) {
                 glfwDestroyWindow(m_win);
@@ -539,16 +552,12 @@ namespace sp {
                 return false;
             }
 
-            // glfw set context
-            glfwMakeContextCurrent(m_win);
-
+            // glfw make context
+            if (m_win != glfwGetCurrentContext()) {
+                glfwMakeContextCurrent(m_win);
+            }
             // glfw set event callbacks
             setCallback(m_win);
-
-            // check events
-            if (glfwGetWindowAttrib(m_win, GLFW_FOCUSED)) {
-                glfwPollEvents();
-            }
 
 #if SP_USE_IMGUI
             ImGui_ImplOpenGL2_NewFrame();
@@ -573,15 +582,10 @@ namespace sp {
 
         void execute(const char *name, const int width, const int height, const int samples = 1) {
 
-            // glfw init
-            SP_ASSERT(glfwInit());
+            // init glfw
+            initGLFW();
 
-            if (samples > 1) {
-                glfwWindowHint(GLFW_SAMPLES, samples);
-            }
-            glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
-            SP_ASSERT(create(name, width, height) == true);
+            SP_ASSERT(create(name, width, height));
 
             // init glew
             initGLEW();
@@ -592,7 +596,6 @@ namespace sp {
             init();
             
             while (!glfwWindowShouldClose(m_win)) {
-
                 if (main() == false) break;
 
                 glfwPollEvents();
@@ -604,9 +607,8 @@ namespace sp {
             glfwTerminate();
 
             // finish imgui
-            finishMGUI();
+            finishIMGUI();
         }
-
 
     public:
 
@@ -614,130 +616,48 @@ namespace sp {
         // event process
         //--------------------------------------------------------------------------------
 
-        virtual void _windowSize(int width, int height) {
-            m_callback = true;
-            m_wcam = getCamParam(width, height);
-
-            ::glViewport(0, 0, width, height);
-
-            windowSize(width, height);
+#if SP_USE_IMGUI
+        virtual bool _pmouseButton(int button, int action, int mods) {
+            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+                //ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
+                return true;
+            }
+            return false;
         }
 
-        virtual void _mouseButton(int button, int action, int mods) {
-            m_callback = true;
-
-            m_mouse.setButton(button, action, mods);
-
-#if SP_USE_IMGUI
+        virtual bool _pmousePos(double x, double y) {
             if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
-                return;
+                return true;
             }
-#endif
-
-            mouseButton(button, action, mods);
+            return false;
         }
 
-        virtual void _mousePos(double x, double y) {
-            m_callback = true;
-
-            m_mouse.setPos(x, y);
-
-#if SP_USE_IMGUI
+        virtual bool _pmouseScroll(double x, double y) {
             if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                return;
-            }
-#endif
-
-            if (m_usedui == true) {
-                // control view
-                if (m_key[GLFW_KEY_SPACE] > 0) {
-                    controlView(m_viewPos, m_viewScale, m_mouse);
-                    return;
-                }
-            }
-
-            mousePos(x, y);
-        }
-
-        virtual void _mouseScroll(double x, double y) {
-            m_callback = true;
-
-            m_mouse.setScroll(x, y);
-
-#if SP_USE_IMGUI
-            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
+                //ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
-                return;
+                return true;
             }
-#endif
-
-            if (m_usedui == true) {
-                // control view
-                if (m_key[GLFW_KEY_SPACE] > 0) {
-                    controlView(m_viewPos, m_viewScale, m_mouse);
-                    return;
-                }
-            }
-
-            mouseScroll(x, y);
+            return false;
         }
-
-        virtual void _keyFun(int key, int scancode, int action, int mods) {
-            if (key < 0) return;
-            m_callback = true;
-
-            m_key[key] = static_cast<char>(action);
-
-            if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
-                m_key[GLFW_KEY_SHIFT] = action;
+        virtual bool _pkeyFun(int key, int scancode, int action, int mods) {
+            static bool prev = false;
+            if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
+                prev = ImGui::GetIO().WantCaptureKeyboard;
+                //ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
+                return true;
             }
-            if (key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) {
-                m_key[GLFW_KEY_CONTROL] = action;
-            }
-            if (key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) {
-                m_key[GLFW_KEY_ALT] = action;
-            }
-
-#if SP_USE_IMGUI
-            {
-                static bool prev = false;
-                if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
-                    prev = ImGui::GetIO().WantCaptureKeyboard;
-                    ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
-                    return;
-                }
-                prev = false;
-            }
-#endif
-
-            keyFun(key, scancode, action, mods);
+            prev = false;
+            return false;
         }
-
-        virtual void _charFun(unsigned int charInfo) {
-            m_callback = true;
-
-#if SP_USE_IMGUI
+        virtual bool _pcharFun(unsigned int charInfo) {
             if (ImGui::GetIO().WantCaptureKeyboard == true) {
-                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
-                return;
+                //ImGui_ImplGlfw_CharCallback(NULL, charInfo);
+                return true;
             }
+            return false;
+        }
 #endif
-
-            charFun(charInfo);
-        }
-
-        virtual void _drop(int num, const char **paths) {
-            m_callback = true;
-            drop(num, paths);
-        }
-
-        virtual void _focus(int focused) {
-            m_callback = true;
-            focus(focused);
-        }
-
     };
 
     template<typename TYPE>
