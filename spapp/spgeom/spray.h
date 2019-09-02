@@ -11,20 +11,7 @@
 #include <numeric>
 namespace sp {
 
-    // position and direction
-    struct Ray {
-        Vec3 pos;
-        Vec3 drc;
-    };
-
-    SP_CPUFUNC Ray getRay(const Vec3 &pos, const Vec3 &drc) {
-        Ray ret;
-        ret.pos = pos;
-        ret.drc = drc;
-        return ret;
-    }
-
-    SP_CPUFUNC bool traceMesh(SP_REAL *result, const Mesh3 &mesh, const Ray &ray, const double minv, const double maxv) {
+    SP_CPUFUNC bool traceMesh(SP_REAL *result, const Mesh3 &mesh, const VecPD3 &ray, const double minv, const double maxv) {
         const Vec3 base = mesh.pos[0] - ray.pos;
         const Vec3 A = mesh.pos[1] - mesh.pos[0];
         const Vec3 B = mesh.pos[2] - mesh.pos[0];
@@ -42,7 +29,7 @@ namespace sp {
     }
 
 
-    SP_CPUFUNC bool checkHit(const Box3 &box, const Ray &ray, const double minv, const double maxv) {
+    SP_CPUFUNC bool checkHit(const Box3 &box, const VecPD3 &ray, const double minv, const double maxv) {
         double find[2] = { minv, maxv };
         for (int i = 0; i < 3; i++) {
             const double v = acsv(ray.drc, i);
@@ -79,7 +66,6 @@ namespace sp {
             int a;
             int i;
             Vec3 c;
-            const Mesh3 *m;
 
             Index() {
             }
@@ -92,15 +78,17 @@ namespace sp {
                 a = idx.a;
                 i = idx.i;
                 c = idx.c;
-                m = idx.m;
                 return *this;
             }
         };
 
     private:
+        int m_acnt;
 
-        int m_lsize;
+        Mem1<const Mesh3*> m_pmeshes;
+
         Mem1<Node> m_nodes;
+
         Mem1<Index> m_idxs;
 
     public:
@@ -120,28 +108,33 @@ namespace sp {
         }
 
         void clear() {
-            m_lsize = 0;
+            m_acnt = 0;
+            m_pmeshes.clear();
             m_nodes.clear();
             m_idxs.clear();
         }
-
+        
         void add(const Mem1<Mesh3> &meshes) {
             const int offset = m_idxs.size();
+
+            m_pmeshes.extend(meshes.size());
+            for (int i = 0; i < m_pmeshes.size(); i++) {
+                m_pmeshes[offset + i] = &meshes[i];
+            }
+
             m_idxs.extend(meshes.size());
             for (int i = 0; i < m_idxs.size(); i++) {
-                m_idxs[offset + i].a = m_lsize;
+                m_idxs[offset + i].a = m_acnt;
                 m_idxs[offset + i].i = i;
-                m_idxs[offset + i].m = &meshes[i];
                 m_idxs[offset + i].c = getMeshCent(meshes[i]);
             }
-            m_lsize++;
+            m_acnt++;
         }
 
         void build() {
 
             m_nodes.clear();
             m_nodes.reserve(2 * m_idxs.size() - 1);
-
             auto initn = [&](const int level, const int base, const int size) -> Node*{
                 Node *n = m_nodes.extend();
                 n->level = level;
@@ -149,18 +142,18 @@ namespace sp {
                 n->size = size;
                 n->n0 = NULL;
                 n->n1 = NULL;
-                n->box = nullBox3();
 
+                n->box = nullBox3();
                 for (int i = base; i < base + size; i++) {
-                    n->box = orBox(n->box, *m_idxs[i].m);
+                    n->box = orBox(n->box, *m_pmeshes[m_idxs[i].i]);
                 }
                 return n;
             };
 
-            auto bsort = [&](Node &n, const int ax) {
+            auto sorti = [&](Node &n, const int ax) {
                 typedef int(*CMP)(const void*, const void*);
-
                 CMP cmp[3];
+
                 cmp[0] = [](const void* i1, const void* i2) -> int {
                     return (((Index*)i1)->c.x < ((Index*)i2)->c.x) ? +1 : -1;
                 };
@@ -187,15 +180,15 @@ namespace sp {
                 {
                     double mina = SP_INFINITY;
                     for (int a = 0; a < 3; a++) {
-                        bsort(n, a);
+                        sorti(n, a);
                         Box3 bl = nullBox3();
                         Box3 br = nullBox3();
 
                         for (int i = 1; i < n.size; i++) {
                             const int l = i;
                             const int r = n.size - i;
-                            bl = orBox(bl, *m_idxs[n.base + l - 1].m);
-                            br = orBox(br, *m_idxs[n.base + r].m);
+                            bl = orBox(bl, *m_pmeshes[m_idxs[n.base + l - 1].i]);
+                            br = orBox(br, *m_pmeshes[m_idxs[n.base + r].i]);
                             map(l, 0) = getBoxArea(bl) * i;
                             map(r, 1) = getBoxArea(br) * i;
                         }
@@ -211,33 +204,26 @@ namespace sp {
                     }
                 }
 
-                bsort(n, da);
+                sorti(n, da);
                 n.n0 = initn(n.level + 1, n.base, di);
                 n.n1 = initn(n.level + 1, n.base + di, n.size - di);
             }
 
         }
 
-        struct Hit {
-            const Index *idx;
-            SP_REAL norm;
-        };
-
-        bool trace(Hit &hit, const Ray& ray, const double minv, const double maxv) const {
+        bool trace(const Index **idx, SP_REAL *norm, const VecPD3 &ray, const double minv, const double maxv) const {
             int minid = -1;
 
             Mem1<const Node*> que;
-            que.reserve(32);
+            que.reserve(20);
             que.push(&m_nodes[0]);
 
-            double norm = maxv;
+            double lmaxv = maxv;
             while (que.size() > 0) {
                 const Node *n = *que.last();
                 que.pop();
-                {
-                    if (checkHit(n->box, ray, minv, norm) == false) {
-                        continue;
-                    }
+                if (checkHit(n->box, ray, minv, lmaxv) == false) {
+                    continue;
                 }
                 if (n->n0 != NULL && n->n1 != NULL) {
                     que.push(n->n0);
@@ -246,8 +232,8 @@ namespace sp {
                 }
                 for (int i = n->base; i < n->base + n->size; i++) {
                     SP_REAL result[3] = { 0 };
-                    if (traceMesh(result, *m_idxs[i].m, ray, minv, norm) == true) {
-                        norm = result[0];
+                    if (traceMesh(result, *m_pmeshes[m_idxs[i].i], ray, minv, lmaxv) == true) {
+                        lmaxv = result[0];
                         minid = i;
                     }
                 }
@@ -255,9 +241,35 @@ namespace sp {
             if (minid < 0) {
                 return false;
             }
-            hit.idx = &m_idxs[minid];
-            hit.norm = norm;
+
+            if (idx != NULL) *idx = &m_idxs[minid];
+            if (norm != NULL) *norm = lmaxv;
             return true;
+        }
+    };
+
+    class PathTrace {
+
+    public:
+        int m_tcnt;
+
+        Mem2<Vec3> m_amb;
+
+        Mem1<Mem2<Vec3> > m_difs;
+        Mem1<Mem2<Vec3> > m_spcs;
+
+        Mem1<Vec3> m_lights;
+
+    public:
+        void init(const Mem1<Vec3> &lights) {
+            m_lights = lights;
+        }
+        void clear() {
+
+        }
+
+        void trace() {
+
         }
     };
 }

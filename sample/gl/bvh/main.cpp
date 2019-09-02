@@ -76,12 +76,13 @@ private:
                 for (int u = 0; u < depth.dsize[0]; u++) {
                     const Vec2 prj = invCam(m_cam, getVec2(u, v));
                     const Vec3 vec = getVec3(prj.x, prj.y, 1.0);
-                    Ray ray;
+                    VecPD3 ray;
                     ray.pos = ipose.trn;
                     ray.drc = mrot * (vec);
-                    BVH::Hit hit;
-                    if (m_bvh.trace(hit, ray, 0, 1500.0)) {
-                        depth(u, v) = hit.norm * vec.z;
+
+                    SP_REAL norm;
+                    if (m_bvh.trace(NULL, &norm, ray, 0, 1500.0)) {
+                        depth(u, v) = norm * vec.z;
                     }
                 }
             }

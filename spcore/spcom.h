@@ -240,6 +240,13 @@ namespace sp{
         Byte a;
     };
 
+    struct Material {
+        Col4 amb;
+        Col4 dif;
+        Col4 spc;
+        Col4 ems;
+        Byte shn;
+    };
 
     //--------------------------------------------------------------------------------
     // byte order
