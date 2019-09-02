@@ -17,11 +17,11 @@ class ICPGUI : public BaseWindowIMGUI {
     Mem1<Mesh3> m_model;
 
     // data A
-    Mem<VecPN3> m_dataA;
+    Mem<VecPD3> m_dataA;
     Pose m_poseA;
 
     // data B (target)
-    Mem<VecPN3> m_dataB;
+    Mem<VecPD3> m_dataB;
     Pose m_poseB;
 
     int m_it;
@@ -57,7 +57,7 @@ private:
     virtual void keyFun(int key, int scancode, int action, int mods) {
 
         if (m_key[GLFW_KEY_A] == 1) {
-            m_dataB = Mem1<VecPN3>(m_dataA.size());
+            m_dataB = Mem1<VecPD3>(m_dataA.size());
 
             for (int i = 0; i < m_dataB.size(); i++) {
                 m_dataB[i] = m_poseA * m_dataA[i];
@@ -67,10 +67,10 @@ private:
         }
         
         if (m_key[GLFW_KEY_S] == 1) {
-            m_dataB = Mem2<VecPN3>(m_cam.dsize);
+            m_dataB = Mem2<VecPD3>(m_cam.dsize);
 
             m_dataB.zero();
-            renderVecPN(m_dataB, m_cam, m_poseA, m_model);
+            renderVecPD(m_dataB, m_cam, m_poseA, m_model);
 
             const double distance = getModelDistance(m_model, m_cam);
             const double radius = getModelRadius(m_model);

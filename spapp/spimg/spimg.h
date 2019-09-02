@@ -404,7 +404,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPN3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
+    SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPD3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
@@ -414,7 +414,7 @@ namespace sp{
             const SP_REAL depth = extractZ(src[i]);
 
             if (depth >= nearPlane && depth <= farPlane){
-                cnvNormalToCol(dst[i], src[i].nrm);
+                cnvNormalToCol(dst[i], src[i].drc);
             }
         }
     }

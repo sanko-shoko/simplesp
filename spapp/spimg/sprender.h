@@ -348,7 +348,7 @@ namespace sp{
     // render geom
     //--------------------------------------------------------------------------------
     
-    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mesh3 &mesh) {
+    SP_CPUFUNC void renderVecPD(Mem<VecPD3> &dst, const CamParam &cam, const Pose &pose, const Mesh3 &mesh) {
 
         if (cmp(2, dst.dsize, cam.dsize) == false) {
             dst.resize(2, cam.dsize);
@@ -415,26 +415,26 @@ namespace sp{
 
                 const SP_REAL ref = extractZ(acs2(dst, u, v));
                 if (ref == 0.0 || depth < ref) {
-                    acs2(dst, u, v) = getVecPN3(vec * depth, nrm);
+                    acs2(dst, u, v) = getVecPD3(vec * depth, nrm);
                 }
             }
         }
 
     }
 
-    SP_CPUFUNC void renderVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
+    SP_CPUFUNC void renderVecPD(Mem<VecPD3> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
 
         for (int i = 0; i < meshes.size(); i++) {
-            renderVecPN(dst, cam, pose, meshes[i]);
+            renderVecPD(dst, cam, pose, meshes[i]);
         }
     }
 
     template<typename DEPTH>
     SP_CPUFUNC void renderDepth(Mem<DEPTH> &dst, const CamParam &cam, const Pose &pose, const Mem<Mesh3> &meshes) {
 
-        Mem<VecPN3> pnmap;
+        Mem<VecPD3> pnmap;
         for (int i = 0; i < meshes.size(); i++) {
-            renderVecPN(pnmap, cam, pose, meshes[i]);
+            renderVecPD(pnmap, cam, pose, meshes[i]);
         }
 
         dst.resize(2, cam.dsize);
@@ -449,11 +449,11 @@ namespace sp{
         dst.resize(cam.dsize);
         dst.zero();
 
-        Mem<VecPN3> map;
-        renderVecPN(map, cam, pose, meshes);
+        Mem<VecPD3> map;
+        renderVecPD(map, cam, pose, meshes);
 
         for (int i = 0; i < dst.size(); i++) {
-            cnvNormalToCol(dst[i], map[i].nrm);
+            cnvNormalToCol(dst[i], map[i].drc);
         }
     }
 
@@ -464,11 +464,11 @@ namespace sp{
         dst.resize(cam.dsize);
         dst.zero();
 
-        Mem2<VecPN3> cmap;
-        renderVecPN(cmap, cam, pose, meshes);
+        Mem2<VecPD3> cmap;
+        renderVecPD(cmap, cam, pose, meshes);
 
-        Mem2<VecPN3> pmap;
-        renderVecPN(pmap, prj, cam2prj * pose, meshes);
+        Mem2<VecPD3> pmap;
+        renderVecPD(pmap, prj, cam2prj * pose, meshes);
 
         typedef MemA<SP_REAL, 2> Double2;
         Mem2<Double2> ptmp(pmap.dsize);
@@ -498,7 +498,7 @@ namespace sp{
                 if (inRect(prj.dsize, round(ppix.x), round(ppix.y)) == false) continue;
                 const SP_REAL val = acs2(ptn, ppix.x, ppix.y);
 
-                const Vec3 nrm = cam2prj.rot * cmap(u, v).nrm;
+                const Vec3 nrm = cam2prj.rot * cmap(u, v).drc;
                 if (nrm.z < 0.0) {
                     dst(u, v) = cast<Byte>(-nrm.z * val * 0.9);
                 }
@@ -514,11 +514,11 @@ namespace sp{
         dst.resize(cam.dsize);
         setElm(dst, getVec2(-1.0, -1.0));
 
-        Mem2<VecPN3> cmap;
-        renderVecPN(cmap, cam, pose, meshes);
+        Mem2<VecPD3> cmap;
+        renderVecPD(cmap, cam, pose, meshes);
 
-        Mem2<VecPN3> pmap;
-        renderVecPN(pmap, prj, cam2prj * pose, meshes);
+        Mem2<VecPD3> pmap;
+        renderVecPD(pmap, prj, cam2prj * pose, meshes);
 
         typedef MemA<SP_REAL, 2> Double2;
         Mem2<Double2> ptmp(pmap.dsize);

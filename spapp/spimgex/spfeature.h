@@ -143,7 +143,7 @@ namespace sp {
 
     };
 
-    class MapPnt : public VecPN3 {
+    class MapPnt : public VecPD3 {
 
     public:
 
@@ -167,7 +167,7 @@ namespace sp {
             valid = false;
 
             pos = getVec3(0.0, 0.0, 0.0);
-            nrm = getVec3(0.0, 0.0, 0.0);
+            drc = getVec3(0.0, 0.0, 0.0);
             col = getCol3(0, 0, 0);
             err = SP_INFINITY;
         }
@@ -180,7 +180,7 @@ namespace sp {
             valid = mpnt.valid;
 
             pos = mpnt.pos;
-            nrm = mpnt.nrm;
+            drc = mpnt.drc;
 
             col = mpnt.col;
             err = mpnt.err;

@@ -18,7 +18,7 @@ namespace sp{
         Voxel<> m_tsdf;
 
         // casted pn
-        Mem2<VecPN3> m_cast;
+        Mem2<VecPD3> m_cast;
 
         // camera parameter
         CamParam m_cam;
@@ -67,7 +67,7 @@ namespace sp{
             return (m_track == true) ? &m_pose : NULL;
         }
 
-        const Mem2<VecPN3>* getCast() const{
+        const Mem2<VecPD3>* getCast() const{
             return (m_track == true) ? &m_cast : NULL; ;
         }
 
@@ -101,14 +101,14 @@ namespace sp{
             }
 
             try{
-                Mem2<VecPN3> pnmap;
+                Mem2<VecPD3> pnmap;
 
                 if (m_track == true){
                     SP_LOGGER_SET("KinectFusion::bilateralFilter");
                     Mem2<SP_REAL> bilateral;
                     bilateralFilterDepth(bilateral, depth, 0.8, 10.0);
                         
-                    cnvDepthToVecPN(pnmap, m_cam, bilateral);
+                    cnvDepthToVecPD(pnmap, m_cam, bilateral);
                 }
 
                 if (m_track == true){
@@ -136,15 +136,15 @@ namespace sp{
             return true;
         }
 
-        bool updatePose(Pose &pose, const CamParam &cam, const Mem2<VecPN3> &pnmap, const Mem2<VecPN3> &cast){
+        bool updatePose(Pose &pose, const CamParam &cam, const Mem2<VecPD3> &pnmap, const Mem2<VecPD3> &cast){
 
-            Mem1<VecPN3> sample;
+            Mem1<VecPD3> sample;
             sample.reserve(pnmap.size());
 
             const int step = 4;
             for (int v = step; v < pnmap.dsize[1] - step; v += step){
                 for (int u = step; u < pnmap.dsize[0] - step; u += step){
-                    const VecPN3 &pn = pnmap(u, v);
+                    const VecPD3 &pn = pnmap(u, v);
                     if (pn.pos.z == 0.0) continue;
 
                     sample.push(pn);

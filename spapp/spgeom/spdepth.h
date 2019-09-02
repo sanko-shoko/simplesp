@@ -147,7 +147,7 @@ namespace sp{
     }
 
     template<typename DEPTH>
-    SP_CPUFUNC void cnvDepthToVecPN(Mem<VecPN3> &dst, const CamParam &cam, const Mem<DEPTH> &src){
+    SP_CPUFUNC void cnvDepthToVecPD(Mem<VecPD3> &dst, const CamParam &cam, const Mem<DEPTH> &src){
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);
@@ -173,7 +173,7 @@ namespace sp{
 
                 const Vec3 nrm = unitVec(crsVec(vec2 - vec0, vec1 - vec0));
 
-                acs2(dst, u, v) = getVecPN3(vec0, nrm);
+                acs2(dst, u, v) = getVecPD3(vec0, nrm);
             }
         }
     }
@@ -191,7 +191,7 @@ namespace sp{
     }
 
     template<typename DEPTH>
-    SP_CPUFUNC void cnvVecPNToDepth(Mem<DEPTH> &dst, const Mem<VecPN3> &src) {
+    SP_CPUFUNC void cnvVecPDToDepth(Mem<DEPTH> &dst, const Mem<VecPD3> &src) {
         SP_ASSERT(isValid(src, 2));
 
         dst.resize(2, src.dsize);

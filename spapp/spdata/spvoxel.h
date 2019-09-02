@@ -142,8 +142,8 @@ namespace sp {
         for (int i = 0; i < getGeodesicMeshNum(level); i++) {
             const Pose pose = getGeodesicPose(level, i, distance);
 
-            Mem2<VecPN3> pnmap;
-            renderVecPN(pnmap, cam, pose, meshes);
+            Mem2<VecPD3> pnmap;
+            renderVecPD(pnmap, cam, pose, meshes);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -158,13 +158,13 @@ namespace sp {
                         if (inRect(pnmap.dsize, pix.x, pix.y) == false) continue;
 
                         const Vec3 &pos = pnmap(round(pix.x), round(pix.y)).pos;
-                        const Vec3 &nrm = pnmap(round(pix.x), round(pix.y)).nrm;
+                        const Vec3 &drc = pnmap(round(pix.x), round(pix.y)).drc;
 
                         if (pos.z == 0.0) {
                             voxel.update(x, y, z, -0.1);
                         }
                         else {
-                            if (dotVec(cpos, nrm) >= 0) continue;
+                            if (dotVec(cpos, drc) >= 0) continue;
 
                             const SP_REAL dist = maxval(cpos.z - pos.z, -step) / step;
                             voxel.update(x, y, z, dist);
@@ -880,7 +880,7 @@ namespace sp {
         }
     }
 
-    SP_CPUFUNC void rayCasting(Mem2<VecPN3> &map, const CamParam &cam, const Pose &pose, const Voxel<> &voxel, const SP_REAL mu = 5.0) {
+    SP_CPUFUNC void rayCasting(Mem2<VecPD3> &map, const CamParam &cam, const Pose &pose, const Voxel<> &voxel, const SP_REAL mu = 5.0) {
 
         map.resize(cam.dsize);
         map.zero();
@@ -949,7 +949,7 @@ namespace sp {
                     const Vec3 cpos = cvec * detect;
                     const Vec3 cnrm = pose.rot * mnrm;
 
-                    map(u, v) = getVecPN3(cpos, cnrm);
+                    map(u, v) = getVecPD3(cpos, cnrm);
                 }
             }
         }

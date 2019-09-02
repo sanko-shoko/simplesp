@@ -10,7 +10,7 @@ int main(){
 
     print(getRect2(0, 0, 640, 480));
 
-    print(getVecPN2(getVec2(1.0, 2.0), getVec2(3.0, 4.0)));
+    print(getVecPD2(getVec2(1.0, 2.0), getVec2(3.0, 4.0)));
 
     print(getMesh3(getVec3(1.0, 2.0, 3.0), getVec3(4.0, 5.0, 6.0), getVec3(7.0, 8.0, 9.0)));
 

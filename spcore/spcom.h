@@ -150,15 +150,15 @@ namespace sp{
     };
 
     //--------------------------------------------------------------------------------
-    // position and normal
+    // position and direction
     //--------------------------------------------------------------------------------
     
-    struct VecPN2{
-        Vec2 pos, nrm;
+    struct VecPD2{
+        Vec2 pos, drc;
     };
 
-    struct VecPN3{
-        Vec3 pos, nrm;
+    struct VecPD3{
+        Vec3 pos, drc;
     };
 
     //--------------------------------------------------------------------------------
@@ -444,12 +444,12 @@ namespace sp {
     }
 
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPN2 &vec0, const VecPN2 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.nrm, vec1.nrm, t);
+    SP_GENFUNC bool cmp(const VecPD2 &vec0, const VecPD2 &vec1, const double t = 1.0e-6) {
+        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
     }
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPN3 &vec0, const VecPN3 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.nrm, vec1.nrm, t);
+    SP_GENFUNC bool cmp(const VecPD3 &vec0, const VecPD3 &vec1, const double t = 1.0e-6) {
+        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
     }
     
     // compare line
@@ -510,8 +510,8 @@ namespace sp {
     SP_CMP_OPERATOR(Cmp);
     SP_CMP_OPERATOR(Vec2);
     SP_CMP_OPERATOR(Vec3);
-    SP_CMP_OPERATOR(VecPN2);
-    SP_CMP_OPERATOR(VecPN3);
+    SP_CMP_OPERATOR(VecPD2);
+    SP_CMP_OPERATOR(VecPD3);
     SP_CMP_OPERATOR(Line2);
     SP_CMP_OPERATOR(Line3);
     SP_CMP_OPERATOR(Mesh2);

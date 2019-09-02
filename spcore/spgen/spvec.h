@@ -464,18 +464,18 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     // get vector pd
-    SP_GENFUNC VecPN2 getVecPN2(const Vec2 &vtx, const Vec2 &nrm) {
-        VecPN2 dst;
+    SP_GENFUNC VecPD2 getVecPD2(const Vec2 &vtx, const Vec2 &drc) {
+        VecPD2 dst;
         dst.pos = vtx;
-        dst.nrm = nrm;
+        dst.drc = drc;
         return dst;
     }
 
     // get vector pd
-    SP_GENFUNC VecPN3 getVecPN3(const Vec3 &vtx, const Vec3 &nrm) {
-        VecPN3 dst;
+    SP_GENFUNC VecPD3 getVecPD3(const Vec3 &vtx, const Vec3 &drc) {
+        VecPD3 dst;
         dst.pos = vtx;
-        dst.nrm = nrm;
+        dst.drc = drc;
         return dst;
     }
 
@@ -484,8 +484,8 @@ namespace sp {
     // matrix * vector pn
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC VecPN2 mulMat(const SP_REAL *mat, const int rows, const int cols, const VecPN2 &vec) {
-        VecPN2 dst;
+    SP_GENFUNC VecPD2 mulMat(const SP_REAL *mat, const int rows, const int cols, const VecPD2 &vec) {
+        VecPD2 dst;
 
         dst.pos = mulMat(mat, rows, cols, vec.pos);
 
@@ -506,14 +506,14 @@ namespace sp {
             }
         }
 
-        dst.nrm = unitVec(mulMat(rot, 2, 2, vec.nrm));
+        dst.drc = unitVec(mulMat(rot, 2, 2, vec.drc));
 
         return dst;
     }
 
 
-    SP_GENFUNC VecPN3 mulMat(const SP_REAL *mat, const int rows, const int cols, const VecPN3 &vec) {
-        VecPN3 dst;
+    SP_GENFUNC VecPD3 mulMat(const SP_REAL *mat, const int rows, const int cols, const VecPD3 &vec) {
+        VecPD3 dst;
 
         dst.pos = mulMat(mat, rows, cols, vec.pos);
 
@@ -534,7 +534,7 @@ namespace sp {
             }
         }
 
-        dst.nrm = unitVec(mulMat(rot, 3, 3, vec.nrm));
+        dst.drc = unitVec(mulMat(rot, 3, 3, vec.drc));
 
         return dst;
     }
@@ -543,7 +543,7 @@ namespace sp {
     // extract z element
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC SP_REAL extractZ(const VecPN3 &src) {
+    SP_GENFUNC SP_REAL extractZ(const VecPD3 &src) {
         return src.pos.z;
     }
 
