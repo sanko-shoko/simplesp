@@ -64,7 +64,7 @@ private:
         reset();
 
         static VideoGUI video;
-        video.create("video", 640, 480, this);
+        video.create("video", 640, 480);
         //addSubWindow(&video);
 
     }
@@ -224,15 +224,15 @@ private:
 };
 
 void VideoGUI::init() {
-    SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
-    m_img = &p->m_img;
+    //SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
+    //m_img = &p->m_img;
 }
 void VideoGUI::keyFun(int key, int scancode, int action, int mods) {
-    SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
-    p->_keyFun(key, scancode, action, mods);
+    //SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
+    //p->_keyFun(key, scancode, action, mods);
 }
 void VideoGUI::display(){
-    SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
+ /*   SLAMGUI *p = static_cast<SLAMGUI*>(m_parent);
     SLAM *slam = &p->m_slam;
     if (slam->getMask() != NULL) {
         const Mem1<bool> &mask = *slam->getMask();
@@ -264,7 +264,7 @@ void VideoGUI::display(){
     }
 
     glLoadView2D(m_img->dsize, m_viewPos, m_viewScale);
-    glTexImg(*m_img);
+    glTexImg(*m_img);*/
 }
 
 int main() {

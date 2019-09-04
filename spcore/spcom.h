@@ -145,20 +145,24 @@ namespace sp{
         SP_REAL x, y;
     };
 
-    struct Vec3{
+    struct Vec3 {
         SP_REAL x, y, z;
     };
 
-    //--------------------------------------------------------------------------------
-    // position and normal
-    //--------------------------------------------------------------------------------
-    
-    struct VecPN2{
-        Vec2 pos, nrm;
+    struct Vec4 {
+        SP_REAL x, y, z, w;
     };
 
-    struct VecPN3{
-        Vec3 pos, nrm;
+    //--------------------------------------------------------------------------------
+    // position and direction
+    //--------------------------------------------------------------------------------
+    
+    struct VecPD2{
+        Vec2 pos, drc;
+    };
+
+    struct VecPD3{
+        Vec3 pos, drc;
     };
 
     //--------------------------------------------------------------------------------
@@ -236,10 +240,18 @@ namespace sp{
         Byte r, g, b;
     };
 
-    struct Col4 : public Col3 {
+    struct Col4 : public Col3{
         Byte a;
+        //Byte a;
     };
 
+    struct Material {
+        Col4 amb;
+        Col4 dif;
+        Col4 spc;
+        Col4 ems;
+        Byte shn;
+    };
 
     //--------------------------------------------------------------------------------
     // byte order
@@ -301,6 +313,10 @@ namespace sp {
     SP_GENFUNC void _cast(Byte &dst, const Col3 &src) {
         dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
     }
+ 
+    SP_GENFUNC void _cast(Byte &dst, const Col4 &src) {
+        dst = static_cast<Byte>(0.299 * src.r + 0.587 * src.g + 0.114 * src.b + 0.5);
+    }
 
     //--------------------------------------------------------------------------------
     // color 3
@@ -318,12 +334,24 @@ namespace sp {
         dst.b = src.b;
     }
 
+    SP_GENFUNC void _cast(Col3 &dst, const Col4 &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+    }
+
     SP_GENFUNC void _cast(Col3 &dst, const Vec3 &src) {
         dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
         dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
         dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
     }
-    
+
+    SP_GENFUNC void _cast(Col3 &dst, const Vec4 &src) {
+        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+    }
+
     //--------------------------------------------------------------------------------
     // color 4
     //--------------------------------------------------------------------------------
@@ -356,6 +384,13 @@ namespace sp {
         dst.a = SP_BYTEMAX;
     }
 
+    SP_GENFUNC void _cast(Col4 &dst, const Vec4 &src) {
+        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+        dst.a = static_cast<Byte>(src.w * SP_BYTEMAX + 0.5);
+    }
+
     //--------------------------------------------------------------------------------
     // vector 3
     //--------------------------------------------------------------------------------
@@ -366,7 +401,30 @@ namespace sp {
         dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
     }
 
-  
+    SP_GENFUNC void _cast(Vec3 &dst, const Col4 &src) {
+        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
+        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
+        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+    }
+
+    //--------------------------------------------------------------------------------
+    // vector 4
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC void _cast(Vec4 &dst, const Col3 &src) {
+        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
+        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
+        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+        dst.w = 1.0;
+    }
+
+    SP_GENFUNC void _cast(Vec4 &dst, const Col4 &src) {
+        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
+        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
+        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+        dst.w = static_cast<SP_REAL>(src.a) / SP_BYTEMAX;
+    }
+
     template<typename DST, typename SRC> SP_GENFUNC DST cast(const SRC &src) {
         DST dst;
         _cast(dst, src);
@@ -442,14 +500,18 @@ namespace sp {
     SP_GENFUNC bool cmp(const Vec3 &vec0, const Vec3 &vec1, const double t = 1.0e-6) {
         return cmp(vec0.x, vec1.x, t) & cmp(vec0.y, vec1.y, t) & cmp(vec0.z, vec1.z, t);
     }
+    // compare vec
+    SP_GENFUNC bool cmp(const Vec4 &vec0, const Vec4 &vec1, const double t = 1.0e-6) {
+        return cmp(vec0.x, vec1.x, t) & cmp(vec0.y, vec1.y, t) & cmp(vec0.z, vec1.z, t) & cmp(vec0.w, vec1.w, t);
+    }
 
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPN2 &vec0, const VecPN2 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.nrm, vec1.nrm, t);
+    SP_GENFUNC bool cmp(const VecPD2 &vec0, const VecPD2 &vec1, const double t = 1.0e-6) {
+        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
     }
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPN3 &vec0, const VecPN3 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.nrm, vec1.nrm, t);
+    SP_GENFUNC bool cmp(const VecPD3 &vec0, const VecPD3 &vec1, const double t = 1.0e-6) {
+        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
     }
     
     // compare line
@@ -510,8 +572,9 @@ namespace sp {
     SP_CMP_OPERATOR(Cmp);
     SP_CMP_OPERATOR(Vec2);
     SP_CMP_OPERATOR(Vec3);
-    SP_CMP_OPERATOR(VecPN2);
-    SP_CMP_OPERATOR(VecPN3);
+    SP_CMP_OPERATOR(Vec4);
+    SP_CMP_OPERATOR(VecPD2);
+    SP_CMP_OPERATOR(VecPD3);
     SP_CMP_OPERATOR(Line2);
     SP_CMP_OPERATOR(Line3);
     SP_CMP_OPERATOR(Mesh2);

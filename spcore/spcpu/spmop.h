@@ -80,7 +80,7 @@ namespace sp{
 
     template<typename TYPE, typename ELEM>
     SP_CPUFUNC void setElm(Mem<TYPE> &dst, const ELEM &elm){
-        if (isValid(dst) == false) return;
+        if (checkPtr(dst) == false) return;
 
         setElm(dst.ptr, dst.size(), elm);
     }
@@ -789,11 +789,11 @@ namespace sp{
         return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
     }
 
-    SP_CPUFUNC VecPN2 operator * (const Mat &mat, const VecPN2 vec) {
+    SP_CPUFUNC VecPD2 operator * (const Mat &mat, const VecPD2 vec) {
         return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
     }
 
-    SP_CPUFUNC VecPN3 operator * (const Mat &mat, const VecPN3 vec) {
+    SP_CPUFUNC VecPD3 operator * (const Mat &mat, const VecPD3 vec) {
         return mulMat(mat.ptr, mat.rows(), mat.cols(), vec);
     }
 
@@ -821,8 +821,8 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mem1<VecPN3> operator * (const Mat &mat, const Mem1<VecPN3> &vecs) {
-        Mem1<VecPN3> dst(vecs.size());
+    SP_CPUFUNC Mem1<VecPD3> operator * (const Mat &mat, const Mem1<VecPD3> &vecs) {
+        Mem1<VecPD3> dst(vecs.size());
         for (int i = 0; i < dst.size(); i++) {
             dst[i] = mat * vecs[i];
         }
@@ -845,7 +845,7 @@ namespace sp{
         return getMat(pose) * vecs;
     }
 
-    SP_CPUFUNC Mem1<VecPN3> operator * (const Pose &pose, const Mem1<VecPN3> &vecs) {
+    SP_CPUFUNC Mem1<VecPD3> operator * (const Pose &pose, const Mem1<VecPD3> &vecs) {
         return getMat(pose) * vecs;
     }
 

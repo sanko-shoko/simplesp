@@ -133,28 +133,28 @@ namespace sp {
         SP_PRINTF("\n");
     }
     
-    SP_CPUFUNC void _print(const VecPN2 &vec) {
+    SP_CPUFUNC void _print(const VecPD2 &vec) {
         SP_PRINTF("[ ");
         _print(vec.pos);
         SP_PRINTF(", ");
-        _print(vec.nrm);
+        _print(vec.drc);
         SP_PRINTF(" ]");
     }
-    SP_CPUFUNC void print(const VecPN2 &vec) {
-        SP_PRINTF("VecPN2 ");
+    SP_CPUFUNC void print(const VecPD2 &vec) {
+        SP_PRINTF("VecPD2 ");
         _print(vec);
         SP_PRINTF("\n");
     }
 
-    SP_CPUFUNC void _print(const VecPN3 &vec) {
+    SP_CPUFUNC void _print(const VecPD3 &vec) {
         SP_PRINTF("[ ");
         _print(vec.pos);
         SP_PRINTF(", ");
-        _print(vec.nrm);
+        _print(vec.drc);
         SP_PRINTF(" ]");
     }
-    SP_CPUFUNC void print(const VecPN3 &vec) {
-        SP_PRINTF("VecPN3 ");
+    SP_CPUFUNC void print(const VecPD3 &vec) {
+        SP_PRINTF("VecPD3 ");
         _print(vec);
         SP_PRINTF("\n");
     }

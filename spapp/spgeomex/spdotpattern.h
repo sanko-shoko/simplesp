@@ -14,7 +14,7 @@ namespace sp{
 
     SP_CPUFUNC void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
         
-        SP_ASSERT(isValid(src, 2));
+        SP_ASSERT(checkPtr(src, 2));
 
         Mem2<Byte> base(src.dsize);
         {
@@ -282,7 +282,7 @@ namespace sp{
             const Mem1<Rect2> rects = getLabelRect(labelMap);
 
             for (int i = 0; i < rects.size(); i++) {
-                const Rect2 rect = adjustRect(rects[i], 1);
+                const Rect2 rect = extRect(rects[i], 1);
 
                 // check outside area
                 if (inRect(getRect2(labelMap.dsize), rect) == false) continue;

@@ -15,7 +15,7 @@ class RenderGUI : public BaseWindow {
     Mem1<Mesh3> m_model;
 
     // object surface points
-    Mem1<VecPN3> m_pnts;
+    Mem1<VecPD3> m_pnts;
 
     // object to cam pose
     Pose m_pose;
@@ -58,8 +58,8 @@ private:
             const double distance = getModelDistance(m_model, m_cam);
             const double radius = getModelRadius(m_model);
 
-            Mem2<VecPN3> map;
-            renderVecPN(map, m_cam, m_pose, m_model);
+            Mem2<VecPD3> map;
+            renderVecPD(map, m_cam, m_pose, m_model);
 
             if (m_key[GLFW_KEY_D] == 1) {
                 cnvDepthToImg(m_img, map, distance - 2 * radius, distance + 2 * radius);

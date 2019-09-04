@@ -21,15 +21,15 @@ namespace sp{
         // check outlier
         //--------------------------------------------------------------------------------
 
-        SP_CPUFUNC bool checkOutlier(const VecPN3 &vec0, const VecPN3 &vec1){
-            return (dotVec(vec0.nrm, vec1.nrm) > 0.5) ? true : false;
+        SP_CPUFUNC bool checkOutlier(const VecPD3 &vec0, const VecPD3 &vec1){
+            return (dotVec(vec0.drc, vec1.drc) > 0.5) ? true : false;
         }
 
-        SP_CPUFUNC bool checkOutlier(const VecPN3 &vec0, const Vec3 &vec1){
+        SP_CPUFUNC bool checkOutlier(const VecPD3 &vec0, const Vec3 &vec1){
             return true;
         }
 
-        SP_CPUFUNC bool checkOutlier(const Vec3 &vec0, const VecPN3 &vec1){
+        SP_CPUFUNC bool checkOutlier(const Vec3 &vec0, const VecPD3 &vec1){
             return true;
         }
 
@@ -42,7 +42,7 @@ namespace sp{
         // position
         //--------------------------------------------------------------------------------
 
-        SP_CPUFUNC Vec3 getPos(const VecPN3 &vec){
+        SP_CPUFUNC Vec3 getPos(const VecPD3 &vec){
             return vec.pos;
         }
 
@@ -55,16 +55,16 @@ namespace sp{
         // update direction
         //--------------------------------------------------------------------------------
 
-        SP_CPUFUNC Vec3 getDrc(const VecPN3 &vec0, const VecPN3 &vec1){
-            return vec0.nrm;
+        SP_CPUFUNC Vec3 getDrc(const VecPD3 &vec0, const VecPD3 &vec1){
+            return vec0.drc;
         }
 
-        SP_CPUFUNC Vec3 getDrc(const VecPN3 &vec0, const Vec3 &vec1){
-            return vec0.nrm;
+        SP_CPUFUNC Vec3 getDrc(const VecPD3 &vec0, const Vec3 &vec1){
+            return vec0.drc;
         }
 
-        SP_CPUFUNC Vec3 getDrc(const Vec3 &vec0, const VecPN3 &vec1){
-            return vec1.nrm;
+        SP_CPUFUNC Vec3 getDrc(const Vec3 &vec0, const VecPD3 &vec1){
+            return vec1.drc;
         }
 
         SP_CPUFUNC Vec3 getDrc(const Vec3 &vec0, const Vec3 &vec1){

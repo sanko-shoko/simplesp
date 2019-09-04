@@ -599,7 +599,7 @@ namespace sp {
     // render
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model) {
+    SP_CPUFUNC void glRenderSurface(const Mem1<Mesh3> &model, const Vec3 lpos = getVec3(0.0, 0.0, -1000.0)) {
 
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         {
@@ -609,7 +609,7 @@ namespace sp {
             glEnable(GL_LIGHTING);
             glEnable(GL_LIGHT0);
 
-            GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 1.f };
+            GLfloat lightPos[4] = { static_cast<float>(lpos.x), static_cast<float>(lpos.y), static_cast<float>(lpos.z), 1.f };
             glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
             glPopMatrix();
 

@@ -50,21 +50,21 @@ namespace sp{
         return SP_RCAST(distance);
     }
 
-    SP_CPUFUNC Mem1<VecPN3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){
+    SP_CPUFUNC Mem1<VecPD3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){
         const CamParam cam = getCamParam(density, density);
         const SP_REAL distance = getModelDistance(model, cam);
         
-        Mem1<VecPN3> tmp;
+        Mem1<VecPD3> tmp;
         const int num = getGeodesicMeshNum(0);
         for (int i = 0; i < num; i++){
             const Vec3 v = getMeshCent(getGeodesicMesh(0, i)) * (-1.0);
             const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
-            Mem2<VecPN3> map;
-            renderVecPN(map, cam, pose, model);
+            Mem2<VecPD3> map;
+            renderVecPD(map, cam, pose, model);
 
             const Mat mat = getMat(invPose(pose));
             for (int j = 0; j < map.size(); j++){
-                if (map[j].pos.z > 0 && dotVec(map[j].pos, map[j].nrm) < 0){
+                if (map[j].pos.z > 0 && dotVec(map[j].pos, map[j].drc) < 0){
                     tmp.push(mat * map[j]);
                 }
             }
@@ -72,13 +72,13 @@ namespace sp{
 
         tmp = shuffle(tmp);
 
-        Mem1<VecPN3> pnts;
+        Mem1<VecPD3> pnts;
         const double unit = 2 * distance / (cam.fx + cam.fy);
 
         for (int i = 0; i < tmp.size(); i++){
             bool check = true;
             for (int j = 0; j < pnts.size(); j++){
-                if (dotVec(pnts[j].nrm, tmp[i].nrm) > 0.5 && normVec(pnts[j].pos - tmp[i].pos) < unit){
+                if (dotVec(pnts[j].drc, tmp[i].drc) > 0.5 && normVec(pnts[j].pos - tmp[i].pos) < unit){
                     check = false;
                     break;
                 }
@@ -165,7 +165,7 @@ namespace sp{
 
         Pose pose;
         Mem1<Edge> edges;
-        Mem1<VecPN3> pnts;
+        Mem1<VecPD3> pnts;
 
     public:
 
@@ -229,8 +229,8 @@ namespace sp{
 
                 const Pose &pose = pmodel.pose;
 
-                Mem2<VecPN3> map;
-                renderVecPN(map, cam, pose, model);
+                Mem2<VecPD3> map;
+                renderVecPD(map, cam, pose, model);
 
                 const Mat pmat = getMat(pose);
                 const Mat rmat = getMat(pose.rot);
@@ -248,7 +248,7 @@ namespace sp{
                     bool contour = false ;
                     for (int v = -1; v <= 1; v++) {
                         for (int u = -1; u <= 1; u++) {
-                            const VecPN3 &vec = map(x + u, y + v);
+                            const VecPD3 &vec = map(x + u, y + v);
                             if (vec.pos.z == 0.0) {
                                 contour = true;
                                 goto _exit0;
@@ -275,7 +275,7 @@ namespace sp{
 
         // surface point
         {
-            const Mem1<VecPN3> &pnts = getModelPoint(model, density);
+            const Mem1<VecPD3> &pnts = getModelPoint(model, density);
 
 #if SP_USE_OMP
 #pragma omp parallel for
@@ -286,15 +286,15 @@ namespace sp{
 
                 const Pose &pose = pmodel.pose;
 
-                Mem2<VecPN3> map;
-                renderVecPN(map, cam, pose, model);
+                Mem2<VecPD3> map;
+                renderVecPD(map, cam, pose, model);
                 
                 const Mat pmat = getMat(pose);
                 const Mat rmat = getMat(pose.rot);
 
                 for (int j = 0; j < pnts.size(); j++) {
                     const Vec3 pos = pmat * pnts[j].pos;
-                    const Vec3 nrm = rmat * pnts[j].nrm;
+                    const Vec3 drc = rmat * pnts[j].drc;
 
                     const Vec2 pix = mulCamD(cam, prjVec(pos));
 
@@ -303,7 +303,7 @@ namespace sp{
                     bool visible = false;
                     for (int v = -1; v <= 1; v++) {
                         for (int u = -1; u <= 1; u++) {
-                            const VecPN3 &vec = map(x + u, y + v);
+                            const VecPD3 &vec = map(x + u, y + v);
                             if (vec.pos.z > pos.z - SP_SMALL) {
                                 visible = true;
                                 goto _exit1;
@@ -312,7 +312,7 @@ namespace sp{
                     }
                 _exit1:
 
-                    if (visible == true && dotVec(nrm, pos) <= 0.0) {
+                    if (visible == true && dotVec(drc, pos) <= 0.0) {
                         pmodel.pnts.push(pnts[j]);
                     }
                 }

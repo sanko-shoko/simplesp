@@ -27,10 +27,12 @@ private:
 private:
 
     void help() {
+        printf("'a' key : level--\n");
+        printf("'s' key : level++\n");
+        printf("\n");
     }
 
     virtual void init() {
-
         help();
         m_level = 1;
         m_stop = false;
@@ -64,7 +66,7 @@ private:
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(0){
+        if(1){
             Mem2<SP_REAL> depth;
             depth.resize(m_cam.dsize);
             depth.zero();
@@ -75,13 +77,14 @@ private:
             for (int v = 0; v < depth.dsize[1]; v++) {
                 for (int u = 0; u < depth.dsize[0]; u++) {
                     const Vec2 prj = invCam(m_cam, getVec2(u, v));
-                    const Vec3 vec = getVec3(prj.x, prj.y, 1.0);
-                    Ray ray;
+                    const Vec3 vec = unitVec(getVec3(prj.x, prj.y, 1.0));
+                    VecPD3 ray;
                     ray.pos = ipose.trn;
                     ray.drc = mrot * (vec);
-                    BVH::Hit hit;
-                    if (m_bvh.trace(hit, ray, 0, 1500.0)) {
-                        depth(u, v) = hit.norm * vec.z;
+
+                    SP_REAL norm;
+                    if (m_bvh.trace(NULL, &norm, NULL, ray, 0, 1500.0)) {
+                        depth(u, v) = norm * vec.z;
                     }
                 }
             }

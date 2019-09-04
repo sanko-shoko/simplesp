@@ -66,8 +66,8 @@ private:
         imgs.clear();
         for (int i = 0; i < poses.size(); i++) {
 
-            Mem2<VecPN3> map;
-            renderVecPN(map, cams[i], poses[i], model);
+            Mem2<VecPD3> map;
+            renderVecPD(map, cams[i], poses[i], model);
 
             Mem2<Byte> img(map.dsize);
             for (int i = 0; i < img.size(); i++) {

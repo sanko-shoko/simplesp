@@ -415,7 +415,7 @@ namespace sp{
 
                         if (c > 0 && normVec(crnt - corner[c - 1]) < CORNER_SIDE) continue;
 
-                        const SP_REAL crs = (c > 0) ? crsVec(crnt - corner[c - 1], cent - corner[c - 1]).z : 1.0;
+                        const SP_REAL crs = (c > 0) ? crsVec(crnt - corner[c - 1], cent - corner[c - 1]) : 1.0;
 
                         const SP_REAL val = crs * dotVec(unitVec(prev - crnt) + unitVec(next - crnt), unitVec(cent - crnt));
                         if (val > maxv) {

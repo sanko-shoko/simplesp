@@ -106,13 +106,13 @@ private:
                 s += 0.01;
             }
 
-            Mem2<VecPN3> map;
-            renderVecPN(map, m_cam, m_pose, m_model);
+            Mem2<VecPD3> map;
+            renderVecPD(map, m_cam, m_pose, m_model);
 
             cnvNormalToImg(m_img, map);
             cnvImg(m_gry, m_img);
 
-            cnvVecPNToDepth(m_depth, map);
+            cnvVecPDToDepth(m_depth, map);
         }
 
         // render image
