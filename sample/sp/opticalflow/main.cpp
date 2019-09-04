@@ -20,7 +20,7 @@ int main() {
         else {
             Mem2<Col3> img;
             SP_ASSERT(loadBMP(SP_DATA_DIR  "/image/Lenna.bmp", img));
-            const Rect2 rect = adjustRect(getRect2(img.dsize), -64);
+            const Rect2 rect = extRect(getRect2(img.dsize), -64);
 
             Rect2 rect0 = rect;
             Rect2 rect1 = rect;

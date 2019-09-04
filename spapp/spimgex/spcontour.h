@@ -28,7 +28,7 @@ namespace sp{
                     const Vec2 &A = tmps[(ti + 0) % tmps.size()];
                     const Vec2 &B = tmps[(ti + 1) % tmps.size()];
                     const Vec2 &C = tmps[(ti - 1) % tmps.size()];
-                    if (normVec(crsVec(B - A, C - A)) < 5) {
+                    if (normVec(crsVec(getVec3(B - A, 0.0), getVec3(C - A, 0.0))) < 5) {
                         tmps.del(i--);
                     }
                 }

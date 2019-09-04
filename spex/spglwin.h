@@ -618,7 +618,7 @@ namespace sp {
 
 #if SP_USE_IMGUI
         virtual bool _pmouseButton(int button, int action, int mods) {
-            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+            if (ImGui::GetIO().WantCaptureMouse) {
                 //ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                 return true;
             }
@@ -626,14 +626,14 @@ namespace sp {
         }
 
         virtual bool _pmousePos(double x, double y) {
-            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+            if (ImGui::GetIO().WantCaptureMouse) {
                 return true;
             }
             return false;
         }
 
         virtual bool _pmouseScroll(double x, double y) {
-            if (m_key[GLFW_KEY_SPACE] == 0 && ImGui::GetIO().WantCaptureMouse) {
+            if (ImGui::GetIO().WantCaptureMouse) {
                 //ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return true;

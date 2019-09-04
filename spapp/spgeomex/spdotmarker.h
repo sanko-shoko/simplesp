@@ -310,7 +310,7 @@ namespace sp{
             const Mem1<Rect2> rects = getLabelRect(labelMap);
 
             for (int i = 0; i < rects.size(); i++) {
-                const Rect2 minRect = adjustRect(rects[i], 1);
+                const Rect2 minRect = extRect(rects[i], 1);
 
                 // check outside area
                 if (inRect(getRect2(minImg.dsize), minRect) == false) continue;

@@ -13,7 +13,7 @@ namespace sp{
     template<typename DST, typename SRC, typename DST_ELEM = DST, typename SRC_ELEM = SRC>
     SP_CPUFUNC void makeIntegral(Mem<DST> &sum, const Mem<SRC> &src) {
         SP_ASSERT((sizeof(DST) / sizeof(DST_ELEM)) == (sizeof(SRC) / sizeof(SRC_ELEM)));
-        SP_ASSERT(isValid(src, 2));
+        SP_ASSERT(checkPtr(src, 2));
 
         sum.resize(2, src.dsize);
 
@@ -36,7 +36,7 @@ namespace sp{
     template <typename DST, typename SRC, typename DST_ELEM = DST, typename SRC_ELEM = SRC>
     SP_CPUFUNC void boxFilterIntegral(Mem<DST> &dst, const Mem<SRC> &src, const int winSize) {
         SP_ASSERT((sizeof(DST) / sizeof(DST_ELEM)) == (sizeof(SRC) / sizeof(SRC_ELEM)));
-        SP_ASSERT(isValid(src, 2));
+        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 

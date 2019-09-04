@@ -177,7 +177,7 @@ namespace sp{
         return getRect3(dbase, dsize);
     }
 
-    SP_GENFUNC Rect2 adjustRect(const Rect2 &rect, const int val) {
+    SP_GENFUNC Rect2 extRect(const Rect2 &rect, const int val) {
         int dbase[2] = { 0 }, dsize[2] = { 0 };
         for (int i = 0; i < 2; i++) {
             const int t = maxval(val, -rect.dsize[i] / 2);
@@ -187,30 +187,12 @@ namespace sp{
         return getRect2(dbase, dsize);
     }
 
-    SP_GENFUNC Rect3 adjustRect(const Rect3 &rect, const int val) {
+    SP_GENFUNC Rect3 extRect(const Rect3 &rect, const int val) {
         int dbase[3] = { 0 }, dsize[3] = { 0 };
         for (int i = 0; i < 3; i++) {
             const int t = maxval(val, -rect.dsize[i] / 2);
             dbase[i] = rect.dbase[i] - t;
             dsize[i] = rect.dsize[i] + 2 * t;
-        }
-        return getRect3(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect2 shiftRect(const Rect2 &rect, const int *shift, int s = +1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            dbase[i] = rect.dbase[i] + s * shift[i];
-            dsize[i] = rect.dsize[i];
-        }
-        return getRect2(dbase, dsize);
-    }
-
-    SP_GENFUNC Rect3 shiftRect(const Rect3 &rect, const int *shift, int s = +1) {
-        int dbase[3] = { 0 }, dsize[3] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            dbase[i] = rect.dbase[i] + s * shift[i];
-            dsize[i] = rect.dsize[i];
         }
         return getRect3(dbase, dsize);
     }
@@ -237,60 +219,33 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     SP_GENFUNC Rect2 operator + (const Rect2 &rect, const int val) {
-        return adjustRect(rect, +val);
+        return extRect(rect, +val);
     }
     SP_GENFUNC Rect3 operator + (const Rect3 &rect, const int val) {
-        return adjustRect(rect, +val);
-    }
-
-    SP_GENFUNC Rect2 operator + (const Rect2 &rect, const int *shift) {
-        return shiftRect(rect, shift, +1);
-    }
-    SP_GENFUNC Rect3 operator + (const Rect3 &rect, const int *shift) {
-        return shiftRect(rect, shift, +1);
+        return extRect(rect, +val);
     }
 
     SP_GENFUNC Rect2 operator - (const Rect2 &rect, const int val) {
-        return adjustRect(rect, -val);
+        return extRect(rect, -val);
     }
     SP_GENFUNC Rect3 operator - (const Rect3 &rect, const int val) {
-        return adjustRect(rect, -val);
-    }
-
-    SP_GENFUNC Rect2 operator - (const Rect2 &rect, const int *shift) {
-        return shiftRect(rect, shift, -1);
-    }
-    SP_GENFUNC Rect3 operator - (const Rect3 &rect, const int *shift) {
-        return shiftRect(rect, shift, -1);
+        return extRect(rect, -val);
     }
 
     SP_GENFUNC void operator += (Rect2 &rect, const int val) {
-        rect = adjustRect(rect, +val);
+        rect = extRect(rect, +val);
     }
     SP_GENFUNC void operator += (Rect3 &rect, const int val) {
-        rect = adjustRect(rect, +val);
-    }
-
-    SP_GENFUNC void operator += (Rect2 &rect, const int *shift) {
-        rect = shiftRect(rect, shift +1);
-    }
-    SP_GENFUNC void operator += (Rect3 &rect, const int *shift) {
-        rect = shiftRect(rect, shift +1);
+        rect = extRect(rect, +val);
     }
 
     SP_GENFUNC void operator -= (Rect2 &rect, const int val) {
-        rect = adjustRect(rect, -val);
+        rect = extRect(rect, -val);
     }
     SP_GENFUNC void operator -= (Rect3 &rect, const int val) {
-        rect = adjustRect(rect, -val);
+        rect = extRect(rect, -val);
     }
 
-    SP_GENFUNC void operator -= (Rect2 &rect, const int *shift) {
-        rect = shiftRect(rect, shift, -1);
-    }
-    SP_GENFUNC void operator -= (Rect3 &rect, const int *shift) {
-        rect = shiftRect(rect, shift, -1);
-    }
 
 }
 

@@ -13,7 +13,7 @@ int main(){
 
     Mem2<Byte> img0, img1;
     {
-        const Rect2 rect = adjustRect(getRect2(img.dsize), -128);
+        const Rect2 rect = extRect(getRect2(img.dsize), -128);
 
         Rect2 rect0 = rect;
         Rect2 rect1 = rect;

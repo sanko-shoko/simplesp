@@ -289,7 +289,7 @@ namespace sp{
 
     // get ordered value
     template<typename TYPE>
-    SP_GENFUNC TYPE getOrderedVal(const TYPE &val, const ByteOrder order) {
+    SP_GENFUNC TYPE ordered(const TYPE &val, const ByteOrder order) {
         TYPE dst = val;
         if (getByteOrder() != order) revByteOrder(&dst, 1);
         return dst;
@@ -364,7 +364,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_GENFUNC bool isValid(const ExPtr<TYPE> &src, const int dim) {
+    SP_GENFUNC bool checkPtr(const ExPtr<TYPE> &src, const int dim) {
         if (src.dim == 0 || src.ptr == NULL || src.dim != dim) return false;
 
         for (int i = 0; i < src.dim; i++) {
@@ -374,8 +374,8 @@ namespace sp{
     }
 
     template<typename TYPE>
-    SP_GENFUNC bool isValid(const ExPtr<TYPE> &src) {
-        return isValid(src, src.dim);
+    SP_GENFUNC bool checkPtr(const ExPtr<TYPE> &src) {
+        return checkPtr(src, src.dim);
     }
 
 
