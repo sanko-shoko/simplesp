@@ -22,7 +22,7 @@ namespace sp {
         mulMat(result, 3, 1, inv, 3, 3, val, 3, 1);
 
         if (result[0] < minv || result[0] > maxv) return false;
-        if (result[1] < 0.0 || result[2] < 0.0 || result[1] + result[2] > 1.0) return false;
+        if (result[1] < -SP_SMALL || result[2] < -SP_SMALL || result[1] + result[2] > 1.0 + SP_SMALL) return false;
         return true;
     }
 
@@ -237,7 +237,8 @@ namespace sp {
                     if (traceMesh(result, *m_idxs[i].pmesh, ray, minv, lmaxv + SP_SMALL) == true) {
                         if (result[0] < lmaxv - SP_SMALL || m_idxs[i].acnt < acnt) {
                             lmaxv = result[0];
-                            if (dotVec(getMeshNrm(*m_idxs[i].pmesh), ray.drc) < 0.0) {
+                            //if (dotVec(getMeshNrm(*m_idxs[i].pmesh), ray.drc) < 0.0) 
+                            {
                                 minid = i;
                                 acnt = m_idxs[i].acnt;
                             }
@@ -397,20 +398,20 @@ namespace sp {
                 SP_REAL norm[2];
                 Vec3 nrm[2];
                 if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == true) {
-                    v = getVec4(0.2, 0.2, 0.2, 0.2);
+                    //v = getVec4(0.2, 0.2, 0.2, 0.2);
                     VecPD3 next;
                     next.pos = ray.pos + ray.drc * norm[0];
                     next.drc = unitVec(lpos - next.pos);
 
                     const SP_REAL d = dotVec(nrm[0], next.drc);
-                    if (d > 0.0) {
-                        Vec4 vv = cast<Vec4>(index[0].pmat->dif) * d;
-                        v = vv;
-                    }
-                    //if (d > 0.0 && m_bvh.trace(&index[1], &norm[1], &nrm[1], next, SP_SMALL, 10000.0) == false) {
+                    //if (d > 0.0) {
                     //    Vec4 vv = cast<Vec4>(index[0].pmat->dif) * d;
                     //    v = vv;
                     //}
+                    if (d > 0.0 && m_bvh.trace(&index[1], &norm[1], &nrm[1], next, delta, 10000.0) == false) {
+                        Vec4 vv = cast<Vec4>(index[0].pmat->dif) * d;
+                        v = vv;
+                    }
                 }
                 else {
 
