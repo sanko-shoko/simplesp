@@ -211,6 +211,11 @@ namespace sp {
             }
         }
 
+        struct Data : Index{
+            SP_REAL norm;
+            Vec3 nrm;
+        };
+
         bool trace(Index *idx, SP_REAL *norm, Vec3 *nrm, const VecPD3 &ray, const double minv, const double maxv) const {
             int minid = -1;
 
@@ -272,9 +277,9 @@ namespace sp {
         bool m_pers;
 
         struct Img {
-            Vec4 ambrnd;
-            Vec4 ltdrc[maxlt];
-            Vec4 ltrnd[maxlt];
+            Col4f ambrnd;
+            Col4f ltdrc[maxlt];
+            Col4f ltrnd[maxlt];
         };
         Mem2<Img> m_img;
 
@@ -355,8 +360,12 @@ namespace sp {
         void trace(Img &img, ImgCnt &imgcnt, const VecPD3 &ray) {
             const int maxltdif = 10;
             const int maxltrnd = 100;
-
             const int maxambrnd = 100;
+
+            BVH::Index index;
+            SP_REAL norm;
+            Vec3 nrm;
+            //if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == false) return;
 
             int minid = -1;
 
@@ -369,9 +378,6 @@ namespace sp {
                         mincnt = imgcnt.ltdrc[i];
                     }
                 }
-                if (minid >= 0) {
-                    imgcnt.ltdrc[minid]++;
-                }
             }
 
             if (minid < 0) {
@@ -379,52 +385,46 @@ namespace sp {
             }
             else {
                 trace_ltdrc(img, imgcnt, ray, minid, 0);
-
             }
 
         }
 
         bool trace_ltdrc(Img &img, ImgCnt &imgcnt, const VecPD3 &ray, const int lid, const int level) {
-            Vec4 &v = img.ltdrc[lid];
+            Col4f &v = img.ltdrc[lid];
             int &c = imgcnt.ltdrc[lid];
 
             const Vec3 lpos = m_lights[lid];
             const SP_REAL delta = 0.001;
 
             if (level == 0) {
-                v = getVec4(0.0, 0.0, 0.0, 0.0);
+                v = getCol4f(0.0, 0.0, 0.0, 0.0);
 
                 BVH::Index index[2];
                 SP_REAL norm[2];
                 Vec3 nrm[2];
                 if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == true) {
-                    //v = getVec4(0.2, 0.2, 0.2, 0.2);
                     VecPD3 next;
                     next.pos = ray.pos + ray.drc * norm[0];
                     next.drc = unitVec(lpos - next.pos);
 
                     const SP_REAL d = dotVec(nrm[0], next.drc);
-                    //if (d > 0.0) {
-                    //    Vec4 vv = cast<Vec4>(index[0].pmat->dif) * d;
-                    //    v = vv;
-                    //}
                     if (d > 0.0 && m_bvh.trace(&index[1], &norm[1], &nrm[1], next, delta, 10000.0) == false) {
-                        Vec4 vv = cast<Vec4>(index[0].pmat->dif) * d;
+                        Col4f vv = cast<Col4f>(index[0].pmat->dif) * d;
                         v = vv;
                     }
                 }
                 else {
 
                 }
-                c++;
             }
             else {
 
             }
+            c++;
             return true;
         }
 
-        bool traceRnd(Vec4 &amb, const VecPD3 &ray, const int level) {
+        bool traceRnd(Col4f &amb, const VecPD3 &ray, const int level) {
 
         }
     };

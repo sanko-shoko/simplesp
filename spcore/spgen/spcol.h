@@ -19,14 +19,19 @@ namespace sp{
     // get color
     SP_GENFUNC Col3 getCol3(const Byte r, const Byte g, const Byte b){
         Col3 dst;
-        dst.r = r; dst.g = g; dst.b = b;
+        dst.r = r; 
+        dst.g = g; 
+        dst.b = b;
         return dst;
     }
 
     // get color
     SP_GENFUNC Col4 getCol4(const Byte r, const Byte g, const Byte b, const Byte a) {
         Col4 dst;
-        dst.r = r; dst.g = g; dst.b = b; dst.a = a;
+        dst.r = r;
+        dst.g = g;
+        dst.b = b; 
+        dst.a = a;
         return dst;
     }
 
@@ -35,19 +40,63 @@ namespace sp{
         return getCol4(col.r, col.g, col.b, a);
     }
 
-    // multiple
-    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
-        const Byte r = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.r * val))));
-        const Byte g = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.g * val))));
-        const Byte b = static_cast<Byte>(maxval(0, minval(255, static_cast<int>(col.b * val))));
-        return getCol3(r, g, b);
+
+    // get color
+    SP_GENFUNC Col3f getCol3f(const double r, const double g, const double b) {
+        Col3f dst;
+        dst.r = SP_RCAST(r);
+        dst.g = SP_RCAST(g);
+        dst.b = SP_RCAST(b);
+        return dst;
     }
 
-    // division
-    SP_GENFUNC Col3 divCol(const Col3 &col, const double val) {
-        SP_ASSERT(fabs(val) > SP_SMALL);
-        return (val != 0.0) ? mulCol(col, 1.0 / val) : col;
+    // get color
+    SP_GENFUNC Col4f getCol4f(const double r, const double g, const double b, const double a) {
+        Col4f dst;
+        dst.r = SP_RCAST(r);
+        dst.g = SP_RCAST(g);
+        dst.b = SP_RCAST(b);
+        dst.a = SP_RCAST(a);
+        return dst;
     }
+
+    // get color
+    SP_GENFUNC Col4f getCol4f(const Col3 &col, const Byte a) {
+        return getCol4f(col.r, col.g, col.b, a);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // color operator (function)
+    //--------------------------------------------------------------------------------
+
+    // multiple
+    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
+        Col4 dst;
+        dst.r = static_cast<Byte>(limval(static_cast<int>(col.r * val), 0, SP_BYTEMAX));
+        dst.g = static_cast<Byte>(limval(static_cast<int>(col.g * val), 0, SP_BYTEMAX));
+        dst.b = static_cast<Byte>(limval(static_cast<int>(col.b * val), 0, SP_BYTEMAX));
+        return dst;
+    }
+    // multiple
+    SP_GENFUNC Col4 mulCol(const Col4 &col, const double val) {
+        Col4 dst;
+        dst.r = static_cast<Byte>(limval(static_cast<int>(col.r * val), 0, SP_BYTEMAX));
+        dst.g = static_cast<Byte>(limval(static_cast<int>(col.g * val), 0, SP_BYTEMAX));
+        dst.b = static_cast<Byte>(limval(static_cast<int>(col.b * val), 0, SP_BYTEMAX));
+        dst.a = static_cast<Byte>(limval(static_cast<int>(col.a * val), 0, SP_BYTEMAX));
+        return dst;
+    }
+
+    // multiple
+    SP_GENFUNC Col3f mulCol(const Col3f &col, const double val) {
+        return getCol3f(col.r * val, col.g * val, col.b * val);
+    }
+    // multiple
+    SP_GENFUNC Col4f mulCol(const Col4f &col, const double val) {
+        return getCol4f(col.r * val, col.g * val, col.b * val, col.a * val);
+    }
+
 
     //--------------------------------------------------------------------------------
     // blend
@@ -75,15 +124,28 @@ namespace sp{
     SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
         return mulCol(col, val);
     }
-    SP_GENFUNC Col3 operator / (const Col3 &col, const double val) {
-        return divCol(col, val);
+    SP_GENFUNC Col4 operator * (const Col4 &col, const double val) {
+        return mulCol(col, val);
+    }
+    SP_GENFUNC Col3f operator * (const Col3f &col, const double val) {
+        return mulCol(col, val);
+    }
+    SP_GENFUNC Col4f operator * (const Col4f &col, const double val) {
+        return mulCol(col, val);
     }
     SP_GENFUNC void operator *= (Col3 &col, const double val) {
         col = mulCol(col, val);
     }
-    SP_GENFUNC void operator /= (Col3 &col, const double val) {
-        col = divCol(col, val);
+    SP_GENFUNC void operator *= (Col4 &col, const double val) {
+        col = mulCol(col, val);
     }
+    SP_GENFUNC void operator *= (Col3f &col, const double val) {
+        col = mulCol(col, val);
+    }
+    SP_GENFUNC void operator *= (Col4f &col, const double val) {
+        col = mulCol(col, val);
+    }
+
 
     //--------------------------------------------------------------------------------
     // color space
