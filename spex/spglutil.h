@@ -62,9 +62,14 @@ namespace sp {
     SP_CPUFUNC void glColor(const Col3 &col) {
         glColor3ub(col.r, col.g, col.b);
     }
-
     SP_CPUFUNC void glColor(const Col4 &col) {
         glColor4ub(col.r, col.g, col.b, col.a);
+    }
+    SP_CPUFUNC void glColor(const Col3f &col) {
+        glColor3f(col.r, col.g, col.b);
+    }
+    SP_CPUFUNC void glColor(const Col4f &col) {
+        glColor4f(col.r, col.g, col.b, col.a);
     }
 
     SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 col) {

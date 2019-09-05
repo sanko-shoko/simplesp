@@ -71,8 +71,9 @@ private:
             depth.resize(m_cam.dsize);
             depth.zero();
 
+            Mat pmat = getMat(m_pose);
             Pose ipose = invPose(m_pose);
-            Mat mrot = getMat(ipose.rot);
+            Mat irmat = getMat(ipose.rot);
 
             for (int v = 0; v < depth.dsize[1]; v++) {
                 for (int u = 0; u < depth.dsize[0]; u++) {
@@ -80,11 +81,11 @@ private:
                     const Vec3 vec = unitVec(getVec3(prj.x, prj.y, 1.0));
                     VecPD3 ray;
                     ray.pos = ipose.trn;
-                    ray.drc = mrot * (vec);
+                    ray.drc = irmat * (vec);
 
-                    SP_REAL norm;
-                    if (m_bvh.trace(NULL, &norm, NULL, ray, 0, 1500.0)) {
-                        depth(u, v) = norm * vec.z;
+                    BVH::Hit hit;
+                    if (m_bvh.trace(hit, ray, 0, 1500.0)) {
+                        depth(u, v) = (pmat * hit.vec.pos).z;
                     }
                 }
             }

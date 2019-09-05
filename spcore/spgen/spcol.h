@@ -24,7 +24,6 @@ namespace sp{
         dst.b = b;
         return dst;
     }
-
     // get color
     SP_GENFUNC Col4 getCol4(const Byte r, const Byte g, const Byte b, const Byte a) {
         Col4 dst;
@@ -34,34 +33,30 @@ namespace sp{
         dst.a = a;
         return dst;
     }
-
     // get color
     SP_GENFUNC Col4 getCol4(const Col3 &col, const Byte a) {
         return getCol4(col.r, col.g, col.b, a);
     }
 
-
     // get color
     SP_GENFUNC Col3f getCol3f(const double r, const double g, const double b) {
         Col3f dst;
-        dst.r = SP_RCAST(r);
-        dst.g = SP_RCAST(g);
-        dst.b = SP_RCAST(b);
+        dst.r = static_cast<float>(r);
+        dst.g = static_cast<float>(g);
+        dst.b = static_cast<float>(b);
         return dst;
     }
-
     // get color
     SP_GENFUNC Col4f getCol4f(const double r, const double g, const double b, const double a) {
         Col4f dst;
-        dst.r = SP_RCAST(r);
-        dst.g = SP_RCAST(g);
-        dst.b = SP_RCAST(b);
-        dst.a = SP_RCAST(a);
+        dst.r = static_cast<float>(r);
+        dst.g = static_cast<float>(g);
+        dst.b = static_cast<float>(b);
+        dst.a = static_cast<float>(a);
         return dst;
     }
-
     // get color
-    SP_GENFUNC Col4f getCol4f(const Col3 &col, const Byte a) {
+    SP_GENFUNC Col4f getCol4f(const Col3f &col, const double a) {
         return getCol4f(col.r, col.g, col.b, a);
     }
 
@@ -70,22 +65,13 @@ namespace sp{
     // color operator (function)
     //--------------------------------------------------------------------------------
 
-    // multiple
-    SP_GENFUNC Col3 mulCol(const Col3 &col, const double val) {
-        Col4 dst;
-        dst.r = static_cast<Byte>(limval(static_cast<int>(col.r * val), 0, SP_BYTEMAX));
-        dst.g = static_cast<Byte>(limval(static_cast<int>(col.g * val), 0, SP_BYTEMAX));
-        dst.b = static_cast<Byte>(limval(static_cast<int>(col.b * val), 0, SP_BYTEMAX));
-        return dst;
+    // addition
+    SP_GENFUNC Col3f addCol(const Col3f &col0, const Col3f &col1) {
+        return getCol3f(col0.r + col1.r, col0.g + col1.g, col0.b + col1.b);
     }
-    // multiple
-    SP_GENFUNC Col4 mulCol(const Col4 &col, const double val) {
-        Col4 dst;
-        dst.r = static_cast<Byte>(limval(static_cast<int>(col.r * val), 0, SP_BYTEMAX));
-        dst.g = static_cast<Byte>(limval(static_cast<int>(col.g * val), 0, SP_BYTEMAX));
-        dst.b = static_cast<Byte>(limval(static_cast<int>(col.b * val), 0, SP_BYTEMAX));
-        dst.a = static_cast<Byte>(limval(static_cast<int>(col.a * val), 0, SP_BYTEMAX));
-        return dst;
+    // addition
+    SP_GENFUNC Col4f addCol(const Col4f &col0, const Col4f &col1) {
+        return getCol4f(col0.r + col1.r, col0.g + col1.g, col0.b + col1.b, col0.a + col1.a);
     }
 
     // multiple
@@ -99,45 +85,27 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // blend
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC Byte blendCol(const Byte &val0, const Byte &val1, const double rate = 0.5){
-        Byte val;
-        val = static_cast<Byte>(val0 * rate + val1 * (1.0 - rate));
-        return val;
-    }
-
-    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate = 0.5) {
-        Col3 col;
-        col.r = static_cast<Byte>(col0.r * rate + col1.r * (1.0 - rate));
-        col.g = static_cast<Byte>(col0.g * rate + col1.g * (1.0 - rate));
-        col.b = static_cast<Byte>(col0.b * rate + col1.b * (1.0 - rate));
-        return col;
-    }
-
- 
-    //--------------------------------------------------------------------------------
     // color operator
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC Col3 operator * (const Col3 &col, const double val) {
-        return mulCol(col, val);
+    SP_GENFUNC Col3f operator + (const Col3f &col0, const Col3f &col1) {
+        return addCol(col0, col1);
     }
-    SP_GENFUNC Col4 operator * (const Col4 &col, const double val) {
-        return mulCol(col, val);
+    SP_GENFUNC Col4f operator + (const Col4f &col0, const Col4f &col1) {
+        return addCol(col0, col1);
     }
+    SP_GENFUNC void operator += (Col3f &col0, const Col3f &col1) {
+        col0 = addCol(col0, col1);
+    }
+    SP_GENFUNC void operator += (Col4f &col0, const Col4f &col1) {
+        col0 = addCol(col0, col1);
+    }
+
     SP_GENFUNC Col3f operator * (const Col3f &col, const double val) {
         return mulCol(col, val);
     }
     SP_GENFUNC Col4f operator * (const Col4f &col, const double val) {
         return mulCol(col, val);
-    }
-    SP_GENFUNC void operator *= (Col3 &col, const double val) {
-        col = mulCol(col, val);
-    }
-    SP_GENFUNC void operator *= (Col4 &col, const double val) {
-        col = mulCol(col, val);
     }
     SP_GENFUNC void operator *= (Col3f &col, const double val) {
         col = mulCol(col, val);
@@ -366,6 +334,25 @@ namespace sp{
         Col3 c3 = revCol(getCol3(col.r, col.g, col.b));
         return getCol4(c3.r, c3.g, c3.b, col.a);
     }
+
+    //--------------------------------------------------------------------------------
+    // blend
+    //--------------------------------------------------------------------------------
+
+    SP_GENFUNC Byte blendCol(const Byte &val0, const Byte &val1, const double rate = 0.5) {
+        Byte val;
+        val = static_cast<Byte>(val0 * rate + val1 * (1.0 - rate));
+        return val;
+    }
+
+    SP_GENFUNC Col3 blendCol(const Col3 &col0, const Col3 &col1, const double rate = 0.5) {
+        Col3 col;
+        col.r = static_cast<Byte>(col0.r * rate + col1.r * (1.0 - rate));
+        col.g = static_cast<Byte>(col0.g * rate + col1.g * (1.0 - rate));
+        col.b = static_cast<Byte>(col0.b * rate + col1.b * (1.0 - rate));
+        return col;
+    }
+
 
 
 }

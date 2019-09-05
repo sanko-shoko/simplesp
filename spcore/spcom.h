@@ -240,6 +240,19 @@ namespace sp{
         Byte a;
     };
 
+    struct Col3f {
+        float r, g, b;
+    };
+
+    struct Col4f : public Col3f {
+        float a;
+    };
+
+
+    //--------------------------------------------------------------------------------
+    // material
+    //--------------------------------------------------------------------------------
+
     struct Material {
         Col4 amb;
         Col4 dif;
@@ -248,13 +261,6 @@ namespace sp{
         Byte shn;
     };
 
-    struct Col3f {
-        SP_REAL r, g, b;
-    };
-
-    struct Col4f : public Col3f {
-        SP_REAL a;
-    };
 
     //--------------------------------------------------------------------------------
     // byte order
@@ -413,15 +419,15 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC void _cast(Col3f &dst, const Col3 &src) {
-        dst.r = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.g = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.b = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+        dst.r = static_cast<float>(src.r) / SP_BYTEMAX;
+        dst.g = static_cast<float>(src.g) / SP_BYTEMAX;
+        dst.b = static_cast<float>(src.b) / SP_BYTEMAX;
     }
 
     SP_GENFUNC void _cast(Col3f &dst, const Col4 &src) {
-        dst.r = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.g = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.b = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+        dst.r = static_cast<float>(src.r) / SP_BYTEMAX;
+        dst.g = static_cast<float>(src.g) / SP_BYTEMAX;
+        dst.b = static_cast<float>(src.b) / SP_BYTEMAX;
     }
 
     //--------------------------------------------------------------------------------
@@ -429,17 +435,17 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC void _cast(Col4f &dst, const Col3 &src) {
-        dst.r = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.g = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.b = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
+        dst.r = static_cast<float>(src.r) / SP_BYTEMAX;
+        dst.g = static_cast<float>(src.g) / SP_BYTEMAX;
+        dst.b = static_cast<float>(src.b) / SP_BYTEMAX;
         dst.a = 1.0;
     }
 
     SP_GENFUNC void _cast(Col4f &dst, const Col4 &src) {
-        dst.r = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.g = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.b = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
-        dst.a = static_cast<SP_REAL>(src.a) / SP_BYTEMAX;
+        dst.r = static_cast<float>(src.r) / SP_BYTEMAX;
+        dst.g = static_cast<float>(src.g) / SP_BYTEMAX;
+        dst.b = static_cast<float>(src.b) / SP_BYTEMAX;
+        dst.a = static_cast<float>(src.a) / SP_BYTEMAX;
     }
 
     //--------------------------------------------------------------------------------

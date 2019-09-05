@@ -211,12 +211,11 @@ namespace sp {
             }
         }
 
-        struct Data : Index{
-            SP_REAL norm;
-            Vec3 nrm;
+        struct Hit : Index{
+            VecPD3 vec;
         };
 
-        bool trace(Index *idx, SP_REAL *norm, Vec3 *nrm, const VecPD3 &ray, const double minv, const double maxv) const {
+        bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
             int minid = -1;
 
             Mem1<const Node*> que;
@@ -242,11 +241,8 @@ namespace sp {
                     if (traceMesh(result, *m_idxs[i].pmesh, ray, minv, lmaxv + SP_SMALL) == true) {
                         if (result[0] < lmaxv - SP_SMALL || m_idxs[i].acnt < acnt) {
                             lmaxv = result[0];
-                            //if (dotVec(getMeshNrm(*m_idxs[i].pmesh), ray.drc) < 0.0) 
-                            {
-                                minid = i;
-                                acnt = m_idxs[i].acnt;
-                            }
+                            minid = i;
+                            acnt = m_idxs[i].acnt;
                         }
                     }
                 }
@@ -255,9 +251,13 @@ namespace sp {
                 return false;
             }
 
-            if (idx != NULL) *idx = m_idxs[minid];
-            if (norm != NULL) *norm = lmaxv;
-            if (nrm != NULL) *nrm = getMeshNrm(*m_idxs[minid].pmesh);
+            const Index &idx = m_idxs[minid];
+            hit.acnt = idx.acnt;
+            hit.pmat = idx.pmat;
+            hit.pmesh = idx.pmesh;
+            hit.vec.pos = ray.pos + ray.drc * lmaxv;
+            hit.vec.drc = getMeshNrm(*m_idxs[minid].pmesh);
+
             return true;
         }
     };
@@ -333,10 +333,9 @@ namespace sp {
 
             const int w = m_img.dsize[0];
             const int h = m_img.dsize[1];
-//#if SP_USE_OMP
-//#pragma omp parallel for
-//#endif
+#if SP_USE_OMP
 #pragma omp parallel for
+#endif
             for (int v = 0; v < h; v++) {
                 for (int u = 0; u < w; u++) {
                     const Vec3 p = prjVec(invCam(m_cam, getVec2(u, v)), 1.0, m_pers);
@@ -399,17 +398,16 @@ namespace sp {
             if (level == 0) {
                 v = getCol4f(0.0, 0.0, 0.0, 0.0);
 
-                BVH::Index index[2];
-                SP_REAL norm[2];
-                Vec3 nrm[2];
-                if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == true) {
+                BVH::Hit hit0;
+                if (m_bvh.trace(hit0, ray, 0, 10000.0) == true) {
                     VecPD3 next;
-                    next.pos = ray.pos + ray.drc * norm[0];
-                    next.drc = unitVec(lpos - next.pos);
+                    next.pos = hit0.vec.pos;
+                    next.drc = unitVec(lpos - hit0.vec.pos);
 
-                    const SP_REAL d = dotVec(nrm[0], next.drc);
-                    if (d > 0.0 && m_bvh.trace(&index[1], &norm[1], &nrm[1], next, delta, 10000.0) == false) {
-                        Col4f vv = cast<Col4f>(index[0].pmat->dif) * d;
+                    const SP_REAL d = dotVec(hit0.vec.drc, next.drc);
+                    BVH::Hit hit1;
+                    if (d > 0.0 && m_bvh.trace(hit1, next, delta, 10000.0) == false) {
+                        Col4f vv = cast<Col4f>(hit1.pmat->dif) * d;
                         v = vv;
                     }
                 }
