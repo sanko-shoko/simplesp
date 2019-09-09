@@ -193,7 +193,7 @@ namespace sp{
         }
 
         void momentum(const NodeParam &grd){
-            if (!cmp(m_vel.w, grd.w) || !cmp(m_vel.b, grd.b)){
+            if (!cmp(2, m_vel.w.dsize, grd.w.dsize) || !cmp(2, m_vel.b.dsize, grd.b.dsize)){
                 m_vel.w = grd.w * m_lambda;
                 m_vel.b = grd.b * m_lambda;
             }

@@ -74,6 +74,15 @@ namespace sp{
         return getCol4f(col0.r + col1.r, col0.g + col1.g, col0.b + col1.b, col0.a + col1.a);
     }
 
+    // subtraction
+    SP_GENFUNC Col3f subCol(const Col3f &col0, const Col3f &col1) {
+        return getCol3f(col0.r - col1.r, col0.g - col1.g, col0.b - col1.b);
+    }
+    // subtraction
+    SP_GENFUNC Col4f subCol(const Col4f &col0, const Col4f &col1) {
+        return getCol4f(col0.r - col1.r, col0.g - col1.g, col0.b - col1.b, col0.a - col1.a);
+    }
+
     // multiple
     SP_GENFUNC Col3f mulCol(const Col3f &col, const double val) {
         return getCol3f(col.r * val, col.g * val, col.b * val);
@@ -81,6 +90,17 @@ namespace sp{
     // multiple
     SP_GENFUNC Col4f mulCol(const Col4f &col, const double val) {
         return getCol4f(col.r * val, col.g * val, col.b * val, col.a * val);
+    }
+
+    // division
+    SP_GENFUNC Col3f divCol(const Col3f &col, const double val) {
+        SP_ASSERT(fabs(val) > SP_SMALL);
+        return getCol3f(col.r / val, col.g / val, col.b / val);
+    }
+    // division
+    SP_GENFUNC Col4f divCol(const Col4f &col, const double val) {
+        SP_ASSERT(fabs(val) > SP_SMALL);
+        return getCol4f(col.r / val, col.g / val, col.b / val, col.a / val);
     }
 
 
@@ -112,6 +132,19 @@ namespace sp{
     }
     SP_GENFUNC void operator *= (Col4f &col, const double val) {
         col = mulCol(col, val);
+    }
+
+    SP_GENFUNC Col3f operator / (const Col3f &col, const double val) {
+        return divCol(col, val);
+    }
+    SP_GENFUNC Col4f operator / (const Col4f &col, const double val) {
+        return divCol(col, val);
+    }
+    SP_GENFUNC void operator /= (Col3f &col, const double val) {
+        col = divCol(col, val);
+    }
+    SP_GENFUNC void operator /= (Col4f &col, const double val) {
+        col = divCol(col, val);
     }
 
 

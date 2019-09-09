@@ -254,11 +254,11 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col4 amb;
-        Col4 dif;
-        Col4 spc;
-        Col4 ems;
-        Byte shn;
+        Col4f amb;
+        Col4f dif;
+        Col4f spc;
+        Col4f ems;
+        float shn;
     };
 
 
@@ -350,21 +350,21 @@ namespace sp {
     }
 
     SP_GENFUNC void _cast(Col3 &dst, const Vec3 &src) {
-        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.x < 0.0) ? 0.0 : ((src.x > 1.0) ? 1.0 : src.x)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.y < 0.0) ? 0.0 : ((src.y > 1.0) ? 1.0 : src.y)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.z < 0.0) ? 0.0 : ((src.z > 1.0) ? 1.0 : src.z)) * SP_BYTEMAX + 0.5);
     }
 
     SP_GENFUNC void _cast(Col3 &dst, const Col3f &src) {
-        dst.r = static_cast<Byte>(src.r * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.g * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.b * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.r < 0.0) ? 0.0 : ((src.r > 1.0) ? 1.0 : src.r)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.g < 0.0) ? 0.0 : ((src.g > 1.0) ? 1.0 : src.g)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
     }
 
     SP_GENFUNC void _cast(Col3 &dst, const Col4f &src) {
-        dst.r = static_cast<Byte>(src.r * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.g * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.b * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.r < 0.0) ? 0.0 : ((src.r > 1.0) ? 1.0 : src.r)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.g < 0.0) ? 0.0 : ((src.g > 1.0) ? 1.0 : src.g)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
     }
 
 
@@ -394,24 +394,24 @@ namespace sp {
     }
 
     SP_GENFUNC void _cast(Col4 &dst, const Vec3 &src) {
-        dst.r = static_cast<Byte>(src.x * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.y * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.z * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.x < 0.0) ? 0.0 : ((src.x > 1.0) ? 1.0 : src.x)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.y < 0.0) ? 0.0 : ((src.y > 1.0) ? 1.0 : src.y)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.z < 0.0) ? 0.0 : ((src.z > 1.0) ? 1.0 : src.z)) * SP_BYTEMAX + 0.5);
         dst.a = SP_BYTEMAX;
     }
 
     SP_GENFUNC void _cast(Col4 &dst, const Col3f &src) {
-        dst.r = static_cast<Byte>(src.r * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.g * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.b * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.r < 0.0) ? 0.0 : ((src.r > 1.0) ? 1.0 : src.r)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.g < 0.0) ? 0.0 : ((src.g > 1.0) ? 1.0 : src.g)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
         dst.a = SP_BYTEMAX;
     }
 
     SP_GENFUNC void _cast(Col4 &dst, const Col4f &src) {
-        dst.r = static_cast<Byte>(src.r * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(src.g * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(src.b * SP_BYTEMAX + 0.5);
-        dst.a = static_cast<Byte>(src.a * SP_BYTEMAX + 0.5);
+        dst.r = static_cast<Byte>(((src.r < 0.0) ? 0.0 : ((src.r > 1.0) ? 1.0 : src.r)) * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(((src.g < 0.0) ? 0.0 : ((src.g > 1.0) ? 1.0 : src.g)) * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
+        dst.a = static_cast<Byte>(((src.a < 0.0) ? 0.0 : ((src.a > 1.0) ? 1.0 : src.a)) * SP_BYTEMAX + 0.5);
     }
 
     //--------------------------------------------------------------------------------
@@ -504,13 +504,6 @@ namespace sp {
             if (dsize0[i] != dsize1[i]) return false;
         }
         return true;
-    }
-
-    // compare size
-    template<typename TYPE0, typename TYPE1>
-    SP_GENFUNC bool cmp(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
-        if (mem0.dim != mem1.dim) return false;
-        return cmp(mem0.dim, mem0.dsize, mem1.dsize);
     }
 
     // compare rect
@@ -618,6 +611,33 @@ namespace sp {
     SP_CMP_OPERATOR(Col3);
     SP_CMP_OPERATOR(Col4);
 
+
+    // compare size
+    template<typename TYPE0, typename TYPE1>
+    SP_GENFUNC bool cmp(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+        if (mem0.dim != mem1.dim) return false;
+        if (cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return false;
+
+        int size = (mem0.dim > 0) ? 1 : 0;
+        for (int i = 0; i < mem0.dim; i++) {
+            size *= mem0.dsize[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (mem0.ptr[i] != mem1.ptr[i]) return false;
+        }
+        return true;
+    }
+
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator == (const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+        return cmp(mem0, mem1);
+    }
+
+    template<typename TYPE0, typename TYPE1>
+    SP_CPUFUNC bool operator != (const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+        return !cmp(mem0, mem1);
+    }
 
 }
 

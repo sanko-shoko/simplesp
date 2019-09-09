@@ -88,7 +88,9 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC void idft(Mem<TYPE> &img, const Mem<SP_REAL> &re, const Mem<SP_REAL> &im) {
-        SP_ASSERT(cmp(re, im));
+        SP_ASSERT(checkPtr(re, 2));
+        SP_ASSERT(checkPtr(im, 2));
+        SP_ASSERT(cmp(2, re.dsize, im.dsize));
 
         Mat mRe, mIm;
         cnvMem(mRe, re);

@@ -45,7 +45,7 @@ private:
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
-        m_bvh.add(m_model);
+        m_bvh.addMeshes(m_model);
         m_bvh.build();
 
     }
@@ -66,7 +66,7 @@ private:
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(1){
+        if(0){
             Mem2<SP_REAL> depth;
             depth.resize(m_cam.dsize);
             depth.zero();
@@ -98,7 +98,7 @@ private:
 
             glRenderSurface(m_model);
 
-            const Mem1<const BVH::Node*> nodes = m_bvh.getNode(m_level);
+            const Mem1<const BVH::Node*> nodes = m_bvh.getNodes(m_level);
 
             glLineWidth(2.0);
             for (int i = 0; i < nodes.size(); i++) {
