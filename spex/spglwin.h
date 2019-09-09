@@ -70,7 +70,7 @@ namespace sp {
         // imgui init
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(win, true) == true);
+        SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(win, false) == true);
         SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
         ImGui::GetIO().IniFilename = NULL;
 #endif
@@ -275,6 +275,8 @@ namespace sp {
             m_viewScale = 1.0;
 
             memset(m_key, 0, sizeof(m_key));
+
+            m_callback = true;
         }
 
 
@@ -619,7 +621,7 @@ namespace sp {
 #if SP_USE_IMGUI
         virtual bool _pmouseButton(int button, int action, int mods) {
             if (ImGui::GetIO().WantCaptureMouse) {
-                //ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
+                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
                 return true;
             }
             return false;
@@ -634,7 +636,7 @@ namespace sp {
 
         virtual bool _pmouseScroll(double x, double y) {
             if (ImGui::GetIO().WantCaptureMouse) {
-                //ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
+                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
                 m_mouse.setScroll(0.0, 0.0);
                 return true;
             }
@@ -644,7 +646,7 @@ namespace sp {
             static bool prev = false;
             if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
                 prev = ImGui::GetIO().WantCaptureKeyboard;
-                //ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
+                ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
                 return true;
             }
             prev = false;
@@ -652,7 +654,7 @@ namespace sp {
         }
         virtual bool _pcharFun(unsigned int charInfo) {
             if (ImGui::GetIO().WantCaptureKeyboard == true) {
-                //ImGui_ImplGlfw_CharCallback(NULL, charInfo);
+                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
                 return true;
             }
             return false;

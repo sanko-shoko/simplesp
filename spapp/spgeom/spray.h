@@ -83,7 +83,7 @@ namespace sp {
             clear();
         }
 
-        Mem1<const Node*> getNode(const int level) const {
+        Mem1<const Node*> getNodes(const int level) const {
             Mem1<const Node*> nodes;
 
             for (int i = 0; i < m_nodes.size(); i++) {
@@ -100,7 +100,7 @@ namespace sp {
             m_idxs.clear();
         }
         
-        void add(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
+        void addMeshes(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
             const int offset = m_idxs.size();
             const int size = meshes.size();
 
@@ -211,12 +211,12 @@ namespace sp {
             }
         }
 
-        struct Data : Index{
-            SP_REAL norm;
-            Vec3 nrm;
+        struct Hit : Index{
+            VecPD3 vec;
+            SP_REAL scl;
         };
 
-        bool trace(Index *idx, SP_REAL *norm, Vec3 *nrm, const VecPD3 &ray, const double minv, const double maxv) const {
+        bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
             int minid = -1;
 
             Mem1<const Node*> que;
@@ -242,11 +242,8 @@ namespace sp {
                     if (traceMesh(result, *m_idxs[i].pmesh, ray, minv, lmaxv + SP_SMALL) == true) {
                         if (result[0] < lmaxv - SP_SMALL || m_idxs[i].acnt < acnt) {
                             lmaxv = result[0];
-                            //if (dotVec(getMeshNrm(*m_idxs[i].pmesh), ray.drc) < 0.0) 
-                            {
-                                minid = i;
-                                acnt = m_idxs[i].acnt;
-                            }
+                            minid = i;
+                            acnt = m_idxs[i].acnt;
                         }
                     }
                 }
@@ -255,9 +252,14 @@ namespace sp {
                 return false;
             }
 
-            if (idx != NULL) *idx = m_idxs[minid];
-            if (norm != NULL) *norm = lmaxv;
-            if (nrm != NULL) *nrm = getMeshNrm(*m_idxs[minid].pmesh);
+            const Index &idx = m_idxs[minid];
+            hit.acnt = idx.acnt;
+            hit.pmat = idx.pmat;
+            hit.pmesh = idx.pmesh;
+            hit.scl = lmaxv;
+            hit.vec.pos = ray.pos + ray.drc * lmaxv;
+            hit.vec.drc = getMeshNrm(*m_idxs[minid].pmesh);
+
             return true;
         }
     };
@@ -277,156 +279,211 @@ namespace sp {
         bool m_pers;
 
         struct Img {
-            Col4f ambrnd;
-            Col4f ltdrc[maxlt];
-            Col4f ltrnd[maxlt];
+            Col4f amb;
+            Col4f dif[maxlt];
+            float z;
         };
         Mem2<Img> m_img;
+        Mem2<Byte> m_amask;
 
         struct ImgCnt {
-            int ambrnd;
-            int ltdrc[maxlt];
-            int ltrnd[maxlt];
+            int amb;
+            int dif;
+            int z;
         };
         Mem2<ImgCnt> m_imgcnt;
 
         Mem1<Vec3> m_lights;
 
         BVH m_bvh;
+
+        Col4f m_bgcol;
+
+        int m_upcnt;
        
     public:
+
+        PathTrace() {
+            m_bgcol = getCol4f(1.0, 1.0, 1.0, 1.0);
+        }
+
         void clear() {
             m_bvh.clear();
+            zero();
         }
 
-        void set(const Mem1<Vec3> &lights) {
+        void zero() {
+            m_upcnt = 0;
+            m_img.zero();
+            m_imgcnt.zero();
+            m_amask.zero();
+        }
+
+        void setLights(const Mem1<Vec3> &lights) {
             SP_ASSERT(lights.size() <= maxlt);
             m_lights = lights;
-            m_img.zero();
-            m_imgcnt.zero();
+            zero();
         }
 
-        void set(const CamParam cam, const Pose &pose, const bool pers) {
+        void setCam(const CamParam cam, const bool pers) {
             m_cam = cam;
-            m_pose = pose;
             m_pers = pers;
-
             m_img.resize(m_cam.dsize);
-            m_img.zero();
-
             m_imgcnt.resize(m_cam.dsize);
-            m_imgcnt.zero();
+            m_amask.resize(m_cam.dsize);
+
+            zero();
         }
 
-        void add(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
-            m_bvh.add(meshes, pmats);
+        void setPose(const Pose &pose) {
+            m_pose = pose;
+            zero();
+        }
+
+        void addMeshes(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
+            m_bvh.addMeshes(meshes, pmats);
         }
 
         void build() {
             m_bvh.build();
         }
 
-
         void update() {
+            if (m_upcnt >= 300) return;
             const Pose ipose = invPose(m_pose);
-            const Mat mrot = getMat(ipose.rot);
+            const Mat irmat = getMat(ipose.rot);
 
             const int w = m_img.dsize[0];
             const int h = m_img.dsize[1];
-//#if SP_USE_OMP
-//#pragma omp parallel for
-//#endif
+#if SP_USE_OMP
 #pragma omp parallel for
+#endif
             for (int v = 0; v < h; v++) {
                 for (int u = 0; u < w; u++) {
-                    const Vec3 p = prjVec(invCam(m_cam, getVec2(u, v)), 1.0, m_pers);
-                    trace(m_img(u, v), m_imgcnt(u, v), getVecPD3(ipose.trn, mrot * p));
+                    if (m_upcnt > 10 && m_img(u, v).z == SP_RCAST(0.0)) continue;
+
+                    Vec2 pix = getVec2(u, v);
+                    const unsigned int seed = v * w + u + m_upcnt;
+                    if (m_upcnt > 0) pix += randuVec2(0.5, 0.5, seed);
+
+                    const Vec3 drc = unitVec(prjVec(invCam(m_cam, pix), 1.0, m_pers));
+                    trace(m_img(u, v), m_imgcnt(u, v), getVecPD3(ipose.trn, irmat * drc), seed);
                 }
             }
+
+            m_upcnt++;
         }
 
-        void makeImg(Mem2<Col4> &img, const double amb, const double *lts) {
+        void makeImg(Mem2<Col4> &img, const double amb, const double *difs) {
             img.resize(m_cam.dsize);
             img.zero();
 
             for (int i = 0; i < img.size(); i++) {
-                img[i] = cast<Col4>(m_img[i].ltdrc[0]);
+                Col4f amb = getCol4f(0.0, 0.0, 0.0, 0.0);
+                Col4f dif = getCol4f(0.0, 0.0, 0.0, 0.0);
+                if (m_imgcnt[i].dif > 0) {
+                    for (int l = 0; l < m_lights.size(); l++) {
+                        dif += m_img[i].dif[l];
+                    }
+                    dif *= 1.0 / (m_lights.size());
+                }
+                if (m_imgcnt[i].amb > 0) {
+                    amb = m_img[i].amb;
+                }
+                Col4f col = (amb + dif) * 0.5;
+                img[i] = cast<Col4>(col);
             }
         }
 
     private:
 
+        void trace(Img &img, ImgCnt &imgcnt, const VecPD3 &ray, const unsigned int seed) {
+            const int maxamb = 300;
+            const int maxdif = 10;
 
-        void trace(Img &img, ImgCnt &imgcnt, const VecPD3 &ray) {
-            const int maxltdif = 10;
-            const int maxltrnd = 100;
-            const int maxambrnd = 100;
-
-            BVH::Index index;
-            SP_REAL norm;
-            Vec3 nrm;
-            //if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == false) return;
-
-            int minid = -1;
-
-            // diffuse
-            {
-                int mincnt = maxltdif + 1;
-                for (int i = 0; i < m_lights.size(); i++) {
-                    if (imgcnt.ltdrc[i] < mincnt) {
-                        minid = i;
-                        mincnt = imgcnt.ltdrc[i];
+            BVH::Hit hit;
+            if (m_bvh.trace(hit, ray, 0.0, SP_INFINITY) == false) {
+                if (imgcnt.dif < maxdif) {
+                    for (int i = 0; i < m_lights.size(); i++) {
+                        img.dif[i] = (img.dif[i] * imgcnt.dif + m_bgcol) / (imgcnt.dif + 1.0);
                     }
+                    imgcnt.dif++;
+                }
+                if (imgcnt.dif < maxdif) {
+                    img.amb = (img.amb * imgcnt.amb + m_bgcol) / (imgcnt.amb + 1.0);
+                    imgcnt.amb++;
                 }
             }
-
-            if (minid < 0) {
-
-            }
             else {
-                trace_ltdrc(img, imgcnt, ray, minid, 0);
-            }
-
-        }
-
-        bool trace_ltdrc(Img &img, ImgCnt &imgcnt, const VecPD3 &ray, const int lid, const int level) {
-            Col4f &v = img.ltdrc[lid];
-            int &c = imgcnt.ltdrc[lid];
-
-            const Vec3 lpos = m_lights[lid];
-            const SP_REAL delta = 0.001;
-
-            if (level == 0) {
-                v = getCol4f(0.0, 0.0, 0.0, 0.0);
-
-                BVH::Index index[2];
-                SP_REAL norm[2];
-                Vec3 nrm[2];
-                if (m_bvh.trace(&index[0], &norm[0], &nrm[0], ray, 0, 10000.0) == true) {
-                    VecPD3 next;
-                    next.pos = ray.pos + ray.drc * norm[0];
-                    next.drc = unitVec(lpos - next.pos);
-
-                    const SP_REAL d = dotVec(nrm[0], next.drc);
-                    if (d > 0.0 && m_bvh.trace(&index[1], &norm[1], &nrm[1], next, delta, 10000.0) == false) {
-                        Col4f vv = cast<Col4f>(index[0].pmat->dif) * d;
-                        v = vv;
-                    }
+                if (imgcnt.amb == 0) {
+                    img.amb = hit.pmat->amb;
+                    imgcnt.amb++;
                 }
                 else {
-
+                    img.amb = (img.amb * imgcnt.amb + trace_amb(ray, hit, 0, seed)) / (imgcnt.amb + 1.0);
+                    imgcnt.amb++;
+                }
+                if(imgcnt.dif < maxdif) {
+                    for (int i = 0; i < m_lights.size(); i++) {
+                        img.dif[i] = (img.dif[i] * imgcnt.dif + trace_dif(ray, hit, m_lights[i] + randgVec3(1.0, 1.0, 1.0, seed) * 2.0, 0, seed)) / (imgcnt.dif + 1.0);
+                    }
+                    imgcnt.dif++;
+                }
+                {
+                    img.z = (img.z * imgcnt.z + hit.scl) / (imgcnt.z + 1.0);
+                    imgcnt.z++;
                 }
             }
-            else {
 
+        }
+
+        Col4f trace_dif(const VecPD3 &ray, const BVH::Hit base, const Vec3 lpos, const int level, const unsigned int seed) {
+            const SP_REAL delta = 0.001;
+
+            Col4f col = getCol4f(0.0, 0.0, 0.0, 0.0);
+            const Vec3 nrm = getMeshNrm(*base.pmesh);
+
+            VecPD3 next;
+            next.pos = base.vec.pos + getMeshNrm(*base.pmesh) * delta;
+            next.drc = unitVec(lpos - base.vec.pos);
+
+            const SP_REAL d = dotVec(base.vec.drc, next.drc);
+            BVH::Hit hit;
+            if (d > 0.0 && m_bvh.trace(hit, next, 0.0, SP_INFINITY) == false) {
+                col = base.pmat->dif * d;
             }
-            c++;
-            return true;
+
+            return col;
         }
 
-        bool traceRnd(Col4f &amb, const VecPD3 &ray, const int level) {
 
+        Col4f trace_amb(const VecPD3 &ray, const BVH::Hit base, const int level, const unsigned int seed) {
+            const SP_REAL delta = 0.001;
+
+            Col4f col = getCol4f(0.0, 0.0, 0.0, 0.0);
+            const Vec3 nrm = getMeshNrm(*base.pmesh);
+
+            Vec3 drc;
+            {
+                drc = unitVec(randuVec3(1.0, 1.0, 1.0));
+
+                if (dotVec(drc, nrm) < 0.0) {
+                    drc *= -1.0;
+                }
+            }
+
+            VecPD3 next;
+            next.pos = base.vec.pos + nrm * delta;;
+            next.drc = drc;
+
+            BVH::Hit hit;
+            if (m_bvh.trace(hit, next, 0.0, SP_INFINITY) == false) {
+                col = base.pmat->amb;
+            }
+
+            return col;
         }
+
     };
 }
 #endif

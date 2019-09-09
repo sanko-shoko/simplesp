@@ -311,7 +311,7 @@ namespace sp{
     SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &pnts, const Mem1<Col3> &cols){
         File file;
         if (file.open(path, "w") == false) return false;
-        if (cmp(pnts, cols) == false) return false;
+        if (pnts.size() != cols.size()) return false;
 
         file.printf("ply\n");
         file.printf("format ascii 1.0\n");

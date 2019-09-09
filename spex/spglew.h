@@ -54,7 +54,6 @@ namespace sp {
         }
     };
 
-
     class FrameBufferObject {
 
     private:
@@ -205,25 +204,31 @@ namespace sp {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
             }
 
-            //glClearColor(0.0, 0.0, 0.0, 1.0);
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void unbind() {
             if (dsize[0] == 0 || dsize[1] == 0)return;
-            if (m_msfb != 0) {
-                glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
-                glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
-                glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
-
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
-                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
-                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
-
-                glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-            }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glPopAttrib();
+        }
+
+        void blitms() {
+            if (m_msfb == 0) return;
+            GLint readid = 0, drawid = 0;
+            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readid);
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawid);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
+            glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
+            glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
+
+            glBlitFramebuffer(0, 0, dsize[0], dsize[1], 0, 0, dsize[0], dsize[1], GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+   
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, readid);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawid);
         }
 
         void readi(void *img, const int ch) {

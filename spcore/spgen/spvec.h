@@ -21,7 +21,6 @@ namespace sp {
         dst.y = SP_RCAST(y);
         return dst;
     }
-
     // get vector
     template<typename TYPE>
     SP_GENFUNC Vec2 getVec2(const TYPE *v) {
@@ -36,13 +35,11 @@ namespace sp {
         dst.z = SP_RCAST(z);
         return dst;
     }
-
     // get vector
     template<typename TYPE>
     SP_GENFUNC Vec3 getVec3(const TYPE *v) {
         return getVec3(v[0], v[1], v[2]);
     }
-
     // get vector
     SP_GENFUNC Vec3 getVec3(const Vec2 &vec, const double z) {
         return getVec3(vec.x, vec.y, z);
@@ -52,20 +49,44 @@ namespace sp {
     SP_CPUFUNC Vec2 randuVec2(const double x, const double y) {
         return getVec2(randu() * x, randu() * y);
     }
-
+    // random uniform
+    SP_CPUFUNC Vec2 randuVec2(const double x, const double y, const unsigned int seed) {
+        const unsigned int s0 = seed;
+        const unsigned int s1 = snext(s0);
+        return getVec2(randu(s0) * x, randu(s1) * y);
+    }
     // random gauss
     SP_CPUFUNC Vec2 randgVec2(const double x, const double y) {
         return getVec2(randg() * x, randg() * y);
+    }
+    // random gauss
+    SP_CPUFUNC Vec2 randgVec2(const double x, const double y, const unsigned int seed) {
+        const unsigned int s0 = seed;
+        const unsigned int s1 = snext(s0);
+        return getVec2(randg(s0) * x, randg(s1) * y);
     }
 
     // random uniform
     SP_CPUFUNC Vec3 randuVec3(const double x, const double y, const double z) {
         return getVec3(randu() * x, randu() * y, randu() * z);
     }
-
+    // random uniform
+    SP_CPUFUNC Vec3 randuVec3(const double x, const double y, const double z, const unsigned int seed) {
+        const unsigned int s0 = seed;
+        const unsigned int s1 = snext(s0);
+        const unsigned int s2 = snext(s1);
+        return getVec3(randu(s0) * x, randu(s1) * y, randu(s2) * z);
+    }
     // random gauss
     SP_CPUFUNC Vec3 randgVec3(const double x, const double y, const double z) {
         return getVec3(randg() * x, randg() * y, randg() * z);
+    }
+    // random gauss
+    SP_CPUFUNC Vec3 randgVec3(const double x, const double y, const double z, const unsigned int seed) {
+        const unsigned int s0 = seed;
+        const unsigned int s1 = snext(s0);
+        const unsigned int s2 = snext(s1);
+        return getVec3(randg(s0) * x, randg(s1) * y, randg(s2) * z);
     }
 
     //--------------------------------------------------------------------------------

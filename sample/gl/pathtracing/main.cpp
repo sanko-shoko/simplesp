@@ -19,6 +19,8 @@ class PathTracingGUI : public BaseWindow {
 
     PathTrace m_pt;
 
+    Thread m_thread;
+
 private:
 
     void help() {
@@ -35,13 +37,14 @@ private:
         m_img.zero();
 
         m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
+        loadPLY("C:/work/model.ply", m_model);
         if (m_model.size() == 0) {
             // if could not find stanford bunny, load dummy model
             m_model = loadGeodesicDorm(100.0, 1);
         }
 
-        m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
-        m_model.push(m_model + getVec3(0, 50, 100));
+        //m_model = loadBunny(SP_DATA_DIR "/stanford/bun_zipper.ply");
+        //m_model.push(m_model + getVec3(0, 50, 100));
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
@@ -50,19 +53,21 @@ private:
         static Mem1<Material*> pmats;
         pmats.resize(m_model.size());
         static Material mat;
-        mat.dif = getCol4(255, 100, 100, 255);
+        mat.dif = getCol4f(1.0, 0.5, 0.5, 1.0);
+        mat.amb = getCol4f(1.0, 0.5, 0.5, 1.0);
         for (int i = 0; i < pmats.size(); i++) {
             pmats[i] = &mat;
         }
 
         static Mem1<Vec3> lights;
-        lights.push(getVec3(0.0, 0.0, -1000.0));
+        lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
+        //lights.push(getVec3(0.0, 200.0, -1000.0));
 
-        m_pt.set(lights);
-        m_pt.set(m_cam, m_pose, true);
-        m_pt.add(m_model, pmats);
+        m_pt.setLights(lights);
+        m_pt.setCam(m_cam, true);
+        m_pt.setPose(m_pose);
+        m_pt.addMeshes(m_model, pmats);
         m_pt.build();
-
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
@@ -76,10 +81,25 @@ private:
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_pt.set(m_cam, m_pose, true);
-        m_pt.update();
 
-        m_pt.makeImg(m_img, 1.0, NULL);
+        if (m_thread.used() == false) {
+            m_pt.makeImg(m_img, 1.0, NULL);
+        }
+        {
+            static Pose prev = m_pose;
+            if (m_thread.used() == false && m_pose != prev) {
+                m_pt.setPose(m_pose);
+                prev = m_pose;
+
+                Mem1<Vec3> lights;
+                lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
+                m_pt.setLights(lights);
+            }
+            m_thread.run([&]() {
+                m_pt.update();
+                }, false);
+        }
+
         {
             // view 2D
             glLoadView2D(m_cam, m_viewPos, m_viewScale);
