@@ -339,6 +339,9 @@ namespace sp {
             m_pose = pose;
             zero();
         }
+        const Pose& getPose() const {
+            return m_pose;
+        }
 
         void addMeshes(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
             m_bvh.addMeshes(meshes, pmats);
@@ -398,8 +401,8 @@ namespace sp {
     private:
 
         void trace(Img &img, ImgCnt &imgcnt, const VecPD3 &ray, const unsigned int seed) {
-            const int maxamb = 300;
-            const int maxdif = 10;
+            const int maxamb = 500;
+            const int maxdif = 20;
 
             BVH::Hit hit;
             if (m_bvh.trace(hit, ray, 0.0, SP_INFINITY) == false) {
