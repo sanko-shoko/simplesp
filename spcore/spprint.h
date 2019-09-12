@@ -132,7 +132,25 @@ namespace sp {
         _print(col);
         SP_PRINTF("\n");
     }
-    
+
+    SP_CPUFUNC void _print(const Col3f &col) {
+        SP_PRINTF("[ %.2f %.2f %.2f ]", col.r, col.g, col.b);
+    }
+    SP_CPUFUNC void print(const Col3f &col) {
+        SP_PRINTF("Col3f ");
+        _print(col);
+        SP_PRINTF("\n");
+    }
+
+    SP_CPUFUNC void _print(const Col4f &col) {
+        SP_PRINTF("[ %.2f %.2f %.2f %.2f ]", col.r, col.g, col.b, col.a);
+    }
+    SP_CPUFUNC void print(const Col4f &col) {
+        SP_PRINTF("Col4f ");
+        _print(col);
+        SP_PRINTF("\n");
+    }
+
     SP_CPUFUNC void _print(const VecPD2 &vec) {
         SP_PRINTF("[ ");
         _print(vec.pos);

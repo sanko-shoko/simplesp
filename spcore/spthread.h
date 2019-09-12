@@ -34,16 +34,24 @@ namespace sp {
             return m_used;
         }
 
+        void lock() {
+            m_mtx.lock();
+        }
+
+        void unlock() {
+            m_mtx.unlock();
+        }
+
         template<class Class, void (Class::*Func)()>
         bool run(Class *ptr, const bool wait = true) {
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, ptr, wait] {
-                m_mtx.lock();
+                lock();
                 m_used = true;
                 (ptr->*Func)();
                 m_used = false;
-                m_mtx.unlock();
+                unlock();
             });
             th.detach();
             return true;
@@ -53,11 +61,11 @@ namespace sp {
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, func, wait] {
-                m_mtx.lock();
+                lock();
                 m_used = true;
                 func();
                 m_used = false;
-                m_mtx.unlock();
+                unlock();
             });
             th.detach();
             return true;
@@ -67,11 +75,11 @@ namespace sp {
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, func, wait] {
-                m_mtx.lock();
+                lock();
                 m_used = true;
                 func();
                 m_used = false;
-                m_mtx.unlock();
+                unlock();
             });
             th.detach();
             return true;

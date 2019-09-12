@@ -704,7 +704,7 @@ namespace sp {
     }
 
     template<typename TYPE>
-    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src) {
+    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src, const GLint param = GL_NEAREST) {
         if (src.size() == 0) return;
 
         Texture tex;
@@ -718,11 +718,11 @@ namespace sp {
 
             glBindTexture(GL_TEXTURE_2D, tex.txid());
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
             //glShadeModel(GL_FLAT);
             glColor3d(1.0, 1.0, 1.0);
