@@ -65,7 +65,8 @@ private:
         m_pt.setLights(lights);
         m_pt.setCam(m_cam, true);
         m_pt.setPose(m_pose);
-        m_pt.addMeshes(m_model, pmats);
+
+        m_pt.add(m_model, pmats);
         m_pt.build();
     }
 
@@ -82,7 +83,9 @@ private:
 
 
         if (m_thread.used() == false) {
-            m_pt.makeImg(m_img, 1.0, NULL);
+            double samb = 0.5;
+            double sdifs[] = {0.5};
+            m_pt.render(m_img, samb, sdifs);
         }
         {
             static Pose prev = m_pose;

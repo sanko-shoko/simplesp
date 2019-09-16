@@ -103,29 +103,6 @@ namespace sp{
         return getCol4f(col.r / val, col.g / val, col.b / val, col.a / val);
     }
 
-    // blend
-    SP_GENFUNC Col4f meanCol(const Col4f &col0, const double r0, const Col4f &col1, const double r1) {
-        if (r0 + r1 == 0.0f) return getCol4f(0.0, 0.0, 0.0, 0.0);
-
-        Col4f dst;
-        const float t0 = col0.a * r0;
-        const float t1 = col1.a * r1;
-
-        if (t0 + t1 > 0.0f) {
-            dst.r = (col0.r * t0 + col1.r * t1) / (t0 + t1);
-            dst.g = (col0.g * t0 + col1.g * t1) / (t0 + t1);
-            dst.b = (col0.b * t0 + col1.b * t1) / (t0 + t1);
-            dst.a = (t0 + t1) / (r0 + r1);
-        }
-        else {
-            dst.r = (col0.r * r0 + col1.r * r1) / (r0 + r1);
-            dst.g = (col0.g * r0 + col1.g * r1) / (r0 + r1);
-            dst.b = (col0.b * r0 + col1.b * r1) / (r0 + r1);
-            dst.a = 0.0f;
-        }
-        return dst;
-    }
-
     //--------------------------------------------------------------------------------
     // color operator
     //--------------------------------------------------------------------------------
@@ -169,6 +146,43 @@ namespace sp{
         col = divCol(col, val);
     }
 
+    //--------------------------------------------------------------------------------
+    // util
+    //--------------------------------------------------------------------------------
+    
+    // mean
+    SP_GENFUNC Col3f meanCol(const Col3f &col0, const double r0, const Col3f &col1, const double r1) {
+        if (r0 + r1 == 0.0f) return getCol4f(0.0, 0.0, 0.0, 0.0);
+
+        Col4f dst;
+        dst.r = (col0.r * r0 + col1.r * r1) / (r0 + r1);
+        dst.g = (col0.g * r0 + col1.g * r1) / (r0 + r1);
+        dst.b = (col0.b * r0 + col1.b * r1) / (r0 + r1);
+        return dst;
+    }
+
+    // mean
+    SP_GENFUNC Col4f meanCol(const Col4f &col0, const double r0, const Col4f &col1, const double r1) {
+        if (r0 + r1 == 0.0f) return getCol4f(0.0, 0.0, 0.0, 0.0);
+
+        Col4f dst;
+        const float t0 = col0.a * r0;
+        const float t1 = col1.a * r1;
+
+        if (t0 + t1 > 0.0f) {
+            dst.r = (col0.r * t0 + col1.r * t1) / (t0 + t1);
+            dst.g = (col0.g * t0 + col1.g * t1) / (t0 + t1);
+            dst.b = (col0.b * t0 + col1.b * t1) / (t0 + t1);
+            dst.a = (t0 + t1) / (r0 + r1);
+        }
+        else {
+            dst.r = (col0.r * r0 + col1.r * r1) / (r0 + r1);
+            dst.g = (col0.g * r0 + col1.g * r1) / (r0 + r1);
+            dst.b = (col0.b * r0 + col1.b * r1) / (r0 + r1);
+            dst.a = 0.0f;
+        }
+        return dst;
+    }
 
     //--------------------------------------------------------------------------------
     // color space
@@ -327,7 +341,7 @@ namespace sp{
         cnvXYZToCol(col, xyz);
     }
 
-    
+
     //--------------------------------------------------------------------------------
     // convert geom to image
     //--------------------------------------------------------------------------------
@@ -367,6 +381,22 @@ namespace sp{
     // util
     //--------------------------------------------------------------------------------
 
+    // standord color i (0-12) v (0-3)
+    SP_GENFUNC Col3 stdcol(const int i, const int v) {
+        Col3 col;
+        if (i == 0) {
+            const float vlist[] = { 1.0f, 0.8f, 0.6f, 0.4f };
+            cnvHSVToCol(col, sp::getVec3(0.0f, 0.0f, vlist[v]));
+        }
+        else {
+            const float h = (i - 1) * 2.0f * SP_PI / 12.0f;
+            const float slist[] = { 0.6f, 0.7f, 0.8f, 0.9f };
+            const float vlist[] = { 0.9f, 0.8f, 0.7f, 0.6f };
+            cnvHSVToCol(col, sp::getVec3(h, slist[v], vlist[v]));
+        }
+        return col;
+    }
+    
     SP_GENFUNC Col3 getCol3(const int label) {
         srand(maxval(label + 1, 0));
         Col3 col;

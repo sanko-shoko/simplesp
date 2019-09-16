@@ -397,6 +397,7 @@ namespace sp{
         return ((SP_REAL*)&vec)[i];
     }
 
+    
     //--------------------------------------------------------------------------------
     // access ptr 1d (multi channel)
     //--------------------------------------------------------------------------------
@@ -543,7 +544,7 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // access ptr matrix
+    // access ptr 2d matrix
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC SP_REAL& acsm(ExPtr<SP_REAL> &mat, const int r, const int c) {
@@ -595,6 +596,7 @@ namespace sp{
     SP_GENFUNC Col3 acsc(const ExPtr<Col3> &src, const double d0, const double d1) {
         return acsc(*const_cast<ExPtr<Col3>*>(&src), d0, d1);
     }
+
 
 
 }

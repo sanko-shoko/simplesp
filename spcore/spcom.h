@@ -367,7 +367,6 @@ namespace sp {
         dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
     }
 
-
     //--------------------------------------------------------------------------------
     // color 4
     //--------------------------------------------------------------------------------
@@ -448,6 +447,13 @@ namespace sp {
         dst.a = static_cast<float>(src.a) / SP_BYTEMAX;
     }
 
+    SP_GENFUNC void _cast(Col4f &dst, const Col3f &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+        dst.a = 1.0f;
+    }
+
     //--------------------------------------------------------------------------------
     // vector 3
     //--------------------------------------------------------------------------------
@@ -463,6 +469,10 @@ namespace sp {
         dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
         dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
     }
+
+    //--------------------------------------------------------------------------------
+    // template cast
+    //--------------------------------------------------------------------------------
 
     template<typename DST, typename SRC> SP_GENFUNC DST cast(const SRC &src) {
         DST dst;
@@ -584,10 +594,17 @@ namespace sp {
     SP_GENFUNC bool cmp(const Col3 &col0, const Col3 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
     }
-
     // compare color
     SP_GENFUNC bool cmp(const Col4 &col0, const Col4 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
+    }
+    // compare color
+    SP_GENFUNC bool cmp(const Col3f &col0, const Col3f &col1) {
+        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b);
+    }
+    // compare color
+    SP_GENFUNC bool cmp(const Col4f &col0, const Col4f &col1) {
+        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b) & cmp(col0.a, col1.a);
     }
 
 
@@ -610,6 +627,8 @@ namespace sp {
     SP_CMP_OPERATOR(Pose);
     SP_CMP_OPERATOR(Col3);
     SP_CMP_OPERATOR(Col4);
+    SP_CMP_OPERATOR(Col3f);
+    SP_CMP_OPERATOR(Col4f);
 
 
     // compare size

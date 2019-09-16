@@ -922,6 +922,14 @@ namespace sp{
             if (crntId > maxId) crntId = maxId;
             if (crntId < minId) crntId = minId;
         }
+
+        bool check(const int i) {
+            bool ret = false;
+            int tmp = crntId + i;
+            if (tmp > maxId) tmp = maxId;
+            if (tmp < minId) tmp = minId;
+            return (tmp != crntId) ? true : false;
+        }
     };
 }
 
