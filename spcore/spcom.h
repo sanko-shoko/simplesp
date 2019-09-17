@@ -220,7 +220,14 @@ namespace sp{
     // camera parameter
     //--------------------------------------------------------------------------------
 
+    enum {
+        CamParam_Pers = 0,
+        CamParam_Orth = 1,
+        CamParam_Fish = 2
+    };
+
     struct CamParam{
+        int type;
         int dsize[2];
         SP_REAL fx, fy;
         SP_REAL cx, cy;

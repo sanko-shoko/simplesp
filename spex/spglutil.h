@@ -237,7 +237,7 @@ namespace sp {
 #define SP_DEFAULT_NEAR SP_RCAST(1.0)
 #define SP_DEFAULT_FAR SP_RCAST(10000.0)
 
-    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR, const bool pers = true) {
+    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
         glEnable(GL_DEPTH_TEST);
 
         Mat mat = zeroMat(4, 4);
@@ -249,7 +249,7 @@ namespace sp {
         const Vec2 ccent = getVec2(cam.dsize[0] - 1, cam.dsize[1] - 1) * 0.5 - getVec2(cam.cx, cam.cy);
         const Vec2 cdisp = viewPos + vcent - ccent * viewScale;
 
-        if (pers == true) {
+        if (cam.type == CamParam_Pers) {
 
             const double nx = nearPlane / cam.fx;
             const double ny = nearPlane / cam.fy;

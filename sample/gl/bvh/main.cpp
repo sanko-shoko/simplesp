@@ -45,7 +45,7 @@ private:
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
-        m_bvh.addMeshes(m_model);
+        m_bvh.addModel(m_model);
         m_bvh.build();
 
     }

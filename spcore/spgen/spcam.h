@@ -18,6 +18,7 @@ namespace sp{
 
     SP_GENFUNC CamParam getCamParam(const int dsize0, const int dsize1, const double fx, const double fy, const double cx, const double cy){
         CamParam dst;
+        dst.type = CamParam_Pers;
         dst.dsize[0] = dsize0;
         dst.dsize[1] = dsize1;
 

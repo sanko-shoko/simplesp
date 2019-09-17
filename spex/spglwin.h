@@ -169,14 +169,14 @@ namespace sp {
         return ret;
     }
 
-    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose(), const bool pers = true) {
+    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
         bool ret = false;
 
         Pose cpose = pose * invPose(base);
         if (cpose.trn.z < 0.0) return false;
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
-            const double s = ((pers == true) ? cpose.trn.z : 1.0) / viewScale;
+            const double s = ((cam.type == CamParam_Pers) ? cpose.trn.z : 1.0) / viewScale;
             cpose.trn.x += SP_RCAST(mouse.move.x / cam.fx * s);
             cpose.trn.y += SP_RCAST(mouse.move.y / cam.fy * s);
 

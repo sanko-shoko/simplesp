@@ -63,10 +63,10 @@ private:
         //lights.push(getVec3(0.0, 200.0, -1000.0));
 
         m_pt.setLights(lights);
-        m_pt.setCam(m_cam, true);
+        m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);
 
-        m_pt.add(m_model, pmats);
+        m_pt.addModel(m_model, pmats);
         m_pt.build();
     }
 
@@ -83,8 +83,8 @@ private:
 
 
         if (m_thread.used() == false) {
-            double samb = 0.5;
-            double sdifs[] = {0.5};
+            float samb = 0.5;
+            float sdifs[] = {0.5};
             m_pt.render(m_img, samb, sdifs);
         }
         {
