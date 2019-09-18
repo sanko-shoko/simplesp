@@ -49,13 +49,13 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
 
-        static Mem1<Material*> pmats;
-        pmats.resize(m_model.size());
+        static Mem1<Material> mats;
+        mats.resize(m_model.size());
         static Material mat;
         mat.dif = getCol4f(1.0, 0.5, 0.5, 1.0);
         mat.amb = getCol4f(1.0, 0.5, 0.5, 1.0);
-        for (int i = 0; i < pmats.size(); i++) {
-            pmats[i] = &mat;
+        for (int i = 0; i < mats.size(); i++) {
+            mats[i] = mat;
         }
 
         static Mem1<Vec3> lights;
@@ -66,7 +66,7 @@ private:
         m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);
 
-        m_pt.addModel(m_model, pmats);
+        m_pt.addModel(m_model, mats);
         m_pt.build();
     }
 
@@ -83,9 +83,11 @@ private:
 
 
         if (m_thread.used() == false) {
-            float samb = 0.5;
-            float sdifs[] = {0.5};
-            m_pt.render(m_img, samb, sdifs);
+            float amb = 0.5;
+            float ambshadow = 1.0;
+            float dif[] = { 0.5 };
+            float difshadow[] = {1.0};
+            m_pt.render(m_img, amb, ambshadow, dif, difshadow);
         }
         {
             static Pose prev = m_pose;

@@ -71,8 +71,15 @@ namespace sp {
             const Material* pmat;
         };
 
+        struct Buffer {
+            Mem1<Mesh3> meshes;
+            Mem1<Material*> pmats;
+        };
+
     private:
         int m_acnt;
+
+        MemP<Buffer> m_buffs;
 
         Mem1<Node> m_nodes;
 
@@ -96,21 +103,39 @@ namespace sp {
 
         void clear() {
             m_acnt = 0;
+            m_buffs.clear();
             m_nodes.clear();
             m_idxs.clear();
         }
         
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
+
+            Buffer &buff = *m_buffs.malloc();
+            buff.meshes = meshes;
+            buff.pmats = pmats;
+
             const int offset = m_idxs.size();
-            const int size = meshes.size();
+            const bool pm = (pmats.size() > 0) ? true : false;
 
-            const bool f = (pmats.size() > 0) ? true : false;
-
-            m_idxs.extend(size);
-            for (int i = 0; i < size; i++) {
+            m_idxs.extend(meshes.size());
+            for (int i = 0; i < meshes.size(); i++) {
                 m_idxs[offset + i].acnt = m_acnt;
-                m_idxs[offset + i].pmesh = &meshes[i];
-                m_idxs[offset + i].pmat = (f == true) ? pmats[i] : NULL;
+                m_idxs[offset + i].pmesh = &buff.meshes[i];
+                m_idxs[offset + i].pmat = (pm == true) ? buff.pmats[i] : NULL;
+            }
+            m_acnt++;
+        }
+
+        void addModel(const Mem1<Mesh3*> &pmeshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
+
+            const int offset = m_idxs.size();
+            const bool pm = (pmats.size() > 0) ? true : false;
+
+            m_idxs.extend(pmeshes.size());
+            for (int i = 0; i < pmeshes.size(); i++) {
+                m_idxs[offset + i].acnt = m_acnt;
+                m_idxs[offset + i].pmesh = pmeshes[i];
+                m_idxs[offset + i].pmat = (pm == true) ? pmats[i] : NULL;
             }
             m_acnt++;
         }
@@ -356,39 +381,52 @@ namespace sp {
             }
             m_lim.msk = 1000;
         }
+ 
+        void setCam(const CamParam cam) {
+            if (m_cam != cam) {
+                m_cam = cam;
+                m_img.resize(m_cam.dsize);
+                reset();
+            }
+        }
+        const CamParam& getCam() const {
+            return m_cam;
+        }
+
         void setLights(const Mem1<Vec3> &lights) {
             SP_ASSERT(lights.size() <= maxlt);
 
+            bool changed = false;
             for (int i = 0; i < lights.size(); i++) {
                 if (i >= m_lights.size() || lights[i] != m_lights[i]) {
                     m_cnt.dif[i] = 0;
+                    changed = true;
                 }
             }
-            m_lights = lights;
-            m_upcnt = 0;
+            if (changed == true || m_lights.size() != lights.size()) {
+                m_lights = lights;
+                m_upcnt = 0;
+            }
         }
-
         Mem1<Vec3> getLights() const {
             return m_lights;
         }
 
-        void setCam(const CamParam cam) {
-            m_cam = cam;
-
-            m_img.resize(m_cam.dsize);
-            reset();
-        }
-
         void setPose(const Pose &pose) {
-            m_pose = pose;
-            reset();
+            if (m_pose != pose) {
+                m_pose = pose;
+                reset();
+            }
         }
         const Pose& getPose() const {
             return m_pose;
         }
-        
+
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
             m_bvh.addModel(meshes, pmats);
+        }
+        void addModel(const Mem1<Mesh3*> &pmeshes, const Mem1<Material*> &pmats) {
+            m_bvh.addModel(pmeshes, pmats);
         }
 
         void build() {
@@ -543,9 +581,12 @@ namespace sp {
             else {
                 cols = getCol4f(0.0, 0.0, 0.0, 1.0);
             }
-            {
+            if (d > 0.0) {
                 colv = base.pmat->dif * d;
                 colv.a = base.pmat->dif.a;
+            }
+            else {
+                colv = getCol4f(0.0, 0.0, 0.0, 1.0);
             }
         }
 

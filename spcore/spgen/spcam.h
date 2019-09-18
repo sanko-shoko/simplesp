@@ -30,6 +30,7 @@ namespace sp{
         dst.k1 = SP_RCAST(0.0);
         dst.k2 = SP_RCAST(0.0);
         dst.k3 = SP_RCAST(0.0);
+        dst.k4 = SP_RCAST(0.0);
         dst.p1 = SP_RCAST(0.0);
         dst.p2 = SP_RCAST(0.0);
         return dst;

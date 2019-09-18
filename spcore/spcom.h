@@ -220,18 +220,19 @@ namespace sp{
     // camera parameter
     //--------------------------------------------------------------------------------
 
-    enum {
+    enum CamParam_Type {
         CamParam_Pers = 0,
         CamParam_Orth = 1,
         CamParam_Fish = 2
     };
 
     struct CamParam{
-        int type;
+        CamParam_Type type;
         int dsize[2];
         SP_REAL fx, fy;
         SP_REAL cx, cy;
-        SP_REAL k1, k2, k3, p1, p2;
+        SP_REAL k1, k2, k3, k4;
+        SP_REAL p1, p2;
     };
 
 
@@ -614,6 +615,11 @@ namespace sp {
         return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b) & cmp(col0.a, col1.a);
     }
 
+    // compare camera
+    SP_GENFUNC bool cmp(const CamParam &cam0, const CamParam &cam1) {
+        return cmp(&cam0, &cam1, sizeof(CamParam));
+    }
+
 
 #define SP_CMP_OPERATOR(TYPE) \
     SP_GENFUNC bool operator == (const TYPE &t0, const TYPE &t1) { return cmp(t0, t1); } \
@@ -636,6 +642,7 @@ namespace sp {
     SP_CMP_OPERATOR(Col4);
     SP_CMP_OPERATOR(Col3f);
     SP_CMP_OPERATOR(Col4f);
+    SP_CMP_OPERATOR(CamParam);
 
 
     // compare size
