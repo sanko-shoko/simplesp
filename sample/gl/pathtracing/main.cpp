@@ -49,20 +49,21 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
 
-        static Mem1<Material> mats;
+        static Mem1<Material*> mats;
         mats.resize(m_model.size());
         static Material mat;
         mat.dif = getCol4f(1.0, 0.5, 0.5, 1.0);
         mat.amb = getCol4f(1.0, 0.5, 0.5, 1.0);
         for (int i = 0; i < mats.size(); i++) {
-            mats[i] = mat;
+            mats[i] = &mat;
         }
 
-        static Mem1<Vec3> lights;
-        lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
+        Mem1<PntLight> lights;
+        lights.push(PntLight(0.5, 1.0, invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
         //lights.push(getVec3(0.0, 200.0, -1000.0));
 
-        m_pt.setLights(lights);
+        m_pt.setAmbient(Light(0.5, 1.0));
+        m_pt.setPntLights(lights);
         m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);
 
@@ -87,7 +88,7 @@ private:
             float ambshadow = 1.0;
             float dif[] = { 0.5 };
             float difshadow[] = {1.0};
-            m_pt.render(m_img, amb, ambshadow, dif, difshadow);
+            m_pt.render(m_img);
         }
         {
             static Pose prev = m_pose;
@@ -95,12 +96,20 @@ private:
                 m_pt.setPose(m_pose);
                 prev = m_pose;
 
-                Mem1<Vec3> lights;
-                lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
-                m_pt.setLights(lights);
+                Mem1<PntLight> lights;
+                lights.push(PntLight(0.5, 1.0, invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
+                m_pt.setPntLights(lights);
             }
             m_thread.run([&]() {
+                Timer timer;
+                timer.start();
                 m_pt.update();
+                timer.stop();
+                static double mean = 0.0;
+                static int cnt = 0;
+                mean = (mean * cnt + timer.getms()) / (1.0 + cnt);
+                cnt++;
+                printf("%d %lf\n", cnt, mean);
                 }, false);
         }
 
