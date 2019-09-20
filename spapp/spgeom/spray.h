@@ -66,6 +66,8 @@ namespace sp {
         for (int i = 0; i < 3; i++) {
             const double v = acsv(ray.drc, i);
             if (fabs(v) < 0.001) {
+                if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
+                if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
                 continue;
             }
 
@@ -559,34 +561,47 @@ namespace sp {
             m_upcnt++;
         }
 
-        void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0)) {
+        void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0), const double vig = 0.0) {
             img.resize(m_cam.dsize);
 
-            for (int i = 0; i < img.size(); i++) {
-                Col4f col = getCol4f(0.0, 0.0, 0.0, 0.0);
-                float sum = 0.0f;
-                for (int l = 0; l < m_plights.size(); l++) {
-                    if (m_cnt.dif[l] > 0) {
-                        col += (m_img[i].difs[l] * m_plights[l].sdw + m_img[i].difv[l] * (1.0f - m_plights[l].sdw)) * m_plights[l].val;
-                        sum += m_plights[l].val;
-                    }
-                }
-                {
-                    if (m_cnt.amb > 0) {
-                        col += (m_img[i].ambs * m_ambient.sdw + m_img[i].ambv * (1.0f - m_ambient.sdw)) * m_ambient.val;
-                        sum += m_ambient.val;
-                    }
-                }
-                if (sum > 0.0f) {
-                    col.a /= sum;
-                }
-                else {
-                    col = getCol4f(0.0, 0.0, 0.0, m_img[i].msk);
-                }
+            const Vec2 cent = getVec2(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
 
-                col = meanCol(col, m_img[i].msk, bgcol, 1.0f - m_img[i].msk);
-                img[i] = cast<Col4>(col);
+            for (int v = 0; v < img.dsize[1]; v++) {
+                for (int u = 0; u < img.dsize[0]; u++) {
+                    
+                    Img &im = m_img(u, v);
 
+                    Col4f col = getCol4f(0.0, 0.0, 0.0, 0.0);
+                    float sum = 0.0f;
+                    for (int l = 0; l < m_plights.size(); l++) {
+                        if (m_cnt.dif[l] > 0) {
+                            col += (im.difs[l] * m_plights[l].sdw + im.difv[l] * (1.0f - m_plights[l].sdw)) * m_plights[l].val;
+                            sum += m_plights[l].val;
+                        }
+                    }
+                    {
+                        if (m_cnt.amb > 0) {
+                            col += (im.ambs * m_ambient.sdw + im.ambv * (1.0f - m_ambient.sdw)) * m_ambient.val;
+                            sum += m_ambient.val;
+                        }
+                    }
+                    if (sum > 0.0f) {
+                        col.a /= sum;
+                    }
+                    else {
+                        col = getCol4f(0.0, 0.0, 0.0, im.msk);
+                    }
+
+                    col = meanCol(col, im.msk, bgcol, 1.0f - im.msk);
+
+                    Vec2 vv = getVec2(u, v) - cent;
+                    vv.x /= cent.x;
+                    vv.y /= cent.y;
+                    const double a = sqVec(vv) * vig;
+                    col = meanCol(col, 1.0 - a, getCol4f(0.0, 0.0, 0.0, 1.0), a);
+
+                    img(u, v) = cast<Col4>(col);
+                }
             }
         }
 

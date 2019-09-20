@@ -16,18 +16,29 @@
 
 namespace sp {
 
-    SP_CPUFUNC Col3 getCol3(const ImVec4 &imv) {
-        return getCol3(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5));
+    SP_CPUFUNC void _cast(Col3 &dst, const ImVec4 &imv) {
+        dst.r = static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5);
     }
-    SP_CPUFUNC Col4 getCol4(const ImVec4 &imv) {
-        return getCol4(static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5), static_cast<Byte>(imv.w * SP_BYTEMAX + 0.5));
+    SP_CPUFUNC void _cast(Col4 &dst, const ImVec4 &imv) {
+        dst.r = static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5);
+        dst.g = static_cast<Byte>(imv.y * SP_BYTEMAX + 0.5);
+        dst.b = static_cast<Byte>(imv.z * SP_BYTEMAX + 0.5);
+        dst.a = static_cast<Byte>(imv.w * SP_BYTEMAX + 0.5);
     }
-    SP_CPUFUNC Col3f getCol3f(const ImVec4 &imv) {
-        return getCol3f(imv.x, imv.y, imv.z);
+    SP_CPUFUNC void _cast(Col3f &dst, const ImVec4 &imv) {
+        dst.r = imv.x;
+        dst.g = imv.y;
+        dst.b = imv.z;
     }
-    SP_CPUFUNC Col4f getCol4f(const ImVec4 &imv) {
-        return getCol4f(imv.x, imv.y, imv.z, imv.w);
+    SP_CPUFUNC void _cast(Col4f &dst, const ImVec4 &imv) {
+        dst.r = imv.x;
+        dst.g = imv.y;
+        dst.b = imv.z;
+        dst.a = imv.w;
     }
+
 }
 
 static ImVec4 getImVec4(const sp::Col3 &spcol, const sp::Byte a = SP_BYTEMAX) {
@@ -206,35 +217,6 @@ namespace ImGui {
         ImGui::PopStyleVar();
     }
 
-    static bool ShowText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
-
-        char name[32] = { 0 };
-        const int maxv = 100;
-        for (int i = 0; i < maxv; i++) {
-            sprintf(name, "##showtext%04d", i);
-            const ImGuiWindow* window = ImGui::FindWindowByName(name);
-            if (window == NULL || window->Active == false) {
-                break;
-            }
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Text, col);
-        {
-            ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
-            const float backup = ImGui::GetFontSize();
-            ImGui::SetWindowFontScale(scale);
-            ImGui::SetWindowPos(pos, ImGuiCond_Always);
-
-            ImGui::Text(text);
-
-            ImGui::SetWindowFontScale(backup);
-
-            ImGui::End();
-        }
-        ImGui::PopStyleColor(1);
-        return true;
-    }
-
     static int ColorPicker(ImVec4 &imcol, const bool alpha = false) {
         const int noedit = ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip;
 
@@ -296,7 +278,4 @@ namespace ImGui {
 }
 
 
-namespace sp {
-
-}
 #endif

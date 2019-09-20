@@ -24,6 +24,7 @@ namespace sp{
         dst.b = b;
         return dst;
     }
+
     // get color
     SP_GENFUNC Col4 getCol4(const Byte r, const Byte g, const Byte b, const Byte a) {
         Col4 dst;
