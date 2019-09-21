@@ -14,6 +14,85 @@
 
 #include "spcore/spcore.h"
 
+
+#define ImGuiColorEditFlags_NoEdit (ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip)
+
+#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
+
+static ImVec4 getImVec4(const sp::Col3 &spcol, const sp::Byte a = SP_BYTEMAX) {
+    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
+    return vec;
+}
+
+static ImVec4 getImVec4(const sp::Col4 &spcol) {
+    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(spcol.a) / SP_BYTEMAX);
+    return vec;
+}
+
+static ImVec4 getImVec4(const sp::Col3f &spcol, const float a = 1.0f) {
+    const ImVec4 vec(spcol.r, spcol.g, spcol.b, a);
+    return vec;
+}
+
+static ImVec4 getImVec4(const sp::Col4f &spcol) {
+    const ImVec4 vec(spcol.r, spcol.g, spcol.b, spcol.a);
+    return vec;
+}
+
+
+namespace ImGui {
+
+    static void SetNextWindowRect(const sp::Rect2 &rect, const ImGuiCond cond, const sp::Rect2 *limit = NULL) {
+        sp::Rect2 _rect = rect;
+        if (limit != NULL) {
+            for (int i = 0; i < 2; i++) {
+                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
+                if (_rect.dbase[i] + _rect.dsize[i] > limit->dbase[i] + limit->dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
+            }
+        }
+        ImGui::SetNextWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
+        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
+    }
+
+    static void SetWindowRect(const sp::Rect2 &rect, const ImGuiCond cond, const sp::Rect2 *limit = NULL) {
+        sp::Rect2 _rect = rect;
+        if (limit != NULL) {
+            for (int i = 0; i < 2; i++) {
+                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
+                if (_rect.dbase[i] > limit->dbase[i] + limit->dsize[i] - _rect.dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
+            }
+        }
+        ImGui::SetWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
+        ImGui::SetWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
+    }
+
+    static sp::Rect2 GetWindowRect() {
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+        return sp::getRect2(sp::round(window->Pos.x), sp::round(window->Pos.y), sp::round(window->Size.x), sp::round(window->Size.y));
+    }
+
+    static void Spacing(const float space) {
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        ImGui::Dummy(ImVec2(0.0f, space));
+        ImGui::Dummy(ImVec2(0.0f, 0.0f));
+        ImGui::PopStyleVar();
+    }
+
+    static bool Button(const char *label, const ImVec2 size, const int list, const int id = 0) {
+        const float p = ImGui::GetStyle().WindowPadding.x * 0.5f;
+        const float d = (ImGui::GetWindowWidth() - size.x * list) * 0.5f;
+
+        const float s = (d * 0.2f > 6.0f) ? d * 0.2f : 6.0f;
+        const float m = (ImGui::GetWindowWidth() - size.x * list - s * (list - 1)) * 0.5f;
+        if (id == 0) ImGui::Dummy(ImVec2(1.0f, 1.0f));
+        ImGui::SameLine(-1.0f, m + (size.x + s) * id + 1.0f);
+
+        return ImGui::Button(label, size);
+    }
+
+}
 namespace sp {
 
     SP_CPUFUNC void _cast(Col3 &dst, const ImVec4 &imv) {
@@ -39,33 +118,9 @@ namespace sp {
         dst.a = imv.w;
     }
 
-}
-
-static ImVec4 getImVec4(const sp::Col3 &spcol, const sp::Byte a = SP_BYTEMAX) {
-    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(a) / SP_BYTEMAX);
-    return vec;
-}
-
-static ImVec4 getImVec4(const sp::Col4 &spcol) {
-    const ImVec4 vec(static_cast<float>(spcol.r) / SP_BYTEMAX, static_cast<float>(spcol.g) / SP_BYTEMAX, static_cast<float>(spcol.b) / SP_BYTEMAX, static_cast<float>(spcol.a) / SP_BYTEMAX);
-    return vec;
-}
-
-static ImVec4 getImVec4(const sp::Col3f &spcol, const float a = 1.0f) {
-    const ImVec4 vec(spcol.r, spcol.g, spcol.b, a);
-    return vec;
-}
-
-static ImVec4 getImVec4(const sp::Col4f &spcol) {
-    const ImVec4 vec(spcol.r, spcol.g, spcol.b, spcol.a);
-    return vec;
-}
-
-namespace sp {
-
     class StyleStack {
     private:
-        int pcount[2] = { 0 };
+        int pcount[3] = { 0 };
     public:
         ~StyleStack() {
             popAll();
@@ -78,6 +133,12 @@ namespace sp {
             if (pcount[1] > 0) {
                 ImGui::PopStyleColor(pcount[1]);
                 pcount[1] = 0;
+            }
+            if (pcount[2] > 0) {
+                for (int i = 0; i < pcount[2]; i++) {
+                    ImGui::PopItemWidth();
+                }
+                pcount[2] = 0;
             }
         }
 
@@ -93,11 +154,13 @@ namespace sp {
             ImGui::PushStyleColor(idx, col);
             pcount[1]++;
         }
-
         void pushButton(const ImVec4 &btn, const ImVec4 &btnHovered, const ImVec4 &btnActive) {
             pushColor(ImGuiCol_Button, btn);
             pushColor(ImGuiCol_ButtonHovered, btnHovered);
             pushColor(ImGuiCol_ButtonActive, btnActive);
+        }
+        void pushItemWidth(const float width) {
+            ImGui::PushItemWidth(width);
         }
 
     };
@@ -170,55 +233,18 @@ namespace sp {
         }
     };
 
-}
+    SP_CPUFUNC int ColorPicker(const char *popup, Col4f &col, const bool alpha = false) {
+        static Col4f backup;
 
-namespace ImGui {
-
- 
-#define ImGuiWindowFlags_Block (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoFocusOnAppearing)
-    using namespace sp;
-
-      
-    static void SetNextWindowRect(const Rect2 &rect, const ImGuiCond cond, const Rect2 *limit = NULL) {
-        Rect2 _rect = rect;
-        if (limit != NULL) {
-            for (int i = 0; i < 2; i++) {
-                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
-                if (_rect.dbase[i] + _rect.dsize[i] > limit->dbase[i] + limit->dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
-            }
+        int ret = 1;
+        if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
+            ImGui::OpenPopup(popup);
+            backup = col;
+            ret = 0;
         }
-        ImGui::SetNextWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
-        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
-    }
+        if (ImGui::BeginPopup(popup) == false) return -1;
 
-    static void SetWindowRect(const Rect2 &rect, const ImGuiCond cond, const Rect2 *limit = NULL) {
-        Rect2 _rect = rect;
-        if (limit != NULL) {
-            for (int i = 0; i < 2; i++) {
-                if (_rect.dbase[i] < limit->dbase[i]) _rect.dbase[i] = limit->dbase[i];
-                if (_rect.dbase[i] > limit->dbase[i] + limit->dsize[i] - _rect.dsize[i]) _rect.dbase[i] = limit->dbase[i] + limit->dsize[i] - _rect.dsize[i];
-            }
-        }
-        ImGui::SetWindowPos(ImVec2(static_cast<float>(_rect.dbase[0]), static_cast<float>(_rect.dbase[1])), cond);
-        ImGui::SetWindowSize(ImVec2(static_cast<float>(_rect.dsize[0]), static_cast<float>(_rect.dsize[1])), cond);
-    }
-
-    static Rect2 GetWindowRect() {
-        ImGuiWindow* window = ImGui::GetCurrentWindow();
-
-        return getRect2(sp::round(window->Pos.x), sp::round(window->Pos.y), sp::round(window->Size.x), sp::round(window->Size.y));
-    }
-
-    static void Spacing(const float space) {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
-        ImGui::Dummy(ImVec2(0.0f, 0.0f));
-        ImGui::Dummy(ImVec2(0.0f, space));
-        ImGui::Dummy(ImVec2(0.0f, 0.0f));
-        ImGui::PopStyleVar();
-    }
-
-    static int ColorPicker(ImVec4 &imcol, const bool alpha = false) {
-        const int noedit = ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip;
+        ImVec4 imcol = getImVec4(col);
 
         {
             ImGui::PushItemWidth(254.0f);
@@ -233,11 +259,10 @@ namespace ImGui {
 
         ImGui::SameLine();
 
-        int ret = -1;
         {
             ImGui::BeginGroup();
-
-            ImGui::ColorButton("##current", imcol, noedit, ImVec2(56.0f, 40.0f));
+            const int type = (alpha == false) ? ImGuiColorEditFlags_None : ImGuiColorEditFlags_AlphaPreviewHalf;
+            ImGui::ColorButton("##current", imcol, ImGuiColorEditFlags_NoEdit | type, ImVec2(56.0f, 40.0f));
             ImGui::Spacing(2.0f);
 
             for (int r = 0; r < 13; r++) {
@@ -249,7 +274,7 @@ namespace ImGui {
                     if (c != 0) ImGui::SameLine();
 
                     ImGui::PushID(r * 4 + c);
-                    if (ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, c)), noedit, ImVec2(14.0f, 14.0f))) {
+                    if (ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, c)), ImGuiColorEditFlags_NoEdit, ImVec2(14.0f, 14.0f))) {
                         imcol = getImVec4(sp::stdcol(r, c), static_cast<sp::Byte>(imcol.w * SP_BYTEMAX));
                     }
                     ImGui::PopID();
@@ -258,24 +283,29 @@ namespace ImGui {
             ImGui::Spacing();
 
             if (ImGui::Button("ok", ImVec2(-1.0f, 0.0f)) == true) {
-                ret = 0;
+                ret = 2;
                 ImGui::CloseCurrentPopup();
             }
             if (ImGui::Button("cancel", ImVec2(-1.0f, 0.0f)) == true) {
-                ret = 1;
+                ret = 3;
+                col = backup;
                 ImGui::CloseCurrentPopup();
             }
             if (ImGui::Button("clear", ImVec2(-1.0f, 0.0f)) == true) {
-                ret = 2;
+                ret = 4;
+                col = sp::getCol4f(1.0f, 1.0f, 1.0f, 0.0f);
                 ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndGroup();
         }
+        if (ret == 1) {
+            col = sp::cast<sp::Col4f>(imcol);
+        }
+
+        ImGui::EndPopup();
+
         return ret;
     }
-
 }
-
-
 #endif

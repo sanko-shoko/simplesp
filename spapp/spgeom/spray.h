@@ -65,7 +65,7 @@ namespace sp {
         double f = maxv;
         for (int i = 0; i < 3; i++) {
             const double v = acsv(ray.drc, i);
-            if (fabs(v) < 0.001) {
+            if (fabs(v) < SP_SMALL) {
                 if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
                 if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
                 continue;
@@ -91,21 +91,26 @@ namespace sp {
   
     class Light {
     public:
+        Col4f col;
         float val;
         float sdw;
 
         Light() {
-            val = 1.0f;
+            col = getCol4f(1.0, 1.0, 1.0, 1.0);
+            val = 0.5f;
             sdw = 1.0f;
         }
         Light(const Light &light) {
             *this = light;
         }
-        Light(const double val, const double sdw) {
+        Light(const Col4f &col, const double val, const double sdw) {
+            this->col = col;
             this->val = val;
             this->sdw = sdw;
         }
+
         Light& operator = (const Light &light) {
+            col = light.col;
             val = light.val;
             sdw = light.sdw;
             return *this;
@@ -122,12 +127,14 @@ namespace sp {
         PntLight(const PntLight &light) {
             *this = light;
         }
-        PntLight(const double val, const double sdw, const Vec3 &pnt) {
+        PntLight(const Col4f &col, const double val, const double sdw, const Vec3 &pnt) {
+            this->col = col;
             this->val = val;
             this->sdw = sdw;
             this->pnt = pnt;
         }
         PntLight& operator = (const PntLight &light) {
+            col = light.col;
             val = light.val;
             sdw = light.sdw;
             pnt = light.pnt;
@@ -470,6 +477,10 @@ namespace sp {
 
         void setAmbient(const Light &light, const int lim = 100) {
             m_ambient = light;
+            if (m_lim.amb != lim) {
+                m_cnt.amb = 0;
+                m_cnt.msk = 0;
+            }
             m_lim.amb = lim;
         }
         const Light& getAmbient() {
@@ -483,6 +494,7 @@ namespace sp {
             for (int i = 0; i < lights.size(); i++) {
                 if (i >= m_plights.size() || lights[i].pnt != m_plights[i].pnt) {
                     m_cnt.dif[i] = 0;
+                    m_cnt.msk = 0;
                     changed = true;
                 }
             }
@@ -566,6 +578,12 @@ namespace sp {
 
             const Vec2 cent = getVec2(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
 
+            auto blend = [](Col4f &dst, const Col4f &srcs, const Col4f &srcv, const Light &light) {
+                dst.r += (srcs.r * light.sdw + srcv.r * (1.0f - light.sdw)) * light.val * light.col.r;
+                dst.g += (srcs.g * light.sdw + srcv.g * (1.0f - light.sdw)) * light.val * light.col.g;
+                dst.b += (srcs.b * light.sdw + srcv.b * (1.0f - light.sdw)) * light.val * light.col.b;
+                dst.a += (srcs.a * light.sdw + srcv.a * (1.0f - light.sdw)) * light.val;
+            };
             for (int v = 0; v < img.dsize[1]; v++) {
                 for (int u = 0; u < img.dsize[0]; u++) {
                     
@@ -575,13 +593,13 @@ namespace sp {
                     float sum = 0.0f;
                     for (int l = 0; l < m_plights.size(); l++) {
                         if (m_cnt.dif[l] > 0) {
-                            col += (im.difs[l] * m_plights[l].sdw + im.difv[l] * (1.0f - m_plights[l].sdw)) * m_plights[l].val;
+                            blend(col, im.difs[l], im.difv[l], m_plights[l]);
                             sum += m_plights[l].val;
                         }
                     }
                     {
                         if (m_cnt.amb > 0) {
-                            col += (im.ambs * m_ambient.sdw + im.ambv * (1.0f - m_ambient.sdw)) * m_ambient.val;
+                            blend(col, im.ambs, im.ambv, m_ambient);
                             sum += m_ambient.val;
                         }
                     }

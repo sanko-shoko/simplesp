@@ -359,9 +359,13 @@ namespace sp {
             set(img, dsize);
         }
         template <typename TYPE>
-        Texture(const void *img, const int *dsize, const int ch) {
+        Texture(const TYPE *img, const int *dsize, const int ch) {
             reset();
             set(img, dsize, ch);
+        }
+
+        GLuint id() {
+            return m_tx;
         }
 
         template<typename TYPE>
@@ -369,7 +373,8 @@ namespace sp {
             return set(img, dsize, sizeof(TYPE));
         }
 
-        bool set(const void *img, const int *dsize, const int ch) {
+        template<typename TYPE>
+        bool set(const TYPE *img, const int *dsize, const int ch) {
 
             int format;
             switch (ch) {
@@ -411,10 +416,6 @@ namespace sp {
             glBindTexture(GL_TEXTURE_2D, 0);
 
             return (m_tx > 0) ? true : false;
-        }
-
-        GLuint txid() {
-            return m_tx;
         }
 
     };
@@ -713,7 +714,7 @@ namespace sp {
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glBindTexture(GL_TEXTURE_2D, tex.txid());
+            glBindTexture(GL_TEXTURE_2D, tex.id());
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
