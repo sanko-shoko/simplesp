@@ -58,11 +58,11 @@ private:
             mats[i] = &mat;
         }
 
-        Mem1<PntLight> lights;
-        lights.push(PntLight(0.5, 1.0, invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
-        //lights.push(getVec3(0.0, 200.0, -1000.0));
+        Mem1<PathTrace::PntLight> lights;
+        lights.push(PathTrace::PntLight());
+        lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
 
-        m_pt.setAmbient(Light(0.5, 1.0));
+        m_pt.setAmbient(&PathTrace::Light());
         m_pt.setPntLights(lights);
         m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);
@@ -96,8 +96,9 @@ private:
                 m_pt.setPose(m_pose);
                 prev = m_pose;
 
-                Mem1<PntLight> lights;
-                lights.push(PntLight(0.5, 1.0, invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
+                Mem1<PathTrace::PntLight> lights;
+                lights.push(PathTrace::PntLight());
+                lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
                 m_pt.setPntLights(lights);
             }
             m_thread.run([&]() {
@@ -109,7 +110,7 @@ private:
                 static int cnt = 0;
                 mean = (mean * cnt + timer.getms()) / (1.0 + cnt);
                 cnt++;
-                printf("%d %lf\n", cnt, mean);
+                //printf("%d %lf\n", cnt, mean);
                 }, false);
         }
 
