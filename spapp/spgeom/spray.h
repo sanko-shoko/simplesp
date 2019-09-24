@@ -205,7 +205,7 @@ namespace sp {
 
             m_nodes.clear();
             m_nodes.reserve(2 * idxs.size() - 1);
-            auto initn = [&](const int level, const int base, const int size) -> Node*{
+            auto initn = [&](const int level, const int base, const int size) -> Node* {
                 Node *n = m_nodes.extend();
                 n->level = level;
                 n->base = base;
@@ -236,18 +236,46 @@ namespace sp {
 
                 sort(&idxs[n.base], n.size, cmp[ax]);
             };
-
             initn(0, 0, idxs.size());
 
-            Mem2<SP_REAL> map(idxs.size(), 2);
-            
-            for(int ni = 0; ni < m_nodes.size(); ni++){
-                Node& n = m_nodes[ni];
-                if (n.size == 1) continue;
+            Mem1<Mem1<Node*>> tnodes;
+            {
+                tnodes.reserve(20);
 
-                int di = 0;
-                int da = 0;
-                {
+                const int lim = 5000;
+                const int mul = idxs.size() / lim;
+                const int level = (mul > 0) ? round(log2(mul)) : 0;
+
+                for (int ni = 0; ni < m_nodes.size(); ni++) {
+                    Node& n = m_nodes[ni];
+                    const int di = n.size / 2;
+
+                    if (n.level < level) {
+                        n.n0 = initn(n.level + 1, n.base, di);
+                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                    }
+                    else {
+                        const int t = tnodes.size();
+                        Mem1<Node*> &nodes = *tnodes.extend();
+                        nodes.reserve(2 * n.size - 1);
+                        nodes.push(&n);
+                    }
+                }
+            }
+         
+            Mem1<SP_REAL> map(idxs.size());
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+            for (int i = 0; i < tnodes.size(); i++) {
+                for (int ni = 0; ni < tnodes[i].size(); ni++) {
+                    Node& n = *tnodes[i][ni];
+                    if (n.size == 1) continue;
+
+                    int di = 0;
+                    int da = 0;
+
                     double mina = SP_INFINITY;
                     for (int a = 0; a < 3; a++) {
                         sorti(n, a);
@@ -256,27 +284,36 @@ namespace sp {
 
                         for (int i = 1; i < n.size; i++) {
                             const int l = i;
-                            const int r = n.size - i;
                             bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
+                            map[n.base + l] = 0;
+                            map[n.base + l] += getBoxArea(bl) * i;
+                        }
+                        for (int i = 1; i < n.size; i++) {
+                            const int r = n.size - i;
                             br = orBox(br, *idxs[n.base + r].pmesh);
-                            map(l, 0) = getBoxArea(bl) * i;
-                            map(r, 1) = getBoxArea(br) * i;
+                            map[n.base + r] += getBoxArea(br) * i;
                         }
 
                         for (int i = 1; i < n.size; i++) {
-                            const double area = 1.0 + (map(i, 0) + map(i, 1)) / getBoxArea(n.box);
-                            if (area < mina) {
-                                mina = area;
+                            //const double area = 1.0 + (map(i, 0) + map(i, 1)) / getBoxArea(n.box);
+                            if (map[n.base + i] < mina) {
+                                mina = map[n.base + i];
                                 di = i;
                                 da = a;
                             }
                         }
                     }
+                    sorti(n, da);
+#if SP_USE_OMP
+#pragma omp critical
+#endif
+                    {
+                        n.n0 = initn(n.level + 1, n.base, di);
+                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                    }
+                    tnodes[i].push(n.n0);
+                    tnodes[i].push(n.n1);
                 }
-
-                sorti(n, da);
-                n.n0 = initn(n.level + 1, n.base, di);
-                n.n1 = initn(n.level + 1, n.base + di, n.size - di);
             }
 
             for (int i = 0; i < m_idxs.size(); i++) {
@@ -684,7 +721,7 @@ namespace sp {
                 }
             }
             if (m_ground.size() > 0) {
-                float result[3];
+                SP_REAL result[3];
                 if (tracePlane(result, m_ground[0].vec, ray, 0, norm)) {
                     hit.acnt = 0;
                     hit.norm = result[0];
