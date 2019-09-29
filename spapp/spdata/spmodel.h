@@ -429,35 +429,50 @@ namespace sp{
         return model;
     }
 
-    SP_CPUFUNC Mem1<Mesh3> loadCube(const Rect3 &rect, const double m = 0.0) {
+    SP_CPUFUNC Mem1<Mesh3> loadCone(const Vec3 &drc, const double radius, const int div = 36) {
         Mem1<Mesh3> model;
 
-        const Vec3 A = getVec3(rect.dbase[0] - 0.5 - m, rect.dbase[1] - 0.5 - m, rect.dbase[2] - 0.5 - m);
-        const Vec3 B = getVec3(rect.dbase[0] + rect.dsize[0] - 0.5 + m, rect.dbase[1] + rect.dsize[1] - 0.5 + m, rect.dbase[2] + rect.dsize[2] - 0.5 + m);
+        const Vec3 nx = getRotDirection(drc) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = getRotDirection(drc) * getVec3(0.0, 1.0, 0.0);
 
-        const Vec3 C = (A + B) / 2.0;
-        const Vec3 H = (A - B) / 2.0;
+        const double step = 360.0 / div;
+        for (int i = 0; i < div; i++) {
+            const double pa = (i + 0) * step * SP_PI / 180.0;
+            const double pb = (i + 1) * step * SP_PI / 180.0;
+            const Vec3 a = (nx * cos(pa) + ny * sin(pa)) * radius;
+            const Vec3 b = (nx * cos(pb) + ny * sin(pb)) * radius;
+            const Vec3 c = drc;
 
-        for (int z = -1; z <= +1; z += 2) {
-            for (int y = -1; y <= +1; y += 2) {
-                for (int x = -1; x <= +1; x += 2) {
-                    if ((x * y * z) > 0) continue;
-
-                    const Vec3 p0 = getVec3(+x * fabs(H.x), +y * fabs(H.y), +z * fabs(H.z)) + C;
-                    const Vec3 px = getVec3(-x * fabs(H.x), +y * fabs(H.y), +z * fabs(H.z)) + C;
-                    const Vec3 py = getVec3(+x * fabs(H.x), -y * fabs(H.y), +z * fabs(H.z)) + C;
-                    const Vec3 pz = getVec3(+x * fabs(H.x), +y * fabs(H.y), -z * fabs(H.z)) + C;
-
-                    model.push(getMesh3(p0, py, px));
-                    model.push(getMesh3(p0, pz, py));
-                    model.push(getMesh3(p0, px, pz));
-                }
-            }
+            model.push(getMesh3(a, b, c));
+            model.push(getMesh3(b, a, getVec3(0.0, 0.0, 0.0)));
         }
 
         return model;
     }
 
+    SP_CPUFUNC Mem1<Mesh3> loadCylinder(const Vec3 &drc, const double radius, const int div = 36) {
+        Mem1<Mesh3> model;
+
+        const Vec3 nx = getRotDirection(drc) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = getRotDirection(drc) * getVec3(0.0, 1.0, 0.0);
+
+        const double step = 360.0 / div;
+        for (int i = 0; i < div; i++) {
+            const double pa = (i + 0) * step * SP_PI / 180.0;
+            const double pb = (i + 1) * step * SP_PI / 180.0;
+            const Vec3 a = (nx * cos(pa) + ny * sin(pa)) * radius;
+            const Vec3 b = (nx * cos(pb) + ny * sin(pb)) * radius;
+            const Vec3 c = a + drc;
+            const Vec3 d = b + drc;
+
+            model.push(getMesh3(a, b, d));
+            model.push(getMesh3(d, c, a));
+            model.push(getMesh3(b, a, getVec3(0.0, 0.0, 0.0)));
+            model.push(getMesh3(a, b, getVec3(0.0, 0.0, 0.0)) + drc);
+        }
+
+        return model;
+    }
 }
 
 #endif

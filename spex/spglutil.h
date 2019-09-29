@@ -10,11 +10,10 @@
 #include "spcore/spcore.h"
 
 namespace sp {
-
     //--------------------------------------------------------------------------------
     // overwrap
     //--------------------------------------------------------------------------------
-    
+
     SP_CPUFUNC void _glLoadMatrix(const float *mat) {
         glLoadMatrixf(mat);
     }
@@ -28,34 +27,28 @@ namespace sp {
         glMultMatrixd(mat);
     }
 
-    SP_CPUFUNC void glLoadMatrix(const Mat &mat){
+    SP_CPUFUNC void glLoadMatrix(const Mat &mat) {
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
         _glLoadMatrix(m4x4t.ptr);
     }
-
-    SP_CPUFUNC void glMultMatrix(const Mat &mat){
+    SP_CPUFUNC void glMultMatrix(const Mat &mat) {
         const Mat m4x4t = trnMat(extMat(4, 4, mat));
         _glMultMatrix(m4x4t.ptr);
     }
-
-    SP_CPUFUNC void glLoadMatrix(const Pose &pose){
+    SP_CPUFUNC void glLoadMatrix(const Pose &pose) {
         glLoadMatrix(getMat(pose));
     }
-
-    SP_CPUFUNC void glMultMatrix(const Pose &pose){
+    SP_CPUFUNC void glMultMatrix(const Pose &pose) {
         glMultMatrix(getMat(pose));
     }
 
-
-    SP_CPUFUNC void glVertex(const Vec2 &vec){
-        glVertex2d(vec.x, vec.y);
+    SP_CPUFUNC void glVertex(const Vec2 &vrt) {
+        glVertex2d(vrt.x, vrt.y);
     }
-
-    SP_CPUFUNC void glVertex(const Vec3 &vec){
-        glVertex3d(vec.x, vec.y, vec.z);
+    SP_CPUFUNC void glVertex(const Vec3 &vrt) {
+        glVertex3d(vrt.x, vrt.y, vrt.z);
     }
-
-    SP_CPUFUNC void glNormal(const Vec3 &nrm){
+    SP_CPUFUNC void glNormal(const Vec3 &nrm) {
         glNormal3d(nrm.x, nrm.y, nrm.z);
     }
 
@@ -72,14 +65,20 @@ namespace sp {
         glColor4f(col.r, col.g, col.b, col.a);
     }
 
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 col) {
-        GLfloat param[4] = { static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, 1.f };
-        glMaterialfv(face, pname, param);
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 &col) {
+        const Col4f tmp = cast<Col4f>(col);
+        glMaterialfv(face, pname, (float*)&tmp);
     }
-
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4 col) {
-        GLfloat param[4] = { static_cast<float>(col.r) / SP_BYTEMAX, static_cast<float>(col.g) / SP_BYTEMAX, static_cast<float>(col.b) / SP_BYTEMAX, static_cast<float>(col.a) / SP_BYTEMAX };
-        glMaterialfv(face, pname, param);
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4 &col) {
+        const Col4f tmp = cast<Col4f>(col);
+        glMaterialfv(face, pname, (float*)&tmp);
+    }
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3f &col) {
+        const Col4f tmp = cast<Col4f>(col);
+        glMaterialfv(face, pname, (float*)&tmp);
+    }
+    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4f &col) {
+        glMaterialfv(face, pname, (float*)&col);
     }
 
     SP_CPUFUNC void glViewport(const Rect2 &rect) {
@@ -108,18 +107,18 @@ namespace sp {
         return trnMat(mat);
     }
 
-	SP_CPUFUNC double glGetPixelScale() {
-		GLFWwindow *win = glfwGetCurrentContext();
+    SP_CPUFUNC double glGetPixelScale() {
+        GLFWwindow *win = glfwGetCurrentContext();
 
-		int fw, fh;
-		glfwGetFramebufferSize(win, &fw, &fh);
+        int fw, fh;
+        glfwGetFramebufferSize(win, &fw, &fh);
 
-		int ww, wh;
-		glfwGetWindowSize(win, &ww, &wh);
-		const double pscale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
+        int ww, wh;
+        glfwGetWindowSize(win, &ww, &wh);
+        const double pscale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
 
-		return pscale;
-	}
+        return pscale;
+    }
 
     SP_CPUFUNC float glGetBasicLineWidth() {
         GLint viewport[4];
@@ -131,11 +130,11 @@ namespace sp {
     //--------------------------------------------------------------------------------
     // load view 2d
     //--------------------------------------------------------------------------------
-    
+
     SP_CPUFUNC Mat glGetViewMat(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0) {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
-        
+
         const Vec2 rectCenter = getVec2(dsize0 - 1, dsize1 - 1) * 0.5;
         const Vec2 viewCenter = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
@@ -174,7 +173,7 @@ namespace sp {
         Mat _vmat = vmat;
 
         {// for retina display
-			const double pixScale = glGetPixelScale();
+            const double pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
             pmat(0, 0) = SP_RCAST(1.0 / pixScale);
@@ -214,7 +213,7 @@ namespace sp {
         glLoadView2D(dsize[0], dsize[1], vmat);
     }
 
-    SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0){
+    SP_CPUFUNC void glLoadView2D(const int dsize0, const int dsize1, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0) {
 
         glLoadView2D(dsize0, dsize1, glGetViewMat(dsize0, dsize1, viewPos, viewScale));
     }
@@ -224,7 +223,7 @@ namespace sp {
         glLoadView2D(dsize, glGetViewMat(dsize, viewPos, viewScale));
     }
 
-    SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0){
+    SP_CPUFUNC void glLoadView2D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0) {
 
         glLoadView2D(cam.dsize, glGetViewMat(cam.dsize, viewPos, viewScale));
     }
@@ -238,7 +237,7 @@ namespace sp {
 #define SP_DEFAULT_NEAR SP_RCAST(1.0)
 #define SP_DEFAULT_FAR SP_RCAST(10000.0)
 
-    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR, const bool pers = true){
+    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
         glEnable(GL_DEPTH_TEST);
 
         Mat mat = zeroMat(4, 4);
@@ -249,8 +248,8 @@ namespace sp {
         const Vec2 vcent = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
         const Vec2 ccent = getVec2(cam.dsize[0] - 1, cam.dsize[1] - 1) * 0.5 - getVec2(cam.cx, cam.cy);
         const Vec2 cdisp = viewPos + vcent - ccent * viewScale;
-      
-        if (pers == true) {
+
+        if (cam.type == CamParam_Pers) {
 
             const double nx = nearPlane / cam.fx;
             const double ny = nearPlane / cam.fy;
@@ -360,9 +359,13 @@ namespace sp {
             set(img, dsize);
         }
         template <typename TYPE>
-        Texture(const void *img, const int *dsize, const int ch) {
+        Texture(const TYPE *img, const int *dsize, const int ch) {
             reset();
             set(img, dsize, ch);
+        }
+
+        GLuint id() {
+            return m_tx;
         }
 
         template<typename TYPE>
@@ -370,7 +373,8 @@ namespace sp {
             return set(img, dsize, sizeof(TYPE));
         }
 
-        bool set(const void *img, const int *dsize, const int ch) {
+        template<typename TYPE>
+        bool set(const TYPE *img, const int *dsize, const int ch) {
 
             int format;
             switch (ch) {
@@ -414,10 +418,6 @@ namespace sp {
             return (m_tx > 0) ? true : false;
         }
 
-        GLuint txid() {
-            return m_tx;
-        }
-
     };
 
 
@@ -431,7 +431,7 @@ namespace sp {
         glBegin(type);
 
         if (fill == true) {
-            sp::glVertex(pos);
+            glVertex(pos);
         }
         for (int i = 0; i <= 36; i++) {
             const double p = i / 36.0 * 2.0 * SP_PI;
@@ -464,13 +464,12 @@ namespace sp {
     }
 
     SP_CPUFUNC void glRect(const Rect2 &rect, const double m = 0.5, const bool fill = false) {
-        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
 
         const Vec2 A = getVec2(rect.dbase[0] - m, rect.dbase[1] - m);
         const Vec2 B = getVec2(rect.dbase[0] + rect.dsize[0] - 1.0 + m, rect.dbase[1] + rect.dsize[1] - 1.0 + m);
 
-        glBegin((fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP);
-        glVertex(getVec2(A.x, A.y)); glVertex(getVec2(B.x, A.y)); 
+        glBegin((fill == true) ? GL_QUADS : GL_LINE_LOOP);
+        glVertex(getVec2(A.x, A.y)); glVertex(getVec2(B.x, A.y));
         glVertex(getVec2(B.x, B.y)); glVertex(getVec2(A.x, B.y));
         glEnd();
     }
@@ -515,7 +514,7 @@ namespace sp {
         glEnd();
     }
 
-    SP_CPUFUNC void glMesh(const Mesh3 &mesh){
+    SP_CPUFUNC void glMesh(const Mesh3 &mesh) {
         glBegin(GL_TRIANGLES);
         glNormal(getMeshNrm(mesh));
         glVertex(mesh.pos[0]);
@@ -524,7 +523,7 @@ namespace sp {
         glEnd();
     }
 
-    SP_CPUFUNC void glAxis(const double size){
+    SP_CPUFUNC void glAxis(const double size) {
         glBegin(GL_LINES);
         glColor3ub(255, 0, 0);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(size, 0.0, 0.0);
@@ -537,11 +536,11 @@ namespace sp {
         glEnd();
     }
 
-    SP_CPUFUNC void glCube(const double size){
+    SP_CPUFUNC void glCube(const double size) {
         glBegin(GL_QUADS);
 
         const double s = size / 2.0;
-        for(int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++) {
             double v = (i == 0) ? +1.0 : -1.0;
             glNormal3d(v, 0.0, 0.0);
             glVertex3d(+s * v, -s, -s);
@@ -564,9 +563,9 @@ namespace sp {
         glEnd();
     }
 
-    SP_CPUFUNC void glGrid(const double size, const int num){
+    SP_CPUFUNC void glGrid(const double size, const int num) {
         glBegin(GL_LINES);
-        for (int i = 0; i < num; i++){
+        for (int i = 0; i < num; i++) {
             const double p = i * 2 * size / (num - 1);
             glVertex3d(-size, -size + p, 0.0);
             glVertex3d(+size, -size + p, 0.0);
@@ -592,7 +591,7 @@ namespace sp {
         }
         glEnd();
     }
-    
+
     SP_CPUFUNC void glModel(const Mem1<Mesh3> &model) {
         for (int i = 0; i < model.size(); i++) {
             glMesh(model[i]);
@@ -712,18 +711,21 @@ namespace sp {
 
         glPushAttrib(GL_ENABLE_BIT);
         glEnable(GL_TEXTURE_2D);
-
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            glBindTexture(GL_TEXTURE_2D, tex.txid());
+            glBindTexture(GL_TEXTURE_2D, tex.id());
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
+#if SP_USE_GLEW
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#else
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+#endif
             //glShadeModel(GL_FLAT);
             glColor3d(1.0, 1.0, 1.0);
             glColorMask(1, 1, 1, 1);
@@ -761,5 +763,4 @@ namespace sp {
         glTexImg(img);
     }
 }
-
 #endif

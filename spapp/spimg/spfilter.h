@@ -622,8 +622,8 @@ namespace sp{
                     const ELEM base = acs2<TYPE, ELEM>(tmp, u, v, c);
 
                     SP_REAL sum = 0.0, div = 0.0;
-                    for (int ky = -half; ky < +half; ky++){
-                        for (int kx = -half; kx < +half; kx++){
+                    for (int ky = -half; ky <= +half; ky++){
+                        for (int kx = -half; kx <= +half; kx++){
                             if (inRect(rect, u + kx, v + ky) == false) continue;
 
                             const ELEM &val = acs2<TYPE, ELEM>(tmp, u + kx, v + ky, c);

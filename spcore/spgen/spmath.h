@@ -530,12 +530,11 @@ namespace sp{
         const SP_REAL det = detMat22(mat);
         if (fabs(det) < SP_SMALL) return false;
 
-        dst[0 * 2 + 0] = +mat[1 * 2 + 1];
-        dst[0 * 2 + 1] = -mat[0 * 2 + 1];
-        dst[1 * 2 + 0] = -mat[1 * 2 + 0];
-        dst[1 * 2 + 1] = +mat[0 * 2 + 0];
+        dst[0 * 2 + 0] = (+mat[1 * 2 + 1]) / det;
+        dst[0 * 2 + 1] = (-mat[0 * 2 + 1]) / det;
+        dst[1 * 2 + 0] = (-mat[1 * 2 + 0]) / det;
+        dst[1 * 2 + 1] = (+mat[0 * 2 + 0]) / det;
 
-        mulElm(dst, 2 * 2, dst, 1.0 / det);
         return true;
     }
 
@@ -543,19 +542,18 @@ namespace sp{
         const SP_REAL det = detMat33(mat);
         if (fabs(det) < SP_SMALL) return false;
 
-        dst[0 * 3 + 0] = +(mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]);
-        dst[0 * 3 + 1] = -(mat[0 * 3 + 1] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 1]);
-        dst[0 * 3 + 2] = +(mat[0 * 3 + 1] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 1]);
+        dst[0 * 3 + 0] = (+(mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1])) / det;
+        dst[0 * 3 + 1] = (-(mat[0 * 3 + 1] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 1])) / det;
+        dst[0 * 3 + 2] = (+(mat[0 * 3 + 1] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 1])) / det;
 
-        dst[1 * 3 + 0] = -(mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0]);
-        dst[1 * 3 + 1] = +(mat[0 * 3 + 0] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 0]);
-        dst[1 * 3 + 2] = -(mat[0 * 3 + 0] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 0]);
+        dst[1 * 3 + 0] = (-(mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0])) / det;
+        dst[1 * 3 + 1] = (+(mat[0 * 3 + 0] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 0])) / det;
+        dst[1 * 3 + 2] = (-(mat[0 * 3 + 0] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 0])) / det;
 
-        dst[2 * 3 + 0] = +(mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0]);
-        dst[2 * 3 + 1] = -(mat[0 * 3 + 0] * mat[2 * 3 + 1] - mat[0 * 3 + 1] * mat[2 * 3 + 0]);
-        dst[2 * 3 + 2] = +(mat[0 * 3 + 0] * mat[1 * 3 + 1] - mat[0 * 3 + 1] * mat[1 * 3 + 0]);
+        dst[2 * 3 + 0] = (+(mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0])) / det;
+        dst[2 * 3 + 1] = (-(mat[0 * 3 + 0] * mat[2 * 3 + 1] - mat[0 * 3 + 1] * mat[2 * 3 + 0])) / det;
+        dst[2 * 3 + 2] = (+(mat[0 * 3 + 0] * mat[1 * 3 + 1] - mat[0 * 3 + 1] * mat[1 * 3 + 0])) / det;
 
-        mulElm(dst, 3 * 3, dst, 1.0 / det);
         return true;
     }
 

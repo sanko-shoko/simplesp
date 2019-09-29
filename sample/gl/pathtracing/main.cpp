@@ -49,23 +49,25 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
 
-        static Mem1<Material*> pmats;
-        pmats.resize(m_model.size());
+        static Mem1<Material*> mats;
+        mats.resize(m_model.size());
         static Material mat;
         mat.dif = getCol4f(1.0, 0.5, 0.5, 1.0);
         mat.amb = getCol4f(1.0, 0.5, 0.5, 1.0);
-        for (int i = 0; i < pmats.size(); i++) {
-            pmats[i] = &mat;
+        for (int i = 0; i < mats.size(); i++) {
+            mats[i] = &mat;
         }
 
-        static Mem1<Vec3> lights;
-        lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
-        //lights.push(getVec3(0.0, 200.0, -1000.0));
+        Mem1<PathTrace::PntLight> lights;
+        lights.push(PathTrace::PntLight());
+        lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
 
-        m_pt.setLights(lights);
-        m_pt.setCam(m_cam, true);
+        m_pt.setAmbient(&PathTrace::Light());
+        m_pt.setPntLights(lights);
+        m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);
-        m_pt.addMeshes(m_model, pmats);
+
+        m_pt.addModel(m_model, mats);
         m_pt.build();
     }
 
@@ -82,7 +84,11 @@ private:
 
 
         if (m_thread.used() == false) {
-            m_pt.makeImg(m_img, 1.0, NULL);
+            float amb = 0.5;
+            float ambshadow = 1.0;
+            float dif[] = { 0.5 };
+            float difshadow[] = {1.0};
+            m_pt.render(m_img);
         }
         {
             static Pose prev = m_pose;
@@ -90,12 +96,21 @@ private:
                 m_pt.setPose(m_pose);
                 prev = m_pose;
 
-                Mem1<Vec3> lights;
-                lights.push((invPose(m_pose) * getVec3(200.0, -200.0, 0.0)));
-                m_pt.setLights(lights);
+                Mem1<PathTrace::PntLight> lights;
+                lights.push(PathTrace::PntLight());
+                lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
+                m_pt.setPntLights(lights);
             }
             m_thread.run([&]() {
+                Timer timer;
+                timer.start();
                 m_pt.update();
+                timer.stop();
+                static double mean = 0.0;
+                static int cnt = 0;
+                mean = (mean * cnt + timer.getms()) / (1.0 + cnt);
+                cnt++;
+                //printf("%d %lf\n", cnt, mean);
                 }, false);
         }
 

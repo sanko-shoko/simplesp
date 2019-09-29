@@ -23,15 +23,27 @@ namespace sp {
     class Thread {
     private:
         bool m_used;
+        bool m_init;
         std::mutex m_mtx;
 
     public:
         Thread() {
+            init();
             m_used = false;
         }
 
+        void init() {
+            m_init = true;
+        }
+
+        void freeze() {
+            lock();
+            m_init = false;
+            unlock();
+        }
+
         bool used() {
-            return m_used;
+            return (m_init == false) | (m_used == true);
         }
 
         void lock() {
@@ -44,6 +56,7 @@ namespace sp {
 
         template<class Class, void (Class::*Func)()>
         bool run(Class *ptr, const bool wait = true) {
+            if (m_init == false) return false;
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, ptr, wait] {
@@ -58,6 +71,7 @@ namespace sp {
         }
 
         bool run(std::function<void()> func, const bool wait = true) {
+            if (m_init == false) return false;
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, func, wait] {
@@ -72,6 +86,7 @@ namespace sp {
         }
 
         bool run(void (*func)(), const bool wait = true) {
+            if (m_init == false) return false;
             if (wait == false && m_used == true) return false;
 
             std::thread th([this, func, wait] {

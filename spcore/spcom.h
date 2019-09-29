@@ -220,11 +220,19 @@ namespace sp{
     // camera parameter
     //--------------------------------------------------------------------------------
 
+    enum CamParam_Type {
+        CamParam_Pers = 0,
+        CamParam_Orth = 1,
+        CamParam_Fish = 2
+    };
+
     struct CamParam{
+        CamParam_Type type;
         int dsize[2];
         SP_REAL fx, fy;
         SP_REAL cx, cy;
-        SP_REAL k1, k2, k3, p1, p2;
+        SP_REAL k1, k2, k3, k4;
+        SP_REAL p1, p2;
     };
 
 
@@ -367,7 +375,6 @@ namespace sp {
         dst.b = static_cast<Byte>(((src.b < 0.0) ? 0.0 : ((src.b > 1.0) ? 1.0 : src.b)) * SP_BYTEMAX + 0.5);
     }
 
-
     //--------------------------------------------------------------------------------
     // color 4
     //--------------------------------------------------------------------------------
@@ -448,6 +455,13 @@ namespace sp {
         dst.a = static_cast<float>(src.a) / SP_BYTEMAX;
     }
 
+    SP_GENFUNC void _cast(Col4f &dst, const Col3f &src) {
+        dst.r = src.r;
+        dst.g = src.g;
+        dst.b = src.b;
+        dst.a = 1.0f;
+    }
+
     //--------------------------------------------------------------------------------
     // vector 3
     //--------------------------------------------------------------------------------
@@ -463,6 +477,10 @@ namespace sp {
         dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
         dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
     }
+
+    //--------------------------------------------------------------------------------
+    // template cast
+    //--------------------------------------------------------------------------------
 
     template<typename DST, typename SRC> SP_GENFUNC DST cast(const SRC &src) {
         DST dst;
@@ -584,10 +602,26 @@ namespace sp {
     SP_GENFUNC bool cmp(const Col3 &col0, const Col3 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
     }
-
     // compare color
     SP_GENFUNC bool cmp(const Col4 &col0, const Col4 &col1) {
         return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
+    }
+    // compare color
+    SP_GENFUNC bool cmp(const Col3f &col0, const Col3f &col1) {
+        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b);
+    }
+    // compare color
+    SP_GENFUNC bool cmp(const Col4f &col0, const Col4f &col1) {
+        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b) & cmp(col0.a, col1.a);
+    }
+    // compare material
+    SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
+        return cmp(mat0.amb, mat1.amb) & cmp(mat0.dif, mat1.dif) & cmp(mat0.ems, mat1.ems) & cmp(mat0.spc, mat1.spc) & (mat0.shn == mat1.shn);
+    }
+
+    // compare camera
+    SP_GENFUNC bool cmp(const CamParam &cam0, const CamParam &cam1) {
+        return cmp(&cam0, &cam1, sizeof(CamParam));
     }
 
 
@@ -610,6 +644,10 @@ namespace sp {
     SP_CMP_OPERATOR(Pose);
     SP_CMP_OPERATOR(Col3);
     SP_CMP_OPERATOR(Col4);
+    SP_CMP_OPERATOR(Col3f);
+    SP_CMP_OPERATOR(Col4f);
+    SP_CMP_OPERATOR(Material);
+    SP_CMP_OPERATOR(CamParam);
 
 
     // compare size

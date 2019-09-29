@@ -5,6 +5,35 @@
 
 using namespace sp;
 
+static bool ShowText(const char *text, const ImVec2 &pos, const ImVec4 &col = ImVec4(1.f, 1.f, 1.f, 1.f), const float scale = 1.f) {
+
+    char name[32] = { 0 };
+    const int maxv = 100;
+    for (int i = 0; i < maxv; i++) {
+        sprintf(name, "##showtext%04d", i);
+        const ImGuiWindow* window = ImGui::FindWindowByName(name);
+        if (window == NULL || window->Active == false) {
+            break;
+        }
+    }
+
+    ImGui::PushStyleColor(ImGuiCol_Text, col);
+    {
+        ImGui::Begin(name, NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
+        const float backup = ImGui::GetFontSize();
+        ImGui::SetWindowFontScale(scale);
+        ImGui::SetWindowPos(pos, ImGuiCond_Always);
+
+        ImGui::Text(text);
+
+        ImGui::SetWindowFontScale(backup);
+
+        ImGui::End();
+    }
+    ImGui::PopStyleColor(1);
+    return true;
+}
+
 class ICPGUI : public BaseWindowIMGUI {
 
     // camera
@@ -152,17 +181,17 @@ private:
             if (m_dataA.size() > 0) {
                 const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
                 const string str = string("data A (points)");
-                ImGui::ShowText(str, ImVec2(float(pix.x + 100.0), float(pix.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
+                ShowText(str.c_str(), ImVec2(float(pix.x + 100.0), float(pix.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
                 const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
                 const string str = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
 
-                ImGui::ShowText(str, ImVec2(float(pix.x - 220.0), float(pix.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
+                ShowText(str.c_str(), ImVec2(float(pix.x - 220.0), float(pix.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);
             }
             if (m_it > 0) {
                 const string str = "icp iteration :" + to_string(m_it);
-                ImGui::ShowText(str, ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
+                ShowText(str.c_str(), ImVec2(90.f, 70.f), ImVec4(1.f, 1.f, 1.f, 1.f), 1.4f);
             }
 
         }

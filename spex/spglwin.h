@@ -169,14 +169,14 @@ namespace sp {
         return ret;
     }
 
-    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose(), const bool pers = true) {
+    SP_CPUFUNC bool controlPose(Pose &pose, const Mouse &mouse, const CamParam &cam, const double viewScale, const Pose base = zeroPose()) {
         bool ret = false;
 
         Pose cpose = pose * invPose(base);
         if (cpose.trn.z < 0.0) return false;
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
-            const double s = ((pers == true) ? cpose.trn.z : 1.0) / viewScale;
+            const double s = ((cam.type == CamParam_Pers) ? cpose.trn.z : 1.0) / viewScale;
             cpose.trn.x += SP_RCAST(mouse.move.x / cam.fx * s);
             cpose.trn.y += SP_RCAST(mouse.move.y / cam.fy * s);
 
@@ -266,6 +266,9 @@ namespace sp {
         // call back flag;
         bool m_callback;
 
+        // 
+        bool m_noswap;
+
     public:
 
         BaseWindow() {
@@ -277,6 +280,7 @@ namespace sp {
             memset(m_key, 0, sizeof(m_key));
 
             m_callback = true;
+            m_noswap = false;
         }
 
 
@@ -331,7 +335,10 @@ namespace sp {
 
             display();
 
-            glfwSwapBuffers(m_win);
+            if (m_noswap == false) {
+                glfwSwapBuffers(m_win);
+            }
+            m_noswap = false;
 
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
@@ -363,15 +370,16 @@ namespace sp {
             glfwTerminate();
         }
 
-
-    protected:
-
         //--------------------------------------------------------------------------------
-        // focus
+        // util
         //--------------------------------------------------------------------------------
 
-        bool isFocused() {
+        bool focused() {
             return glfwGetWindowAttrib(m_win, GLFW_FOCUSED);
+        }
+
+        void noswap() {
+            m_noswap = true;
         }
 
     public:
@@ -574,7 +582,10 @@ namespace sp {
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 #endif
 
-            glfwSwapBuffers(m_win);
+            if (m_noswap == false) {
+                glfwSwapBuffers(m_win);
+            }
+            m_noswap = false;
 
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
