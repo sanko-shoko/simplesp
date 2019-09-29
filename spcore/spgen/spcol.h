@@ -164,7 +164,9 @@ namespace sp{
 
     // mean
     SP_GENFUNC Col4f meanCol(const Col4f &col0, const double r0, const Col4f &col1, const double r1) {
-        if (r0 + r1 == 0.0f) return getCol4f(0.0, 0.0, 0.0, 0.0);
+        if (r0 + r1 == 0.0) return getCol4f(0.0, 0.0, 0.0, 0.0);
+        if (r0 == 0.0) return col1;
+        if (r1 == 0.0) return col0;
 
         Col4f dst;
         const float t0 = col0.a * r0;

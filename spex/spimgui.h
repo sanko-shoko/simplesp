@@ -274,7 +274,8 @@ namespace sp {
                     if (c != 0) ImGui::SameLine();
 
                     ImGui::PushID(r * 4 + c);
-                    if (ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, c)), ImGuiColorEditFlags_NoEdit, ImVec2(14.0f, 14.0f))) {
+                    ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, c)), ImGuiColorEditFlags_NoEdit, ImVec2(14.0f, 14.0f));
+                    if (ImGui::IsItemClicked(0)) {
                         imcol = getImVec4(sp::stdcol(r, c), static_cast<sp::Byte>(imcol.w * SP_BYTEMAX));
                     }
                     ImGui::PopID();

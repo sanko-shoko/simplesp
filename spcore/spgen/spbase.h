@@ -152,7 +152,7 @@ namespace sp{
     }
 
     // get limit value
-    SP_GENFUNC const SP_REAL limval(const double v, const double minv, const int maxv) {
+    SP_GENFUNC const SP_REAL limval(const double v, const double minv, const double maxv) {
         return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 

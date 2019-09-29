@@ -653,10 +653,8 @@ namespace sp {
             m_upcnt++;
         }
 
-        void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0), const double vig = 0.0) {
+        void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0)) {
             img.resize(m_cam.dsize);
-
-            const Vec2 cent = getVec2(img.dsize[0] - 1, img.dsize[1] - 1) * 0.5;
 
             auto blend = [](Col4f &dst, const Data &data, const Light &light) {
                 dst.r += (data.sdw.r * light.sdw + data.val.r * (1.0f - light.sdw)) * light.val * light.col.r;
@@ -694,14 +692,6 @@ namespace sp {
                     }
 
                     col = meanCol(col, im.msk, bgcol, 1.0f - im.msk);
-
-                    if (vig > 0.0) {
-                        Vec2 vv = getVec2(u, v) - cent;
-                        vv.x /= cent.x;
-                        vv.y /= cent.y;
-                        const double a = sqVec(vv) * vig;
-                        col = meanCol(col, 1.0 - a, getCol4f(0.0, 0.0, 0.0, col.a), a);
-                    }
 
                     img(u, v) = cast<Col4>(col);
                 }
