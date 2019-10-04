@@ -10,8 +10,6 @@
 
 namespace sp{
 
-#if SP_USE_WRAPPER
-
     //--------------------------------------------------------------------------------
     // wrapper
     //--------------------------------------------------------------------------------
@@ -77,8 +75,6 @@ namespace sp{
     SP_GENFUNC SP_REAL log10(const double x) {
         return static_cast<SP_REAL>(::log(x) / ::log(10.0));
     }
-
-#endif
 
     //--------------------------------------------------------------------------------
     // util
@@ -158,12 +154,12 @@ namespace sp{
 
      // x * x
     SP_GENFUNC SP_REAL sq(const double x) {
-        return x * x;
+        return SP_RCAST(x * x);
     }
 
     // x * x * x
     SP_GENFUNC SP_REAL cb(const double x) {
-        return x * x * x;
+        return SP_RCAST(x * x * x);
     }
 
     // cubic root

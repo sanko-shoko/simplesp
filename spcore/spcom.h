@@ -18,10 +18,6 @@
 #define SP_USE_ASSERT 1
 #endif
 
-#ifndef SP_USE_WRAPPER
-#define SP_USE_WRAPPER 1
-#endif
-
 #ifndef SP_USE_CONSOLE
 #define SP_USE_CONSOLE 1
 #endif

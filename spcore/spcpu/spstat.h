@@ -16,11 +16,9 @@ namespace sp{
     // sort
     //--------------------------------------------------------------------------------
 
-#if SP_USE_WRAPPER
     SP_GENFUNC void qsort(void *base, const int nsize, const int esize, int compare(const void *a, const void *b)) {
         ::qsort(base, nsize, esize, compare);
     }
-#endif
 
     template<typename TYPE>
     SP_CPUFUNC int compare_min(const void *a, const void *b){

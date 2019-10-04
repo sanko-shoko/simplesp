@@ -315,10 +315,6 @@ namespace sp {
             return true;
         }
 
-        //--------------------------------------------------------------------------------
-        // main loop
-        //--------------------------------------------------------------------------------
-
         bool main() {
             if (m_win == NULL) return false;
 
@@ -338,11 +334,16 @@ namespace sp {
             if (m_noswap == false) {
                 glfwSwapBuffers(m_win);
             }
+            else {
+                sleep(10);
+            }
+
             m_noswap = false;
 
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
 
+            glfwSwapInterval(1);
             return true;
         }
 
@@ -381,6 +382,7 @@ namespace sp {
         void noswap() {
             m_noswap = true;
         }
+
 
     public:
 
@@ -548,10 +550,6 @@ namespace sp {
 
     public:
 
-        //--------------------------------------------------------------------------------
-        // main loop
-        //--------------------------------------------------------------------------------
-
         bool main() {
 
             if (m_win == NULL) return false;
@@ -566,8 +564,6 @@ namespace sp {
             if (m_win != glfwGetCurrentContext()) {
                 glfwMakeContextCurrent(m_win);
             }
-            // glfw set event callbacks
-            setCallback(m_win);
 
 #if SP_USE_IMGUI
             ImGui_ImplOpenGL2_NewFrame();
@@ -584,6 +580,9 @@ namespace sp {
 
             if (m_noswap == false) {
                 glfwSwapBuffers(m_win);
+            }
+            else {
+                sleep(10);
             }
             m_noswap = false;
 
@@ -607,7 +606,7 @@ namespace sp {
             initIMGUI();
 
             init();
-            
+
             while (!glfwWindowShouldClose(m_win)) {
                 if (main() == false) break;
 

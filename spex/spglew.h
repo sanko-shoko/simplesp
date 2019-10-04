@@ -20,7 +20,7 @@ namespace sp {
     class VertexBufferObject {
 
     private:
-        GLuint m_vb;
+        GLuint m_id;
 
     private:
         VertexBufferObject(const VertexBufferObject &vbo) {}
@@ -29,11 +29,11 @@ namespace sp {
     public:
 
         VertexBufferObject() {
-            glGenBuffers(1, &m_vb);
+            glGenBuffers(1, &m_id);
         }
 
         ~VertexBufferObject() {
-            glDeleteBuffers(1, &m_vb);
+            glDeleteBuffers(1, &m_id);
         }
 
         void set(const int size, const void *vtx) {
@@ -43,14 +43,14 @@ namespace sp {
         }
 
         void bind() {
-            glBindBuffer(GL_ARRAY_BUFFER, m_vb);
+            glBindBuffer(GL_ARRAY_BUFFER, m_id);
         }
         void unbind() {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
-        GLuint vbid() const {
-            return m_vb;
+        GLuint id() const {
+            return m_id;
         }
     };
 
@@ -58,11 +58,11 @@ namespace sp {
 
     private:
         // multi sampling
-        GLuint m_msfb;
+        GLuint m_msid;
         GLuint m_mstx[2];
 
         // normal
-        GLuint m_fb;
+        GLuint m_id;
         GLuint m_tx[2];
 
     public:
@@ -95,11 +95,11 @@ namespace sp {
 
         void free() {
             {
-                if (m_fb) {
-                    glDeleteFramebuffers(1, &m_fb);
+                if (m_id) {
+                    glDeleteFramebuffers(1, &m_id);
                 }
-                if (m_msfb) {
-                    glDeleteFramebuffers(1, &m_msfb);
+                if (m_msid) {
+                    glDeleteFramebuffers(1, &m_msid);
                 }
             }
             for (int i = 0; i < 2; i++) {
@@ -122,7 +122,7 @@ namespace sp {
             this->samples = samples;
 
             {
-                glGenFramebuffers(1, &m_fb);
+                glGenFramebuffers(1, &m_id);
                 glGenTextures(2, m_tx);
 
                 // color
@@ -151,7 +151,7 @@ namespace sp {
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, dsize[0], dsize[1], 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
             }
             if (samples > 1) {
-                glGenFramebuffers(1, &m_msfb);
+                glGenFramebuffers(1, &m_msid);
                 glGenTextures(2, m_mstx);
 
                 // color
@@ -193,13 +193,13 @@ namespace sp {
             glPushAttrib(GL_VIEWPORT_BIT);
             ::glViewport(0, 0, dsize[0], dsize[1]);
 
-            if (m_msfb != 0) {
-                glBindFramebuffer(GL_FRAMEBUFFER, m_msfb);
+            if (m_msid != 0) {
+                glBindFramebuffer(GL_FRAMEBUFFER, m_msid);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
             }
             else {
-                glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+                glBindFramebuffer(GL_FRAMEBUFFER, m_id);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
             }
@@ -213,15 +213,15 @@ namespace sp {
         }
 
         void blitms() {
-            if (m_msfb == 0) return;
+            if (m_msid == 0) return;
             GLint readid = 0, drawid = 0;
             glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readid);
             glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawid);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msfb);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msid);
             glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[0], 0);
             glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_mstx[1], 0);
 
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fb);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_id);
             glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tx[0], 0);
             glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_tx[1], 0);
 
@@ -234,7 +234,7 @@ namespace sp {
         void readi(void *img, const int ch) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
-            glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
             unsigned char *tmp = new unsigned char[dsize[0] * dsize[1] * 4];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_RGBA, GL_UNSIGNED_BYTE, tmp);
@@ -246,11 +246,18 @@ namespace sp {
                     const int d = (v * dsize[0] + u) * ch;
                     const int s = ((dsize[1] - 1 - v) * dsize[0] + u) * 4;
 
-                    dst[d + 0] = tmp[s + 0];
-                    dst[d + 1] = tmp[s + 1];
-                    dst[d + 2] = tmp[s + 2];
-
+                    if (ch == 1) {
+                        dst[d + 0] = static_cast<unsigned char>(0.299 * tmp[s + 0] + 0.587 * tmp[s + 1] + 0.114 * tmp[s + 2] + 0.5);
+                    }
+                    if (ch == 3) {
+                        dst[d + 0] = tmp[s + 0];
+                        dst[d + 1] = tmp[s + 1];
+                        dst[d + 2] = tmp[s + 2];
+                    }
                     if (ch == 4) {
+                        dst[d + 0] = tmp[s + 0];
+                        dst[d + 1] = tmp[s + 1];
+                        dst[d + 2] = tmp[s + 2];
                         dst[d + 3] = tmp[s + 3];
                     }
                 }
@@ -265,7 +272,7 @@ namespace sp {
         void readz(DEPTH *zbf, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             if (dsize[0] == 0 || dsize[1] == 0) return;
 
-            glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
             float *tmp = new float[dsize[0] * dsize[1]];
             glReadPixels(0, 0, dsize[0], dsize[1], GL_DEPTH_COMPONENT, GL_FLOAT, tmp);
@@ -292,20 +299,20 @@ namespace sp {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         }
 
-        GLuint fbid() const {
-            return m_fb;
+        GLuint id() const {
+            return m_id;
         }
 
-        GLuint msfbid() const {
-            return (m_msfb != 0) ? m_msfb : m_fb;
+        GLuint msid() const {
+            return (m_msid != 0) ? m_msid : m_id;
         }
 
-        GLuint txid(const int i) const {
+        GLuint tx(const int i) const {
             return m_tx[i];
         }
 
-        GLuint mstxid(const int i) const {
-            return (m_msfb != 0) ? m_mstx[i] : m_tx[i];
+        GLuint mstx(const int i) const {
+            return (m_msid != 0) ? m_mstx[i] : m_tx[i];
         }
 
     };
@@ -342,7 +349,7 @@ namespace sp {
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
             if (length > 0 && log != NULL) {
-                const int offset = strlen(log);
+                const int offset = static_cast<int>(strlen(log));
                 glGetShaderInfoLog(shader, length, NULL, &log[offset]);
             }
 
@@ -371,7 +378,7 @@ namespace sp {
             glGetProgramiv(pgid, GL_INFO_LOG_LENGTH, &length);
 
             if (length > 0 && log != NULL) {
-                const int offset = strlen(log);
+                const int offset = static_cast<int>(strlen(log));
                 glGetProgramInfoLog(pgid, length, NULL, &log[offset]);
             }
 
@@ -521,7 +528,7 @@ namespace sp {
 
         void setVertex(const int id, const int unit, const int type, const VertexBufferObject &vbo) {
             glEnableVertexAttribArray(id);
-            glBindBuffer(GL_ARRAY_BUFFER, vbo.vbid());
+            glBindBuffer(GL_ARRAY_BUFFER, vbo.id());
             glVertexAttribPointer(id, unit, type, GL_FALSE, 0, NULL);
         }
 

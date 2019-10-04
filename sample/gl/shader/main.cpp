@@ -91,7 +91,7 @@ private:
             dfbo.resize(m_wcam.dsize);
             
             shader.enable();
-            shader.setUniformTx("depth", 0, dfbo.txid(1));
+            shader.setUniformTx("depth", 0, dfbo.tx(1));
             shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
@@ -149,16 +149,16 @@ private:
             dfbo.resize(m_wcam.dsize);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dfbo.fbid());
-            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dfbo.txid(0), 0);
-            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dfbo.txid(1), 0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dfbo.id());
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dfbo.tx(0), 0);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dfbo.tx(1), 0);
 
             glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBlitFramebuffer(0, 0, m_wcam.dsize[0], m_wcam.dsize[1], 0, 0, m_wcam.dsize[0], m_wcam.dsize[1], GL_DEPTH_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             shader.enable();
-            shader.setUniformTx("depth", 0, dfbo.txid(1));
+            shader.setUniformTx("depth", 0, dfbo.tx(1));
             shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);

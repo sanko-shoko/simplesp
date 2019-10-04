@@ -8,6 +8,8 @@
 #include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
+#include "spapp/spdata/spmodel.h"
+#include "spapp/spdata/spvoxel.h"
 
 namespace sp {
     //--------------------------------------------------------------------------------
@@ -63,22 +65,6 @@ namespace sp {
     }
     SP_CPUFUNC void glColor(const Col4f &col) {
         glColor4f(col.r, col.g, col.b, col.a);
-    }
-
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4 &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3f &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4f &col) {
-        glMaterialfv(face, pname, (float*)&col);
     }
 
     SP_CPUFUNC void glViewport(const Rect2 &rect) {
@@ -440,6 +426,25 @@ namespace sp {
         glEnd();
     }
 
+    SP_CPUFUNC void glCircle(const Vec3 &pos, const double radius, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        const Mat imat = invMat(glGetMat(GL_MODELVIEW_MATRIX).part(0, 0, 3, 3));
+        const Vec3 a = imat * getVec3(1.0, 0.0, 0.0);
+        const Vec3 b = imat * getVec3(0.0, 1.0, 0.0);
+
+        glBegin(type);
+
+        if (fill == true) {
+            glVertex(pos);
+        }
+        for (int i = 0; i <= 36; i++) {
+            const double p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(pos + a * radius * sin(p) + b * radius * cos(p));
+        }
+        glEnd();
+    }
+
     template<typename VEC>
     SP_CPUFUNC void glLine(const VEC &vtx0, const VEC &vtx1) {
         glBegin(GL_LINES);
@@ -534,6 +539,22 @@ namespace sp {
         glColor3ub(0, 0, 255);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(0.0, 0.0, size);
         glEnd();
+    }
+
+    SP_CPUFUNC void glVector(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
+        const double seg0 = radius * 8.0;
+        const double seg1 = normVec(vtx1 - vtx0) - seg0;
+        const Vec3 drc = unitVec(vtx1 - vtx0);
+
+        const Mem1<Mesh3> vec = loadCone(drc * seg0, radius * 3.0) + (drc * seg1 + vtx0);
+        const Mem1<Mesh3> cyl = loadCylinder(drc * seg1, radius) + vtx0;
+
+        for (int i = 0; i < vec.size(); i++) {
+            glMesh(vec[i]);
+        }
+        for (int i = 0; i < cyl.size(); i++) {
+            glMesh(cyl[i]);
+        }
     }
 
     SP_CPUFUNC void glCube(const double size) {

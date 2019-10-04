@@ -119,6 +119,7 @@ namespace sp {
         Vec3 center() const {
             return getVec3(dsize[0] - 1, dsize[1] - 1, dsize[2] - 1) * 0.5;
         }
+
     };
 
 
@@ -539,7 +540,7 @@ namespace sp {
                 }
             }
         
-}
+        }
         {
 
 #if 0
@@ -732,69 +733,6 @@ namespace sp {
     }
 
 
-    // voxel range mask
-    SP_CPUFUNC void calcVoxelMask(Mem2<Vec2> &rmsk, const CamParam &cam, const Pose &pose, const Voxel<> &voxel) {
-
-        rmsk.resize(cam.dsize);
-
-        const SP_REAL radius = (voxel.dsize[0] - 1) * voxel.unit * 0.5;
-
-        struct VoxelPlane {
-            Vec3 pos, axis[3];
-        };
-        Mem1<VoxelPlane> vps;
-        {
-            const Vec3 _axis[3] = { getVec3(1.0, 0.0, 0.0), getVec3(0.0, 1.0, 0.0), getVec3(0.0, 0.0, 1.0) };
-            
-            for (int i = 0; i < 3; i++) {
-                for (int s = -1; s <= +1; s += 2) {
-                    VoxelPlane vp;
-                    vp.pos = pose * (_axis[(i + 0) % 3] * s * radius);
-                    for (int j = 0; j < 3; j++) {
-                        vp.axis[j] = pose.rot * (_axis[(i + j + 1) % 3] * s);
-                    }
-                    vps.push(vp);
-                }
-            }
-        }
-
-        for (int v = 0; v < rmsk.dsize[1]; v++) {
-            for (int u = 0; u < rmsk.dsize[0]; u++) {
-                Vec2 &range = rmsk(u, v);
-                range = getVec2(0.0, SP_INFINITY);
-
-                const Vec3 vec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
-                for (int i = 0; i < vps.size(); i++) {
-                    const Vec3 &pos = vps[i].pos;
-                    const Vec3 &X = vps[i].axis[0];
-                    const Vec3 &Y = vps[i].axis[1];
-                    const Vec3 &Z = vps[i].axis[2];
-
-                    const SP_REAL n = dotVec(vec, Z);
-                    if (fabs(n) < SP_SMALL) continue;
-
-                    const Vec3 crs = vec * (dotVec(pos, Z) / n);
-                    if (crs.z <= SP_SMALL) continue;
-
-                    const SP_REAL x = dotVec(crs - pos, X);
-                    const SP_REAL y = dotVec(crs - pos, Y);
-
-                    if (n < 0) {
-                        if (maxval(fabs(x), fabs(y)) > radius * 1.00) continue;
-                        range.x = maxval(range.x, crs.z);
-                    }
-                    else {
-                        if (maxval(fabs(x), fabs(y)) > radius * 1.01) continue;
-                        range.y = minval(range.y, crs.z);
-                    }
-                }
-   
-            }
-        }
-
-    }
-
-
     //--------------------------------------------------------------------------------
     // visual hull
     //--------------------------------------------------------------------------------
@@ -888,22 +826,39 @@ namespace sp {
         const Vec3 cent = voxel.center();
         const Pose ipose = invPose(pose);
 
-        Mem2<Vec2> rmsk;
-        calcVoxelMask(rmsk, cam, pose, voxel);
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
         for (int v = 0; v < map.dsize[1]; v++) {
             for (int u = 0; u < map.dsize[0]; u++) {
-
-                const SP_REAL minv = rmsk(u, v).x;
-                const SP_REAL maxv = rmsk(u, v).y;
-                if (minv <= SP_SMALL) continue;
-
                 const Vec3 cvec = getVec3(invCam(cam, getVec2(u, v)), 1.0);
                 const Vec3 mvec = ipose.rot * cvec;
 
+                double maxv = -SP_INFINITY;
+                double minv = +SP_INFINITY;
+
+                // voxel range
+                for (int i = 0; i < 3; i++) {
+                    if (fabs(acsv(mvec, i)) > SP_SMALL) {
+                        for(int j = 0; j < 2; j++){
+                            const int p = (j == 0) ? -1 : +1;
+                            const double s = (s * acsv(cent, i) - acsv(ipose.trn, i)) / acsv(mvec, i);
+                            const double a = acsv(mvec, (i + 1) % 3) * s + acsv(ipose.trn, (i + 1) % 3);
+                            const double b = acsv(mvec, (i + 2) % 3) * s + acsv(ipose.trn, (i + 2) % 3);
+                            if (fabs(a) < acsv(cent, (i + 1) % 3) && fabs(b) < acsv(cent, (i + 2) % 3)) {
+                                maxv = maxval(maxv, s);
+                                minv = minval(minv, s);
+                            }
+                        }
+                    }
+                }
+                if (u == map.dsize[0] / 2 && v == map.dsize[1] / 2) {
+                    printf("%lf %lf\n", minv, maxv);
+                }
+                if (minv <= SP_SMALL) continue;
+
+ 
                 SP_REAL detect = minv;
 
                 char pre = 0;

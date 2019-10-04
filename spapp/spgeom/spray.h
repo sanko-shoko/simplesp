@@ -63,7 +63,8 @@ namespace sp {
 
         const Vec3 p = dotVec(plane.drc, plane.pos - ray.pos) * plane.drc;
         const Vec3 n = unitVec(p);
-        if (dotVec(n, ray.drc) > 0.0 && normVec(p) > 0.0) {
+        if (dotVec(n, ray.drc) > 0.0 && normVec(p) > 0.0)
+        {
             const double s = normVec(p) / dotVec(ray.drc, n);
             if (s < minv || s > maxv) return false;
             result[0] = s;
@@ -712,7 +713,8 @@ namespace sp {
             }
             if (m_ground.size() > 0) {
                 SP_REAL result[3];
-                if (tracePlane(result, m_ground[0].vec, ray, 0, norm)) {
+                double min = (m_cam.type == CamParam_Pers) ? 0.0 : -SP_INFINITY;
+                if (tracePlane(result, m_ground[0].vec, ray, min, norm)) {
                     hit.acnt = 0;
                     hit.norm = result[0];
                     hit.pmat = &m_ground[0].mat;

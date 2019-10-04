@@ -6,8 +6,8 @@
 #define __SP_MODEL_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spimg/sprender.h"
 #include "spapp/spalgo/spkdtree.h"
+#include "spapp/spimg/sprender.h"
 
 namespace sp{
     
@@ -343,20 +343,6 @@ namespace sp{
     // sample model
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem1<Mesh3> loadBunny(const char *path) {
-        Mem1<Mesh3> model;
-        if (loadPLY(path, model) == false) return model;
-
-        Vec3 center = getModelCent(model);
-        for (int i = 0; i < model.size(); i++) {
-            model[i] -= center;
-
-            // m -> mm
-            model[i] *= 1000.0;
-        }
-        return model;
-    }
-
     SP_CPUFUNC Mem1<Mesh3> loadPlane(const double size, const int xyz, const int nrm) {
         Mem1<Mesh3> model;
         const double hs = size * 0.5;
@@ -432,8 +418,8 @@ namespace sp{
     SP_CPUFUNC Mem1<Mesh3> loadCone(const Vec3 &drc, const double radius, const int div = 36) {
         Mem1<Mesh3> model;
 
-        const Vec3 nx = getRotDirection(drc) * getVec3(1.0, 0.0, 0.0);
-        const Vec3 ny = getRotDirection(drc) * getVec3(0.0, 1.0, 0.0);
+        const Vec3 nx = invRot(getRotDirection(drc)) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = invRot(getRotDirection(drc)) * getVec3(0.0, 1.0, 0.0);
 
         const double step = 360.0 / div;
         for (int i = 0; i < div; i++) {
@@ -453,8 +439,8 @@ namespace sp{
     SP_CPUFUNC Mem1<Mesh3> loadCylinder(const Vec3 &drc, const double radius, const int div = 36) {
         Mem1<Mesh3> model;
 
-        const Vec3 nx = getRotDirection(drc) * getVec3(1.0, 0.0, 0.0);
-        const Vec3 ny = getRotDirection(drc) * getVec3(0.0, 1.0, 0.0);
+        const Vec3 nx = invRot(getRotDirection(drc)) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = invRot(getRotDirection(drc)) * getVec3(0.0, 1.0, 0.0);
 
         const double step = 360.0 / div;
         for (int i = 0; i < div; i++) {
