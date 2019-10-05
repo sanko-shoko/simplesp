@@ -190,7 +190,7 @@ namespace sp {
 
         void bind() {
             if (dsize[0] == 0 || dsize[1] == 0)return;
-            glPushAttrib(GL_VIEWPORT_BIT);
+            glPushAttrib(GL_ALL_ATTRIB_BITS);
             ::glViewport(0, 0, dsize[0], dsize[1]);
 
             if (m_msid != 0) {
