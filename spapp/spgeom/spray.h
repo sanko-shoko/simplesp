@@ -38,20 +38,20 @@ namespace sp {
             const double my = (mesh.pos[0].y - ray.pos.y) / det;
             const double mz = (mesh.pos[0].z - ray.pos.z) / det;
             result[1] =
-                - (mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0]) * mx
+                -(mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0]) * mx
                 + (mat[0 * 3 + 0] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 0]) * my
                 - (mat[0 * 3 + 0] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 0]) * mz;
             if (result[1] < -SP_SMALL) return false;
 
             result[2] =
-                + (mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0]) * mx
+                +(mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0]) * mx
                 - (mat[0 * 3 + 0] * mat[2 * 3 + 1] - mat[0 * 3 + 1] * mat[2 * 3 + 0]) * my
                 + (mat[0 * 3 + 0] * mat[1 * 3 + 1] - mat[0 * 3 + 1] * mat[1 * 3 + 0]) * mz;
             if (result[2] < -SP_SMALL) return false;
             if (result[1] + result[2] > 1.0 + SP_SMALL) return false;
 
             result[0] =
-                + (mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]) * mx
+                +(mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]) * mx
                 - (mat[0 * 3 + 1] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 1]) * my
                 + (mat[0 * 3 + 1] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 1]) * mz;
             if (result[0] < minv || result[0] > maxv) return false;
@@ -70,7 +70,7 @@ namespace sp {
             result[0] = s;
             return true;
         }
-        
+
         return false;
     }
 
@@ -99,11 +99,11 @@ namespace sp {
         return true;
     }
 
- 
+
     //--------------------------------------------------------------------------------
     // bounding volume hierarchy
     //--------------------------------------------------------------------------------
-   
+
     class BVH {
 
     public:
@@ -157,7 +157,7 @@ namespace sp {
             m_idxs.clear();
         }
 
-        
+
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
 
             Mem1<Mesh3> &buff = *m_buffs.malloc();
@@ -189,7 +189,7 @@ namespace sp {
             m_acnt++;
         }
 
-        void build() {
+        void build(const bool parallel = true) {
 
             // mesh centers (for sort)
             struct IndexEx : public Index {
@@ -239,8 +239,8 @@ namespace sp {
             };
             initn(0, 0, idxs.size());
 
-            Mem1<Mem1<Node*>> tnodes;
-            {
+            Mem1<Mem1<Node*> > tnodes;
+            if (parallel == true) {
                 tnodes.reserve(20);
 
                 const int lim = 5000;
@@ -263,7 +263,11 @@ namespace sp {
                     }
                 }
             }
-         
+            else {
+                Mem1<Node*> &nodes = *tnodes.extend();
+                nodes.push(&m_nodes[0]);
+            }
+
             Mem1<SP_REAL> map(idxs.size());
 
 #if SP_USE_OMP
@@ -322,7 +326,7 @@ namespace sp {
             }
         }
 
-        struct Hit : Index{
+        struct Hit : Index {
             VecPD3 vec;
             SP_REAL norm;
         };
@@ -363,14 +367,19 @@ namespace sp {
                     }
                 }
             }
+
+            memset(&hit, 0, sizeof(Hit));
+
             if (minid < 0) {
                 return false;
             }
 
             const Index &idx = m_idxs[minid];
+
             hit.acnt = idx.acnt;
             hit.pmat = idx.pmat;
             hit.pmesh = idx.pmesh;
+
             hit.norm = lmaxv;
             hit.vec.pos = ray.pos + ray.drc * lmaxv;
             hit.vec.drc = getMeshNrm(*m_idxs[minid].pmesh);
@@ -379,7 +388,7 @@ namespace sp {
         }
     };
 
-    
+
     //--------------------------------------------------------------------------------
     // path trace
     //--------------------------------------------------------------------------------
@@ -441,6 +450,8 @@ namespace sp {
             Material mat;
         };
 
+        const static int SAMPLE_UNIT = 4;
+        const static int SAMPLE_NUM = 16;
 
     private:
         static const int maxlt = 4;
@@ -465,6 +476,12 @@ namespace sp {
             int msk;
         };
 
+        struct Hit : public BVH::Hit {
+            VecPD3 ray;
+            bool valid;
+            bool find;
+        };
+
         BVH m_bvh;
 
     public:
@@ -476,24 +493,23 @@ namespace sp {
         Cnt m_cnt;
         Lim m_lim;
 
+        Mem2<MemA<Hit, SAMPLE_NUM> > m_raymap;
+
         Mem1<PntLight> m_plights;
 
         Mem1<Light> m_ambient;
         Mem1<Plane> m_ground;
 
-        int m_upcnt;
-
     public:
 
         PathTrace() {
-            m_upcnt = 0;
 
             m_cam = getCamParam(640, 480);
             m_pose = sp::getPose(getVec3(0.0, 0.0, 1000.0));
 
             m_lim.amb = 0;
             m_lim.dif = 0;
-            m_lim.msk = 64;
+            m_lim.msk = SAMPLE_NUM;
 
             reset();
         }
@@ -507,6 +523,9 @@ namespace sp {
             m_img.resize(m_cam.dsize);
             m_img.zero();
             memset(&m_cnt, 0, sizeof(Cnt));
+
+            m_raymap.resize(m_cam.dsize);
+            m_raymap.zero();
         }
 
         float prog() {
@@ -520,8 +539,18 @@ namespace sp {
             }
             cnt += m_cnt.msk;
             lim += m_lim.msk;
-         
-            return (cnt == lim) ? 1.0f : static_cast<float>(cnt) / (lim + 1);
+
+            return (cnt == lim) ? 1.0f : static_cast<float>(cnt) / (lim);
+        }
+        int upcnt() {
+            int cnt = 0;
+            cnt += m_cnt.amb;
+            for (int i = 0; i < m_plights.size(); i++) {
+                cnt += m_cnt.dif[i];
+            }
+            cnt += m_cnt.msk;
+
+            return cnt;
         }
 
         void setCam(const CamParam cam) {
@@ -614,8 +643,8 @@ namespace sp {
         void update() {
             if (prog() == 1.0f) return;
 
-            const Pose ipose = invPose(m_pose);
-            const Mat irmat = getMat(ipose.rot);
+            t_ipose = invPose(m_pose);
+            t_irmat = getMat(t_ipose.rot);
 
             const int w = m_cam.dsize[0];
             const int h = m_cam.dsize[1];
@@ -627,21 +656,8 @@ namespace sp {
                     if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == SP_RCAST(0.0)) continue;
 
                     Vec2 pix = getVec2(u, v);
-                    const unsigned int seed = m_upcnt;
-                    if (m_upcnt > 0) pix += randuVec2(0.5, 0.5, seed);
 
-                    Vec3 pos, drc;
-                    const Vec2 p2d = invCam(m_cam, pix);
-                    if (m_cam.type == CamParam_Pers) {
-                        pos = ipose.trn;
-                        drc = unitVec(prjVec(invCam(m_cam, pix), 1.0, true));
-                    }
-                    else {
-                        pos = ipose.trn + irmat * getVec3(p2d.x, p2d.y, 0.0);
-                        drc = getVec3(0.0, 0.0, 1.0);
-                    }
-
-                    calc(m_img(u, v), m_cnt, m_lim, getVecPD3(pos, irmat * drc), m_plights);
+                    calc(m_img(u, v), m_cnt, m_lim, m_raymap(u, v), pix);
                 }
             }
             {
@@ -651,7 +667,6 @@ namespace sp {
                 }
                 m_cnt.msk = minval(m_lim.msk, m_cnt.msk + 1);
             }
-            m_upcnt++;
         }
 
         void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0)) {
@@ -701,8 +716,8 @@ namespace sp {
 
     private:
 
-        bool trace(BVH::Hit &hit, const VecPD3 &ray, const double minv, const double maxv){
-        
+        bool trace(BVH::Hit &hit, const VecPD3 &ray, const double minv, const double maxv) {
+
             bool ret = false;
             double norm = maxv;
             {
@@ -728,42 +743,82 @@ namespace sp {
             return ret;
         }
 
-        void calc(Img &img, Cnt &cnt, Lim &lim, const VecPD3 &ray, Mem1<PntLight> &lights) {
+        Pose t_ipose;
+        Mat t_irmat;
+        VecPD3 getRay(const Vec2 &pix, const int i) {
 
-            BVH::Hit hit;
-            const bool ret = trace(hit, ray, 0.0, SP_INFINITY);
+            const double dx = ((i % SAMPLE_NUM) / SAMPLE_UNIT) + 1;
+            const double dy = ((i % SAMPLE_NUM) % SAMPLE_UNIT) + 1;
+            const double delta = 1.0 / (SAMPLE_UNIT + 1);
 
-            if (ret == true) {
+            const Vec2 dpix = pix + getVec2(dx * delta - 0.5, dy * delta - 0.5);
+
+            Vec3 pos, drc;
+            const Vec2 p2d = invCam(m_cam, dpix);
+            if (m_cam.type == CamParam_Pers) {
+                pos = t_ipose.trn;
+                drc = unitVec(prjVec(invCam(m_cam, dpix), 1.0, true));
+            }
+            else {
+                pos = t_ipose.trn + t_irmat * getVec3(p2d.x, p2d.y, 0.0);
+                drc = getVec3(0.0, 0.0, 1.0);
+            }
+
+            return getVecPD3(pos, t_irmat * drc);
+        }
+        void calc(Img &img, Cnt &cnt, Lim &lim, MemA<Hit, SAMPLE_NUM> &rays, const Vec2 &pix) {
+
+            auto init = [&](const Vec2 &pix, const int i) -> Hit{
+                Hit &phit = rays[i % SAMPLE_NUM];
+                if (phit.valid == false) {
+                    phit.valid = true;
+                    phit.ray = getRay(pix, i);
+                    phit.find = trace(phit, phit.ray, 0.0, SP_INFINITY);
+                }
+                return phit;
+            };
+
+            {
                 if (cnt.amb < lim.amb) {
+                    Hit hit = init(pix, cnt.amb);
+
                     if (cnt.amb == 0) {
                         img.amb.sdw = getCol4f(0.0, 0.0, 0.0, 0.0);
                         img.amb.val = getCol4f(0.0, 0.0, 0.0, 0.0);
                     }
-                    {
+                    if (hit.find == true) {
                         Data data;
-                        calc_amb(data, ray, hit, 0, cnt.amb);
+                        calc_amb(data, hit.ray, hit, 0, cnt.amb);
                         img.amb.sdw = meanCol(img.amb.sdw, cnt.amb, data.sdw, 1.0);
                         img.amb.val = meanCol(img.amb.val, cnt.amb, data.val, 1.0);
                     }
                 }
-                for (int i = 0; i < lights.size(); i++) {
+            }
+            for (int i = 0; i < m_plights.size(); i++) {
+                if (cnt.dif[i] < lim.dif) {
+                    Hit hit = init(pix, cnt.dif[i]);
+
                     if (cnt.dif[i] == 0) {
                         img.dif[i].sdw = getCol4f(0.0, 0.0, 0.0, 0.0);
                         img.dif[i].val = getCol4f(0.0, 0.0, 0.0, 0.0);
                     }
-                    if (cnt.dif[i] < lim.dif) {
+                    if (hit.find == true) {
                         Data data;
-                        calc_dif(data, ray, hit, lights[i].pos + randgVec3(1.0, 1.0, 1.0, cnt.dif[i]) * 1.0, 0, cnt.dif[i]);
+                        calc_dif(data, hit.ray, hit, m_plights[i].pos + randgVec3(1.0, 1.0, 1.0, cnt.dif[i]) * 1.0, 0, cnt.dif[i]);
                         img.dif[i].sdw = meanCol(img.dif[i].sdw, cnt.dif[i], data.sdw, 1.0);
                         img.dif[i].val = meanCol(img.dif[i].val, cnt.dif[i], data.val, 1.0);
                     }
                 }
             }
-            if (cnt.msk < lim.msk) {
-                if (cnt.msk == 0) {
-                    img.msk = 0.0f;
+            {
+                if (cnt.msk < lim.msk) {
+                    Hit hit = init(pix, cnt.msk);
+
+                    if (cnt.msk == 0) {
+                        img.msk = 0.0f;
+                    }
+                    img.msk = (img.msk * cnt.msk + (hit.find ? 1.0f : 0.0f)) / (cnt.msk + 1.0f);
                 }
-                img.msk = (img.msk * cnt.msk + (ret ? 1.0f : 0.0f)) / (cnt.msk + 1.0f);
             }
         }
 

@@ -46,7 +46,7 @@ private:
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
         m_bvh.addModel(m_model);
-        m_bvh.build();
+        m_bvh.build(false);
 
     }
 
