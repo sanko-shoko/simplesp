@@ -118,7 +118,7 @@ namespace sp {
         };
 
         struct Index {
-            int acnt;
+            char acnt;
 
             const Mesh3 *pmesh;
             const Material *pmat;
@@ -126,7 +126,7 @@ namespace sp {
 
 
     private:
-        int m_acnt;
+        char m_acnt;
 
         MemP<Mem1<Mesh3>> m_buffs;
 
@@ -159,6 +159,7 @@ namespace sp {
 
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
+            SP_ASSERT(m_acnt < 100);
 
             Mem1<Mesh3> &buff = *m_buffs.malloc();
             buff = meshes;
@@ -450,8 +451,8 @@ namespace sp {
             Material mat;
         };
 
-        const static int SAMPLE_UNIT = 4;
-        const static int SAMPLE_NUM = 16;
+        const static int SAMPLE_UNIT = 3;
+        const static int SAMPLE_NUM = 9;
 
     private:
         static const int maxlt = 4;
@@ -477,7 +478,6 @@ namespace sp {
         };
 
         struct Hit : public BVH::Hit {
-            VecPD3 ray;
             bool valid;
             bool find;
         };
@@ -772,8 +772,8 @@ namespace sp {
                 Hit &phit = rays[i % SAMPLE_NUM];
                 if (phit.valid == false) {
                     phit.valid = true;
-                    phit.ray = getRay(pix, i);
-                    phit.find = trace(phit, phit.ray, 0.0, SP_INFINITY);
+                    const VecPD3 ray = getRay(pix, i);
+                    phit.find = trace(phit, ray, 0.0, SP_INFINITY);
                 }
                 return phit;
             };
@@ -781,6 +781,7 @@ namespace sp {
             {
                 if (cnt.amb < lim.amb) {
                     Hit hit = init(pix, cnt.amb);
+                    const VecPD3 ray = getRay(pix, cnt.amb);
 
                     if (cnt.amb == 0) {
                         img.amb.sdw = getCol4f(0.0, 0.0, 0.0, 0.0);
@@ -788,7 +789,7 @@ namespace sp {
                     }
                     if (hit.find == true) {
                         Data data;
-                        calc_amb(data, hit.ray, hit, 0, cnt.amb);
+                        calc_amb(data, ray, hit, 0, cnt.amb);
                         img.amb.sdw = meanCol(img.amb.sdw, cnt.amb, data.sdw, 1.0);
                         img.amb.val = meanCol(img.amb.val, cnt.amb, data.val, 1.0);
                     }
@@ -797,6 +798,7 @@ namespace sp {
             for (int i = 0; i < m_plights.size(); i++) {
                 if (cnt.dif[i] < lim.dif) {
                     Hit hit = init(pix, cnt.dif[i]);
+                    const VecPD3 ray = getRay(pix, cnt.dif[i]);
 
                     if (cnt.dif[i] == 0) {
                         img.dif[i].sdw = getCol4f(0.0, 0.0, 0.0, 0.0);
@@ -804,7 +806,7 @@ namespace sp {
                     }
                     if (hit.find == true) {
                         Data data;
-                        calc_dif(data, hit.ray, hit, m_plights[i].pos + randgVec3(1.0, 1.0, 1.0, cnt.dif[i]) * 1.0, 0, cnt.dif[i]);
+                        calc_dif(data, ray, hit, m_plights[i].pos + randgVec3(1.0, 1.0, 1.0, cnt.dif[i]) * 1.0, 0, cnt.dif[i]);
                         img.dif[i].sdw = meanCol(img.dif[i].sdw, cnt.dif[i], data.sdw, 1.0);
                         img.dif[i].val = meanCol(img.dif[i].val, cnt.dif[i], data.val, 1.0);
                     }

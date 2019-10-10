@@ -334,16 +334,16 @@ namespace sp {
 
     SP_CPUFUNC int ColorPicker(const char *popup, Col4f &col, const bool alpha = false) {
         static Col4f backup;
+        static ImVec4 imcol;
 
         int ret = 1;
         if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
             ImGui::OpenPopup(popup);
             backup = col;
+            imcol = getImVec4(col);
             ret = 0;
         }
         if (ImGui::BeginPopup(popup) == false) return -1;
-
-        ImVec4 imcol = getImVec4(col);
 
         {
             ImGui::PushItemWidth(254.0f);
@@ -369,6 +369,7 @@ namespace sp {
                     StyleStack stack;
                     stack.pushColor(ImGuiCol_Border, ImVec4(0.95f, 0.95f, 0.95f, 1.00f));
                     stack.pushVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+                    stack.pushVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
                     if (c != 0) ImGui::SameLine();
 

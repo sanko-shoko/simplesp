@@ -350,7 +350,7 @@ namespace sp {
             set(img, dsize, ch);
         }
 
-        GLuint id() {
+        GLuint id() const {
             return m_tx;
         }
 
@@ -723,12 +723,8 @@ namespace sp {
         glPopAttrib();
     }
 
-    template<typename TYPE>
-    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src, const GLint param = GL_NEAREST) {
-        if (src.size() == 0) return;
-
-        Texture tex;
-        if (tex.set(src.ptr, src.dsize) == false) return;
+    SP_CPUFUNC void glTexImg(const Texture &tex, const GLint filter = GL_NEAREST, const GLint wrap = GL_CLAMP) {
+        if (tex.id() == 0) return;
 
         glPushAttrib(GL_ENABLE_BIT);
         glEnable(GL_TEXTURE_2D);
@@ -737,22 +733,18 @@ namespace sp {
 
             glBindTexture(GL_TEXTURE_2D, tex.id());
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 
-#if SP_USE_GLEW
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#else
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-#endif
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+      
             //glShadeModel(GL_FLAT);
             glColor3d(1.0, 1.0, 1.0);
             glColorMask(1, 1, 1, 1);
 
-            const int w = src.dsize[0];
-            const int h = src.dsize[1];
+            const int w = tex.dsize[0];
+            const int h = tex.dsize[1];
 
             glBegin(GL_QUADS);
             glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
@@ -766,6 +758,16 @@ namespace sp {
         glPopAttrib();
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src, const GLint filter = GL_NEAREST, const GLint wrap = GL_CLAMP) {
+        if (src.size() == 0) return;
+
+        Texture tex;
+        if (tex.set(src.ptr, src.dsize) == false) return;
+
+        glTexImg(tex, filter, wrap);
+    }
+    
     template<typename TYPE0 = Col3, typename TYPE1>
     SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
         if (src.size() == 0) return;
