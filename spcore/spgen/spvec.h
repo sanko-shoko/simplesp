@@ -328,7 +328,6 @@ namespace sp {
         return vec0.x * vec1.x + vec0.y * vec1.y + vec0.z * vec1.z;
     }
 
-
     // cross production
     SP_GENFUNC SP_REAL crsVec(const Vec2 &vec0, const Vec2 &vec1) {
         return vec0.x * vec1.y - vec0.y * vec1.x;
@@ -385,6 +384,26 @@ namespace sp {
         return getVec3(round(vec.x), round(vec.y), round(vec.z));
     }
 
+
+    // main axis
+    SP_GENFUNC int axisVec(const Vec2 &vec) {
+        int axis = 0;
+        if (fabs(vec.y) > fabs(vec.x)) {
+            axis = 1;
+        }
+        return axis;
+    }
+    // main axis
+    SP_GENFUNC int axisVec(const Vec3 &vec) {
+        int axis = 0;
+        if (fabs(vec.y) > fabs(vec.x)) {
+            axis = 1;
+        }
+        if (fabs(vec.z) > fabs(vec.x) && fabs(vec.z) > fabs(vec.y)) {
+            axis = 2;
+        }
+        return axis;
+    }
 
     //--------------------------------------------------------------------------------
     // matrix * vector

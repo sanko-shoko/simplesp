@@ -120,6 +120,10 @@ namespace sp {
 
         void setButton(const int button, const int action, const int mods) {
 
+            if (action == 1 && (buttonL == 0 && buttonR == 0 && buttonM == 0)) {
+                press = pos;
+            }
+            
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 buttonL = action;
             }
@@ -128,10 +132,6 @@ namespace sp {
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 buttonM = action;
-            }
-
-            if (action == 1) {
-                press = pos;
             }
         }
 

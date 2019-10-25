@@ -332,6 +332,7 @@ namespace sp {
     };
 
 
+    // -1: closed, 0: init, 1: opened, 2: ok, 3: cancel, 4: clear
     SP_CPUFUNC int ColorPicker(const char *popup, Col4f &col, const bool alpha = false) {
         static Col4f backup;
         static ImVec4 imcol;

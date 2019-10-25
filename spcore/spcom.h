@@ -260,11 +260,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col4f amb;
-        Col4f dif;
-        Col4f spc;
-        Col4f ems;
-        float shn;
+        Col3 col;
     };
 
 
@@ -613,7 +609,7 @@ namespace sp {
     }
     // compare material
     SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
-        return cmp(mat0.amb, mat1.amb) & cmp(mat0.dif, mat1.dif) & cmp(mat0.ems, mat1.ems) & cmp(mat0.spc, mat1.spc) & (mat0.shn == mat1.shn);
+        return cmp(mat0.col, mat1.col);
     }
 
     // compare camera

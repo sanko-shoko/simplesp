@@ -396,31 +396,41 @@ namespace sp {
 
     class PathTrace {
     public:
+        class Object {
+        public:
+            bool valid;
+            Object() {
+                valid = true;
+            }
+        };
 
         //--------------------------------------------------------------------------------
         // light
         //--------------------------------------------------------------------------------
 
-        class Light {
+        class Light : public Object{
         public:
+
             Col4f col;
             float val;
             float sdw;
 
-            Light() {
+            Light() : Object() {
                 col = getCol4f(1.0, 1.0, 1.0, 1.0);
                 val = 0.5f;
                 sdw = 1.0f;
             }
-            Light(const Light &light) {
+            Light(const Light &light) : Object() {
                 *this = light;
             }
-            Light(const Col4f &col, const double val, const double sdw) {
+            Light(const Col4f &col, const double val, const double sdw) : Object() {
+                init(col, val, sdw);
+            }
+            void init(const Col4f &col, const double val, const double sdw) {
                 this->col = col;
                 this->val = val;
                 this->sdw = sdw;
             }
-
             Light& operator = (const Light &light) {
                 memcpy(this, &light, sizeof(Light));
                 return *this;
@@ -434,21 +444,33 @@ namespace sp {
             PntLight() : Light() {
                 pos = getVec3(0.0, 0.0, 0.0);
             }
-            PntLight(const PntLight &light) {
+            PntLight(const PntLight &light) : Light() {
                 *this = light;
             }
-            PntLight(const Col4f &col, const double val, const double sdw, const Vec3 &pos) : Light(col, val, sdw) {
+            PntLight(const Col4f &col, const double val, const double sdw, const Vec3 &pos) : Light() {
+                init(col, val, sdw, pos);
+            }
+
+            void init(const Col4f &col, const double val, const double sdw, const Vec3 &pos) {
+                Light::init(col, val, sdw);
                 this->pos = pos;
             }
             PntLight& operator = (const PntLight &light) {
                 memcpy(this, &light, sizeof(PntLight));
                 return *this;
             }
+
         };
-        class Plane {
+
+        class Plane : public Object {
         public:
             VecPD3 vec;
             Material mat;
+
+            void init(const VecPD3 &vec, const Material &mat) {
+                this->vec = vec;
+                this->mat = mat;
+            }
         };
 
         const static int SAMPLE_UNIT = 3;
@@ -495,10 +517,10 @@ namespace sp {
 
         Mem2<MemA<Hit, SAMPLE_NUM> > m_raymap;
 
+        // objects
+        Light m_ambient;
         Mem1<PntLight> m_plights;
-
-        Mem1<Light> m_ambient;
-        Mem1<Plane> m_ground;
+        Plane m_plane;
 
     public:
 
@@ -542,6 +564,7 @@ namespace sp {
 
             return (cnt == lim) ? 1.0f : static_cast<float>(cnt) / (lim);
         }
+
         int upcnt() {
             int cnt = 0;
             cnt += m_cnt.amb;
@@ -553,7 +576,7 @@ namespace sp {
             return cnt;
         }
 
-        void setCam(const CamParam cam) {
+        void setCam(const CamParam &cam) {
             if (m_cam != cam) {
                 m_cam = cam;
                 reset();
@@ -562,6 +585,7 @@ namespace sp {
         const CamParam& getCam() const {
             return m_cam;
         }
+
         void setPose(const Pose &pose) {
             if (m_pose != pose) {
                 m_pose = pose;
@@ -572,40 +596,27 @@ namespace sp {
             return m_pose;
         }
 
-        void setAmbient(const Light *light, const int lim = 100) {
-            if (light == NULL) {
-                m_ambient.clear();
+        void setAmbient(const Light &light, const int lim = 100) {
+            m_ambient = light;
+            m_lim.amb = lim;
+            if (light.valid == false) {
                 m_cnt.amb = 0;
                 m_lim.amb = 0;
             }
-            else {
-                m_ambient.resize(1);
-                m_ambient[0] = *light;
-                m_lim.amb = lim;
-            }
-        }
-        const Light* getAmbient() {
-            return (m_ambient.size() > 0) ? &m_ambient[0] : NULL;
         }
 
-        void setGround(const Plane *ground) {
-            if (ground == NULL) {
-                if (m_ground.size() > 0) {
+        void setPlane(const Plane &plane) {
+            if (plane.valid == true) {
+                if (m_plane.valid == false || plane.vec != m_plane.vec || plane.mat != m_plane.mat) {
                     reset();
                 }
-                m_ground.clear();
             }
             else {
-                if (m_ground.size() == 0 || ground->vec != m_ground[0].vec || ground->mat != m_ground[0].mat) {
+                if (m_plane.valid == true) {
                     reset();
                 }
-                m_ground.resize(1);
-                m_ground[0] = *ground;
             }
-        }
-
-        const Plane* getGround() {
-            return (m_ground.size() > 0) ? &m_ground[0] : NULL;
+            m_plane = plane;
         }
 
         void setPntLights(const Mem1<PntLight> &lights, const int lim = 30) {
@@ -623,10 +634,6 @@ namespace sp {
                 m_lim.dif = 0;
             }
             m_plights = lights;
-        }
-
-        const Mem1<PntLight>& setPntLights() const {
-            return m_plights;
         }
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
@@ -694,10 +701,10 @@ namespace sp {
                             sum += m_plights[l].val;
                         }
                     }
-                    if (m_ambient.size() > 0) {
+                    if (m_ambient.valid == true) {
                         if (m_cnt.amb > 0) {
-                            blend(col, im.amb, m_ambient[0]);
-                            sum += m_ambient[0].val;
+                            blend(col, im.amb, m_ambient);
+                            sum += m_ambient.val;
                         }
                     }
                     if (sum > 0.0f) {
@@ -726,16 +733,16 @@ namespace sp {
                     norm = hit.norm;
                 }
             }
-            if (m_ground.size() > 0) {
+            if (m_plane.valid == true) {
                 SP_REAL result[3];
                 double min = (m_cam.type == CamParam_Pers) ? 0.0 : -SP_INFINITY;
-                if (tracePlane(result, m_ground[0].vec, ray, min, norm)) {
+                if (tracePlane(result, m_plane.vec, ray, min, norm)) {
                     hit.acnt = 0;
                     hit.norm = result[0];
-                    hit.pmat = &m_ground[0].mat;
+                    hit.pmat = &m_plane.mat;
                     hit.pmesh = NULL;
                     hit.vec.pos = ray.pos + ray.drc * result[0];
-                    hit.vec.drc = m_ground[0].vec.drc;
+                    hit.vec.drc = m_plane.vec.drc;
                     ret = true;
                 }
             }
@@ -766,6 +773,7 @@ namespace sp {
 
             return getVecPD3(pos, t_irmat * drc);
         }
+
         void calc(Img &img, Cnt &cnt, Lim &lim, MemA<Hit, SAMPLE_NUM> &rays, const Vec2 &pix) {
 
             auto init = [&](const Vec2 &pix, const int i) -> Hit{
@@ -836,15 +844,17 @@ namespace sp {
             const SP_REAL d = dotVec(base.vec.drc, next.drc);
             BVH::Hit hit;
             if (d > 0.0 && trace(hit, next, 0.0, SP_INFINITY) == false) {
-                data.sdw = base.pmat->dif * d;
-                data.sdw.a = base.pmat->dif.a;
+                const Col4f col = cast<Col4f>(base.pmat->col);
+                data.sdw = col * d;
+                data.sdw.a = col.a;
             }
             else {
                 data.sdw = getCol4f(0.0, 0.0, 0.0, 1.0);
             }
             if (d > 0.0) {
-                data.val = base.pmat->dif * d;
-                data.val.a = base.pmat->dif.a;
+                const Col4f col = cast<Col4f>(base.pmat->col);
+                data.val = col * d;
+                data.val.a = col.a;
             }
             else {
                 data.val = getCol4f(0.0, 0.0, 0.0, 1.0);
@@ -872,13 +882,15 @@ namespace sp {
 
             BVH::Hit hit;
             if (trace(hit, next, 0.0, SP_INFINITY) == false) {
-                data.sdw = base.pmat->amb;
+                const Col4f col = cast<Col4f>(base.pmat->col);
+                data.sdw = col;
             }
             else {
                 data.sdw = getCol4f(0.0, 0.0, 0.0, 1.0);
             }
             {
-                data.val = base.pmat->amb;
+                const Col4f col = cast<Col4f>(base.pmat->col);
+                data.val = col;
             }
         }
 
