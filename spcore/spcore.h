@@ -26,6 +26,7 @@
 #include "spcore/spcpu/spsolve.h"
 #include "spcore/spcpu/spstat.h"
 #include "spcore/spcpu/spstr.h"
+#include "spcore/spcpu/spcode.h"
 
 
 #include "spcore/spsystem.h"

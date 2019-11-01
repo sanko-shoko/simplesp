@@ -197,6 +197,8 @@ namespace sp {
                 Vec3 cent;
             };
 
+            if (m_idxs.size() == 0) return;
+
             Mem1<IndexEx> idxs(m_idxs.size());
             for (int i = 0; i < idxs.size(); i++) {
                 idxs[i].acnt = m_idxs[i].acnt;
@@ -333,8 +335,9 @@ namespace sp {
         };
 
         bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
-            int minid = -1;
+            if (m_idxs.size() == 0) return false;
 
+            int minid = -1;
             int stack = 0;
             const int MAXN = 100;
             const Node* que[MAXN];
@@ -647,8 +650,8 @@ namespace sp {
             m_bvh.build();
         }
 
-        void update() {
-            if (prog() == 1.0f) return;
+        bool update() {
+            if (prog() == 1.0f) return false;
 
             t_ipose = invPose(m_pose);
             t_irmat = getMat(t_ipose.rot);
@@ -674,6 +677,7 @@ namespace sp {
                 }
                 m_cnt.msk = minval(m_lim.msk, m_cnt.msk + 1);
             }
+            return true;
         }
 
         void render(Mem2<Col4> &img, const Col4f &bgcol = getCol4f(1.0, 1.0, 1.0, 1.0)) {

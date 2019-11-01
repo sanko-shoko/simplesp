@@ -261,6 +261,15 @@ namespace sp{
 
     struct Material {
         Col3 col;
+        
+        // transmittance
+        Byte tval;
+
+        // refractive index
+        Byte rind;
+
+        // reflectivity
+        Byte rval;
     };
 
 
@@ -609,7 +618,7 @@ namespace sp {
     }
     // compare material
     SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
-        return cmp(mat0.col, mat1.col);
+        return cmp(mat0.col, mat1.col) & (mat0.tval == mat1.tval) & (mat0.rind == mat1.rind) & (mat0.rval == mat1.rval);
     }
 
     // compare camera
