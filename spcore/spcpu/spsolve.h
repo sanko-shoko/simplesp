@@ -52,7 +52,7 @@ namespace sp{
             Mat W(nsize * step, 1);
 
             const double sigma = 1.4826 * medianVal(errs);
-            const double thresh = maxval(3.0 * sigma, minErr);
+            const double thresh = maxVal(3.0 * sigma, minErr);
 
             SP_REAL *pw = W.ptr;
             const SP_REAL *pe = errs.ptr;
@@ -165,9 +165,9 @@ namespace sp{
 
     // ransac adaptive stop
     SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int unit, const double n = 0.99){
-        const SP_REAL e = maxval(rate, 0.1);
+        const SP_REAL e = maxVal(rate, 0.1);
         const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, unit)));
-        return minval(k, SP_RANSAC_ITMAX);
+        return minVal(k, SP_RANSAC_ITMAX);
     }
 
     SP_CPUFUNC SP_REAL ransacEval(const Mem<SP_REAL> &errs, const int unit, const double thresh) {

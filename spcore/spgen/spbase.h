@@ -123,32 +123,32 @@ namespace sp{
     }
 
     // get max value
-    SP_GENFUNC const int maxval(const int a, const int b){
+    SP_GENFUNC const int maxVal(const int a, const int b){
         return (a > b) ? a : b;
     }
 
     // get max value
-    SP_GENFUNC const SP_REAL maxval(const double a, const double b){
+    SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
         return SP_RCAST((a > b) ? a : b);
     }
 
     // get min value
-    SP_GENFUNC const int minval(const int a, const int b){
+    SP_GENFUNC const int minVal(const int a, const int b){
         return (a < b) ? a : b;
     }
 
     // get min value
-    SP_GENFUNC const SP_REAL minval(const double a, const double b){
+    SP_GENFUNC const SP_REAL minVal(const double a, const double b){
         return SP_RCAST((a < b) ? a : b);
     }
 
     // get limit value
-    SP_GENFUNC const int limval(const int v, const int minv, const int maxv) {
+    SP_GENFUNC const int limVal(const int v, const int minv, const int maxv) {
         return (v > maxv) ? maxv : ((v < minv) ? minv : v);
     }
 
     // get limit value
-    SP_GENFUNC const SP_REAL limval(const double v, const double minv, const double maxv) {
+    SP_GENFUNC const SP_REAL limVal(const double v, const double minv, const double maxv) {
         return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
@@ -399,7 +399,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC const int acsid1(const int *dsize, const int d0) {
-        const int id0 = maxval(0, minval(dsize[0] - 1, d0));
+        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
         return id0;
     }
 
@@ -453,8 +453,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC int acsid2(const int *dsize, const int d0, const int d1, const int c = 0) {
-        const int id0 = maxval(0, minval(dsize[0] - 1, d0));
-        const int id1 = maxval(0, minval(dsize[1] - 1, d1));
+        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
+        const int id1 = maxVal(0, minVal(dsize[1] - 1, d1));
         return id1 * dsize[0] + id0;
     }
 
@@ -495,9 +495,9 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC int acsid3(const int *dsize, const int d0, const int d1, const int d2, const int c = 0) {
-        const int id0 = maxval(0, minval(dsize[0] - 1, d0));
-        const int id1 = maxval(0, minval(dsize[1] - 1, d1));
-        const int id2 = maxval(0, minval(dsize[2] - 1, d2));
+        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
+        const int id1 = maxVal(0, minVal(dsize[1] - 1, d1));
+        const int id2 = maxVal(0, minVal(dsize[2] - 1, d2));
         return (id2 * dsize[1] + id1) * dsize[0] + id0;
     }
 

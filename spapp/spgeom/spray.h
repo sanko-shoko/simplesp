@@ -90,8 +90,8 @@ namespace sp {
 
             const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
             const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
-            n = maxval(n, tn);
-            f = minval(f, tf);
+            n = maxVal(n, tn);
+            f = minVal(f, tf);
             if (f < n) {
                 return false;
             }
@@ -626,7 +626,7 @@ namespace sp {
             SP_ASSERT(lights.size() <= maxlt);
 
             for (int i = 0; i < maxlt; i++) {
-                if (i >= minval(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
+                if (i >= minVal(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
                     m_cnt.dif[i] = 0;
                 }
             }
@@ -671,11 +671,11 @@ namespace sp {
                 }
             }
             {
-                m_cnt.amb = minval(m_lim.amb, m_cnt.amb + 1);
+                m_cnt.amb = minVal(m_lim.amb, m_cnt.amb + 1);
                 for (int i = 0; i < m_plights.size(); i++) {
-                    m_cnt.dif[i] = minval(m_lim.dif, m_cnt.dif[i] + 1);
+                    m_cnt.dif[i] = minVal(m_lim.dif, m_cnt.dif[i] + 1);
                 }
-                m_cnt.msk = minval(m_lim.msk, m_cnt.msk + 1);
+                m_cnt.msk = minVal(m_lim.msk, m_cnt.msk + 1);
             }
             return true;
         }

@@ -89,11 +89,11 @@ namespace sp{
                         for (int y = -w1; y <= +w1; y++) {
                             for (int x = -w1; x <= +w1; x++) {
                                 const int val = smth(ix + x, iy + y);
-                                maxv = maxval(maxv, val);
-                                minv = minval(minv, val);
+                                maxv = maxVal(maxv, val);
+                                minv = minVal(minv, val);
                             }
                         }
-                        const SP_REAL e_img = -static_cast<SP_REAL>(smth(ix, iy) - minv) / maxval(maxv - minv, 20);
+                        const SP_REAL e_img = -static_cast<SP_REAL>(smth(ix, iy) - minv) / maxVal(maxv - minv, 20);
 
                         //const SP_REAL dx = fabs(img(ix + 1, iy) - img(ix - 1, iy));
                         //const SP_REAL dy = fabs(img(ix, iy + 1) - img(ix, iy - 1));

@@ -65,12 +65,12 @@ namespace sp{
                 for (int x = 0; x < bimg.dsize[0]; x++){
                     SP_REAL &maxv = bimg(x, y);
 
-                    const int eu = minval(rmap.dsize[0], (x + 1) * block);
-                    const int ev = minval(rmap.dsize[1], (y + 1) * block);
+                    const int eu = minVal(rmap.dsize[0], (x + 1) * block);
+                    const int ev = minVal(rmap.dsize[1], (y + 1) * block);
                 
                     for (int v = y * block; v < ev; v++){
                         for (int u = x * block; u < eu; u++){
-                            maxv = maxval(maxv, rmap(u, v));
+                            maxv = maxVal(maxv, rmap(u, v));
                         }
                     }
                 }
@@ -87,8 +87,8 @@ namespace sp{
                     const SP_REAL maxv = bimg(x, y);
                     if (maxv < thresh) continue;
 
-                    const int eu = minval(rmap.dsize[0], (x + 1) * block);
-                    const int ev = minval(rmap.dsize[1], (y + 1) * block);
+                    const int eu = minVal(rmap.dsize[0], (x + 1) * block);
+                    const int ev = minVal(rmap.dsize[1], (y + 1) * block);
 
                     for (int v = y * block; v < ev; v++){
                         for (int u = x * block; u < eu; u++){

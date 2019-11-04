@@ -1059,8 +1059,8 @@ namespace sp {
         for (int p = 0; p < 3; p++) {
             const Vec3 &pos = mesh.pos[p];
             for (int i = 0; i < 3; i++) {
-                acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(pos, i));
-                acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(pos, i));
+                acsv(dst.pos[0], i) = minVal(acsv(dst.pos[0], i), acsv(pos, i));
+                acsv(dst.pos[1], i) = maxVal(acsv(dst.pos[1], i), acsv(pos, i));
             }
         }
         return dst;
@@ -1074,8 +1074,8 @@ namespace sp {
     SP_GENFUNC Box2 orBox(const Box2 &box0, const Box2 &box1) {
         Box2 dst = box0;
         for (int i = 0; i < 2; i++) {
-            acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
-            acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
+            acsv(dst.pos[0], i) = minVal(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
+            acsv(dst.pos[1], i) = maxVal(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
         }
         return dst;
     }
@@ -1083,8 +1083,8 @@ namespace sp {
     SP_GENFUNC Box3 orBox(const Box3 &box0, const Box3 &box1) {
         Box3 dst = box0;
         for (int i = 0; i < 3; i++) {
-            acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
-            acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
+            acsv(dst.pos[0], i) = minVal(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
+            acsv(dst.pos[1], i) = maxVal(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
         }
         return dst;
     }
@@ -1092,8 +1092,8 @@ namespace sp {
     SP_GENFUNC Box3 orBox(const Box3 &box, const Vec3 &vec) {
         Box3 dst = box;
         for (int i = 0; i < 3; i++) {
-            acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(vec, i));
-            acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(vec, i));
+            acsv(dst.pos[0], i) = minVal(acsv(dst.pos[0], i), acsv(vec, i));
+            acsv(dst.pos[1], i) = maxVal(acsv(dst.pos[1], i), acsv(vec, i));
         }
         return dst;
     }
@@ -1103,8 +1103,8 @@ namespace sp {
         for (int p = 0; p < 3; p++) {
             const Vec3 &pos = mesh.pos[p];
             for (int i = 0; i < 3; i++) {
-                acsv(dst.pos[0], i) = minval(acsv(dst.pos[0], i), acsv(pos, i));
-                acsv(dst.pos[1], i) = maxval(acsv(dst.pos[1], i), acsv(pos, i));
+                acsv(dst.pos[0], i) = minVal(acsv(dst.pos[0], i), acsv(pos, i));
+                acsv(dst.pos[1], i) = maxVal(acsv(dst.pos[1], i), acsv(pos, i));
             }
         }
         return dst;

@@ -11,26 +11,101 @@
 
 namespace sp{
 
-    static int cnvBitToByte(Mem1<Byte> &dst, const Mem1<Byte> &src) {
-        dst.resize((src.size() + 7) / 8);
-        dst.clear();
+    //! @param src 8bit array
+    SP_CPUFUNC Mem1<Byte> get1BitArray(const Mem1<Byte> &src, const int bits) {
+        Mem1<Byte> dst(bits);
+        dst.zero();
+
+        for (int i = 0; i < dst.size(); i++) {
+            const int a = i / 8;
+            const int b = i % 8;
+            dst[i] = getBit(&src[a], b);
+        }
+        return dst;
+    }
+
+    //! @param src 1bit array
+    SP_CPUFUNC Mem1<Byte> get8BitArray(const Mem1<Byte> &src) {
+        Mem1<Byte> dst((src.size() + 7) / 8);
+        dst.zero();
 
         for (int i = 0; i < src.size(); i++) {
             const int a = i / 8;
             const int b = i % 8;
-            //setBit(dst[a], 
+            setBit(&dst[a], b, src[i]);
         }
-        return 0;
+        return dst;
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC Mem1<int> getCodeCnts(const Mem1<TYPE> &data, const int num) {
+        Mem1<int> cnts(num);
+        cnts.zero();
+
+        for (int i = 0; i < data.size(); i++) {
+            const int p = data[i];
+            if (p >= 0 && p < num) {
+                cnts[p]++;
+            }
+        }
+        return cnts;
+    }
+
+    //--------------------------------------------------------------------------------
+    // LZSS (Lempel–Ziv–Storer–Szymanski)
+    //--------------------------------------------------------------------------------
+
+    //! @param code
+    //! @param search 
+    //! @param minlen 
+    //! @param maxlen 
+    template<typename TYPE>
+    SP_CPUFUNC Mem1<int> lzssEncode(const Mem1<TYPE> &data, const int code, const int maxSearch, const int minLength, const int maxLength) {
+        Mem1<int> dst;
+        if (data.size() == 0) return dst;
+
+        dst.reserve(data.size());
+        dst.push(data[0]);
+
+        for (int i = 1; i < data.size(); ) {
+
+            int search = 0;
+            int length = minLength - 1;
+
+            for (int j = maxVal(0, i - maxSearch); j < i; j++) {
+                if (data[i] != data[j]) continue;
+
+                int k = 1;
+                const int maxk = minVal(maxLength, data.size() - 1 - i);
+                for (; k <= maxk; k++) {
+                    if (data[i + k] != data[j + k]) break;
+                }
+                if (k > length) {
+                    search = i - j;
+                    length = k;
+                }
+            }
+            if (search == 0) {
+                dst.push(data[i]);
+                i += 1;
+            }
+            else {
+                dst.push(code);
+                dst.push(search);
+                dst.push(length);
+                i += length;
+            }
+        }
+
+        return dst;
+    }
 
     //--------------------------------------------------------------------------------
     // huffman coding
     //--------------------------------------------------------------------------------
 
-    bool hmMakeTable(Mem1<Mem1<Byte>> &table, const Mem1<int> &cnts) {
-        table.clear();
-        table.resize(cnts.size());
+    SP_CPUFUNC Mem1<Mem1<Byte>> hmMakeTable(const Mem1<int> &cnts) {
+        Mem1<Mem1<Byte>> table(cnts.size());
 
         struct Node {
             int cnt;
@@ -53,11 +128,11 @@ namespace sp{
         }
 
         if (nodes.size() == 0) {
-            return false;
+            return table;
         }
         if (nodes.size() == 1) {
             nodes[0].code->push(0);
-            return true;
+            return table;
         }
 
         Node *root = NULL;
@@ -124,23 +199,71 @@ namespace sp{
                 }
             }
         }
-        return true;
+
+        {
+            int maxv = 0;
+            int minv = SP_INTMAX;
+            for (int i = 0; i < table.size(); i++) {
+                const int n = table[i].size();
+                if (n == 0) continue;
+                maxv = maxVal(n, maxv);
+                minv = minVal(n, minv);
+            }
+
+            Mem1<Byte> bits;
+
+            int prev = minv;
+            for (int s = minv; s <= maxv; s++) {
+                for (int i = 0; i < table.size(); i++) {
+                    if (table[i].size() == s) {
+
+                        if (bits.size() == 0) {
+                            for (int j = 0; j < minv; j++) {
+                                bits.push(0);
+                            }
+                        }
+                        else {
+                            for (int j = bits.size() - 1; j >= 0; j--) {
+                                if (bits[j] == 0) {
+                                    bits[j] = 1;
+                                    break;
+                                }
+                                else {
+                                    bits[j] = 0;
+                                }
+                            }
+                        }
+                        if (table[i].size() > prev) {
+                            for (int j = 0; j < table[i].size() - prev; j++) {
+                                bits.push(0);
+                            }
+                            prev = table[i].size();
+                        }
+
+                        table[i] = bits;
+                    }
+                }
+            }
+
+        }
+        return table;
     }
 
 
-    bool hmEncode(Mem1<Byte> &dst, const Mem1<Mem1<Byte>> &table, const Mem1<int> &src) {
-        dst.clear();
+    template<typename TYPE>
+    SP_CPUFUNC Mem1<Byte> hmEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src) {
+        Mem1<Byte> dst;
         
         for (int i = 0; i < src.size(); i++) {
             const int s = src[i];
             const Mem1<Byte> &bits = table[s];
             dst.push(bits);
         }
-        return true;
+        return dst;
     }
 
-    bool hmDecode(Mem1<int> &dst, const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src) {
-        dst.clear();
+    SP_CPUFUNC Mem1<int> hmDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src) {
+        Mem1<int> dst;
 
         struct Node {
             int val;
@@ -189,7 +312,7 @@ namespace sp{
             }
         }
 
-        return true;
+        return dst;
     }
 }
 

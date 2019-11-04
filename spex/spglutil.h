@@ -110,7 +110,7 @@ namespace sp {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
-        return  static_cast<float>(log10(2.0 * minval(viewport[2], viewport[3]))) * 0.5f;
+        return  static_cast<float>(log10(2.0 * minVal(viewport[2], viewport[3]))) * 0.5f;
     }
 
     //--------------------------------------------------------------------------------

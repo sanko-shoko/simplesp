@@ -127,8 +127,8 @@ int main() {
                     for (int j = 0; j < dst.size(); j++) {
                         tmp[j] = eigVec(j, i);
                     }
-                    const double maxv = maxval(tmp);
-                    const double minv = minval(tmp);
+                    const double maxv = maxVal(tmp);
+                    const double minv = minVal(tmp);
                     cnvMem(dst, tmp, 255 / (maxv - minv), minv);
                 }
 

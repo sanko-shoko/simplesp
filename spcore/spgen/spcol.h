@@ -193,7 +193,7 @@ namespace sp{
 
     // convert phase to col3(rainbow), phase = [0, 1]
     SP_GENFUNC void cnvPhaseToCol(Col3 &col, const double phase){
-        const double p = maxval(0.0, minval(phase, 1.0));
+        const double p = maxVal(0.0, minVal(phase, 1.0));
 
         col.r = static_cast<Byte>(255 * (sin(1.5 * SP_PI * p + SP_PI * (9.0 / 4.0)) + 1.0) / 2.0);
         col.g = static_cast<Byte>(255 * (sin(1.5 * SP_PI * p + SP_PI * (7.0 / 4.0)) + 1.0) / 2.0);
@@ -227,15 +227,15 @@ namespace sp{
 
     // convert col3 to hsv, hsv = Vec3(h = [0, 2 * PI], s = [0, 1], v = [0, 1])
     SP_GENFUNC void cnvColToHSV(Vec3 &hsv, const Col3 &col){
-        const double maxv = maxval(col.r, maxval(col.g, col.b));
-        const double minv = minval(col.r, minval(col.g, col.b));
+        const double maxv = maxVal(col.r, maxVal(col.g, col.b));
+        const double minv = minVal(col.r, minVal(col.g, col.b));
         const double subv = maxv - minv;
 
         double h, s, v;
         {
             h = 0.0;
             v = maxv / 255.0;
-            s = subv / maxval(maxv, 1.0);
+            s = subv / maxVal(maxv, 1.0);
         }
         if (subv == 0.0) {
             h = 0.0;
@@ -325,9 +325,9 @@ namespace sp{
         val.y = SP_RCAST(-0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z);
         val.z = SP_RCAST(0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
     
-        val.x = minval(1.0, f(val.x));
-        val.y = minval(1.0, f(val.y));
-        val.z = minval(1.0, f(val.z));
+        val.x = minVal(1.0, f(val.x));
+        val.y = minVal(1.0, f(val.y));
+        val.z = minVal(1.0, f(val.z));
 
         col = cast<Col3>(val);
     }
@@ -401,7 +401,7 @@ namespace sp{
     }
     
     SP_GENFUNC Col3 getCol3(const int label) {
-        srand(maxval(label + 1, 0));
+        srand(maxVal(label + 1, 0));
         Col3 col;
         cnvHSVToCol(col, getVec3((randu() + 1.0) * SP_PI, 1.0, 1.0));
         return col;
