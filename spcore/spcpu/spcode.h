@@ -82,7 +82,7 @@ namespace sp{
                 }
                 if (k > length) {
                     search = i - j;
-                    length = k;
+                    length = minVal(k, maxLength);
                 }
             }
             if (search == 0) {
@@ -100,153 +100,157 @@ namespace sp{
         return dst;
     }
 
+    //! @param code
+    SP_CPUFUNC Mem1<int> lzssDecode(const Mem1<int> &data, const int code) {
+        Mem1<int> dst;
+        if (data.size() == 0) return dst;
+
+        for (int i = 0; i < data.size(); i++) {
+            if (data[i] != code) {
+                dst.push(data[i]);
+            }
+            else {
+                const int search = data[i + 1];
+                const int length = data[i + 2];
+                const int base = dst.size();
+                for (int j = 0; j < length; j++) {
+                    const int v = dst[base - search + j];
+                    dst.push(v);
+                }
+                i += 2;
+            }
+        }
+
+        return dst;
+    }
+
     //--------------------------------------------------------------------------------
     // huffman coding
     //--------------------------------------------------------------------------------
 
-    SP_CPUFUNC Mem1<Mem1<Byte>> hmMakeTable(const Mem1<int> &cnts) {
-        Mem1<Mem1<Byte>> table(cnts.size());
+
+    SP_CPUFUNC Mem1<Mem1<Byte>> hmMakeTableFromLngs(const Mem1<int> &lngs) {
+        Mem1<Mem1<Byte>> table(lngs.size());
+
+        int maxv = 0;
+        int minv = SP_INTMAX;
+        for (int i = 0; i < lngs.size(); i++) {
+            const int n = lngs[i];
+            if (n == 0) continue;
+            maxv = maxVal(n, maxv);
+            minv = minVal(n, minv);
+        }
+        if (maxv == 0) {
+            return table;
+        }
+
+        Mem1<Byte> bits;
+        for (int j = 0; j < minv; j++) {
+            bits.push(0);
+        }
+
+        int prev = 0;
+        for (int s = minv; s <= maxv; s++) {
+            for (int i = 0; i < lngs.size(); i++) {
+                if (lngs[i] != s) continue;
+
+                if (prev > 0) {
+                    for (int j = bits.size() - 1; j >= 0; j--) {
+                        if (bits[j] == 0) {
+                            bits[j] = 1;
+                            break;
+                        }
+                        else {
+                            bits[j] = 0;
+                        }
+                    }
+                    for (int j = 0; j < s - prev; j++) {
+                        bits.push(0);
+                    }
+                }
+                
+                prev = s;
+                table[i] = bits;
+            }
+        }
+        return table;
+    }
+    
+    SP_CPUFUNC Mem1<Mem1<Byte>> hmMakeTableFromCnts(const Mem1<int> &cnts) {
+        {
+            int n = 0;
+            int id = -1;
+            for (int i = 0; i < cnts.size(); i++) {
+                if (cnts[i] > 0) {
+                    n++;
+                    id = i;
+                }
+            }
+            if (n == 0) {
+                return Mem1<Mem1<Byte>>();
+            }
+            if (n == 1) {
+                Mem1<Mem1<Byte>> table(cnts.size());
+                table[id].push(0);
+                return table;
+            }
+        }
 
         struct Node {
             int cnt;
-            Node *child[2];
-            Mem1<Byte> *code;
+            Node *parent;
         };
 
-        Mem1<Node> nodes;
-        nodes.reserve(2 * cnts.size() - 1);
-
+        Mem1<Node> nodes(cnts.size());
         for (int i = 0; i < cnts.size(); i++) {
-            if (cnts[i] == 0) continue;
-
-            Node node;
-            node.cnt = cnts[i];
-            node.child[0] = NULL;
-            node.child[1] = NULL;
-            node.code = &table[i];
-            nodes.push(node);
+            nodes[i].cnt = cnts[i];
+            nodes[i].parent = NULL;
         }
 
-        if (nodes.size() == 0) {
-            return table;
-        }
-        if (nodes.size() == 1) {
-            nodes[0].code->push(0);
-            return table;
-        }
-
-        Node *root = NULL;
-        {
-            Mem1<Node*> heads;
-            for (int i = 0; i < nodes.size(); i++) {
+        Mem1<Node*> heads;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes[i].cnt > 0) {
                 heads.push(&nodes[i]);
             }
-            while (heads.size() != 1) {
-                Node node;
-                node.cnt = 0;
-                node.code = NULL;
-
-                for (int j = 0; j < 2; j++) {
-                    int id = 0;
-                    int minv = SP_INTMAX;
-                    for (int k = 0; k < heads.size(); k++) {
-                        if (heads[k]->cnt < minv) {
-                            minv = heads[k]->cnt;
-                            id = k;
-                        }
-                    }
-                    node.cnt += heads[id]->cnt;
-                    node.child[1 - j] = heads[id];
-
-                    heads.del(id);
-                }
-
-                nodes.push(node);
-                heads.push(nodes.last());
-            }
-            root = heads[0];
         }
-        {
-            Mem1<Node*> stack;
-            stack.push(root);
+        
+        Mem1<Node> tmps;
+        tmps.reserve(cnts.size() - 1);
+        
+        while (heads.size() >= 2) {
+            Node &node = *tmps.extend();
+            node.cnt = 0;
+            node.parent = NULL;
 
-            Mem1<Byte> bits;
-
-            int move = 0;
-            while (!(move == -1 && stack.size() == 1)) {
-                Node *node = *stack.last();
-
-                if (node->code == NULL) {
-                    if (move >= 0) {
-                        stack.push(node->child[move]);
-                        bits.push(move);
-                        move = +0;
-                    }
-                    else {
-                        move = (*bits.last() == 0) ? +1 : -1;
-                        stack.pop();
-                        bits.pop();
+            for (int j = 0; j < 2; j++) {
+                int id = 0;
+                int minv = SP_INTMAX;
+                for (int k = 0; k < heads.size(); k++) {
+                    if (heads[k]->cnt < minv) {
+                        minv = heads[k]->cnt;
+                        id = k;
                     }
                 }
-                else {
-                    *node->code = bits;
-                    //print(bits);
+                node.cnt += heads[id]->cnt;
+                heads[id]->parent = &node;
 
-                    move = (*bits.last() == 0) ? +1 : -1;
+                heads.del(id);
+            }
 
-                    stack.pop();
-                    bits.pop();
-                }
+            heads.push(&node);
+        }
+      
+        Mem1<int> lngs(cnts.size());
+        for (int i = 0; i < lngs.size(); i++) {
+            lngs[i] = 0;
+
+            Node *node = &nodes[i];
+            while (node->parent != NULL) {
+                lngs[i]++;
+                node = node->parent;
             }
         }
-
-        {
-            int maxv = 0;
-            int minv = SP_INTMAX;
-            for (int i = 0; i < table.size(); i++) {
-                const int n = table[i].size();
-                if (n == 0) continue;
-                maxv = maxVal(n, maxv);
-                minv = minVal(n, minv);
-            }
-
-            Mem1<Byte> bits;
-
-            int prev = minv;
-            for (int s = minv; s <= maxv; s++) {
-                for (int i = 0; i < table.size(); i++) {
-                    if (table[i].size() == s) {
-
-                        if (bits.size() == 0) {
-                            for (int j = 0; j < minv; j++) {
-                                bits.push(0);
-                            }
-                        }
-                        else {
-                            for (int j = bits.size() - 1; j >= 0; j--) {
-                                if (bits[j] == 0) {
-                                    bits[j] = 1;
-                                    break;
-                                }
-                                else {
-                                    bits[j] = 0;
-                                }
-                            }
-                        }
-                        if (table[i].size() > prev) {
-                            for (int j = 0; j < table[i].size() - prev; j++) {
-                                bits.push(0);
-                            }
-                            prev = table[i].size();
-                        }
-
-                        table[i] = bits;
-                    }
-                }
-            }
-
-        }
-        return table;
+        return hmMakeTableFromLngs(lngs);
     }
 
 
@@ -305,13 +309,111 @@ namespace sp{
                 const Byte bit = src[i];
 
                 node = node->child[bit];
-                if (node->val >= 0) {
-                    dst.push(node->val);
+                const int n = node->val;
+                if (n >= 0) {
+                    dst.push(n);
                     node = NULL;
                 }
             }
         }
 
+        return dst;
+    }
+
+
+    //--------------------------------------------------------------------------------
+    // zip like code
+    //--------------------------------------------------------------------------------
+
+    template<typename TYPE>
+    SP_CPUFUNC Mem1<Byte> zlEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src, const int code, const int v0, const int v1) {
+        Mem1<Byte> dst;
+
+        for (int i = 0; i < src.size(); i++) {
+            const int s = src[i];
+            const Mem1<Byte> &bits = table[s];
+
+            dst.push(bits);
+            if (s == code) {
+                int v;
+                v = (src[i + 1]);
+                for (int j = 0; j < v0; j++) {
+                    dst.push((v >> j) & 0x01);
+                }
+                v = (src[i + 2]);
+                for (int j = 0; j < v1; j++) {
+                    dst.push((v >> j) & 0x01);
+                }
+                i += 2;
+            }
+        }
+        return dst;
+    }
+
+    SP_CPUFUNC Mem1<int> zlDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src, const int code, const int v0, const int v1) {
+        Mem1<int> dst;
+
+        struct Node {
+            int val;
+            Node *child[2];
+        };
+
+        Mem1<Node> nodes;
+        nodes.reserve(2 * table.size() - 1);
+        Node *root = nodes.extend();
+        root->val = -1;
+        root->child[0] = NULL;
+        root->child[1] = NULL;
+
+        for (int i = 0; i < table.size(); i++) {
+            const Mem1<Byte> &bits = table[i];
+            if (bits.size() == 0) continue;
+            Node *node = root;
+            for (int j = 0; j < bits.size(); j++) {
+                const Byte bit = bits[j];
+                if (node->child[bit] == NULL) {
+                    node->child[bit] = nodes.extend();
+                    node = node->child[bit];
+                    node->val = -1;
+                    node->child[0] = NULL;
+                    node->child[1] = NULL;
+                }
+                else {
+                    node = node->child[bit];
+                }
+            }
+            node->val = i;
+        }
+        {
+            Node *node = NULL;
+            for (int i = 0; i < src.size(); i++) {
+                if (node == NULL) {
+                    node = root;
+                }
+                const Byte bit = src[i];
+
+                node = node->child[bit];
+                const int n = node->val;
+                if (n >= 0) {
+                    dst.push(n);
+                    node = NULL;
+                }
+                if (n == code) {
+                    int v;
+                    v = 0;
+                    for (int j = 0; j < v0; j++, i++) {
+                        v = v + (src[i + 1] << j);
+                    }
+                    dst.push(v);
+                    v = 0;
+                    for (int j = 0; j < v1; j++, i++) {
+                        v = v + (src[i + 1] << j);
+                    }
+                    dst.push(v);
+                }
+
+            }
+        }
         return dst;
     }
 }
