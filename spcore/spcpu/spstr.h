@@ -10,8 +10,6 @@
 
 namespace sp{
 
-#if SP_USE_WRAPPER
- 
     //--------------------------------------------------------------------------------
     // string
     //--------------------------------------------------------------------------------
@@ -47,8 +45,6 @@ namespace sp{
     SP_CPUFUNC char* strtok(char *str, const char * tok) {
         return ::strtok(str, tok);
     }
-
-#endif
 
 
     SP_CPUFUNC char* strget(char *dst, const char *src, const int x, const char *tok = " ,\t\n\r"){

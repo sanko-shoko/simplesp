@@ -65,22 +65,6 @@ namespace sp {
         glColor4f(col.r, col.g, col.b, col.a);
     }
 
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3 &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4 &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col3f &col) {
-        const Col4f tmp = cast<Col4f>(col);
-        glMaterialfv(face, pname, (float*)&tmp);
-    }
-    SP_CPUFUNC void glMaterial(GLenum face, GLenum pname, const Col4f &col) {
-        glMaterialfv(face, pname, (float*)&col);
-    }
-
     SP_CPUFUNC void glViewport(const Rect2 &rect) {
         GLFWwindow *win = glfwGetCurrentContext();
 
@@ -124,7 +108,7 @@ namespace sp {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
-        return  static_cast<float>(log10(2.0 * minval(viewport[2], viewport[3]))) * 0.5f;
+        return  static_cast<float>(log10(2.0 * minVal(viewport[2], viewport[3]))) * 0.5f;
     }
 
     //--------------------------------------------------------------------------------
@@ -364,7 +348,7 @@ namespace sp {
             set(img, dsize, ch);
         }
 
-        GLuint id() {
+        GLuint id() const {
             return m_tx;
         }
 
@@ -436,6 +420,25 @@ namespace sp {
         for (int i = 0; i <= 36; i++) {
             const double p = i / 36.0 * 2.0 * SP_PI;
             glVertex(getVec2(pos.x + radius * sin(p), pos.y + radius * cos(p)));
+        }
+        glEnd();
+    }
+
+    SP_CPUFUNC void glCircle(const Vec3 &pos, const double radius, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        const Mat imat = invMat(glGetMat(GL_MODELVIEW_MATRIX).part(0, 0, 3, 3));
+        const Vec3 a = imat * getVec3(1.0, 0.0, 0.0);
+        const Vec3 b = imat * getVec3(0.0, 1.0, 0.0);
+
+        glBegin(type);
+
+        if (fill == true) {
+            glVertex(pos);
+        }
+        for (int i = 0; i <= 36; i++) {
+            const double p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(pos + a * radius * sin(p) + b * radius * cos(p));
         }
         glEnd();
     }
@@ -534,6 +537,22 @@ namespace sp {
         glColor3ub(0, 0, 255);
         glVertex3d(0.0, 0.0, 0.0); glVertex3d(0.0, 0.0, size);
         glEnd();
+    }
+
+    SP_CPUFUNC void glVector(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
+        const double seg0 = radius * 8.0;
+        const double seg1 = normVec(vtx1 - vtx0) - seg0;
+        const Vec3 drc = unitVec(vtx1 - vtx0);
+
+        const Mem1<Mesh3> vec = loadCone(drc * seg0, radius * 3.0) + (drc * seg1 + vtx0);
+        const Mem1<Mesh3> cyl = loadCylinder(drc * seg1, radius) + vtx0;
+
+        for (int i = 0; i < vec.size(); i++) {
+            glMesh(vec[i]);
+        }
+        for (int i = 0; i < cyl.size(); i++) {
+            glMesh(cyl[i]);
+        }
     }
 
     SP_CPUFUNC void glCube(const double size) {
@@ -662,52 +681,9 @@ namespace sp {
         glPopAttrib();
     }
 
-    SP_CPUFUNC void glRenderVoxel(const Voxel<> &voxel) {
 
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        {
-            glPushMatrix();
-            glLoadIdentity();
-
-            glEnable(GL_LIGHTING);
-            glEnable(GL_LIGHT0);
-
-            GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 1.f };
-            glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-            glPopMatrix();
-
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-            const Vec3 cent = voxel.center();
-
-            for (int z = 0; z < voxel.vmap.dsize[2]; z++) {
-                for (int y = 0; y < voxel.vmap.dsize[1]; y++) {
-                    for (int x = 0; x < voxel.vmap.dsize[0]; x++) {
-                        const char &val = voxel.vmap(x, y, z);
-                        if (val < 0) continue;
-
-                        const Vec3 mpos = getVec3(x, y, z);
-                        const Vec3 cpos = ((mpos - cent) * voxel.unit);
-
-                        glPushMatrix();
-                        glMultMatrix(getPose(cpos));
-
-                        glCube(voxel.unit);
-
-                        glPopMatrix();
-                    }
-                }
-            }
-        }
-        glPopAttrib();
-    }
-
-    template<typename TYPE>
-    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src, const GLint param = GL_NEAREST) {
-        if (src.size() == 0) return;
-
-        Texture tex;
-        if (tex.set(src.ptr, src.dsize) == false) return;
+    SP_CPUFUNC void glTexImg(const Texture &tex, const GLint filter = GL_NEAREST, const GLint wrap = GL_CLAMP) {
+        if (tex.id() == 0) return;
 
         glPushAttrib(GL_ENABLE_BIT);
         glEnable(GL_TEXTURE_2D);
@@ -716,22 +692,18 @@ namespace sp {
 
             glBindTexture(GL_TEXTURE_2D, tex.id());
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 
-#if SP_USE_GLEW
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#else
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-#endif
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+      
             //glShadeModel(GL_FLAT);
             glColor3d(1.0, 1.0, 1.0);
             glColorMask(1, 1, 1, 1);
 
-            const int w = src.dsize[0];
-            const int h = src.dsize[1];
+            const int w = tex.dsize[0];
+            const int h = tex.dsize[1];
 
             glBegin(GL_QUADS);
             glTexCoord2i(0, 0); glVertex2d(0 - 0.5, 0 - 0.5);
@@ -745,6 +717,16 @@ namespace sp {
         glPopAttrib();
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC void glTexImg(const Mem<TYPE> &src, const GLint filter = GL_NEAREST, const GLint wrap = GL_CLAMP) {
+        if (src.size() == 0) return;
+
+        Texture tex;
+        if (tex.set(src.ptr, src.dsize) == false) return;
+
+        glTexImg(tex, filter, wrap);
+    }
+    
     template<typename TYPE0 = Col3, typename TYPE1>
     SP_CPUFUNC void glTexDepth(const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0) {
         if (src.size() == 0) return;

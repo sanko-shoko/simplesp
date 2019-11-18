@@ -48,10 +48,10 @@ namespace sp{
 
     SP_GENFUNC Rot getRot(const SP_REAL *mat, const int rows, const int cols){
         Rot dst;
-        dst.qx = sqrt(maxval(0.0, 1 + mat[0 * cols + 0] - mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
-        dst.qy = sqrt(maxval(0.0, 1 - mat[0 * cols + 0] + mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
-        dst.qz = sqrt(maxval(0.0, 1 - mat[0 * cols + 0] - mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
-        dst.qw = sqrt(maxval(0.0, 1 + mat[0 * cols + 0] + mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
+        dst.qx = sqrt(maxVal(0.0, 1 + mat[0 * cols + 0] - mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
+        dst.qy = sqrt(maxVal(0.0, 1 - mat[0 * cols + 0] + mat[1 * cols + 1] - mat[2 * cols + 2])) / 2;
+        dst.qz = sqrt(maxVal(0.0, 1 - mat[0 * cols + 0] - mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
+        dst.qw = sqrt(maxVal(0.0, 1 + mat[0 * cols + 0] + mat[1 * cols + 1] + mat[2 * cols + 2])) / 2;
 
         dst.qx *= sign(dst.qx * (mat[2 * cols + 1] - mat[1 * cols + 2]));
         dst.qy *= sign(dst.qy * (mat[0 * cols + 2] - mat[2 * cols + 0]));

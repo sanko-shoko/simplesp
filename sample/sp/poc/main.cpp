@@ -42,8 +42,8 @@ int main(){
         saveText("r.csv", r);
 
         Mem2<Byte> vis;
-        const double maxv = maxval(r);
-        const double minv = minval(r);
+        const double maxv = maxVal(r);
+        const double minv = minVal(r);
         cnvMem(vis, r, 255.0 / (maxv - minv), minv);
         saveBMP("vis.bmp", vis);
 

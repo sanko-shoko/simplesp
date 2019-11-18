@@ -52,8 +52,7 @@ private:
         static Mem1<Material*> mats;
         mats.resize(m_model.size());
         static Material mat;
-        mat.dif = getCol4f(1.0, 0.5, 0.5, 1.0);
-        mat.amb = getCol4f(1.0, 0.5, 0.5, 1.0);
+        mat.col = getCol3(200, 50, 50);
         for (int i = 0; i < mats.size(); i++) {
             mats[i] = &mat;
         }
@@ -62,7 +61,7 @@ private:
         lights.push(PathTrace::PntLight());
         lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
 
-        m_pt.setAmbient(&PathTrace::Light());
+        m_pt.setAmbient(PathTrace::Light());
         m_pt.setPntLights(lights);
         m_pt.setCam(m_cam);
         m_pt.setPose(m_pose);

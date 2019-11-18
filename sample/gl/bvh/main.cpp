@@ -46,16 +46,16 @@ private:
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
         m_bvh.addModel(m_model);
-        m_bvh.build();
+        m_bvh.build(false);
 
     }
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
         if (m_key[GLFW_KEY_S] == 1) {
-            m_level = maxval(0, m_level + 1);
+            m_level = maxVal(0, m_level + 1);
         }
         if (m_key[GLFW_KEY_A] == 1) {
-            m_level = maxval(0, m_level - 1);
+            m_level = maxVal(0, m_level - 1);
         }
         if (m_key[GLFW_KEY_D] == 1) {
             m_stop ^= true;
@@ -90,7 +90,7 @@ private:
                 }
             }
             glLoadView2D(m_cam);
-            glTexDepth(depth, maxval(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+            glTexDepth(depth, maxVal(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
         }
         else{
             glLoadView3D(m_cam);

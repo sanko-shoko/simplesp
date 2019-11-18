@@ -169,12 +169,15 @@ namespace sp {
     public:
         bool start;
 
-        const char *mess;
+        const char *name;
         std::function<void()> func;
         std::function<void()> init;
         std::function<void()> fini;
         std::function<bool()> begin;
 
+        char mess[SP_STRMAX];
+        std::function<void()> func_ok;
+        std::function<void()> func_cn;
     public:
 
         Popup() {
@@ -186,26 +189,58 @@ namespace sp {
             fini = NULL;
             begin = NULL;
             start = false;
+
+            func_ok = NULL;
+            func_cn = NULL;
         }
 
-        void open(const char *mess, std::function<void()> init, std::function<void()> func, std::function<void()> fini, const bool modal) {
-            reset();
-            this->mess = mess;
+        void open(const char *name, std::function<void()> init, std::function<void()> func, const bool modal) {
+
+            this->name = name;
             this->init = init;
             this->func = func;
-            this->fini = fini;
             start = true;
 
             if (modal) {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopupModal(this->mess, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopupModal(this->name, NULL, ImGuiWindowFlags_AlwaysAutoResize);
                 };
             }
             else {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopup(this->mess, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopup(this->name, ImGuiWindowFlags_AlwaysAutoResize);
                 };
             }
+        }
+
+        void dialog(const char *name, const char *mess, std::function<void()> init, std::function<void()> ok, std::function<void()> cn) {
+
+            strcpy(this->mess, mess);
+            this->func_ok = ok;
+            this->func_cn = cn;
+
+            std::function<void()> func = [&]() {
+                {
+                    const ImVec4 col = ImGui::GetStyle().Colors[ImGuiCol_PopupBg];
+                    sp::StyleStack stack;
+                    stack.pushButton(col, col, col);
+                    ImGui::Button((std::string(this->mess) + "##message").c_str(), ImVec2(280.0f, 0.0f), 1);
+                }
+
+                {
+                    const int num = ((func_ok != NULL) ? 1 : 0) + ((func_cn != NULL) ? 1 : 0);
+                    int cnt = 0;
+                    if (func_ok != NULL && ImGui::Button("ok##message", ImVec2(100.0f, 0.0f), num, cnt++)) {
+                        func_ok();
+                        ImGui::CloseCurrentPopup();
+                    }
+                    if (func_cn != NULL && ImGui::Button("cancel##message", ImVec2(100.0f, 0.0f), num, cnt++)) {
+                        func_cn();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            };
+            open(name, init, func, true);
         }
 
         void run() {
@@ -213,7 +248,7 @@ namespace sp {
 
             if (start) {
 
-                ImGui::OpenPopup(mess);
+                ImGui::OpenPopup(name);
                 if (init != NULL) {
                     init();
                 }
@@ -225,26 +260,91 @@ namespace sp {
                 }
                 ImGui::EndPopup();
             }
-            if (ImGui::IsPopupOpen(mess) == false) {
-                if (fini != NULL) fini();
+            if (ImGui::IsPopupOpen(name) == false) {
+                //if (fini != NULL) fini();
                 reset();
             }
             start = false;
         }
+
     };
 
+    class PopupMgr {
+    public:
+        static Popup& inst(const int i) {
+            SP_ASSERT(i >= 0 && i < 10);
+            static Popup popup[10];
+            return popup[i];
+        }
+
+        static Popup& get() {
+            Popup *p = NULL;
+            for (int i = 0; i < 10; i++) {
+                if (inst(i).func == NULL) {
+                    p = &inst(i);
+                }
+            }
+            SP_ASSERT(p != NULL);
+            return *p;
+        }
+
+        static void run() {
+            for (int i = 0; i < 10; i++) {
+                inst(i).run();
+            }
+        }
+
+        static std::function<void()> mes(const char *mess, std::function<void()> func_ok, std::function<void()> func_cn) {
+            static char _mess[SP_STRMAX];
+            static std::function<void()> _func_ok;
+            static std::function<void()> _func_cn;
+
+            strcpy(_mess, mess);
+            _func_ok = func_ok;
+            _func_cn = func_cn;
+
+            std::function<void()> func = [&]() {
+                {
+                    const ImVec4 col = ImGui::GetStyle().Colors[ImGuiCol_PopupBg];
+                    sp::StyleStack stack;
+                    stack.pushButton(col, col, col);
+                    ImGui::Button((std::string(_mess) + "##message").c_str(), ImVec2(280.0f, 0.0f), 1);
+                }
+
+                {
+                    const int num = ((_func_ok != NULL) ? 1 : 0) + ((_func_cn != NULL) ? 1 : 0);
+                    int cnt = 0;
+
+                    if (_func_ok != NULL && ImGui::Button("ok##message", ImVec2(100.0f, 0.0f), num, cnt++)) {
+                        _func_ok();
+                        ImGui::CloseCurrentPopup();
+                    }
+                    if (_func_cn != NULL && ImGui::Button("cancel##message", ImVec2(100.0f, 0.0f), num, cnt++)) {
+                        _func_cn();
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+
+            };
+            return func;
+        }
+
+    };
+
+
+    // -1: closed, 0: init, 1: opened, 2: ok, 3: cancel, 4: clear
     SP_CPUFUNC int ColorPicker(const char *popup, Col4f &col, const bool alpha = false) {
         static Col4f backup;
+        static ImVec4 imcol;
 
         int ret = 1;
         if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup)) {
             ImGui::OpenPopup(popup);
             backup = col;
+            imcol = getImVec4(col);
             ret = 0;
         }
         if (ImGui::BeginPopup(popup) == false) return -1;
-
-        ImVec4 imcol = getImVec4(col);
 
         {
             ImGui::PushItemWidth(254.0f);
@@ -270,6 +370,7 @@ namespace sp {
                     StyleStack stack;
                     stack.pushColor(ImGuiCol_Border, ImVec4(0.95f, 0.95f, 0.95f, 1.00f));
                     stack.pushVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+                    stack.pushVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
                     if (c != 0) ImGui::SameLine();
 

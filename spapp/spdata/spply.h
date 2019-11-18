@@ -6,6 +6,7 @@
 #define __SP_PLY_H__
 
 #include "spapp/spdata/spfile.h"
+#include "spapp/spdata/spmodel.h"
 
 namespace sp{
 
@@ -331,6 +332,22 @@ namespace sp{
 
         return true;
     }
+
+    SP_CPUFUNC Mem1<Mesh3> loadBunny(const char *path) {
+        Mem1<Mesh3> model;
+        if (loadPLY(path, model) == false) return model;
+
+        Vec3 center = getModelCent(model);
+        for (int i = 0; i < model.size(); i++) {
+            model[i] -= center;
+
+            // m -> mm
+            model[i] *= 1000.0;
+        }
+        return model;
+    }
+
+
 }
 
 #endif

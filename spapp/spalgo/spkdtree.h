@@ -118,8 +118,8 @@ namespace sp{
                         m_rect(i, 1) = data[i];
                     }
                     else {
-                        m_rect(i, 0) = (TYPE)minval(data[i], m_rect(i, 0));
-                        m_rect(i, 1) = (TYPE)maxval(data[i], m_rect(i, 1));
+                        m_rect(i, 0) = (TYPE)minVal(data[i], m_rect(i, 0));
+                        m_rect(i, 1) = (TYPE)maxVal(data[i], m_rect(i, 1));
                     }
                 }
 

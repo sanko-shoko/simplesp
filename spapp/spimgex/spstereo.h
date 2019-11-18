@@ -139,8 +139,8 @@ namespace sp{
             const int maxv = (order > 0) ? m_maxDisp : -m_minDisp;
             const int minv = (order > 0) ? m_minDisp : -m_maxDisp;
 
-            const int lx = maxval(+m_winSize + maxv - layers / 2, 0);
-            const int rx = maxval(+m_winSize - minv - layers / 2, 0);
+            const int lx = maxVal(+m_winSize + maxv - layers / 2, 0);
+            const int rx = maxVal(+m_winSize - minv - layers / 2, 0);
 
             rect.dbase[0] += lx;
             rect.dsize[0] -= lx + rx;

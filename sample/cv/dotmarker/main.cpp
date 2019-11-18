@@ -99,7 +99,7 @@ void sample(cv::Mat &cvimg, const int key){
         const Vec2 size = getVec2(mrk.map.dsize[0] + 1, mrk.map.dsize[1] + 1) * 0.5 * dotMarker.getMrk().distance;
 
         renderRect(img, dotMarker.getCam(), *dotMarker.getPose(), -size, +size, getCol3(0, 100, 200), 2);
-        renderAxis(img, dotMarker.getCam(), *dotMarker.getPose(), minval(size.x, size.y), 2);
+        renderAxis(img, dotMarker.getCam(), *dotMarker.getPose(), minVal(size.x, size.y), 2);
     }
 
     cvCnvImg(cvimg, img);

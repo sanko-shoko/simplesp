@@ -18,10 +18,6 @@
 #define SP_USE_ASSERT 1
 #endif
 
-#ifndef SP_USE_WRAPPER
-#define SP_USE_WRAPPER 1
-#endif
-
 #ifndef SP_USE_CONSOLE
 #define SP_USE_CONSOLE 1
 #endif
@@ -29,7 +25,6 @@
 #ifndef SP_USE_DEBUG
 #define SP_USE_DEBUG 0
 #endif
-
 
 //--------------------------------------------------------------------------------
 // call
@@ -47,11 +42,24 @@
 
 
 //--------------------------------------------------------------------------------
+// real number type
+//--------------------------------------------------------------------------------
+
+#ifndef SP_REAL
+#define SP_REAL double
+#endif
+
+#ifndef SP_RCAST
+#define SP_RCAST(V) static_cast<SP_REAL>(V)
+#endif
+
+
+//--------------------------------------------------------------------------------
 // const value
 //--------------------------------------------------------------------------------
 
 // pi
-#define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
+#define SP_PI SP_RCAST(3.14159265358979323846)
 
 // limit value regarded as zero
 #define SP_SMALL SP_RCAST(1.0e-20)
@@ -70,15 +78,6 @@
 
 // maximal dimension
 #define SP_DIMMAX 3
-
-
-//--------------------------------------------------------------------------------
-// real number type
-//--------------------------------------------------------------------------------
-
-#ifndef SP_REAL
-#define SP_REAL double
-#endif
 
 
 //--------------------------------------------------------------------------------
@@ -136,7 +135,6 @@ namespace sp{
         int dsize[3];
     };
 
-
     //--------------------------------------------------------------------------------
     // vector
     //--------------------------------------------------------------------------------
@@ -186,7 +184,7 @@ namespace sp{
     };
 
     //--------------------------------------------------------------------------------
-    // Axis Aligned Bounding Box
+    // bounding box
     //--------------------------------------------------------------------------------
 
     struct Box2 {
@@ -262,11 +260,16 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col4f amb;
-        Col4f dif;
-        Col4f spc;
-        Col4f ems;
-        float shn;
+        Col3 col;
+        
+        // transmittance
+        Byte tval;
+
+        // refractive index
+        Byte rind;
+
+        // reflectivity
+        Byte rval;
     };
 
 
@@ -283,7 +286,6 @@ namespace sp{
 // cast
 //--------------------------------------------------------------------------------
 
-#define SP_RCAST(V) static_cast<SP_REAL>(V)
 
 namespace sp {
 
@@ -616,7 +618,7 @@ namespace sp {
     }
     // compare material
     SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
-        return cmp(mat0.amb, mat1.amb) & cmp(mat0.dif, mat1.dif) & cmp(mat0.ems, mat1.ems) & cmp(mat0.spc, mat1.spc) & (mat0.shn == mat1.shn);
+        return cmp(mat0.col, mat1.col) & (mat0.tval == mat1.tval) & (mat0.rind == mat1.rind) & (mat0.rval == mat1.rval);
     }
 
     // compare camera

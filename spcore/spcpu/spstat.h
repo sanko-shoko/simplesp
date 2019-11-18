@@ -16,11 +16,9 @@ namespace sp{
     // sort
     //--------------------------------------------------------------------------------
 
-#if SP_USE_WRAPPER
     SP_GENFUNC void qsort(void *base, const int nsize, const int esize, int compare(const void *a, const void *b)) {
         ::qsort(base, nsize, esize, compare);
     }
-#endif
 
     template<typename TYPE>
     SP_CPUFUNC int compare_min(const void *a, const void *b){
@@ -58,23 +56,23 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC TYPE maxval(const Mem<TYPE> &mem){
+    SP_CPUFUNC TYPE maxVal(const Mem<TYPE> &mem){
         if (mem.size() == 0) return zero<TYPE>();
 
         TYPE maxv = mem[0];
         for (int i = 1; i < mem.size(); i++){
-            maxv = maxval(maxv, mem[i]);
+            maxv = maxVal(maxv, mem[i]);
         }
         return maxv;
     }
 
     template<typename TYPE>
-    SP_CPUFUNC TYPE minval(const Mem<TYPE> &mem){
+    SP_CPUFUNC TYPE minVal(const Mem<TYPE> &mem){
         if (mem.size() == 0) return zero<TYPE>();
 
         TYPE minv = mem[0];
         for (int i = 0; i < mem.size(); i++){
-            minv = minval(minv, mem[i]);
+            minv = minVal(minv, mem[i]);
         }
         return minv;
     }

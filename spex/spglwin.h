@@ -120,6 +120,10 @@ namespace sp {
 
         void setButton(const int button, const int action, const int mods) {
 
+            if (action == 1 && (buttonL == 0 && buttonR == 0 && buttonM == 0)) {
+                press = pos;
+            }
+            
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 buttonL = action;
             }
@@ -128,10 +132,6 @@ namespace sp {
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 buttonM = action;
-            }
-
-            if (action == 1) {
-                press = pos;
             }
         }
 
@@ -315,10 +315,6 @@ namespace sp {
             return true;
         }
 
-        //--------------------------------------------------------------------------------
-        // main loop
-        //--------------------------------------------------------------------------------
-
         bool main() {
             if (m_win == NULL) return false;
 
@@ -338,11 +334,16 @@ namespace sp {
             if (m_noswap == false) {
                 glfwSwapBuffers(m_win);
             }
+            else {
+                sleep(10);
+            }
+
             m_noswap = false;
 
             m_mouse.setScroll(0.0, 0.0);
             m_callback = false;
 
+            glfwSwapInterval(1);
             return true;
         }
 
@@ -381,6 +382,7 @@ namespace sp {
         void noswap() {
             m_noswap = true;
         }
+
 
     public:
 
@@ -548,10 +550,6 @@ namespace sp {
 
     public:
 
-        //--------------------------------------------------------------------------------
-        // main loop
-        //--------------------------------------------------------------------------------
-
         bool main() {
 
             if (m_win == NULL) return false;
@@ -566,8 +564,6 @@ namespace sp {
             if (m_win != glfwGetCurrentContext()) {
                 glfwMakeContextCurrent(m_win);
             }
-            // glfw set event callbacks
-            setCallback(m_win);
 
 #if SP_USE_IMGUI
             ImGui_ImplOpenGL2_NewFrame();
@@ -584,6 +580,9 @@ namespace sp {
 
             if (m_noswap == false) {
                 glfwSwapBuffers(m_win);
+            }
+            else {
+                sleep(10);
             }
             m_noswap = false;
 
@@ -607,7 +606,7 @@ namespace sp {
             initIMGUI();
 
             init();
-            
+
             while (!glfwWindowShouldClose(m_win)) {
                 if (main() == false) break;
 

@@ -3,6 +3,46 @@
 
 using namespace sp;
 
+void glRenderVoxel(const Voxel<> &voxel) {
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    {
+        glPushMatrix();
+        glLoadIdentity();
+
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+
+        GLfloat lightPos[4] = { 0.f, 0.f, -1000.f, 1.f };
+        glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+        glPopMatrix();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        const Vec3 cent = voxel.center();
+
+        for (int z = 0; z < voxel.vmap.dsize[2]; z++) {
+            for (int y = 0; y < voxel.vmap.dsize[1]; y++) {
+                for (int x = 0; x < voxel.vmap.dsize[0]; x++) {
+                    const char &val = voxel.vmap(x, y, z);
+                    if (val < 0) continue;
+
+                    const Vec3 mpos = getVec3(x, y, z);
+                    const Vec3 cpos = ((mpos - cent) * voxel.unit);
+
+                    glPushMatrix();
+                    glMultMatrix(getPose(cpos));
+
+                    glCube(voxel.unit);
+
+                    glPopMatrix();
+                }
+            }
+        }
+    }
+    glPopAttrib();
+}
+
 class VoxelGUI : public BaseWindow {
 
     // camera
