@@ -8,8 +8,7 @@
 #include "spcore/spgen/spbase.h"
 #include "spcore/spcpu/spmem.h"
 
-
-namespace sp{
+namespace sp {
 
     //! @param src 8bit array
     SP_CPUFUNC Mem1<Byte> get1BitArray(const Mem1<Byte> &src, const int bits) {
@@ -168,14 +167,14 @@ namespace sp{
                         bits.push(0);
                     }
                 }
-                
+
                 prev = s;
                 table[i] = bits;
             }
         }
         return table;
     }
-    
+
     SP_CPUFUNC Mem1<Mem1<Byte>> hmMakeTableFromCnts(const Mem1<int> &cnts) {
         {
             int n = 0;
@@ -213,10 +212,10 @@ namespace sp{
                 heads.push(&nodes[i]);
             }
         }
-        
+
         Mem1<Node> tmps;
         tmps.reserve(cnts.size() - 1);
-        
+
         while (heads.size() >= 2) {
             Node &node = *tmps.extend();
             node.cnt = 0;
@@ -239,7 +238,7 @@ namespace sp{
 
             heads.push(&node);
         }
-      
+
         Mem1<int> lngs(cnts.size());
         for (int i = 0; i < lngs.size(); i++) {
             lngs[i] = 0;
@@ -257,7 +256,7 @@ namespace sp{
     template<typename TYPE>
     SP_CPUFUNC Mem1<Byte> hmEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src) {
         Mem1<Byte> dst;
-        
+
         for (int i = 0; i < src.size(); i++) {
             const int s = src[i];
             const Mem1<Byte> &bits = table[s];
@@ -266,54 +265,59 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC Mem1<int> hmDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src) {
-        Mem1<int> dst;
+    struct hmNode {
+        int val;
+        int child[2];
+    };
 
-        struct Node {
-            int val;
-            Node *child[2];
-        };
-
-        Mem1<Node> nodes;
+    SP_CPUFUNC Mem1<hmNode> hmMakeNode(const Mem1<Mem1<Byte>> &table) {
+        Mem1<hmNode> nodes;
         nodes.reserve(2 * table.size() - 1);
-        Node *root = nodes.extend();
-        root->val = -1;
-        root->child[0] = NULL;
-        root->child[1] = NULL;
+
+        nodes.extend();
+        nodes[0].val = -1;
+        nodes[0].child[0] = -1;
+        nodes[0].child[1] = -1;
 
         for (int i = 0; i < table.size(); i++) {
             const Mem1<Byte> &bits = table[i];
             if (bits.size() == 0) continue;
-            Node *node = root;
+
+            hmNode *node = &nodes[0];
             for (int j = 0; j < bits.size(); j++) {
                 const Byte bit = bits[j];
-                if (node->child[bit] == NULL) {
-                    node->child[bit] = nodes.extend();
-                    node = node->child[bit];
+                if (node->child[bit] == -1) {
+                    node->child[bit] = nodes.size();
+                    
+                    node = nodes.extend();
                     node->val = -1;
-                    node->child[0] = NULL;
-                    node->child[1] = NULL;
+                    node->child[0] = -1;
+                    node->child[1] = -1;
                 }
                 else {
-                    node = node->child[bit];
+                    node = &nodes[node->child[bit]];
                 }
             }
             node->val = i;
         }
-        {
-            Node *node = NULL;
-            for (int i = 0; i < src.size(); i++) {
-                if (node == NULL) {
-                    node = root;
-                }
-                const Byte bit = src[i];
+        return nodes;
+    }
 
-                node = node->child[bit];
-                const int n = node->val;
-                if (n >= 0) {
-                    dst.push(n);
-                    node = NULL;
-                }
+    SP_CPUFUNC Mem1<int> hmDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src) {
+        Mem1<int> dst;
+
+        const Mem1<hmNode> nodes = hmMakeNode(table);
+
+        const hmNode *node = &nodes[0];
+        for (int i = 0; i < src.size(); i++) {
+            const Byte bit = src[i];
+
+            node = &nodes[node->child[bit]];
+            const int val = node->val;
+
+            if (val >= 0) {
+                dst.push(val);
+                node = &nodes[0];
             }
         }
 
@@ -353,69 +357,40 @@ namespace sp{
     SP_CPUFUNC Mem1<int> zlDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src, const int code, const int v0, const int v1) {
         Mem1<int> dst;
 
-        struct Node {
-            int val;
-            Node *child[2];
-        };
+        const Mem1<hmNode> nodes = hmMakeNode(table);
 
-        Mem1<Node> nodes;
-        nodes.reserve(2 * table.size() - 1);
-        Node *root = nodes.extend();
-        root->val = -1;
-        root->child[0] = NULL;
-        root->child[1] = NULL;
+        const hmNode *node = &nodes[0];
+        for (int i = 0; i < src.size(); i++) {
+            const Byte bit = src[i];
 
-        for (int i = 0; i < table.size(); i++) {
-            const Mem1<Byte> &bits = table[i];
-            if (bits.size() == 0) continue;
-            Node *node = root;
-            for (int j = 0; j < bits.size(); j++) {
-                const Byte bit = bits[j];
-                if (node->child[bit] == NULL) {
-                    node->child[bit] = nodes.extend();
-                    node = node->child[bit];
-                    node->val = -1;
-                    node->child[0] = NULL;
-                    node->child[1] = NULL;
-                }
-                else {
-                    node = node->child[bit];
-                }
+            node = &nodes[node->child[bit]];
+            const int val = node->val;
+
+            if (val >= 0) {
+                dst.push(val);
+                node = &nodes[0];
             }
-            node->val = i;
-        }
-        {
-            Node *node = NULL;
-            for (int i = 0; i < src.size(); i++) {
-                if (node == NULL) {
-                    node = root;
-                }
-                const Byte bit = src[i];
-
-                node = node->child[bit];
-                const int n = node->val;
-                if (n >= 0) {
-                    dst.push(n);
-                    node = NULL;
-                }
-                if (n == code) {
-                    int v;
-                    v = 0;
+            if (val == code) {
+                {
+                    int v = 0;
                     for (int j = 0; j < v0; j++, i++) {
                         v = v + (src[i + 1] << j);
                     }
                     dst.push(v);
-                    v = 0;
+                }
+                {
+                    int v = 0;
                     for (int j = 0; j < v1; j++, i++) {
                         v = v + (src[i + 1] << j);
                     }
                     dst.push(v);
                 }
-
             }
         }
+
         return dst;
     }
+
 }
 
 #endif
