@@ -8,6 +8,7 @@
 #include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
+#include "spapp/spdata/spmodel.h"
 
 namespace sp {
     //--------------------------------------------------------------------------------
@@ -539,6 +540,14 @@ namespace sp {
         glEnd();
     }
 
+    SP_CPUFUNC void glCylinder(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
+
+        const Mem1<Mesh3> cyl = loadCylinder(vtx1 - vtx0, radius) + vtx0;
+
+        for (int i = 0; i < cyl.size(); i++) {
+            glMesh(cyl[i]);
+        }
+    }
     SP_CPUFUNC void glVector(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
         const double seg0 = radius * 8.0;
         const double seg1 = normVec(vtx1 - vtx0) - seg0;

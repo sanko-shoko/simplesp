@@ -29,14 +29,19 @@ namespace sp {
     public:
 
         VertexBufferObject() {
-            glGenBuffers(1, &m_id);
+            m_id = 0;
         }
 
         ~VertexBufferObject() {
-            glDeleteBuffers(1, &m_id);
+            if (m_id != 0) {
+                glDeleteBuffers(1, &m_id);
+            }
         }
 
         void set(const int size, const void *vtx) {
+            if (m_id == 0) {
+                glGenBuffers(1, &m_id);
+            }
             bind();
             glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
             unbind();
