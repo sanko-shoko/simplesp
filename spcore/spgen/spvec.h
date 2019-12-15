@@ -1110,12 +1110,25 @@ namespace sp {
         return dst;
     }
 
+    // get box area
+    SP_GENFUNC SP_REAL getBoxArea(const Box2 &box) {
+        const Vec2 d = box.pos[1] - box.pos[0];
+        return d.x * d.y;
+    }
+    // get box area
     SP_GENFUNC SP_REAL getBoxArea(const Box3 &box) {
         const Vec3 d = box.pos[1] - box.pos[0];
         return (d.x * d.y + d.y * d.z + d.z * d.x) * 2.0;
     }
 
-
+    // get box center
+    SP_GENFUNC Vec2 getBoxCent(const Box2 &box) {
+        return (box.pos[0] + box.pos[1]) * 0.5;
+    }
+    // get box center
+    SP_GENFUNC Vec3 getBoxCent(const Box3 &box) {
+        return (box.pos[0] + box.pos[1]) * 0.5;
+    }
 }
 
 

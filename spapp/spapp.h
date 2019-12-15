@@ -13,7 +13,6 @@
 #include "spapp/spdata/spbmp.h"
 #include "spapp/spdata/spsvg.h"
 #include "spapp/spdata/spmodel.h"
-#include "spapp/spdata/spvoxel.h"
 #include "spapp/spdata/spdataset.h"
 #include "spapp/spdata/spiconv.h"
 
@@ -63,6 +62,7 @@
 #include "spapp/spgeomex/spbitmarker.h"
 #include "spapp/spgeomex/spdotpattern.h"
 #include "spapp/spgeomex/spprojector.h"
+#include "spapp/spgeomex/spvoxel.h"
 
 #include "spapp/spgeomex/spkfusion.h"
 

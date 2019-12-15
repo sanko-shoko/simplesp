@@ -207,6 +207,19 @@ namespace sp {
         SP_PRINTF("\n");
     }
 
+    SP_CPUFUNC void _print(const Box3 &box) {
+        SP_PRINTF("[ ");
+        _print(box.pos[0]);
+        SP_PRINTF(", ");
+        _print(box.pos[1]);
+        SP_PRINTF(" ]");
+    }
+    SP_CPUFUNC void print(const Box3 &box) {
+        SP_PRINTF("Box3 ");
+        _print(box);
+        SP_PRINTF("\n");
+    }
+
     SP_CPUFUNC void _print(const Rot &rot) {
         SP_PRINTF("[ %+.5lf %+.5lf %+.5lf %+.5lf ]", rot.qx, rot.qy, rot.qz, rot.qw);
     }

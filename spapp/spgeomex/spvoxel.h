@@ -910,6 +910,113 @@ namespace sp {
         }
     }
 
+    template<typename TYPE>
+    SP_CPUFUNC int labeling(Mem3<int> &map, const Voxel<TYPE> &voxel, const TYPE *cid = NULL) {
+
+        const Mem3<char> &vmap = voxel.vmap;
+        const Mem3<TYPE> &cmap = voxel.cmap;
+
+        const int step0 = vmap.dsize[0] * vmap.dsize[1];
+        const int step1 = vmap.dsize[0];
+
+        map.resize(vmap.dsize);
+
+        Mem1<int> table;
+        table.reserve(vmap.size());
+
+        const Rect3 rect = getRect3(vmap.dsize);
+
+        const int linkNum = 3;
+        const int link[][3] = { { -1, 0, 0 },{ 0, -1, 0 },{ 0, 0, -1 } };
+
+        const short *pBin = cmap.ptr;
+        const char *pSub = vmap.ptr;
+        int *pMap = map.ptr;
+        int *pTable = table.ptr;
+
+        for (int z = 0; z < vmap.dsize[2]; z++) {
+            for (int y = 0; y < vmap.dsize[1]; y++) {
+                for (int x = 0; x < vmap.dsize[0]; x++) {
+                    const int p = z * step0 + y * step1 + x;
+                    pMap[p] = -1;
+                    if ((cid != NULL && pBin[p] != *cid) || pSub[p] < 0) continue;
+
+                    int crntLabel = table.size();
+
+                    int *pTmp[3] = { 0 };
+
+                    // check min label
+                    for (int i = 0; i < linkNum; i++) {
+                        const int rx = x + link[i][0];
+                        const int ry = y + link[i][1];
+                        const int rz = z + link[i][2];
+
+                        if (inRect(rect, rx, ry, rz) == false) continue;
+                        const int rp = rz * step0 + ry * step1 + rx;
+                        if ((cid != NULL && pBin[rp] != *cid) || pSub[rp] < 0) continue;
+
+                        const int refLabel = table[pMap[rp]];
+                        pTmp[i] = &pMap[rp];
+                        if (refLabel < crntLabel) {
+                            crntLabel = refLabel;
+                        }
+                    }
+
+                    if (crntLabel == table.size()) {
+                        table.push(crntLabel);
+                    }
+                    else {
+                        for (int i = 0; i < linkNum; i++) {
+                            if (pTmp[i] != NULL) {
+                                pTable[*pTmp[i]] = crntLabel;
+                            }
+                        }
+                    }
+
+                    pMap[p] = crntLabel;
+                }
+            }
+        }
+        const int tableNum = table.size();
+
+        // update table
+        for (int i = 0; i < tableNum; i++) {
+            int p = i;
+            while (pTable[p] != p) {
+                p = pTable[p];
+            }
+            pTable[i] = p;
+        }
+
+        int labelNum = 0;
+
+        // update label
+        int maxv = -1;
+        for (int i = 0; i < tableNum; i++) {
+            if (pTable[i] > maxv) {
+                maxv = pTable[i];
+
+                for (int j = i; j < tableNum; j++) {
+                    if (pTable[j] == maxv) {
+                        pTable[j] = labelNum;
+                    }
+                }
+                labelNum++;
+            }
+        }
+
+        // update map
+        for (int i = 0; i < vmap.size(); i++) {
+            int &id = pMap[i];
+            if (id < 0) continue;
+
+            id = pTable[id];
+        }
+
+        return labelNum;
+    }
+
+
 }
 
 #endif

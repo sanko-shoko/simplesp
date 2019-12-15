@@ -8,6 +8,7 @@
 #include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
+#include "spapp/spdata/spmodel.h"
 
 namespace sp {
     //--------------------------------------------------------------------------------
@@ -466,6 +467,39 @@ namespace sp {
         glEnd();
     }
 
+    SP_CPUFUNC void glBox(const Box3 &box, const bool fill = false) {
+
+        const Vec3 A = box.pos[0];
+        const Vec3 B = box.pos[1];
+
+        if (fill == true) {
+            glBegin(GL_QUADS);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+            glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, A.z));
+            glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, B.y, A.z));
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z)); glVertex(getVec3(A.x, A.y, B.z));
+            glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(B.x, A.y, B.z));
+            glEnd();
+        }
+        else {
+            glBegin(GL_LINE_LOOP);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, A.z));
+            glEnd();
+
+            glBegin(GL_LINE_LOOP);
+            glVertex(getVec3(A.x, A.y, B.z)); glVertex(getVec3(B.x, A.y, B.z)); glVertex(getVec3(B.x, B.y, B.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glEnd();
+
+            glBegin(GL_LINES);
+            glVertex(getVec3(A.x, A.y, A.z)); glVertex(getVec3(A.x, A.y, B.z));
+            glVertex(getVec3(B.x, A.y, A.z)); glVertex(getVec3(B.x, A.y, B.z));
+            glVertex(getVec3(A.x, B.y, A.z)); glVertex(getVec3(A.x, B.y, B.z));
+            glVertex(getVec3(B.x, B.y, A.z)); glVertex(getVec3(B.x, B.y, B.z));
+            glEnd();
+        }
+    }
+
     SP_CPUFUNC void glRect(const Rect2 &rect, const double m = 0.5, const bool fill = false) {
 
         const Vec2 A = getVec2(rect.dbase[0] - m, rect.dbase[1] - m);
@@ -539,6 +573,14 @@ namespace sp {
         glEnd();
     }
 
+    SP_CPUFUNC void glCylinder(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
+
+        const Mem1<Mesh3> cyl = loadCylinder(vtx1 - vtx0, radius) + vtx0;
+
+        for (int i = 0; i < cyl.size(); i++) {
+            glMesh(cyl[i]);
+        }
+    }
     SP_CPUFUNC void glVector(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
         const double seg0 = radius * 8.0;
         const double seg1 = normVec(vtx1 - vtx0) - seg0;

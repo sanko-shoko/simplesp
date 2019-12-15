@@ -35,7 +35,15 @@ namespace sp {
 #define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
 #define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
 
-    
+#define GLFW_CALLBACK_SIZE   0x01
+#define GLFW_CALLBACK_BUTTON 0x02
+#define GLFW_CALLBACK_POS    0x04
+#define GLFW_CALLBACK_SCROLL 0x08
+#define GLFW_CALLBACK_KEY    0x10
+#define GLFW_CALLBACK_CHAR   0x20
+#define GLFW_CALLBACK_DROP   0x40
+#define GLFW_CALLBACK_FOCUS  0x80
+     
     //--------------------------------------------------------------------------------
     // util
     //--------------------------------------------------------------------------------
@@ -264,7 +272,7 @@ namespace sp {
         CamParam m_wcam;
 
         // call back flag;
-        bool m_callback;
+        int m_callback;
 
         // 
         bool m_noswap;
@@ -279,7 +287,7 @@ namespace sp {
 
             memset(m_key, 0, sizeof(m_key));
 
-            m_callback = true;
+            m_callback = GLFW_CALLBACK_FOCUS;
             m_noswap = false;
         }
 
@@ -416,7 +424,7 @@ namespace sp {
         }
 
         void _windowSize(int width, int height) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_SIZE;
             m_wcam = getCamParam(width, height);
 
             ::glViewport(0, 0, width, height);
@@ -426,7 +434,9 @@ namespace sp {
         }
 
         void _mouseButton(int button, int action, int mods) {
-            m_callback = true;
+            if (action == 0 || action == 1) {
+                m_callback |= GLFW_CALLBACK_BUTTON;
+            }
             m_mouse.setButton(button, action, mods);
 
             if (_pmouseButton(button, action, mods) == true) return;
@@ -434,7 +444,7 @@ namespace sp {
         }
 
         void _mousePos(double x, double y) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_POS;
             m_mouse.setPos(x, y);
 
             if (_pmousePos(x, y) == true) return;
@@ -442,7 +452,7 @@ namespace sp {
         }
 
         void _mouseScroll(double x, double y) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_SCROLL;
             m_mouse.setScroll(x, y);
 
             if (_pmouseScroll(x, y) == true) return;
@@ -451,7 +461,9 @@ namespace sp {
 
         void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
-            m_callback = true;
+            if (action == 0 || action == 1) {
+                m_callback |= GLFW_CALLBACK_KEY;
+            }
 
             m_key[key] = static_cast<char>(action);
 
@@ -469,21 +481,21 @@ namespace sp {
         }
 
         void _charFun(unsigned int charInfo) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_CHAR;
 
             if (_pcharFun(charInfo) == true) return;
             charFun(charInfo);
         }
 
         void _drop(int num, const char **paths) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_DROP;
 
             if (_pdrop(num, paths) == true) return;
             drop(num, paths);
         }
 
         void _focus(int focused) {
-            m_callback = true;
+            m_callback |= GLFW_CALLBACK_FOCUS;
 
             if (_pfocus(focused) == true) return;
             focus(focused);
