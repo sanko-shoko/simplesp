@@ -260,7 +260,7 @@ namespace sp {
                 }
                 ImGui::EndPopup();
             }
-            if (ImGui::IsPopupOpen(name) == false) {
+            if (start == false && ImGui::IsPopupOpen(name) == false) {
                 //if (fini != NULL) fini();
                 reset();
             }
@@ -282,6 +282,7 @@ namespace sp {
             for (int i = 0; i < 10; i++) {
                 if (inst(i).func == NULL) {
                     p = &inst(i);
+                    break;
                 }
             }
             SP_ASSERT(p != NULL);

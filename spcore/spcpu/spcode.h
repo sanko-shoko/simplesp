@@ -104,6 +104,7 @@ namespace sp {
         Mem1<int> dst;
         if (data.size() == 0) return dst;
 
+        print(data);
         for (int i = 0; i < data.size(); i++) {
             if (data[i] != code) {
                 dst.push(data[i]);

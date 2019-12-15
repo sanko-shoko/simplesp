@@ -434,7 +434,9 @@ namespace sp {
         }
 
         void _mouseButton(int button, int action, int mods) {
-            m_callback |= GLFW_CALLBACK_BUTTON;
+            if (action == 0 || action == 1) {
+                m_callback |= GLFW_CALLBACK_BUTTON;
+            }
             m_mouse.setButton(button, action, mods);
 
             if (_pmouseButton(button, action, mods) == true) return;
@@ -459,7 +461,9 @@ namespace sp {
 
         void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
-            m_callback |= GLFW_CALLBACK_KEY;
+            if (action == 0 || action == 1) {
+                m_callback |= GLFW_CALLBACK_KEY;
+            }
 
             m_key[key] = static_cast<char>(action);
 

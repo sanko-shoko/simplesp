@@ -17,6 +17,25 @@
 
 namespace sp {
 
+    template<typename DEPTH>
+    static void cnvZBuffToDepth(DEPTH *depth, const float zbuff, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+        double d = 0.0;
+        if (pers == true) {
+            const double div = (farPlane - zbuff * (farPlane - nearPlane));
+            if (div > 0.001) {
+                d = farPlane * nearPlane / div;
+            }
+        }
+        else {
+            const double a = 2.0 / (farPlane - nearPlane);
+            const double b = -(farPlane + nearPlane) / (farPlane - nearPlane);
+            {
+                d = (zbuff * 2 - 1 - b) / a;
+            }
+        }
+        *depth = static_cast<DEPTH>((d > nearPlane && d < farPlane) ? d : 0.0);
+    }
+
     class VertexBufferObject {
 
     private:
@@ -302,6 +321,23 @@ namespace sp {
             }
             delete[]tmp;
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
+        template<typename DEPTH>
+        void readz(DEPTH *depth, const int u, const int v, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+            if (dsize[0] == 0 || dsize[1] == 0) return;
+
+            glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+
+            float zbuff = 0.0f;
+            glReadPixels(u, dsize[1] - 1 - v, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuff);
+
+            cnvZBuffToDepth(depth, zbuff, pers, nearPlane, farPlane);
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        }
+
+        int size() {
+            return dsize[0] * dsize[1];
         }
 
         GLuint id() const {
