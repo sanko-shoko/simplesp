@@ -187,6 +187,26 @@ namespace sp{
         return dst;
     }
 
+    // color id
+    SP_GENFUNC Col3 getCol3FromId(const int id) {
+        Col3 col = getCol3(0, 0, 0);
+        col.r = (id) % 256;
+        col.g = (id / (256)) % 256;
+        col.b = (id / (256 * 256)) % 256;
+        return col;
+    }
+
+    // color id
+    SP_GENFUNC int getIdFromCol3(const Col3 &col) {
+        int id = 0;
+        id += col.r;
+        id += col.g * (256);
+        id += col.b * (256 * 256);
+        if (id == 256 * 256 * 256 - 1) id = -1;
+        return id;
+    }
+
+
     //--------------------------------------------------------------------------------
     // color space
     //--------------------------------------------------------------------------------

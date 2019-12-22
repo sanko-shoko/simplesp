@@ -292,6 +292,35 @@ namespace sp {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
+        void readi(void *img, const int u, const int v, const int ch) {
+            if (dsize[0] == 0 || dsize[1] == 0) return;
+
+            glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+
+            unsigned char tmp[4];
+            glReadPixels(u, dsize[1] - 1 - v, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, tmp);
+
+            unsigned char *dst = (unsigned char *)img;
+            {
+                if (ch == 1) {
+                    dst[0] = static_cast<unsigned char>(0.299 * tmp[0] + 0.587 * tmp[1] + 0.114 * tmp[2] + 0.5);
+                }
+                if (ch == 3) {
+                    dst[0] = tmp[0];
+                    dst[1] = tmp[1];
+                    dst[2] = tmp[2];
+                }
+                if (ch == 4) {
+                    dst[0] = tmp[0];
+                    dst[1] = tmp[1];
+                    dst[2] = tmp[2];
+                    dst[3] = tmp[3];
+                }
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        
         template<typename DEPTH>
         void readz(DEPTH *zbf, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
             if (dsize[0] == 0 || dsize[1] == 0) return;

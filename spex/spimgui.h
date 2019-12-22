@@ -396,7 +396,7 @@ namespace sp {
             }
             if (ImGui::Button("clear", ImVec2(-1.0f, 0.0f)) == true) {
                 ret = 4;
-                col = sp::getCol4f(1.0f, 1.0f, 1.0f, 0.0f);
+                col = sp::getCol4f(1.0f, 1.0f, 1.0f, 1.0f);
                 ImGui::CloseCurrentPopup();
             }
 
