@@ -404,17 +404,17 @@ namespace sp{
     // util
     //--------------------------------------------------------------------------------
 
-    // standord color i (0-12) v (0-3)
+    // standord color i (0-12) v (0-7)
     SP_GENFUNC Col3 stdcol(const int i, const int v) {
         Col3 col;
         if (i == 0) {
-            const float vlist[] = { 1.0f, 0.8f, 0.6f, 0.4f };
+            const float vlist[] = { 1.00f, 0.90f, 0.80f, 0.70f, 0.60f, 0.50f, 0.40f, 0.30f };
             cnvHSVToCol(col, sp::getVec3(0.0f, 0.0f, vlist[v]));
         }
         else {
             const float h = (i - 1) * 2.0f * SP_PI / 12.0f;
-            const float slist[] = { 0.6f, 0.7f, 0.8f, 0.9f };
-            const float vlist[] = { 0.9f, 0.8f, 0.7f, 0.6f };
+            const float slist[] = { 0.46f, 0.53f, 0.60f, 0.67f, 0.74f, 0.81f, 0.88f, 0.95f };
+            const float vlist[] = { 0.95f, 0.92f, 0.88f, 0.83f, 0.77f, 0.70f, 0.62f, 0.53f };
             cnvHSVToCol(col, sp::getVec3(h, slist[v], vlist[v]));
         }
         return col;
