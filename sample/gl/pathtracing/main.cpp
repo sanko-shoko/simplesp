@@ -52,7 +52,7 @@ private:
         static Mem1<Material*> mats;
         mats.resize(m_model.size());
         static Material mat;
-        mat.col = getCol3(200, 50, 50);
+        mat.col = getCol4(200, 50, 50, 255);
         for (int i = 0; i < mats.size(); i++) {
             mats[i] = &mat;
         }

@@ -335,6 +335,9 @@ namespace sp {
 
     // -1: closed, 0: init, 1: opened, 2: ok, 3: cancel, 4: clear
     SP_CPUFUNC int ColorPicker(const char *popup, Col4f &col, const bool alpha = false) {
+        StyleStack stack;
+        stack.pushVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 4.0f));
+
         static Col4f backup;
         static ImVec4 imcol;
 
@@ -369,16 +372,20 @@ namespace sp {
             for (int r = 0; r < 13; r++) {
                 for (int c = 0; c < 4; c++) {
                     StyleStack stack;
-                    stack.pushColor(ImGuiCol_Border, ImVec4(0.95f, 0.95f, 0.95f, 1.00f));
+                    stack.pushColor(ImGuiCol_Border, ImVec4(0.82f, 0.82f, 0.82f, 1.00f));
                     stack.pushVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
                     stack.pushVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
                     if (c != 0) ImGui::SameLine();
 
                     ImGui::PushID(r * 4 + c);
-                    ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, c * 2)), ImGuiColorEditFlags_NoEdit, ImVec2(14.0f, 14.0f));
+                    int A[] = { 2, 3, 4, 5 };
+                    int B[] = { 3, 4, 5, 6 };
+                    int *list = (r == 0) ? A : B;
+
+                    ImGui::ColorButton("##std color", getImVec4(sp::stdcol(r, list[c])), ImGuiColorEditFlags_NoEdit, ImVec2(14.0f, 14.0f));
                     if (ImGui::IsItemClicked(0)) {
-                        imcol = getImVec4(sp::stdcol(r, c * 2), static_cast<sp::Byte>(imcol.w * SP_BYTEMAX));
+                        imcol = getImVec4(sp::stdcol(r, list[c]), static_cast<sp::Byte>(imcol.w * SP_BYTEMAX));
                     }
                     ImGui::PopID();
                 }

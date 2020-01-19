@@ -413,8 +413,8 @@ namespace sp{
         }
         else {
             const float h = (i - 1) * 2.0f * SP_PI / 12.0f;
-            const float slist[] = { 0.46f, 0.53f, 0.60f, 0.67f, 0.74f, 0.81f, 0.88f, 0.95f };
-            const float vlist[] = { 0.95f, 0.92f, 0.88f, 0.83f, 0.77f, 0.70f, 0.62f, 0.53f };
+            const float slist[] = { 0.16f, 0.26f, 0.38f, 0.50f, 0.62f, 0.74f, 0.86f, 0.98f };
+            const float vlist[] = { 0.98f, 0.95f, 0.91f, 0.86f, 0.80f, 0.73f, 0.65f, 0.56f };
             cnvHSVToCol(col, sp::getVec3(h, slist[v], vlist[v]));
         }
         return col;
