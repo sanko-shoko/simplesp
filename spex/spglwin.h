@@ -109,14 +109,13 @@ namespace sp {
         // cursor position and move
         Vec2 pos, move;
 
-        // dragged point
-        Vec2 press;
-
         // scroll value
         double scroll;
 
         // button state
         int buttonL, buttonR, buttonM;
+
+        int pressL, pressR, pressM;
 
         Mouse() {
             reset();
@@ -126,20 +125,32 @@ namespace sp {
             memset(this, 0, sizeof(Mouse));
         }
 
+        void post() {
+            setScroll(0.0, 0.0);
+            pressL = 0;
+            pressR = 0;
+            pressM = 0;
+        }
+
         void setButton(const int button, const int action, const int mods) {
 
             if (action == 1 && (buttonL == 0 && buttonR == 0 && buttonM == 0)) {
-                press = pos;
             }
             
             if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 buttonL = action;
+                if (action == 1) pressL = +1;
+                if (action == 0) pressL = -1;
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
                 buttonR = action;
+                if (action == 1) pressR = +1;
+                if (action == 0) pressR = -1;
             }
             if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
                 buttonM = action;
+                if (action == 1) pressM = +1;
+                if (action == 0) pressM = -1;
             }
         }
 
@@ -348,7 +359,7 @@ namespace sp {
 
             m_noswap = false;
 
-            m_mouse.setScroll(0.0, 0.0);
+            m_mouse.post();
             m_callback = false;
 
             glfwSwapInterval(1);

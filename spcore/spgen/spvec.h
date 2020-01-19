@@ -701,6 +701,16 @@ namespace sp {
     }
 
     // norm
+    SP_GENFUNC double normLine(const Line2 &line) {
+        return normVec(line.pos[0] - line.pos[1]);
+    }
+
+    // norm
+    SP_GENFUNC double normLine(const Line3 &line) {
+        return normVec(line.pos[0] - line.pos[1]);
+    }
+
+    // norm
     SP_GENFUNC double normVecToLine(const Vec2 &vec, const Line2 &line) {
         double ret = 0.0;
 

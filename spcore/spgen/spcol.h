@@ -187,6 +187,26 @@ namespace sp{
         return dst;
     }
 
+    // color id
+    SP_GENFUNC Col3 getCol3FromId(const int id) {
+        Col3 col = getCol3(0, 0, 0);
+        col.r = (id) % 256;
+        col.g = (id / (256)) % 256;
+        col.b = (id / (256 * 256)) % 256;
+        return col;
+    }
+
+    // color id
+    SP_GENFUNC int getIdFromCol3(const Col3 &col) {
+        int id = 0;
+        id += col.r;
+        id += col.g * (256);
+        id += col.b * (256 * 256);
+        if (id == 256 * 256 * 256 - 1) id = -1;
+        return id;
+    }
+
+
     //--------------------------------------------------------------------------------
     // color space
     //--------------------------------------------------------------------------------
@@ -384,17 +404,17 @@ namespace sp{
     // util
     //--------------------------------------------------------------------------------
 
-    // standord color i (0-12) v (0-3)
+    // standord color i (0-12) v (0-7)
     SP_GENFUNC Col3 stdcol(const int i, const int v) {
         Col3 col;
         if (i == 0) {
-            const float vlist[] = { 1.0f, 0.8f, 0.6f, 0.4f };
+            const float vlist[] = { 1.00f, 0.90f, 0.80f, 0.70f, 0.60f, 0.50f, 0.40f, 0.30f };
             cnvHSVToCol(col, sp::getVec3(0.0f, 0.0f, vlist[v]));
         }
         else {
             const float h = (i - 1) * 2.0f * SP_PI / 12.0f;
-            const float slist[] = { 0.6f, 0.7f, 0.8f, 0.9f };
-            const float vlist[] = { 0.9f, 0.8f, 0.7f, 0.6f };
+            const float slist[] = { 0.16f, 0.26f, 0.38f, 0.50f, 0.62f, 0.74f, 0.86f, 0.98f };
+            const float vlist[] = { 0.98f, 0.95f, 0.91f, 0.86f, 0.80f, 0.73f, 0.65f, 0.56f };
             cnvHSVToCol(col, sp::getVec3(h, slist[v], vlist[v]));
         }
         return col;

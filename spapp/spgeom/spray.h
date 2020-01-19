@@ -159,7 +159,7 @@ namespace sp {
 
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
-            SP_ASSERT(m_acnt < 100);
+            //SP_ASSERT(m_acnt < 100);
 
             Mem1<Mesh3> &buff = *m_buffs.malloc();
             buff = meshes;
@@ -169,11 +169,10 @@ namespace sp {
 
             m_idxs.extend(meshes.size());
             for (int i = 0; i < meshes.size(); i++) {
-                m_idxs[offset + i].acnt = m_acnt;
+                m_idxs[offset + i].acnt = m_acnt++;
                 m_idxs[offset + i].pmesh = &buff[i];
                 m_idxs[offset + i].pmat = (pm == true) ? pmats[i] : NULL;
             }
-            m_acnt++;
         }
 
         void addModel(const Mem1<Mesh3*> &pmeshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {

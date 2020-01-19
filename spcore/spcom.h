@@ -260,7 +260,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col3 col;
+        Col4 col;
         
         // transmittance
         Byte tval;
