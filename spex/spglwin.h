@@ -106,6 +106,8 @@ namespace sp {
 
     public:
 
+        bool init;
+
         // cursor position and move
         Vec2 pos, move;
 
@@ -156,10 +158,11 @@ namespace sp {
 
         void setPos(const double x, const double y) {
 
-            if (buttonL || buttonR || buttonM) {
+            if (init == true && (buttonL || buttonR || buttonM)) {
                 move = getVec2(x, y) - pos;
             }
             pos = getVec2(x, y);
+            init = true;
         }
 
         void setScroll(const double x, const double y) {

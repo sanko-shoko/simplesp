@@ -66,10 +66,10 @@ namespace sp {
             unbind();
         }
 
-        void bind() {
+        void bind() const {
             glBindBuffer(GL_ARRAY_BUFFER, m_id);
         }
-        void unbind() {
+        void unbind() const {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 

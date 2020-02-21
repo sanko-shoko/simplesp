@@ -219,8 +219,13 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     // default near & far
+#ifndef SP_DEFAULT_NEAR
 #define SP_DEFAULT_NEAR SP_RCAST(1.0)
+#endif
+
+#ifndef SP_DEFAULT_FAR
 #define SP_DEFAULT_FAR SP_RCAST(10000.0)
+#endif
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
         glEnable(GL_DEPTH_TEST);
