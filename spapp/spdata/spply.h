@@ -203,6 +203,40 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC bool loadPLY(const char *path, Mem1<Mesh3> &meshes, Mem1<Col3> &cols) {
+        File file;
+        if (file.open(path, "r") == false) return false;
+
+        Mem1<Vertex> vtxs;
+        Mem1<Mem1<int>> idxs;
+
+        if (loadVtxs(file, vtxs) == false) return false;
+        if (loadIdxs(file, idxs) == false) return false;
+
+        meshes.clear();
+        cols.clear();
+        for (int i = 0; i < idxs.size(); i++) {
+            const Mem1<int> &idx = idxs[i];
+            if (idx.size() == 3) {
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[1]].col);
+                cols.push(vtxs[idx[2]].col);
+            }
+            if (idx.size() == 4) {
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[1]].col);
+                cols.push(vtxs[idx[2]].col);
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[2]].pos, vtxs[idx[3]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[2]].col);
+                cols.push(vtxs[idx[3]].col);
+            }
+        }
+        return true;
+    }
+
     SP_CPUFUNC bool loadPLY(const char *path, Mem1<Vec3> &pnts) {
         File file;
         if (file.open(path, "r") == false) return false;

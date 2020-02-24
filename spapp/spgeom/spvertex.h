@@ -116,5 +116,44 @@ namespace sp{
         return true;
     }
 
+
+    template <typename TYPE, typename ELEM>
+    SP_CPUFUNC void indexing(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
+        dst.clear();
+        idxs.clear();
+        if (src.size() == 0) return;
+
+        const int dim = sizeof(TYPE) / sizeof(ELEM);
+        const int num = src.size() * dim;
+
+        KdTree<ELEM> kdtree(dim);
+
+        for (int i = 0; i < src.size(); i++) {
+            kdtree.addData(&src[i]);
+        }
+        kdtree.makeTree();
+
+        dst.clear();
+        idxs.resize(src.size());
+
+        Mem1<int> refs(src.size());
+        for (int i = 0; i < src.size(); i++) {
+            refs[i] = -1;
+
+            const Mem1<int> index = kdtree.search(&src[i], 0.1);
+            int minv = num;
+            for (int k = 0; k < index.size(); k++) {
+                minv = minVal(minv, index[k]);
+            }
+
+            if (i == minv) {
+                refs[i] = dst.size();
+                dst.push(src[i]);
+            }
+            idxs[i] = refs[minv];
+        }
+
+    }
+
 }
 #endif
