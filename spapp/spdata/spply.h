@@ -324,6 +324,35 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &vtxs, const Mem1<int> &idxs, const Mem1<Col3> &cols) {
+        File file;
+        if (file.open(path, "w") == false) return false;
+
+        file.printf("ply\n");
+        file.printf("format ascii 1.0\n");
+        file.printf("element vertex %d\n", vtxs.size());
+        file.printf("property float x\n");
+        file.printf("property float y\n");
+        file.printf("property float z\n");
+        file.printf("element face %d\n", idxs.size() / 3);
+        file.printf("property list uchar int vertex_indices\n");
+        file.printf("property uchar red\n");
+        file.printf("property uchar green\n");
+        file.printf("property uchar blue\n");
+        file.printf("end_header\n");
+
+        for (int i = 0; i < vtxs.size(); i++) {
+            file.printf("%lf %lf %lf\n", vtxs[i].x, vtxs[i].y, vtxs[i].z);
+        }
+        for (int i = 0; i < idxs.size(); i += 3) {
+
+            file.printf("3 %d %d %d ", idxs[i + 0], idxs[i + 1], idxs[i + 2]);
+            const Col3 col = cols[i / 3];
+            file.printf("%d %d %d\n", col.r, col.g, col.b);
+        }
+        return true;
+    }
+
     SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &pnts){
         File file;
         if (file.open(path, "w") == false) return false;

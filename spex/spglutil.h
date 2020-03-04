@@ -449,6 +449,25 @@ namespace sp {
         glEnd();
     }
 
+    SP_CPUFUNC void glCircle(const Vec3 &pos, const Vec3 &nrm, const double radius, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        const Mat mat = getMat(getRotDirection(nrm));
+        const Vec3 a = mat * getVec3(1.0, 0.0, 0.0);
+        const Vec3 b = crsVec(a, nrm);
+
+        glBegin(type);
+
+        if (fill == true) {
+            glVertex(pos);
+        }
+        for (int i = 0; i <= 36; i++) {
+            const double p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(pos + a * radius * sin(p) + b * radius * cos(p));
+        }
+        glEnd();
+    }
+
     template<typename VEC>
     SP_CPUFUNC void glLine(const VEC &vtx0, const VEC &vtx1) {
         glBegin(GL_LINES);

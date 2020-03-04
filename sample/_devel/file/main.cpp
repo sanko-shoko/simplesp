@@ -34,16 +34,16 @@ int main(){
     {
         XML xml;
 
-        xml.begin("test");
+        xml.nest("test");
         xml.add("val0", "aaa");
         xml.add("val1", "bbb");
         {
-            xml.begin("0");
+            xml.nest("0");
             xml.add("val00", "0");
             xml.add("val01", "1");
-            xml.end();
+            xml.unnest();
         }
-        xml.end();
+        xml.unnest();
 
         xml.save("test.xml");
     }

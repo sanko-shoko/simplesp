@@ -118,7 +118,7 @@ namespace sp{
 
 
     template <typename TYPE, typename ELEM>
-    SP_CPUFUNC void indexing(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
+    SP_CPUFUNC void indexingKd(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
         dst.clear();
         idxs.clear();
         if (src.size() == 0) return;
@@ -155,5 +155,31 @@ namespace sp{
 
     }
 
+    template <typename TYPE>
+    SP_CPUFUNC void indexing(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
+        dst.clear();
+        idxs.clear();
+        if (src.size() == 0) return;
+
+        dst.clear();
+        idxs.resize(src.size());
+
+        for (int i = 0; i < src.size(); i++) {
+            int ref = -1;
+            for (int j = 0; j < dst.size(); j++) {
+                if (src[i] == dst[j]) {
+                    ref = j;
+                }
+            }
+            if (ref >= 0) {
+                idxs[i] = ref;
+            }
+            else {
+                idxs[i] = dst.size();
+                dst.push(src[i]);
+            }
+        }
+
+    }
 }
 #endif

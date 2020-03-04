@@ -80,7 +80,7 @@ namespace ImGui {
         ImGui::PopStyleVar();
     }
 
-    static bool Button(const char *label, const ImVec2 size, const int list, const int id = 0) {
+    static void align(const ImVec2 size, const int list, const int id = 0) {
         const float p = ImGui::GetStyle().WindowPadding.x * 0.5f;
         const float d = (ImGui::GetWindowWidth() - size.x * list) * 0.5f;
 
@@ -88,6 +88,9 @@ namespace ImGui {
         const float m = (ImGui::GetWindowWidth() - size.x * list - s * (list - 1)) * 0.5f;
         if (id == 0) ImGui::Dummy(ImVec2(1.0f, 1.0f));
         ImGui::SameLine(-1.0f, m + (size.x + s) * id + 1.0f);
+    }
+    static bool Button(const char *label, const ImVec2 size, const int list, const int id = 0) {
+        align(size, list, id);
 
         return ImGui::Button(label, size);
     }
