@@ -37,7 +37,6 @@ namespace sp{
         }
         {
             const int size = static_cast<int>(::wcslen((wchar_t*)utf16));
-            printf("%d\n", size);
             memcpy(dst, utf16, 2 * (size + 1));
         }
 
