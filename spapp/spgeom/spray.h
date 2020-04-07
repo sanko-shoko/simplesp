@@ -770,7 +770,7 @@ namespace sp {
                 drc = unitVec(prjVec(invCam(m_cam, dpix), 1.0, true));
             }
             else {
-                pos = t_ipose.trn + t_irmat * getVec3(p2d.x, p2d.y, 0.0);
+                pos = t_ipose.trn + t_irmat * getVec3(p2d.x, p2d.y, -1000.0 * 10);
                 drc = getVec3(0.0, 0.0, 1.0);
             }
 

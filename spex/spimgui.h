@@ -181,6 +181,8 @@ namespace sp {
         char mess[SP_STRMAX];
         std::function<void()> func_ok;
         std::function<void()> func_cn;
+
+        ImGuiWindowFlags flag;
     public:
 
         Popup() {
@@ -197,21 +199,26 @@ namespace sp {
             func_cn = NULL;
         }
 
-        void open(const char *name, std::function<void()> init, std::function<void()> func, const bool modal) {
+        void open(const char *name, std::function<void()> init, std::function<void()> func, const bool modal, const bool title = true) {
 
             this->name = name;
             this->init = init;
             this->func = func;
             start = true;
 
+            this->flag = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize;
+            if (title == false) {
+                this->flag = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+            }
+
             if (modal) {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopupModal(this->name, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopupModal(this->name, NULL, this->flag);
                 };
             }
             else {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopup(this->name, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopup(this->name, this->flag);
                 };
             }
         }

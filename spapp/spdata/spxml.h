@@ -129,7 +129,7 @@ namespace sp {
         void save(const char *path) {
             File file(path, "w");
 
-            file.printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+            file.printf("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n");
 
             Unit *root = &m_units[0];
             for (int i = 0; i < root->child.size(); i++) {

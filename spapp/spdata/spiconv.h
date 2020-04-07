@@ -20,6 +20,59 @@ namespace sp{
     // character code convert
     //--------------------------------------------------------------------------------
 
+    //--------------------------------------------------------------------------------
+    // SJIS - UTF16
+    //--------------------------------------------------------------------------------
+    SP_CPUFUNC char* _cnvSJIStoUTF16(char *dst, const char *src) {
+
+#if defined(_WIN32)
+        char* utf16 = NULL;
+
+        { // SJIS -> UTF16
+            const int size = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)src, -1, NULL, 0);
+
+            utf16 = new char[2 * (size + 1)];
+            ::memset(utf16, 0, size * 2 + 2);
+            ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)src, -1, (LPWSTR)utf16, size);
+        }
+        {
+            const int size = static_cast<int>(::wcslen((wchar_t*)utf16));
+            printf("%d\n", size);
+            memcpy(dst, utf16, 2 * (size + 1));
+        }
+
+        delete utf16;
+#endif
+
+        return dst;
+    }
+
+    SP_CPUFUNC char* _cnvUTF16toSJIS(char *dst, const char *src) {
+
+#if defined(_WIN32)
+        char* sjis = NULL;
+
+        { // UTF16 -> SJIS
+            const int size = ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)src, -1, NULL, 0, NULL, NULL);
+
+            sjis = new char[size + 1];
+            ::memset(sjis, 0, size + 1);
+            ::WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)src, -1, (LPSTR)sjis, size, NULL, NULL);
+        }
+        {
+            const int size = strlen((char*)sjis);
+            memcpy(dst, sjis, size + 1);
+        }
+
+        delete sjis;
+#endif
+
+        return dst;
+    }
+
+    //--------------------------------------------------------------------------------
+    // SJIS - UTF8
+    //--------------------------------------------------------------------------------
     SP_CPUFUNC char* _cnvSJIStoUTF8(char *dst, const char *src) {
 
 #if defined(_WIN32)
@@ -95,12 +148,6 @@ namespace sp{
         return dst;
     }
 
-    SP_CPUFUNC std::string strcode(const char *src, const int mode) {
-
-        char dst[SP_STRMAX] = { 0 };
-        strcode(dst, src, mode);
-        return std::string(dst);
-    }
 
 }
 #endif
