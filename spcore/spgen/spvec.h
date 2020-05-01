@@ -722,7 +722,32 @@ namespace sp {
         }
         else {
             const double s = dotVec(lvec, vec - line.pos[0]) / len;
-            if(s < 0.0){
+            if (s < 0.0) {
+                ret = normVec(vec - line.pos[0]);
+            }
+            else if (s > len) {
+                ret = normVec(vec - line.pos[1]);
+            }
+            else {
+                ret = normVec(vec - (line.pos[0] + lvec * s / len));
+            }
+        }
+        return ret;
+    }
+
+    // norm
+    SP_GENFUNC double normVecToLine(const Vec3 &vec, const Line3 &line) {
+        double ret = 0.0;
+
+        const Vec3 lvec = line.pos[1] - line.pos[0];
+        const double len = normVec(lvec);
+
+        if (len < SP_SMALL) {
+            ret = normVec(vec - (line.pos[0] + line.pos[1]) * 0.5);
+        }
+        else {
+            const double s = dotVec(lvec, vec - line.pos[0]) / len;
+            if (s < 0.0) {
                 ret = normVec(vec - line.pos[0]);
             }
             else if (s > len) {

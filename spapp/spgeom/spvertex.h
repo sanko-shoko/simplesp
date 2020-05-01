@@ -140,7 +140,7 @@ namespace sp{
         for (int i = 0; i < src.size(); i++) {
             refs[i] = -1;
 
-            const Mem1<int> index = kdtree.search(&src[i], 0.1);
+            const Mem1<int> index = kdtree.search(&src[i], 0.0001);
             int minv = num;
             for (int k = 0; k < index.size(); k++) {
                 minv = minVal(minv, index[k]);

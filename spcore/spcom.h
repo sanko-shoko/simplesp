@@ -260,16 +260,22 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col4 col;
+        Col3f col;
         
-        // transmittance
-        Byte tval;
+        // transmittance : ray = tr * max(tr, rf) / (tr + rf)
+        float tr;
 
-        // refractive index
-        Byte rind;
+        // refractive index 
+        float ri;
 
-        // reflectivity
-        Byte rval;
+        // reflectivity : ray = rf * max(tr, rf) / (tr + rf)
+        float rf;
+
+        // emission
+        float em;
+
+        // extinction
+        float ex;
     };
 
 
@@ -618,7 +624,7 @@ namespace sp {
     }
     // compare material
     SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
-        return cmp(mat0.col, mat1.col) & (mat0.tval == mat1.tval) & (mat0.rind == mat1.rind) & (mat0.rval == mat1.rval);
+        return cmp(mat0.col, mat1.col) & (mat0.rf == mat1.rf) & (mat0.ri == mat1.ri) & (mat0.tr == mat1.tr) & (mat0.ex == mat1.ex) & (mat0.em == mat1.em);
     }
 
     // compare camera

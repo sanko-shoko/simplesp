@@ -52,7 +52,8 @@ private:
         static Mem1<Material*> mats;
         mats.resize(m_model.size());
         static Material mat;
-        mat.col = getCol4(200, 50, 50, 255);
+        memset(&mat, 0, sizeof(Material));
+        mat.col = getCol3f(0.9, 0.2, 0.2);
         for (int i = 0; i < mats.size(); i++) {
             mats[i] = &mat;
         }
@@ -67,6 +68,7 @@ private:
         m_pt.setPose(m_pose);
 
         m_pt.addModel(m_model, mats);
+        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats);
         m_pt.build();
     }
 
@@ -83,10 +85,6 @@ private:
 
 
         if (m_thread.used() == false) {
-            float amb = 0.5;
-            float ambshadow = 1.0;
-            float dif[] = { 0.5 };
-            float difshadow[] = {1.0};
             m_pt.render(m_img);
         }
         {
