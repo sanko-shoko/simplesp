@@ -116,5 +116,70 @@ namespace sp{
         return true;
     }
 
+
+    template <typename TYPE, typename ELEM>
+    SP_CPUFUNC void indexingKd(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
+        dst.clear();
+        idxs.clear();
+        if (src.size() == 0) return;
+
+        const int dim = sizeof(TYPE) / sizeof(ELEM);
+        const int num = src.size() * dim;
+
+        KdTree<ELEM> kdtree(dim);
+
+        for (int i = 0; i < src.size(); i++) {
+            kdtree.addData(&src[i]);
+        }
+        kdtree.makeTree();
+
+        dst.clear();
+        idxs.resize(src.size());
+
+        Mem1<int> refs(src.size());
+        for (int i = 0; i < src.size(); i++) {
+            refs[i] = -1;
+
+            const Mem1<int> index = kdtree.search(&src[i], 0.0001);
+            int minv = num;
+            for (int k = 0; k < index.size(); k++) {
+                minv = minVal(minv, index[k]);
+            }
+
+            if (i == minv) {
+                refs[i] = dst.size();
+                dst.push(src[i]);
+            }
+            idxs[i] = refs[minv];
+        }
+
+    }
+
+    template <typename TYPE>
+    SP_CPUFUNC void indexing(Mem1<TYPE> &dst, Mem1<int> &idxs, const Mem1<TYPE> &src) {
+        dst.clear();
+        idxs.clear();
+        if (src.size() == 0) return;
+
+        dst.clear();
+        idxs.resize(src.size());
+
+        for (int i = 0; i < src.size(); i++) {
+            int ref = -1;
+            for (int j = 0; j < dst.size(); j++) {
+                if (src[i] == dst[j]) {
+                    ref = j;
+                }
+            }
+            if (ref >= 0) {
+                idxs[i] = ref;
+            }
+            else {
+                idxs[i] = dst.size();
+                dst.push(src[i]);
+            }
+        }
+
+    }
 }
 #endif

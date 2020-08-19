@@ -203,6 +203,40 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC bool loadPLY(const char *path, Mem1<Mesh3> &meshes, Mem1<Col3> &cols) {
+        File file;
+        if (file.open(path, "r") == false) return false;
+
+        Mem1<Vertex> vtxs;
+        Mem1<Mem1<int>> idxs;
+
+        if (loadVtxs(file, vtxs) == false) return false;
+        if (loadIdxs(file, idxs) == false) return false;
+
+        meshes.clear();
+        cols.clear();
+        for (int i = 0; i < idxs.size(); i++) {
+            const Mem1<int> &idx = idxs[i];
+            if (idx.size() == 3) {
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[1]].col);
+                cols.push(vtxs[idx[2]].col);
+            }
+            if (idx.size() == 4) {
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[1]].pos, vtxs[idx[2]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[1]].col);
+                cols.push(vtxs[idx[2]].col);
+                meshes.push(getMesh3(vtxs[idx[0]].pos, vtxs[idx[2]].pos, vtxs[idx[3]].pos));
+                cols.push(vtxs[idx[0]].col);
+                cols.push(vtxs[idx[2]].col);
+                cols.push(vtxs[idx[3]].col);
+            }
+        }
+        return true;
+    }
+
     SP_CPUFUNC bool loadPLY(const char *path, Mem1<Vec3> &pnts) {
         File file;
         if (file.open(path, "r") == false) return false;
@@ -286,6 +320,35 @@ namespace sp{
         }
         for (int i = 0; i < meshes.size(); i++) {
             file.printf("3 %d %d %d\n", 3 * i + 0, 3 * i + 1, 3 * i + 2);
+        }
+        return true;
+    }
+
+    SP_CPUFUNC bool savePLY(const char *path, const Mem1<Vec3> &vtxs, const Mem1<int> &idxs, const Mem1<Col3> &cols) {
+        File file;
+        if (file.open(path, "w") == false) return false;
+
+        file.printf("ply\n");
+        file.printf("format ascii 1.0\n");
+        file.printf("element vertex %d\n", vtxs.size());
+        file.printf("property float x\n");
+        file.printf("property float y\n");
+        file.printf("property float z\n");
+        file.printf("element face %d\n", idxs.size() / 3);
+        file.printf("property list uchar int vertex_indices\n");
+        file.printf("property uchar red\n");
+        file.printf("property uchar green\n");
+        file.printf("property uchar blue\n");
+        file.printf("end_header\n");
+
+        for (int i = 0; i < vtxs.size(); i++) {
+            file.printf("%lf %lf %lf\n", vtxs[i].x, vtxs[i].y, vtxs[i].z);
+        }
+        for (int i = 0; i < idxs.size(); i += 3) {
+
+            file.printf("3 %d %d %d ", idxs[i + 0], idxs[i + 1], idxs[i + 2]);
+            const Col3 col = cols[i / 3];
+            file.printf("%d %d %d\n", col.r, col.g, col.b);
         }
         return true;
     }

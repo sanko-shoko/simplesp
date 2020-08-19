@@ -80,7 +80,7 @@ namespace ImGui {
         ImGui::PopStyleVar();
     }
 
-    static bool Button(const char *label, const ImVec2 size, const int list, const int id = 0) {
+    static void align(const ImVec2 size, const int list, const int id = 0) {
         const float p = ImGui::GetStyle().WindowPadding.x * 0.5f;
         const float d = (ImGui::GetWindowWidth() - size.x * list) * 0.5f;
 
@@ -88,6 +88,9 @@ namespace ImGui {
         const float m = (ImGui::GetWindowWidth() - size.x * list - s * (list - 1)) * 0.5f;
         if (id == 0) ImGui::Dummy(ImVec2(1.0f, 1.0f));
         ImGui::SameLine(-1.0f, m + (size.x + s) * id + 1.0f);
+    }
+    static bool Button(const char *label, const ImVec2 size, const int list, const int id = 0) {
+        align(size, list, id);
 
         return ImGui::Button(label, size);
     }
@@ -178,6 +181,8 @@ namespace sp {
         char mess[SP_STRMAX];
         std::function<void()> func_ok;
         std::function<void()> func_cn;
+
+        ImGuiWindowFlags flag;
     public:
 
         Popup() {
@@ -194,21 +199,26 @@ namespace sp {
             func_cn = NULL;
         }
 
-        void open(const char *name, std::function<void()> init, std::function<void()> func, const bool modal) {
+        void open(const char *name, std::function<void()> init, std::function<void()> func, const bool modal, const bool title = true) {
 
             this->name = name;
             this->init = init;
             this->func = func;
             start = true;
 
+            this->flag = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize;
+            if (title == false) {
+                this->flag = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+            }
+
             if (modal) {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopupModal(this->name, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopupModal(this->name, NULL, this->flag);
                 };
             }
             else {
                 begin = [&]()->bool {
-                    return ImGui::BeginPopup(this->name, ImGuiWindowFlags_AlwaysAutoResize);
+                    return ImGui::BeginPopup(this->name, this->flag);
                 };
             }
         }

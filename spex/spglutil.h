@@ -219,8 +219,13 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     // default near & far
+#ifndef SP_DEFAULT_NEAR
 #define SP_DEFAULT_NEAR SP_RCAST(1.0)
+#endif
+
+#ifndef SP_DEFAULT_FAR
 #define SP_DEFAULT_FAR SP_RCAST(10000.0)
+#endif
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
         glEnable(GL_DEPTH_TEST);
@@ -431,6 +436,25 @@ namespace sp {
         const Mat imat = invMat(glGetMat(GL_MODELVIEW_MATRIX).part(0, 0, 3, 3));
         const Vec3 a = imat * getVec3(1.0, 0.0, 0.0);
         const Vec3 b = imat * getVec3(0.0, 1.0, 0.0);
+
+        glBegin(type);
+
+        if (fill == true) {
+            glVertex(pos);
+        }
+        for (int i = 0; i <= 36; i++) {
+            const double p = i / 36.0 * 2.0 * SP_PI;
+            glVertex(pos + a * radius * sin(p) + b * radius * cos(p));
+        }
+        glEnd();
+    }
+
+    SP_CPUFUNC void glCircle(const Vec3 &pos, const Vec3 &nrm, const double radius, const bool fill = false) {
+        const int type = (fill == true) ? GL_TRIANGLE_FAN : GL_LINE_LOOP;
+
+        const Mat mat = getMat(getRotDirection(nrm));
+        const Vec3 a = mat * getVec3(1.0, 0.0, 0.0);
+        const Vec3 b = crsVec(a, nrm);
 
         glBegin(type);
 

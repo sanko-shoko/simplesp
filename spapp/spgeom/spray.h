@@ -38,20 +38,21 @@ namespace sp {
             const double my = (mesh.pos[0].y - ray.pos.y) / det;
             const double mz = (mesh.pos[0].z - ray.pos.z) / det;
             result[1] =
-                -(mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0]) * mx
+                - (mat[1 * 3 + 0] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 0]) * mx
                 + (mat[0 * 3 + 0] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 0]) * my
                 - (mat[0 * 3 + 0] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 0]) * mz;
             if (result[1] < -SP_SMALL) return false;
+            if (result[1] > 1.0 + SP_SMALL) return false;
 
             result[2] =
-                +(mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0]) * mx
+                + (mat[1 * 3 + 0] * mat[2 * 3 + 1] - mat[1 * 3 + 1] * mat[2 * 3 + 0]) * mx
                 - (mat[0 * 3 + 0] * mat[2 * 3 + 1] - mat[0 * 3 + 1] * mat[2 * 3 + 0]) * my
                 + (mat[0 * 3 + 0] * mat[1 * 3 + 1] - mat[0 * 3 + 1] * mat[1 * 3 + 0]) * mz;
             if (result[2] < -SP_SMALL) return false;
             if (result[1] + result[2] > 1.0 + SP_SMALL) return false;
 
             result[0] =
-                +(mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]) * mx
+                + (mat[1 * 3 + 1] * mat[2 * 3 + 2] - mat[1 * 3 + 2] * mat[2 * 3 + 1]) * mx
                 - (mat[0 * 3 + 1] * mat[2 * 3 + 2] - mat[0 * 3 + 2] * mat[2 * 3 + 1]) * my
                 + (mat[0 * 3 + 1] * mat[1 * 3 + 2] - mat[0 * 3 + 2] * mat[1 * 3 + 1]) * mz;
             if (result[0] < minv || result[0] > maxv) return false;
@@ -77,24 +78,69 @@ namespace sp {
     SP_CPUFUNC bool checkHit(const Box3 &box, const VecPD3 &ray, const double minv, const double maxv) {
         double n = minv;
         double f = maxv;
-        for (int i = 0; i < 3; i++) {
-            const double v = acsv(ray.drc, i);
-            if (fabs(v) < SP_SMALL) {
-                if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
-                if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
-                continue;
-            }
+        //for (int i = 0; i < 3; i++) {
+        //    const double v = acsv(ray.drc, i);
+        //    if (fabs(v) < SP_SMALL) {
+        //        if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
+        //        if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
+        //        continue;
+        //    }
 
-            const Vec3 &a = (v >= 0.0) ? box.pos[0] : box.pos[1];
-            const Vec3 &b = (v >= 0.0) ? box.pos[1] : box.pos[0];
+        //    const Vec3 &a = (v >= 0.0) ? box.pos[0] : box.pos[1];
+        //    const Vec3 &b = (v >= 0.0) ? box.pos[1] : box.pos[0];
 
-            const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
-            const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
+        //    const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
+        //    const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
+        //    n = maxVal(n, tn);
+        //    f = minVal(f, tf);
+        //    if (f < n) {
+        //        return false;
+        //    }
+        //}
+
+        if (fabs(ray.drc.x) < SP_SMALL) {
+            if (ray.pos.x < box.pos[0].x) return false;
+            if (ray.pos.x > box.pos[1].x) return false;
+        }
+        else {
+            const Vec3 &a = (ray.drc.x >= 0.0) ? box.pos[0] : box.pos[1];
+            const Vec3 &b = (ray.drc.x >= 0.0) ? box.pos[1] : box.pos[0];
+
+            const double tn = (a.x - ray.pos.x) / ray.drc.x;
+            const double tf = (b.x - ray.pos.x) / ray.drc.x;
             n = maxVal(n, tn);
             f = minVal(f, tf);
-            if (f < n) {
-                return false;
-            }
+            if (f < n) return false;
+        }
+
+        if (fabs(ray.drc.y) < SP_SMALL) {
+            if (ray.pos.y < box.pos[0].y) return false;
+            if (ray.pos.y > box.pos[1].y) return false;
+        }
+        else {
+            const Vec3 &a = (ray.drc.y >= 0.0) ? box.pos[0] : box.pos[1];
+            const Vec3 &b = (ray.drc.y >= 0.0) ? box.pos[1] : box.pos[0];
+
+            const double tn = (a.y - ray.pos.y) / ray.drc.y;
+            const double tf = (b.y - ray.pos.y) / ray.drc.y;
+            n = maxVal(n, tn);
+            f = minVal(f, tf);
+            if (f < n) return false;
+        }
+
+        if (fabs(ray.drc.z) < SP_SMALL) {
+            if (ray.pos.z < box.pos[0].z) return false;
+            if (ray.pos.z > box.pos[1].z) return false;
+        }
+        else {
+            const Vec3 &a = (ray.drc.z >= 0.0) ? box.pos[0] : box.pos[1];
+            const Vec3 &b = (ray.drc.z >= 0.0) ? box.pos[1] : box.pos[0];
+
+            const double tn = (a.z - ray.pos.z) / ray.drc.z;
+            const double tf = (b.z - ray.pos.z) / ray.drc.z;
+            n = maxVal(n, tn);
+            f = minVal(f, tf);
+            if (f < n) return false;
         }
         return true;
     }
@@ -118,15 +164,14 @@ namespace sp {
         };
 
         struct Index {
-            char acnt;
+            int objid;
 
             const Mesh3 *pmesh;
             const Material *pmat;
         };
 
-
     private:
-        char m_acnt;
+        int m_objid;
 
         MemP<Mem1<Mesh3>> m_buffs;
 
@@ -151,7 +196,7 @@ namespace sp {
         }
 
         void clear() {
-            m_acnt = 0;
+            m_objid = 0;
             m_buffs.clear();
             m_nodes.clear();
             m_idxs.clear();
@@ -165,31 +210,30 @@ namespace sp {
             buff = meshes;
 
             const int offset = m_idxs.size();
-            const bool pm = (pmats.size() > 0) ? true : false;
 
             m_idxs.extend(meshes.size());
             for (int i = 0; i < meshes.size(); i++) {
-                m_idxs[offset + i].acnt = m_acnt++;
+                m_idxs[offset + i].objid = m_objid;
                 m_idxs[offset + i].pmesh = &buff[i];
-                m_idxs[offset + i].pmat = (pm == true) ? pmats[i] : NULL;
+                m_idxs[offset + i].pmat = (pmats.size() > 0) ? pmats[i] : NULL;
             }
+            m_objid++;
         }
 
         void addModel(const Mem1<Mesh3*> &pmeshes, const Mem1<Material*> &pmats = Mem1<Material*>()) {
 
             const int offset = m_idxs.size();
-            const bool pm = (pmats.size() > 0) ? true : false;
 
             m_idxs.extend(pmeshes.size());
             for (int i = 0; i < pmeshes.size(); i++) {
-                m_idxs[offset + i].acnt = m_acnt;
+                m_idxs[offset + i].objid = m_objid;
                 m_idxs[offset + i].pmesh = pmeshes[i];
-                m_idxs[offset + i].pmat = (pm == true) ? pmats[i] : NULL;
+                m_idxs[offset + i].pmat = (pmats.size() > 0) ? pmats[i] : NULL;
             }
-            m_acnt++;
+            m_objid++;
         }
 
-        void build(const bool parallel = true) {
+        void build() {
 
             // mesh centers (for sort)
             struct IndexEx : public Index {
@@ -200,7 +244,7 @@ namespace sp {
 
             Mem1<IndexEx> idxs(m_idxs.size());
             for (int i = 0; i < idxs.size(); i++) {
-                idxs[i].acnt = m_idxs[i].acnt;
+                idxs[i].objid = m_idxs[i].objid;
                 idxs[i].pmesh = m_idxs[i].pmesh;
                 idxs[i].pmat = m_idxs[i].pmat;
                 idxs[i].cent = getMeshCent(*m_idxs[i].pmesh);
@@ -208,8 +252,15 @@ namespace sp {
 
             m_nodes.clear();
             m_nodes.reserve(2 * idxs.size() - 1);
+
             auto initn = [&](const int level, const int base, const int size) -> Node* {
-                Node *n = m_nodes.extend();
+                Node *n = NULL;
+#if SP_USE_OMP
+#pragma omp critical
+#endif
+                {
+                    n = m_nodes.extend();
+                }
                 n->level = level;
                 n->base = base;
                 n->size = size;
@@ -223,10 +274,11 @@ namespace sp {
                 return n;
             };
 
-            auto sorti = [&](Node &n, const int ax) {
+            static Mem1<SP_REAL> buff;
+            buff.resize(idxs.size());
+            auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int{
                 typedef int(*CMP)(const void*, const void*);
                 CMP cmp[3];
-
                 cmp[0] = [](const void* i1, const void* i2) -> int {
                     return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1;
                 };
@@ -236,29 +288,60 @@ namespace sp {
                 cmp[2] = [](const void* i1, const void* i2) -> int {
                     return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1;
                 };
+                
+                int di = 0;
+                int da = 0;
 
-                sort(&idxs[n.base], n.size, cmp[ax]);
+                double mina = SP_INFINITY;
+                for (int a = 0; a < 3; a++) {
+                    sort(&idxs[n.base], n.size, cmp[a]);
+                    Box3 bl = nullBox3();
+                    Box3 br = nullBox3();
+
+                    for (int i = 1; i < n.size; i++) {
+                        const int l = i;
+                        bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
+                        buff[n.base + l] = 0;
+                        buff[n.base + l] += getBoxArea(bl) * i;
+                    }
+                    for (int i = 1; i < n.size; i++) {
+                        const int r = n.size - i;
+                        br = orBox(br, *idxs[n.base + r].pmesh);
+                        buff[n.base + r] += getBoxArea(br) * i;
+                    }
+
+                    for (int i = 1; i < n.size; i++) {
+                        //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                        if (buff[n.base + i] < mina) {
+                            mina = buff[n.base + i];
+                            di = i;
+                            da = a;
+                        }
+                    }
+                }
+                if (da != 2) {
+                    sort(&idxs[n.base], n.size, cmp[da]);
+                }
+                return di;
             };
+
             initn(0, 0, idxs.size());
 
             Mem1<Mem1<Node*> > tnodes;
-            if (parallel == true) {
-                tnodes.reserve(20);
+            if (idxs.size() > 1000) {
+                const int level = 5;
 
-                const int lim = 5000;
-                const int mul = idxs.size() / lim;
-                const int level = (mul > 0) ? round(log2(mul)) : 0;
-
+                tnodes.reserve(256);
                 for (int ni = 0; ni < m_nodes.size(); ni++) {
                     Node& n = m_nodes[ni];
-                    const int di = n.size / 2;
+                    if (n.size == 1) continue;
 
                     if (n.level < level) {
+                        const int di = sorti(n, idxs);
                         n.n0 = initn(n.level + 1, n.base, di);
                         n.n1 = initn(n.level + 1, n.base + di, n.size - di);
                     }
                     else {
-                        const int t = tnodes.size();
                         Mem1<Node*> &nodes = *tnodes.extend();
                         nodes.reserve(2 * n.size - 1);
                         nodes.push(&n);
@@ -270,8 +353,6 @@ namespace sp {
                 nodes.push(&m_nodes[0]);
             }
 
-            Mem1<SP_REAL> map(idxs.size());
-
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
@@ -280,44 +361,10 @@ namespace sp {
                     Node& n = *tnodes[i][ni];
                     if (n.size == 1) continue;
 
-                    int di = 0;
-                    int da = 0;
-
-                    double mina = SP_INFINITY;
-                    for (int a = 0; a < 3; a++) {
-                        sorti(n, a);
-                        Box3 bl = nullBox3();
-                        Box3 br = nullBox3();
-
-                        for (int i = 1; i < n.size; i++) {
-                            const int l = i;
-                            bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
-                            map[n.base + l] = 0;
-                            map[n.base + l] += getBoxArea(bl) * i;
-                        }
-                        for (int i = 1; i < n.size; i++) {
-                            const int r = n.size - i;
-                            br = orBox(br, *idxs[n.base + r].pmesh);
-                            map[n.base + r] += getBoxArea(br) * i;
-                        }
-
-                        for (int i = 1; i < n.size; i++) {
-                            //const double area = 1.0 + (map(i, 0) + map(i, 1)) / getBoxArea(n.box);
-                            if (map[n.base + i] < mina) {
-                                mina = map[n.base + i];
-                                di = i;
-                                da = a;
-                            }
-                        }
-                    }
-                    sorti(n, da);
-#if SP_USE_OMP
-#pragma omp critical
-#endif
-                    {
-                        n.n0 = initn(n.level + 1, n.base, di);
-                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
-                    }
+                    const int di = sorti(n, idxs);
+                    
+                    n.n0 = initn(n.level + 1, n.base, di);
+                    n.n1 = initn(n.level + 1, n.base + di, n.size - di);
                     tnodes[i].push(n.n0);
                     tnodes[i].push(n.n1);
                 }
@@ -336,14 +383,14 @@ namespace sp {
         bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
             if (m_idxs.size() == 0) return false;
 
-            int minid = -1;
             int stack = 0;
             const int MAXN = 100;
             const Node* que[MAXN];
             que[stack++] = &m_nodes[0];
 
             double lmaxv = maxv;
-            int acnt = -1;
+            int minid = -1;
+            int objid = -1;
 
             while (stack > 0) {
                 const Node *n = que[--stack];
@@ -359,13 +406,14 @@ namespace sp {
                     const int i = n->base;
                     SP_REAL result[3] = { 0 };
                     if (traceMesh(result, *m_idxs[i].pmesh, ray, minv, lmaxv + SP_SMALL) == true) {
-                        const Vec3 nrm = getMeshNrm(*m_idxs[i].pmesh);
 
-                        const bool f = (dotVec(nrm, ray.drc) < 0.0);
-                        if (result[0] < lmaxv - SP_SMALL || m_idxs[i].acnt < acnt) {
+                        if (result[0] < lmaxv - SP_SMALL || m_idxs[i].objid < objid) {
+                            const Vec3 nrm = getMeshNrm(*m_idxs[i].pmesh);
+                            const bool f = (dotVec(nrm, ray.drc) < 0.0);
+
                             lmaxv = result[0];
                             minid = i;
-                            acnt = m_idxs[i].acnt;
+                            objid = m_idxs[i].objid;
                         }
                     }
                 }
@@ -379,7 +427,7 @@ namespace sp {
 
             const Index &idx = m_idxs[minid];
 
-            hit.acnt = idx.acnt;
+            hit.objid = idx.objid;
             hit.pmat = idx.pmat;
             hit.pmesh = idx.pmesh;
 
@@ -475,8 +523,7 @@ namespace sp {
             }
         };
 
-        const static int SAMPLE_UNIT = 3;
-        const static int SAMPLE_NUM = 9;
+        const static int SAMPLE_UNIT = 2;
 
     private:
         static const int maxlt = 4;
@@ -517,7 +564,7 @@ namespace sp {
         Cnt m_cnt;
         Lim m_lim;
 
-        Mem2<MemA<Hit, SAMPLE_NUM> > m_raymap;
+        Mem2<MemA<Hit, (SAMPLE_UNIT * SAMPLE_UNIT)> > m_raymap;
 
         // objects
         Light m_ambient;
@@ -533,7 +580,7 @@ namespace sp {
 
             m_lim.amb = 0;
             m_lim.dif = 0;
-            m_lim.msk = SAMPLE_NUM;
+            m_lim.msk = (SAMPLE_UNIT * SAMPLE_UNIT);
 
             reset();
         }
@@ -740,7 +787,7 @@ namespace sp {
                 SP_REAL result[3];
                 double min = (m_cam.type == CamParam_Pers) ? 0.0 : -SP_INFINITY;
                 if (tracePlane(result, m_plane.vec, ray, min, norm)) {
-                    hit.acnt = 0;
+                    hit.objid = 0;
                     hit.norm = result[0];
                     hit.pmat = &m_plane.mat;
                     hit.pmesh = NULL;
@@ -757,8 +804,8 @@ namespace sp {
         Mat t_irmat;
         VecPD3 getRay(const Vec2 &pix, const int i) {
 
-            const double dx = ((i % SAMPLE_NUM) / SAMPLE_UNIT) + 1;
-            const double dy = ((i % SAMPLE_NUM) % SAMPLE_UNIT) + 1;
+            const double dx = ((i % (SAMPLE_UNIT * SAMPLE_UNIT)) / SAMPLE_UNIT) + 1;
+            const double dy = ((i % (SAMPLE_UNIT * SAMPLE_UNIT)) % SAMPLE_UNIT) + 1;
             const double delta = 1.0 / (SAMPLE_UNIT + 1);
 
             const Vec2 dpix = pix + getVec2(dx * delta - 0.5, dy * delta - 0.5);
@@ -770,17 +817,17 @@ namespace sp {
                 drc = unitVec(prjVec(invCam(m_cam, dpix), 1.0, true));
             }
             else {
-                pos = t_ipose.trn + t_irmat * getVec3(p2d.x, p2d.y, 0.0);
+                pos = t_ipose.trn + t_irmat * getVec3(p2d.x, p2d.y, -1000.0 * 10);
                 drc = getVec3(0.0, 0.0, 1.0);
             }
 
             return getVecPD3(pos, t_irmat * drc);
         }
 
-        void calc(Img &img, Cnt &cnt, Lim &lim, MemA<Hit, SAMPLE_NUM> &rays, const Vec2 &pix) {
+        void calc(Img &img, Cnt &cnt, Lim &lim, MemA<Hit, (SAMPLE_UNIT * SAMPLE_UNIT)> &rays, const Vec2 &pix) {
 
             auto init = [&](const Vec2 &pix, const int i) -> Hit{
-                Hit &phit = rays[i % SAMPLE_NUM];
+                Hit &phit = rays[i % (SAMPLE_UNIT * SAMPLE_UNIT)];
                 if (phit.valid == false) {
                     phit.valid = true;
                     const VecPD3 ray = getRay(pix, i);
@@ -849,7 +896,7 @@ namespace sp {
             if (d > 0.0 && trace(hit, next, 0.0, SP_INFINITY) == false) {
                 const Col4f col = cast<Col4f>(base.pmat->col);
                 data.sdw = col * d;
-                data.sdw.a = col.a;
+                data.sdw.a = 1.0f;
             }
             else {
                 data.sdw = getCol4f(0.0, 0.0, 0.0, 1.0);
@@ -857,7 +904,7 @@ namespace sp {
             if (d > 0.0) {
                 const Col4f col = cast<Col4f>(base.pmat->col);
                 data.val = col * d;
-                data.val.a = col.a;
+                data.val.a = 1.0f;
             }
             else {
                 data.val = getCol4f(0.0, 0.0, 0.0, 1.0);

@@ -189,25 +189,30 @@ namespace sp{
 
         void addNode(Node **parent, const TYPE *data, int div, const int index){
 
-            if (!*parent) {
-                Node *node = nodePool.malloc();
-                node->data = dataPool.malloc();
+            for (int i = 0; ; i++) {
+                if (!*parent) {
+                    Node *node = nodePool.malloc();
+                    node->data = dataPool.malloc();
 
-                memcpy(node->data, data, m_dim * sizeof(TYPE));
+                    memcpy(node->data, data, m_dim * sizeof(TYPE));
 
-                node->div = div % m_dim;
-                node->sub[0] = NULL;
-                node->sub[1] = NULL;
-                node->index = index;
+                    node->div = div % m_dim;
+                    node->sub[0] = NULL;
+                    node->sub[1] = NULL;
+                    node->index = index;
 
-                *parent = node;
-            }
-            else{
-                Node *node = *parent;
-                const SP_REAL d = cmpData(data, node->data, node->div);
-                const int t = (d < 0.0) ? 0 : 1;
+                    *parent = node;
+                    break;
+                }
+                else {
+                    Node *node = *parent;
+                    const SP_REAL d = cmpData(data, node->data, node->div);
+                    const int t = (d < 0.0) ? 0 : 1;
 
-                addNode(&node->sub[t], data, node->div + 1, index);
+                    parent = &node->sub[t];
+                    div = node->div + 1;
+                    //addNode(&node->sub[t], data, node->div + 1, index);
+                }
             }
         }
 

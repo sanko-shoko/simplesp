@@ -25,6 +25,7 @@ namespace sp {
             Mem1<Unit*> child;
 
             string tag;
+            string opt;
             string val;
 
             Unit() {
@@ -61,30 +62,64 @@ namespace sp {
             m_crnt = m_units.malloc();
         }
 
-        void begin(const char *tag) {
+        void nest(const char *tag) {
 
             SP_ASSERT(tag != NULL);
 
             Unit *unit = m_units.malloc();
             unit->parent = m_crnt;
-            unit->tag = tag;
+            {
+                string _tag;
+                string _opt;
+                for (int i = 0; tag[i] != 0; i++) {
+                    if (tag[i] != ' ') {
+                        _tag += tag[i];
+                    }
+                    else {
+                        _opt = &tag[i + 1];
+                        break;
+                    }
+                }
+
+                unit->tag = _tag;
+                unit->opt = _opt;
+            }
 
             m_crnt->child.push(unit);
             m_crnt = unit;
         }
 
-        void add(const char *tag, const char *val) {
-            SP_ASSERT(tag != NULL && val != NULL);
+        void add(const char *tag, const char *val = NULL) {
+            SP_ASSERT(tag != NULL);
 
             Unit *unit = m_units.malloc();
             unit->parent = m_crnt;
-            unit->tag = tag;
-            unit->val = val;
+
+            {
+                string _tag;
+                string _opt;
+                for (int i = 0; tag[i] != 0; i++) {
+                    if (tag[i] != ' ') {
+                        _tag += tag[i];
+                    }
+                    else {
+                        _opt = &tag[i + 1];
+                        break;
+                    }
+                }
+
+                unit->tag = _tag;
+                unit->opt = _opt;
+            }
+
+            if (val != NULL) {
+                unit->val = val;
+            }
 
             m_crnt->child.push(unit);
         }
 
-        void end() {
+        void unnest() {
             SP_ASSERT(m_crnt != NULL);
             m_crnt = m_crnt->parent;
         }
@@ -93,6 +128,8 @@ namespace sp {
 
         void save(const char *path) {
             File file(path, "w");
+
+            file.printf("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n");
 
             Unit *root = &m_units[0];
             for (int i = 0; i < root->child.size(); i++) {
@@ -103,10 +140,7 @@ namespace sp {
         void load(const char *path) {
             File file(path, "r");
 
-            Unit *root = &m_units[0];
-            for (int i = 0; i < root->child.size(); i++) {
-                save(file, root->child[i], 0);
-            }
+
         }
 
     private:
@@ -114,28 +148,61 @@ namespace sp {
         void save(File &file, const Unit *unit, const int level) {
             char tab[SP_STRMAX] = { 0 };
             for (int i = 0; i < level; i++) {
-                strcat(tab, "\t");
+                strcat(tab, "  ");
             }
 
-            const char *tag = unit->tag.c_str();
-            const char *val = unit->val.c_str();
-                
-            file.printf("%s<%s>", tab, tag);
+            string tag0 = unit->tag;
+            string tag1 = unit->tag;
+            if (unit->opt.size() > 0) {
+                tag0 += " " + unit->opt;
+            }
+            string val = unit->val;
+
             if (unit->child.size() == 0) {
-                file.printf("%s", val);
+                if (unit->val.size() == 0) {
+                    file.printf("%s<%s/>\n", tab, tag0.c_str());
+                }
+                else {
+                    file.printf("%s<%s>", tab, tag0.c_str());
+                    file.printf("%s", val.c_str());
+                    file.printf("</%s>\n", tag1.c_str());
+                }
             }
             else {
-                file.printf("\n");
-                for (int i = 0; i < unit->child.size(); i++) {
-                    save(file, unit->child[i], level + 1);
+                {
+                    file.printf("%s<%s>", tab, tag0.c_str());
+                    file.printf("\n");
+                    for (int i = 0; i < unit->child.size(); i++) {
+                        save(file, unit->child[i], level + 1);
+                    }
+                    file.printf("%s</%s>\n", tab, tag1.c_str());
                 }
-                file.printf("%s", tab);
             }
-            file.printf("</%s>\n", tag);
         }
     };
 
+    class _XMLNest {
 
+    private:
+        XML *xml;
+
+    public:
+        _XMLNest(XML &xml, const char *tag) {
+            this->xml = &xml;
+            nest(tag);
+        }
+        ~_XMLNest() {
+            unnest();
+        }
+        void nest(const char *tag) {
+            xml->nest(tag);
+        }
+        void unnest() {
+            xml->unnest();
+        }
+    };
+
+#define XML_NEST(XML, TAG) _XMLNest _nest(XML, TAG);
 }
 
 #endif
