@@ -26,19 +26,19 @@ if (GLFW_DIR)
                     "${GLFW_DIR}/lib"
                     "${GLFW_DIR}/lib-vc2013"
             )
-        elseif (MSVC14 OR (${MSVC_VERSION} EQUAL 1900))
+        elseif (MSVC14 AND (${MSVC_VERSION} EQUAL 1900))
             find_library (GLFW_LIB NAMES glfw3
                 PATHS
                     "${GLFW_DIR}/lib"
                     "${GLFW_DIR}/lib-vc2015"
             )
-        elseif (MSVC15 OR (${MSVC_VERSION} EQUAL 2000))
+        elseif (MSVC14 AND ((${MSVC_VERSION} GREATER_EQUAL 1910) AND (${MSVC_VERSION} LESS 1920)))
             find_library (GLFW_LIB NAMES glfw3
                 PATHS
                     "${GLFW_DIR}/lib"
                     "${GLFW_DIR}/lib-vc2017"
             )
-        elseif (MSVC16 OR (${MSVC_VERSION} EQUAL 2100))
+        elseif (MSVC14 AND ((${MSVC_VERSION} GREATER_EQUAL 1920) AND (${MSVC_VERSION} LESS 1930)))
             find_library (GLFW_LIB NAMES glfw3
                 PATHS
                     "${GLFW_DIR}/lib"
