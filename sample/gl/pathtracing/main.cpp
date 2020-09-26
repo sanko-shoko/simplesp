@@ -49,26 +49,38 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
 
-        static Mem1<Material*> mats;
-        mats.resize(m_model.size());
-        static Material mat;
-        memset(&mat, 0, sizeof(Material));
-        mat.col = getCol3f(0.9, 0.2, 0.2);
-        for (int i = 0; i < mats.size(); i++) {
-            mats[i] = &mat;
+        static Mem1<Material*> mats0;
+        static Mem1<Material*> mats1;
+        mats0.resize(m_model.size());
+        mats1.resize(m_model.size());
+        static Material mat0;
+        static Material mat1;
+        memset(&mat0, 0, sizeof(Material));
+        memset(&mat1, 0, sizeof(Material));
+
+        mat0.col = getCol4f(0.9, 0.2, 0.2, 1.0);
+        mat1.col = getCol4f(0.2, 0.9, 0.4, 1.0);
+        mat0.tr = 0.7f;
+        mat0.ri = 1.1f;
+        mat1.tr = 0.0f;
+        for (int i = 0; i < mats0.size(); i++) {
+            mats0[i] = &mat0;
+            mats1[i] = &mat1;
         }
 
         Mem1<PathTrace::PntLight> lights;
         lights.push(PathTrace::PntLight());
         lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
 
-        m_pt.setAmbient(PathTrace::Light());
-        m_pt.setPntLights(lights);
-        m_pt.setCam(m_cam);
-        m_pt.setPose(m_pose);
+        PathTrace::Light amb = PathTrace::Light();
+        amb.val = 0.8f;
+        amb.sdw = 0.8f;
+        m_pt.setAmbient(amb);
+        //m_pt.setPntLights(lights);
+        m_pt.setCam(m_cam, m_pose);
 
-        m_pt.addModel(m_model, mats);
-        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats);
+        m_pt.addModel(m_model, mats0);
+        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats1);
         m_pt.build();
     }
 
@@ -85,18 +97,19 @@ private:
 
 
         if (m_thread.used() == false) {
+            //m_pt.render(m_img, getCol4f(1.0, 0.3, 0.2, 1.0));
             m_pt.render(m_img);
         }
         {
             static Pose prev = m_pose;
             if (m_thread.used() == false && m_pose != prev) {
-                m_pt.setPose(m_pose);
+                m_pt.setCam(m_cam, m_pose);
                 prev = m_pose;
 
-                Mem1<PathTrace::PntLight> lights;
-                lights.push(PathTrace::PntLight());
-                lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
-                m_pt.setPntLights(lights);
+                //Mem1<PathTrace::PntLight> lights;
+                //lights.push(PathTrace::PntLight());
+                //lights[0].pos = invPose(m_pose) * getVec3(200.0, -200.0, 0.0);
+                //m_pt.setPntLights(lights);
             }
             m_thread.run([&]() {
                 Timer timer;

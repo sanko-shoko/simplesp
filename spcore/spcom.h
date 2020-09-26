@@ -260,7 +260,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col3f col;
+        Col4f col;
         
         // transmittance : ray = tr * max(tr, rf) / (tr + rf)
         float tr;

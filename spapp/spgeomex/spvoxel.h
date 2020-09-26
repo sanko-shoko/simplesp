@@ -968,7 +968,12 @@ namespace sp {
                     else {
                         for (int i = 0; i < linkNum; i++) {
                             if (pTmp[i] != NULL) {
-                                pTable[*pTmp[i]] = crntLabel;
+                                int p = *pTmp[i];
+                                while (pTable[p] != p) {
+                                    p = pTable[p];
+                                    pTable[p] = crntLabel;
+                                }
+                                pTable[p] = crntLabel;
                             }
                         }
                     }
