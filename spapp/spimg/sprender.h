@@ -350,7 +350,7 @@ namespace sp{
     
     SP_CPUFUNC void renderVecPD(Mem<VecPD3> &dst, const CamParam &cam, const Pose &pose, const Mesh3 &mesh) {
 
-        if (cmp(2, dst.dsize, cam.dsize) == false) {
+        if (cmp(dst.dsize, cam.dsize, 2) == false) {
             dst.resize(2, cam.dsize);
             dst.zero();
         }

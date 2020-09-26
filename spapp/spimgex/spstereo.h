@@ -124,7 +124,7 @@ namespace sp{
                 consistencyCheck(m_dispMap[1], m_evalMap[1], m_dispMap[0], m_evalMap[0], 2.0, StereoR);
             }
 
-            if (cmp(2, m_cam[0].dsize, m_dsize) == true && cmp(2, m_cam[1].dsize, m_dsize) == true) {
+            if (cmp(m_cam[0].dsize, m_dsize, 2) == true && cmp(m_cam[1].dsize, m_dsize, 2) == true) {
                 cnvDispToDepth(m_depthMap[0], m_dispMap[0], m_evalMap[0], StereoL);
                 cnvDispToDepth(m_depthMap[1], m_dispMap[1], m_evalMap[1], StereoR);
             }

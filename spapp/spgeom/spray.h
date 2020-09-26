@@ -688,7 +688,7 @@ namespace sp {
 #endif
             for (int v = 0; v < m_cam.dsize[1]; v++) {
                 for (int u = 0; u < m_cam.dsize[0]; u++) {
-                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == SP_RCAST(0.0)) continue;
+                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == SP_CAST_REAL(0.0)) continue;
 
                     calc(m_img(u, v), m_hitmap(u, v), m_raymap(u, v));
                 }

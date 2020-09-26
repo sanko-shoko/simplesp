@@ -129,7 +129,7 @@ namespace sp{
         void _setBase(const Mem2<Col3> &img, const Pose &pose, const Mem1<Ftr> *ftrs = NULL) {
           
             // set default camera parameter
-            if (cmp(2, m_cam.dsize, img.dsize) == false) {
+            if (cmp(m_cam.dsize, img.dsize, 2) == false) {
                 m_cam = getCamParam(img.dsize);
             }
 

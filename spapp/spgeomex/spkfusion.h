@@ -90,7 +90,7 @@ namespace sp{
         bool _execute(const Mem2<SP_REAL> &depth){
             SP_LOGGER_SET("KinectFusion::execute");
 
-            if (cmp(2, m_cam.dsize, depth.dsize) == false) {
+            if (cmp(m_cam.dsize, depth.dsize, 2) == false) {
                 return false;
             }
 

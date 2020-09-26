@@ -878,7 +878,7 @@ namespace sp{
     };
     
     SP_CPUFUNC void rectify(RectParam &rect0, RectParam &rect1, const CamParam &cam0, const Pose &pose0, const CamParam &cam1, const Pose &pose1, const SP_REAL fixFocal = 0.0){
-        SP_ASSERT(cmp(2, cam0.dsize, cam1.dsize));
+        SP_ASSERT(cmp(cam0.dsize, cam1.dsize, 2));
 
         // pre parameter
         {

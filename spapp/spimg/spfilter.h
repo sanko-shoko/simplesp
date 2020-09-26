@@ -215,7 +215,7 @@ namespace sp{
 
         Mem1<SP_REAL> kernel(winSize);
         for (int k = 0; k < winSize; k++) {
-            kernel(k) = SP_RCAST(1.0);
+            kernel(k) = SP_CAST_REAL(1.0);
         }
 
         Mem2<TYPE> tmp;
@@ -347,7 +347,7 @@ namespace sp{
         for (int y = -half; y <= half; y++){
             for (int x = -half; x <= half; x++){
                 const double r = x * x + y * y;
-                kernel(x + half, y + half) = SP_RCAST((r - 2 * sq(sigma)) * exp(-r / (2 * sq(sigma))));
+                kernel(x + half, y + half) = SP_CAST_REAL((r - 2 * sq(sigma)) * exp(-r / (2 * sq(sigma))));
             }
         }
 
@@ -559,7 +559,7 @@ namespace sp{
         {
             Mem1<SP_REAL> kernel(winSize);
             for (int k = 0; k < winSize; k++) {
-                kernel(k) = SP_RCAST(1.0);
+                kernel(k) = SP_CAST_REAL(1.0);
             }
 
             filterX<TYPE, ELEM>(tmp, src, kernel);
@@ -605,7 +605,7 @@ namespace sp{
         for (int i = 0; i < exptable.size(); i++){
             const double r = sq(i / expscale);
             const double v = exp(-r / 2.0);
-            exptable[i] = SP_RCAST(v);
+            exptable[i] = SP_CAST_REAL(v);
         }
 
         const Rect2 rect = getRect2(dst.dsize);
