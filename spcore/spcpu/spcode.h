@@ -99,6 +99,19 @@ namespace sp {
         return dst;
     }
 
+    SP_CPUFUNC Mem1<int> lzssCnts(const Mem1<int> &data, const int code) {
+        Mem1<int> cnts(code + 1);
+        cnts.zero();
+        for (int i = 0; i < data.size(); i++) {
+            const int p = data[i];
+            cnts[p]++;
+            if (cnts[p] == code) {
+                i += 2;
+            }
+        }
+        return cnts;
+    }
+
     //! @param code
     SP_CPUFUNC Mem1<int> lzssDecode(const Mem1<int> &data, const int code) {
         Mem1<int> dst;
@@ -330,7 +343,7 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC Mem1<Byte> zlEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src, const int code, const int v0, const int v1) {
+    SP_CPUFUNC Mem1<Byte> zlEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src, const int code, const int searchBit, const int lengthBit) {
         Mem1<Byte> dst;
 
         for (int i = 0; i < src.size(); i++) {
@@ -341,11 +354,11 @@ namespace sp {
             if (s == code) {
                 int v;
                 v = (src[i + 1]);
-                for (int j = 0; j < v0; j++) {
+                for (int j = 0; j < searchBit; j++) {
                     dst.push((v >> j) & 0x01);
                 }
                 v = (src[i + 2]);
-                for (int j = 0; j < v1; j++) {
+                for (int j = 0; j < lengthBit; j++) {
                     dst.push((v >> j) & 0x01);
                 }
                 i += 2;
@@ -354,7 +367,7 @@ namespace sp {
         return dst;
     }
 
-    SP_CPUFUNC Mem1<int> zlDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src, const int code, const int v0, const int v1) {
+    SP_CPUFUNC Mem1<int> zlDecode(const Mem1<Mem1<Byte>> &table, const Mem1<Byte> &src, const int code, const int searchBit, const int lengthBit) {
         Mem1<int> dst;
 
         const Mem1<hmNode> nodes = hmMakeNode(table);
@@ -373,14 +386,14 @@ namespace sp {
             if (val == code) {
                 {
                     int v = 0;
-                    for (int j = 0; j < v0; j++, i++) {
+                    for (int j = 0; j < searchBit; j++, i++) {
                         v = v + (src[i + 1] << j);
                     }
                     dst.push(v);
                 }
                 {
                     int v = 0;
-                    for (int j = 0; j < v1; j++, i++) {
+                    for (int j = 0; j < lengthBit; j++, i++) {
                         v = v + (src[i + 1] << j);
                     }
                     dst.push(v);

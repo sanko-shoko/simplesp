@@ -52,6 +52,13 @@ namespace sp{
         return true;
     }
 
+    SP_CPUFUNC bool cvCnvImg(cv::Mat &dst, const Mem<Col4> &src) {
+        cv::Mat rgba(src.dsize[1], src.dsize[0], CV_8UC4);
+        memcpy(rgba.ptr(), src.ptr, src.size() * sizeof(Col4));
+
+        cv::cvtColor(rgba, dst, CV_RGBA2BGRA);
+        return true;
+    }
 
     //--------------------------------------------------------------------------------
     // capture Mem2 image

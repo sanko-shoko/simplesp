@@ -26,8 +26,9 @@
 #define SP_USE_DEBUG 0
 #endif
 
+
 //--------------------------------------------------------------------------------
-// call
+// calling convention
 //--------------------------------------------------------------------------------
 
 // cpu function
@@ -49,8 +50,8 @@
 #define SP_REAL double
 #endif
 
-#ifndef SP_RCAST
-#define SP_RCAST(V) static_cast<SP_REAL>(V)
+#ifndef SP_CAST_REAL
+#define SP_CAST_REAL(V) static_cast<SP_REAL>(V)
 #endif
 
 
@@ -59,13 +60,13 @@
 //--------------------------------------------------------------------------------
 
 // pi
-#define SP_PI SP_RCAST(3.14159265358979323846)
+#define SP_PI SP_CAST_REAL(3.14159265358979323846)
 
 // limit value regarded as zero
-#define SP_SMALL SP_RCAST(1.0e-20)
+#define SP_SMALL SP_CAST_REAL(1.0e-20)
 
 // limit value regarded as infinity
-#define SP_INFINITY SP_RCAST(1.0e+20)
+#define SP_INFINITY SP_CAST_REAL(1.0e+20)
 
 // maximal value (unsigned char)
 #define SP_BYTEMAX 255
@@ -260,7 +261,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     struct Material {
-        Col3f col;
+        Col4f col;
         
         // transmittance : ray = tr * max(tr, rf) / (tr + rf)
         float tr;
@@ -514,24 +515,6 @@ namespace sp {
         return cmp(cmp0.re, cmp1.re, t) & cmp(cmp0.im, cmp1.im, t);
     }
 
-    // compare memory
-    SP_CPUFUNC bool cmp(const void *src0, const void *src1, const int size) {
-        const char *p0 = reinterpret_cast<const char*>(src0);
-        const char *p1 = reinterpret_cast<const char*>(src1);
-        for (int i = 0; i < size; i++) {
-            if(p0[i] != p1[i]) return false;
-        }
-        return true;
-    }
-
-    // compare size
-    SP_GENFUNC bool cmp(const int dim, const int *dsize0, const int *dsize1) {
-        for (int i = 0; i < dim; i++) {
-            if (dsize0[i] != dsize1[i]) return false;
-        }
-        return true;
-    }
-
     // compare rect
     SP_GENFUNC bool cmp(const Rect2 &rect0, const Rect2 &rect1) {
         for (int i = 0; i < 2; i++) {
@@ -629,17 +612,19 @@ namespace sp {
 
     // compare camera
     SP_GENFUNC bool cmp(const CamParam &cam0, const CamParam &cam1) {
-        return cmp(&cam0, &cam1, sizeof(CamParam));
+        return (cam0.type == cam1.type) & (cam0.dsize[0] == cam1.dsize[0]) & (cam0.dsize[1] == cam1.dsize[1]) &
+            (cam0.fx == cam1.fx) & (cam0.fy == cam1.fy) & (cam0.cx == cam1.cx) & (cam0.cy == cam1.cy) &
+            (cam0.k1 == cam1.k1) & (cam0.k2 == cam1.k2) & (cam0.k3 == cam1.k3) & (cam0.p1 == cam1.p1) & (cam0.p2 == cam1.p2);
     }
 
 
 #define SP_CMP_OPERATOR(TYPE) \
-    SP_GENFUNC bool operator == (const TYPE &t0, const TYPE &t1) { return cmp(t0, t1); } \
-    SP_GENFUNC bool operator != (const TYPE &t0, const TYPE &t1) { return !cmp(t0, t1); }
+    SP_GENFUNC bool operator == (const TYPE &val0, const TYPE &val1) { return  cmp(val0, val1); } \
+    SP_GENFUNC bool operator != (const TYPE &val0, const TYPE &val1) { return !cmp(val0, val1); }
 
+    SP_CMP_OPERATOR(Cmp);
     SP_CMP_OPERATOR(Rect2);
     SP_CMP_OPERATOR(Rect3);
-    SP_CMP_OPERATOR(Cmp);
     SP_CMP_OPERATOR(Vec2);
     SP_CMP_OPERATOR(Vec3);
     SP_CMP_OPERATOR(VecPD2);
@@ -658,30 +643,39 @@ namespace sp {
     SP_CMP_OPERATOR(CamParam);
 
 
-    // compare size
-    template<typename TYPE0, typename TYPE1>
-    SP_GENFUNC bool cmp(const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+    // compare memory
+    template<typename TYPE>
+    SP_CPUFUNC bool cmp(const TYPE *mem0, const TYPE *mem1, const int size) {
+        const int s = sizeof(TYPE) * size;
+        const char *p0 = (char*)mem0;
+        const char *p1 = (char*)mem1;
+
+        for (int i = 0; i < s; i++) {
+            if (p0[i] != p1[i]) return false;
+        }
+        return true;
+    }
+
+    // compare memory
+    template<typename TYPE>
+    SP_GENFUNC bool cmp(const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
         if (mem0.dim != mem1.dim) return false;
-        if (cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return false;
+        if (cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return false;
 
         int size = (mem0.dim > 0) ? 1 : 0;
         for (int i = 0; i < mem0.dim; i++) {
             size *= mem0.dsize[i];
         }
 
-        for (int i = 0; i < size; i++) {
-            if (mem0.ptr[i] != mem1.ptr[i]) return false;
-        }
-        return true;
+        return cmp(mem0.ptr, mem1.ptr, size);
     }
 
-    template<typename TYPE0, typename TYPE1>
-    SP_CPUFUNC bool operator == (const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
-        return cmp(mem0, mem1);
+    template<typename TYPE>
+    SP_CPUFUNC bool operator == (const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
+        return  cmp(mem0, mem1);
     }
-
-    template<typename TYPE0, typename TYPE1>
-    SP_CPUFUNC bool operator != (const ExPtr<TYPE0> &mem0, const ExPtr<TYPE1> &mem1) {
+    template<typename TYPE>
+    SP_CPUFUNC bool operator != (const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
         return !cmp(mem0, mem1);
     }
 

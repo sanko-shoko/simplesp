@@ -90,7 +90,7 @@ namespace sp{
     SP_CPUFUNC void idft(Mem<TYPE> &img, const Mem<SP_REAL> &re, const Mem<SP_REAL> &im) {
         SP_ASSERT(checkPtr(re, 2));
         SP_ASSERT(checkPtr(im, 2));
-        SP_ASSERT(cmp(2, re.dsize, im.dsize));
+        SP_ASSERT(cmp(re.dsize, im.dsize, 2));
 
         Mat mRe, mIm;
         cnvMem(mRe, re);

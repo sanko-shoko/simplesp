@@ -36,7 +36,7 @@ namespace sp{
 
     template<typename TYPE, typename TYPE0, typename TYPE1>
     SP_CPUFUNC void addMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1){
-        if (mem0.dim != mem1.dim || cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return;
+        if (mem0.dim != mem1.dim || cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return;
 
         dst.resize(mem0.dim, mem0.dsize);
         addMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
@@ -44,7 +44,7 @@ namespace sp{
 
     template<typename TYPE, typename TYPE0, typename TYPE1>
     SP_CPUFUNC void subMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1){
-        if (mem0.dim != mem1.dim || cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return;
+        if (mem0.dim != mem1.dim || cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return;
 
         dst.resize(mem0.dim, mem0.dsize);
         subMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
@@ -52,7 +52,7 @@ namespace sp{
 
     template<typename TYPE, typename TYPE0, typename TYPE1>
     SP_CPUFUNC void mulMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1){
-        if (mem0.dim != mem1.dim || cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return;
+        if (mem0.dim != mem1.dim || cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return;
 
         dst.resize(mem0.dim, mem0.dsize);
         mulMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
@@ -60,7 +60,7 @@ namespace sp{
 
     template<typename TYPE, typename TYPE0, typename TYPE1>
     SP_CPUFUNC void divMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1){
-        if (mem0.dim != mem1.dim || cmp(mem0.dim, mem0.dsize, mem1.dsize) == false) return;
+        if (mem0.dim != mem1.dim || cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return;
 
         dst.resize(mem0.dim, mem0.dsize);
         divMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);

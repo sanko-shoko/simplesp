@@ -19,7 +19,7 @@ namespace sp{
     }
 
     SP_GENFUNC SP_REAL fabs(const double x) {
-        return SP_RCAST(::fabs(x));
+        return SP_CAST_REAL(::fabs(x));
     }
 
     SP_GENFUNC SP_REAL pow(const double x, const double y) {
@@ -129,7 +129,7 @@ namespace sp{
 
     // get max value
     SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
-        return SP_RCAST((a > b) ? a : b);
+        return SP_CAST_REAL((a > b) ? a : b);
     }
 
     // get min value
@@ -139,7 +139,7 @@ namespace sp{
 
     // get min value
     SP_GENFUNC const SP_REAL minVal(const double a, const double b){
-        return SP_RCAST((a < b) ? a : b);
+        return SP_CAST_REAL((a < b) ? a : b);
     }
 
     // get limit value
@@ -149,23 +149,23 @@ namespace sp{
 
     // get limit value
     SP_GENFUNC const SP_REAL limVal(const double v, const double minv, const double maxv) {
-        return SP_RCAST((v > maxv) ? maxv : ((v < minv) ? minv : v));
+        return SP_CAST_REAL((v > maxv) ? maxv : ((v < minv) ? minv : v));
     }
 
      // x * x
     SP_GENFUNC SP_REAL sq(const double x) {
-        return SP_RCAST(x * x);
+        return SP_CAST_REAL(x * x);
     }
 
     // x * x * x
     SP_GENFUNC SP_REAL cb(const double x) {
-        return SP_RCAST(x * x * x);
+        return SP_CAST_REAL(x * x * x);
     }
 
     // cubic root
     SP_GENFUNC SP_REAL cbrt(const double x) {
         const double z = pow(fabs(x), 1.0 / 3.0);
-        return SP_RCAST((x >= 0.0) ? z : -z);
+        return SP_CAST_REAL((x >= 0.0) ? z : -z);
     }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
@@ -180,7 +180,7 @@ namespace sp{
         else {
             ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
         }
-        return SP_RCAST(ret);
+        return SP_CAST_REAL(ret);
     }
 
     // combination
@@ -227,7 +227,7 @@ namespace sp{
         const int maxv = 20000;
         const double a = static_cast<double>(rand(s) % (maxv + 1) + 1) / (maxv + 2);
         const double u = 2.0 * a - 1.0;
-        return SP_RCAST(u);
+        return SP_CAST_REAL(u);
     }
 
     // get random uniform (-1.0, 1.0)
@@ -246,7 +246,7 @@ namespace sp{
         const double a = static_cast<double>(rand(s0) % (maxv + 1) + 1) / (maxv + 2);
         const double b = static_cast<double>(rand(s1) % (maxv + 1) + 1) / (maxv + 2);
         const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
-        return SP_RCAST(g);
+        return SP_CAST_REAL(g);
     }
 
     // get random gauss

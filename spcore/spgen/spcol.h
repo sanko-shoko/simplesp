@@ -283,7 +283,7 @@ namespace sp{
         const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const double v)-> SP_REAL {
-            return SP_RCAST((v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0));
+            return SP_CAST_REAL((v > 0.008856) ? pow(v, 1.0 / 3.0) : (7.787 * v) + (16.0 / 116.0));
         };
 
         Vec3 val;
@@ -304,13 +304,13 @@ namespace sp{
         const Vec3 w = getVec3(0.95047, 1.00000, 1.0883); // D65
 
         auto f = [](const SP_REAL v)-> SP_REAL {
-            return SP_RCAST((v > 0.206897) ? pow(v, 3.0) : 0.001107 * (116.0 * v - 16.0));
+            return SP_CAST_REAL((v > 0.206897) ? pow(v, 3.0) : 0.001107 * (116.0 * v - 16.0));
         };
 
         Vec3 val;
-        val.y = SP_RCAST((lab.x + 16.0) / 116.0);
-        val.x = SP_RCAST(val.y + lab.y / 500.0);
-        val.z = SP_RCAST(val.y - lab.z / 200.0);
+        val.y = SP_CAST_REAL((lab.x + 16.0) / 116.0);
+        val.x = SP_CAST_REAL(val.y + lab.y / 500.0);
+        val.z = SP_CAST_REAL(val.y - lab.z / 200.0);
 
         xyz.x = f(val.x) * w.x;
         xyz.y = f(val.y) * w.y;
@@ -319,7 +319,7 @@ namespace sp{
 
     SP_GENFUNC void cnvColToXYZ(Vec3 &xyz, const Col3 &col){
         auto f = [](const double v)-> SP_REAL {
-            return SP_RCAST((v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92);
+            return SP_CAST_REAL((v > 0.040450) ? pow((v + 0.055) / 1.055, 2.4) : v / 12.92);
         };
 
         Vec3 val;
@@ -328,9 +328,9 @@ namespace sp{
         val.z = f(col.b / 255.0);
 
         // D65
-        xyz.x = SP_RCAST(+0.412391 * val.x + 0.357584 * val.y + 0.180481 * val.z);
-        xyz.y = SP_RCAST(+0.212639 * val.x + 0.715169 * val.y + 0.072192 * val.z);
-        xyz.z = SP_RCAST(+0.019331 * val.x + 0.119195 * val.y + 0.950532 * val.z);
+        xyz.x = SP_CAST_REAL(+0.412391 * val.x + 0.357584 * val.y + 0.180481 * val.z);
+        xyz.y = SP_CAST_REAL(+0.212639 * val.x + 0.715169 * val.y + 0.072192 * val.z);
+        xyz.z = SP_CAST_REAL(+0.019331 * val.x + 0.119195 * val.y + 0.950532 * val.z);
     }
 
     SP_GENFUNC void cnvXYZToCol(Col3 &col, const Vec3 &xyz) {
@@ -341,9 +341,9 @@ namespace sp{
         Vec3 val;
 
         // D65
-        val.x = SP_RCAST(+3.240970 * xyz.x - 1.537383 * xyz.y - 0.498611 * xyz.z);
-        val.y = SP_RCAST(-0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z);
-        val.z = SP_RCAST(0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
+        val.x = SP_CAST_REAL(+3.240970 * xyz.x - 1.537383 * xyz.y - 0.498611 * xyz.z);
+        val.y = SP_CAST_REAL(-0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z);
+        val.z = SP_CAST_REAL(0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
     
         val.x = minVal(1.0, f(val.x));
         val.y = minVal(1.0, f(val.y));
@@ -430,7 +430,7 @@ namespace sp{
     SP_GENFUNC Col3 revCol(const Col3 &col) {
         Vec3 hsv;
         cnvColToHSV(hsv, col);
-        hsv.z = SP_RCAST((hsv.z > 0.5) ? hsv.z - 0.5 : hsv.z + 0.5);
+        hsv.z = SP_CAST_REAL((hsv.z > 0.5) ? hsv.z - 0.5 : hsv.z + 0.5);
 
         Col3 tmp;
         cnvHSVToCol(tmp, hsv);

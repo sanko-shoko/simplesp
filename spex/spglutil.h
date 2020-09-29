@@ -87,7 +87,7 @@ namespace sp {
         double t[4 * 4];
         glGetDoublev(type, t);
         for (int i = 0; i < 4 * 4; i++) {
-            mat[i] = SP_RCAST(t[i]);
+            mat[i] = SP_CAST_REAL(t[i]);
         }
         return trnMat(mat);
     }
@@ -125,8 +125,8 @@ namespace sp {
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
 
         Mat vmat = eyeMat(4, 4);
-        vmat(0, 0) = SP_RCAST(viewScale);
-        vmat(1, 1) = SP_RCAST(viewScale);
+        vmat(0, 0) = SP_CAST_REAL(viewScale);
+        vmat(1, 1) = SP_CAST_REAL(viewScale);
         vmat(0, 3) = shift.x;
         vmat(1, 3) = shift.y;
 
@@ -136,10 +136,10 @@ namespace sp {
             const double pscale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = SP_RCAST(pscale);
-            pmat(1, 1) = SP_RCAST(pscale);
-            pmat(0, 3) = SP_RCAST((1.0 - pscale) * viewCenter.x);
-            pmat(1, 3) = SP_RCAST((1.0 - pscale) * viewCenter.y);
+            pmat(0, 0) = SP_CAST_REAL(pscale);
+            pmat(1, 1) = SP_CAST_REAL(pscale);
+            pmat(0, 3) = SP_CAST_REAL((1.0 - pscale) * viewCenter.x);
+            pmat(1, 3) = SP_CAST_REAL((1.0 - pscale) * viewCenter.y);
 
             _vmat = pmat * vmat;
         }
@@ -161,8 +161,8 @@ namespace sp {
             const double pixScale = glGetPixelScale();
 
             Mat pmat = eyeMat(4, 4);
-            pmat(0, 0) = SP_RCAST(1.0 / pixScale);
-            pmat(1, 1) = SP_RCAST(1.0 / pixScale);
+            pmat(0, 0) = SP_CAST_REAL(1.0 / pixScale);
+            pmat(1, 1) = SP_CAST_REAL(1.0 / pixScale);
 
             _vmat = pmat * vmat;
         }
@@ -220,11 +220,11 @@ namespace sp {
 
     // default near & far
 #ifndef SP_DEFAULT_NEAR
-#define SP_DEFAULT_NEAR SP_RCAST(1.0)
+#define SP_DEFAULT_NEAR SP_CAST_REAL(1.0)
 #endif
 
 #ifndef SP_DEFAULT_FAR
-#define SP_DEFAULT_FAR SP_RCAST(10000.0)
+#define SP_DEFAULT_FAR SP_CAST_REAL(10000.0)
 #endif
 
     SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
@@ -254,16 +254,16 @@ namespace sp {
             const double n = nearPlane;
             const double f = farPlane;
 
-            mat(0, 0) = SP_RCAST(2 * n / (r - l));
-            mat(1, 1) = SP_RCAST(2 * n / (t - b));
+            mat(0, 0) = SP_CAST_REAL(2 * n / (r - l));
+            mat(1, 1) = SP_CAST_REAL(2 * n / (t - b));
 
-            mat(0, 2) = SP_RCAST(-(r + l) / (r - l));
-            mat(1, 2) = SP_RCAST(-(t + b) / (t - b));
-            mat(2, 2) = SP_RCAST(+(f + n) / (f - n));
+            mat(0, 2) = SP_CAST_REAL(-(r + l) / (r - l));
+            mat(1, 2) = SP_CAST_REAL(-(t + b) / (t - b));
+            mat(2, 2) = SP_CAST_REAL(+(f + n) / (f - n));
 
-            mat(2, 3) = SP_RCAST(-2 * f * n / (f - n));
+            mat(2, 3) = SP_CAST_REAL(-2 * f * n / (f - n));
 
-            mat(3, 2) = SP_RCAST(1.0);
+            mat(3, 2) = SP_CAST_REAL(1.0);
         }
         else {
             const double nx = 1.0 / cam.fx;
@@ -279,15 +279,15 @@ namespace sp {
             const double n = nearPlane;
             const double f = farPlane;
 
-            mat(0, 0) = SP_RCAST(2 / (r - l));
-            mat(1, 1) = SP_RCAST(2 / (t - b));
-            mat(2, 2) = SP_RCAST(2 / (f - n));
+            mat(0, 0) = SP_CAST_REAL(2 / (r - l));
+            mat(1, 1) = SP_CAST_REAL(2 / (t - b));
+            mat(2, 2) = SP_CAST_REAL(2 / (f - n));
 
-            mat(0, 3) = SP_RCAST(-(r + l) / (r - l));
-            mat(1, 3) = SP_RCAST(-(t + b) / (t - b));
-            mat(2, 3) = SP_RCAST(-(f + n) / (f - n));
+            mat(0, 3) = SP_CAST_REAL(-(r + l) / (r - l));
+            mat(1, 3) = SP_CAST_REAL(-(t + b) / (t - b));
+            mat(2, 3) = SP_CAST_REAL(-(f + n) / (f - n));
 
-            mat(3, 3) = SP_RCAST(1.0);
+            mat(3, 3) = SP_CAST_REAL(1.0);
         }
 
         glMatrixMode(GL_PROJECTION);
