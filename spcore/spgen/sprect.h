@@ -158,23 +158,37 @@ namespace sp{
     }
 
     SP_GENFUNC Rect2 orRect(const Rect2 &rect0, const Rect2 &rect1) {
-        int dbase[2] = { 0 }, dsize[2] = { 0 };
-        for (int i = 0; i < 2; i++) {
-            dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-            dsize[i] = maxVal(0, dsize[i]);
+        const bool b0 = (rect0.dsize[0] * rect0.dsize[1] > 0);
+        const bool b1 = (rect1.dsize[0] * rect1.dsize[1] > 0);
+        if (b0 && b1) {
+            int dbase[2] = { 0 }, dsize[2] = { 0 };
+            for (int i = 0; i < 2; i++) {
+                dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
+                dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+                dsize[i] = maxVal(0, dsize[i]);
+            }
+            return getRect2(dbase, dsize);
         }
-        return getRect2(dbase, dsize);
+        else {
+            return (b0) ? rect0 : rect1;
+        }
     }
 
     SP_GENFUNC Rect3 orRect(const Rect3 &rect0, const Rect3 &rect1) {
-        int dbase[3] = { 0 }, dsize[3] = { 0 };
-        for (int i = 0; i < 3; i++) {
-            dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-            dsize[i] = maxVal(0, dsize[i]);
+        const bool b0 = (rect0.dsize[0] * rect0.dsize[1] * rect0.dsize[2] > 0);
+        const bool b1 = (rect1.dsize[0] * rect1.dsize[1] * rect1.dsize[2] > 0);
+        if (b0 && b1) {
+            int dbase[3] = { 0 }, dsize[3] = { 0 };
+            for (int i = 0; i < 3; i++) {
+                dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
+                dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+                dsize[i] = maxVal(0, dsize[i]);
+            }
+            return getRect3(dbase, dsize);
         }
-        return getRect3(dbase, dsize);
+        else {
+            return (b0) ? rect0 : rect1;
+        }
     }
 
     SP_GENFUNC Rect2 extRect(const Rect2 &rect, const int val) {

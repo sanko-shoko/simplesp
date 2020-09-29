@@ -24,14 +24,15 @@ namespace sp {
         // voxel unit length
         SP_REAL unit;
 
-        // weight map
-        Mem3<char> wmap;
-
         // value map
         Mem3<char> vmap;
 
         // color map
         Mem3<CELM> cmap;
+
+        // weight map
+        Mem3<char> wmap;
+
     public:
 
         Voxel() {
@@ -57,38 +58,45 @@ namespace sp {
             return *this;
         }
 
-        void init(const int *dsize, const double unit) {
+        void init(const int *dsize, const double unit, const bool usew = true) {
             this->dsize[0] = dsize[0];
             this->dsize[1] = dsize[1];
             this->dsize[2] = dsize[2];
             this->unit = unit;
 
             vmap.resize(dsize);
-            wmap.resize(dsize);
             cmap.resize(dsize);
+            if (usew == true) {
+                wmap.resize(dsize);
+            }
             zero();
         }
         
-        void init(const int size, const double unit) {
+        void init(const int size, const double unit, const bool usew = true) {
             const int dsize[3] = { size, size, size };
-            init(dsize, unit);
+            init(dsize, unit, usew);
         }
 
  
         void zero() {
             setElm(vmap, -SP_VOXEL_VMAX);
-            wmap.zero();
             cmap.zero();
+            wmap.zero();
         }
 
         void update(const int x, const int y, const int z, const double srcv) {
             if (srcv > +1.0) return;
+            if (wmap.ptr != NULL) {
+                char &val = vmap(x, y, z);
+                char &wei = wmap(x, y, z);
 
-            char &val = vmap(x, y, z);
-            char &wei = wmap(x, y, z);
+                val = cast<char>((val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
+                wei = minVal(wei + 1, SP_VOXEL_WMAX);
+            }
+            else {
+                vmap(x, y, z) = (srcv > 0) ? +SP_VOXEL_VMAX : -SP_VOXEL_VMAX;
+            }
 
-            val = cast<char>((val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
-            wei = minVal(wei + 1, SP_VOXEL_WMAX);
         }
 
         char getv(const int x, const int y, const int z) const {
@@ -103,7 +111,7 @@ namespace sp {
         char getw(const int x, const int y, const int z) const {
             char wei = 0;
 
-            if (inRect(dsize, x, y, z) == true) {
+            if (wmap.ptr != NULL && inRect(dsize, x, y, z) == true) {
                 wei = wmap(x, y, z);
             }
             return wei;

@@ -99,6 +99,19 @@ namespace sp {
         return dst;
     }
 
+    SP_CPUFUNC Mem1<int> lzssCnts(const Mem1<int> &data, const int code) {
+        Mem1<int> cnts(code + 1);
+        cnts.zero();
+        for (int i = 0; i < data.size(); i++) {
+            const int p = data[i];
+            cnts[p]++;
+            if (cnts[p] == code) {
+                i += 2;
+            }
+        }
+        return cnts;
+    }
+
     //! @param code
     SP_CPUFUNC Mem1<int> lzssDecode(const Mem1<int> &data, const int code) {
         Mem1<int> dst;

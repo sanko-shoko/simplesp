@@ -646,8 +646,12 @@ namespace sp {
     // compare memory
     template<typename TYPE>
     SP_CPUFUNC bool cmp(const TYPE *mem0, const TYPE *mem1, const int size) {
-        for (int i = 0; i < size; i++) {
-            if (mem0[i] != mem1[i]) return false;
+        const int s = sizeof(TYPE) * size;
+        const char *p0 = (char*)mem0;
+        const char *p1 = (char*)mem1;
+
+        for (int i = 0; i < s; i++) {
+            if (p0[i] != p1[i]) return false;
         }
         return true;
     }
@@ -663,10 +667,7 @@ namespace sp {
             size *= mem0.dsize[i];
         }
 
-        for (int i = 0; i < size; i++) {
-            if (mem0.ptr[i] != mem1.ptr[i]) return false;
-        }
-        return true;
+        return cmp(mem0.ptr, mem1.ptr, size);
     }
 
     template<typename TYPE>
