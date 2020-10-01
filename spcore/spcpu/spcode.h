@@ -105,7 +105,7 @@ namespace sp {
         for (int i = 0; i < data.size(); i++) {
             const int p = data[i];
             cnts[p]++;
-            if (cnts[p] == code) {
+            if (p == code) {
                 i += 2;
             }
         }
@@ -338,9 +338,6 @@ namespace sp {
     }
 
 
-    //--------------------------------------------------------------------------------
-    // zip like code
-    //--------------------------------------------------------------------------------
 
     template<typename TYPE>
     SP_CPUFUNC Mem1<Byte> zlEncode(const Mem1<Mem1<Byte>> &table, const Mem1<TYPE> &src, const int code, const int searchBit, const int lengthBit) {
@@ -403,6 +400,92 @@ namespace sp {
 
         return dst;
     }
+
+
+    //--------------------------------------------------------------------------------
+    // base64
+    //--------------------------------------------------------------------------------
+   
+
+    SP_CPUFUNC Mem1<char> base64Encode(const Byte* src, const int size, bool url = false) {
+
+        const char* table = (url == false) ?
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=" :
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_." ;
+
+        Mem1<char> ret;
+        ret.reserve((size + 2) / 3 * 4);
+
+        for (int i = 0; i < size; i += 3) {
+            int buff[4];
+            if (i + 2 < size) {
+                buff[0] = ((src[i + 0] & 0xfc) >> 2);
+                buff[1] = ((src[i + 0] & 0x03) << 4) + ((src[i + 1] & 0xf0) >> 4);
+                buff[2] = ((src[i + 1] & 0x0f) << 2) + ((src[i + 2] & 0xc0) >> 6);
+                buff[3] = ((src[i + 2] & 0x3f));
+            }
+            else if (i + 1 < size) {
+                buff[0] = ((src[i + 0] & 0xfc) >> 2);
+                buff[1] = ((src[i + 0] & 0x03) << 4) + ((src[i + 1] & 0xf0) >> 4);
+                buff[2] = ((src[i + 1] & 0x0f) << 2);
+                buff[3] = 64;
+            }
+            else {
+                buff[0] = ((src[i + 0] & 0xfc) >> 2);
+                buff[1] = ((src[i + 0] & 0x03) << 4);
+                buff[2] = 64;
+                buff[3] = 64;
+            }
+
+            ret.push(table[buff[0]]);
+            ret.push(table[buff[1]]);
+            ret.push(table[buff[2]]);
+            ret.push(table[buff[3]]);
+        }
+        ret.push('\0');
+
+        return ret;
+    }
+
+
+    SP_CPUFUNC Byte base64Decode(const Byte src) {
+        if (src >= 'A' && src <= 'Z') return src - 'A';
+        else if (src >= 'a' && src <= 'z') return src - 'a' + ('Z' - 'A' + 1);
+        else if (src >= '0' && src <= '9') return src - '0' + ('Z' - 'A' + 1) + ('z' - 'a' + 1);
+        else if (src == '+' || src == '-') return 62;
+        else if (src == '/' || src == '_') return 63;
+        return 64;
+    }
+
+    SP_CPUFUNC Mem1<Byte> base64Decode(const char* src) {
+
+        int size = strlen(src);
+        if (size == 0) return Mem1<Byte>();
+
+        Mem1<Byte> ret;
+        ret.reserve(size / 4 * 3);
+
+        for (int i = 0; i < size; i+= 4) {
+
+            const Byte v0 = base64Decode(src[i + 1]);
+
+            ret.push((Byte)((base64Decode(src[i + 0]) << 2) + ((v0 & 0x30) >> 4)));
+
+            if (src[i + 2] != '=' && src[i + 2] != '.') {
+
+                const Byte v1 = base64Decode(src[i + 2]);
+                ret.push((Byte)(((v0 & 0x0f) << 4) + ((v1 & 0x3c) >> 2)));
+
+                if (src[i + 3] != '=' && src[i + 3] != '.') {
+                    ret.push((Byte)(((v1 & 0x03) << 6) + base64Decode(src[i + 3])));
+                }
+            }
+
+        }
+
+        return ret;
+    }
+
 
 }
 

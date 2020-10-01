@@ -617,6 +617,20 @@ namespace sp {
             (cam0.k1 == cam1.k1) & (cam0.k2 == cam1.k2) & (cam0.k3 == cam1.k3) & (cam0.p1 == cam1.p1) & (cam0.p2 == cam1.p2);
     }
 
+    // compare memory
+    template<typename TYPE>
+    SP_CPUFUNC bool cmp(const TYPE *mem0, const TYPE *mem1, const int size) {
+        const int s = sizeof(TYPE) * size;
+        const char *p0 = (char*)mem0;
+        const char *p1 = (char*)mem1;
+
+        for (int i = 0; i < s; i++) {
+            if (p0[i] != p1[i]) return false;
+        }
+        return true;
+    }
+
+
 
 #define SP_CMP_OPERATOR(TYPE) \
     SP_GENFUNC bool operator == (const TYPE &val0, const TYPE &val1) { return  cmp(val0, val1); } \
@@ -642,42 +656,6 @@ namespace sp {
     SP_CMP_OPERATOR(Material);
     SP_CMP_OPERATOR(CamParam);
 
-
-    // compare memory
-    template<typename TYPE>
-    SP_CPUFUNC bool cmp(const TYPE *mem0, const TYPE *mem1, const int size) {
-        const int s = sizeof(TYPE) * size;
-        const char *p0 = (char*)mem0;
-        const char *p1 = (char*)mem1;
-
-        for (int i = 0; i < s; i++) {
-            if (p0[i] != p1[i]) return false;
-        }
-        return true;
-    }
-
-    // compare memory
-    template<typename TYPE>
-    SP_GENFUNC bool cmp(const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
-        if (mem0.dim != mem1.dim) return false;
-        if (cmp(mem0.dsize, mem1.dsize, mem0.dim) == false) return false;
-
-        int size = (mem0.dim > 0) ? 1 : 0;
-        for (int i = 0; i < mem0.dim; i++) {
-            size *= mem0.dsize[i];
-        }
-
-        return cmp(mem0.ptr, mem1.ptr, size);
-    }
-
-    template<typename TYPE>
-    SP_CPUFUNC bool operator == (const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
-        return  cmp(mem0, mem1);
-    }
-    template<typename TYPE>
-    SP_CPUFUNC bool operator != (const ExPtr<TYPE> &mem0, const ExPtr<TYPE> &mem1) {
-        return !cmp(mem0, mem1);
-    }
 
 }
 

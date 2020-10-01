@@ -7,7 +7,7 @@ add_subdirectory(kdtree)
 add_subdirectory(randomforest)
 add_subdirectory(graphcut)
 add_subdirectory(beliefpropagation)
-add_subdirectory(coding)
+add_subdirectory(code)
 
 ## image
 add_subdirectory(imgproc)

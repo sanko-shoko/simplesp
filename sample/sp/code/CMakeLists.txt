@@ -1,4 +1,4 @@
-﻿set(target "sp_coding")
+﻿set(target "sp_code")
 message(STATUS "${target}")
 
 project(${target})
