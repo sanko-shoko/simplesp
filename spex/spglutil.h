@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------
-// Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
+// Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
 #ifndef __SP_GLUTIL_H__
@@ -745,8 +745,8 @@ namespace sp {
         if (tex.id() == 0) return;
 
         glPushAttrib(GL_ENABLE_BIT);
-        glEnable(GL_TEXTURE_2D);
         {
+            glEnable(GL_TEXTURE_2D);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             glBindTexture(GL_TEXTURE_2D, tex.id());
