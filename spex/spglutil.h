@@ -235,7 +235,7 @@ namespace sp {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
-        const Vec2 vcent = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
+        const Vec2 vcent = getVec2(viewport[2], viewport[3]) * 0.5;
         const Vec2 ccent = getVec2(cam.dsize[0] - 1, cam.dsize[1] - 1) * 0.5 - getVec2(cam.cx, cam.cy);
         const Vec2 cdisp = viewPos + vcent - ccent * viewScale;
 
@@ -244,8 +244,8 @@ namespace sp {
             const double nx = nearPlane / cam.fx;
             const double ny = nearPlane / cam.fy;
 
-            const double sw = (viewport[2] - 1) / viewScale;
-            const double sh = (viewport[3] - 1) / viewScale;
+            const double sw = (viewport[2]) / viewScale;
+            const double sh = (viewport[3]) / viewScale;
 
             const double l = (-cdisp.x / viewScale) * nx;
             const double r = (-cdisp.x / viewScale + sw) * nx;
