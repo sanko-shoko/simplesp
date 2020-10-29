@@ -1,5 +1,5 @@
 ﻿//--------------------------------------------------------------------------------
-// Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
+// Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
 #ifndef __SP_IMGUI_H__
@@ -13,6 +13,7 @@
 #include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
+#include "spex/spimgui.h"
 
 
 #define ImGuiColorEditFlags_NoEdit (ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip)
@@ -97,6 +98,155 @@ namespace ImGui {
 
 }
 namespace sp {
+
+    SP_CPUFUNC void initIMGUI() {
+        static bool once = false;
+        if (once == true) return;
+        once = true;
+
+        GLFWwindow *win = glfwGetCurrentContext();
+
+        // imgui init
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(win, false) == true);
+        SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
+        ImGui::GetIO().IniFilename = NULL;
+    }
+
+    SP_CPUFUNC void finishIMGUI() {
+        static bool once = false;
+        if (once == true) return;
+        once = true;
+
+        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+    //--------------------------------------------------------------------------------
+    // base window imgui
+    //--------------------------------------------------------------------------------
+
+    class BaseWindowIMGUI : public BaseWindow {
+
+    public:
+
+        bool main() {
+
+            if (m_win == NULL) return false;
+
+            if (glfwWindowShouldClose(m_win)) {
+                glfwDestroyWindow(m_win);
+                m_win = NULL;
+                return false;
+            }
+
+            // glfw make context
+            if (m_win != glfwGetCurrentContext()) {
+                glfwMakeContextCurrent(m_win);
+            }
+
+            ImGui_ImplOpenGL2_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            display();
+
+            ImGui::Render();
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+            if (m_noswap == false) {
+                glfwSwapBuffers(m_win);
+            }
+            else {
+                sleep(10);
+            }
+
+            m_noswap = false;
+            m_callback = false;
+            m_mouse.next();
+
+            return true;
+        }
+
+        void execute(const char *name, const int width, const int height, const int samples = 1) {
+
+            // init glfw
+            initGLFW();
+
+            SP_ASSERT(create(name, width, height));
+
+            // init glew
+            initGLEW();
+
+            // init imgui
+            initIMGUI();
+
+            init();
+
+            while (!glfwWindowShouldClose(m_win)) {
+                if (main() == false) break;
+
+                glfwPollEvents();
+
+                post();
+            }
+
+            // glfw terminate
+            glfwTerminate();
+
+            // finish imgui
+            finishIMGUI();
+        }
+
+    public:
+
+        //--------------------------------------------------------------------------------
+        // event process
+        //--------------------------------------------------------------------------------
+
+        virtual bool _pmouseButton(int button, int action, int mods) {
+            if (ImGui::GetIO().WantCaptureMouse) {
+                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
+                return true;
+            }
+            return false;
+        }
+
+        virtual bool _pmousePos(double x, double y) {
+            if (ImGui::GetIO().WantCaptureMouse) {
+                return true;
+            }
+            return false;
+        }
+
+        virtual bool _pmouseScroll(double x, double y) {
+            if (ImGui::GetIO().WantCaptureMouse) {
+                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
+                m_mouse.setScroll(0.0, 0.0);
+                return true;
+            }
+            return false;
+        }
+        virtual bool _pkeyFun(int key, int scancode, int action, int mods) {
+            static bool prev = false;
+            if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
+                prev = ImGui::GetIO().WantCaptureKeyboard;
+                ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
+                return true;
+            }
+            prev = false;
+            return false;
+        }
+        virtual bool _pcharFun(unsigned int charInfo) {
+            if (ImGui::GetIO().WantCaptureKeyboard == true) {
+                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
+                return true;
+            }
+            return false;
+        }
+    };
+
 
     SP_CPUFUNC void _cast(Col3 &dst, const ImVec4 &imv) {
         dst.r = static_cast<Byte>(imv.x * SP_BYTEMAX + 0.5);

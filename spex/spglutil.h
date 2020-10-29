@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------
-// Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
+// Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
 #ifndef __SP_GLUTIL_H__
@@ -103,13 +103,6 @@ namespace sp {
         const double pscale = (static_cast<double>(fw) / ww + static_cast<double>(fh) / wh) / 2.0;
 
         return pscale;
-    }
-
-    SP_CPUFUNC float glGetBasicLineWidth() {
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        return  static_cast<float>(log10(2.0 * minVal(viewport[2], viewport[3]))) * 0.5f;
     }
 
     //--------------------------------------------------------------------------------
@@ -235,7 +228,7 @@ namespace sp {
         GLint viewport[4];
         glGetIntegerv(GL_VIEWPORT, viewport);
 
-        const Vec2 vcent = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
+        const Vec2 vcent = getVec2(viewport[2], viewport[3]) * 0.5;
         const Vec2 ccent = getVec2(cam.dsize[0] - 1, cam.dsize[1] - 1) * 0.5 - getVec2(cam.cx, cam.cy);
         const Vec2 cdisp = viewPos + vcent - ccent * viewScale;
 
@@ -244,8 +237,8 @@ namespace sp {
             const double nx = nearPlane / cam.fx;
             const double ny = nearPlane / cam.fy;
 
-            const double sw = (viewport[2] - 1) / viewScale;
-            const double sh = (viewport[3] - 1) / viewScale;
+            const double sw = (viewport[2]) / viewScale;
+            const double sh = (viewport[3]) / viewScale;
 
             const double l = (-cdisp.x / viewScale) * nx;
             const double r = (-cdisp.x / viewScale + sw) * nx;
@@ -752,8 +745,8 @@ namespace sp {
         if (tex.id() == 0) return;
 
         glPushAttrib(GL_ENABLE_BIT);
-        glEnable(GL_TEXTURE_2D);
         {
+            glEnable(GL_TEXTURE_2D);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             glBindTexture(GL_TEXTURE_2D, tex.id());

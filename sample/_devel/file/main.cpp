@@ -4,6 +4,23 @@
 using namespace sp;
 
 int main(){ 
+    {
+        JSON json;
+
+        json.nest("test");
+        json.add("val0", "aaa");
+        json.add("val1", "bbb");
+        {
+            json.nest("0");
+            json.add("val00", "0");
+            json.add("val01", "1");
+            json.unnest();
+        }
+        json.unnest();
+
+        json.save("test.json");
+    }
+    return 0;
 
     {
         CamParam cam = getCamParam(640, 480);

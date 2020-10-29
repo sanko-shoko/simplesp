@@ -6,6 +6,9 @@ using namespace sp;
 
 int main() {
 
+    //--------------------------------------------------------------------------------
+    // zip like encode & decode
+    //--------------------------------------------------------------------------------
     {
         Mem1<int> src;
         {
@@ -41,5 +44,26 @@ int main() {
         }
     }
 
+
+    //--------------------------------------------------------------------------------
+    // base 64 encode & decode
+    //--------------------------------------------------------------------------------
+    {
+        Mem1<Byte> src;
+        {
+            Byte _src[] = { 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 4, 3, 3, 0, 2, 1 };
+            src.push(_src, sizeof(_src) / sizeof(Byte));
+
+            print("src ", src);
+        }
+        {
+            const Mem1<char> enc = base64Encode(src.ptr, src.size());
+
+            const Mem1<Byte> dec = base64Decode(enc.ptr);
+
+            printf("enc %s\n", enc.ptr);
+            print("dec", dec);
+        }
+    }
     return 0;
 }

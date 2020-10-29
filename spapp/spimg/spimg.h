@@ -1,5 +1,5 @@
 ﻿//--------------------------------------------------------------------------------
-// Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
+// Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
 #ifndef __SP_IMAGE_H__
@@ -226,7 +226,7 @@ namespace sp{
     SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
         SP_ASSERT(checkPtr(src0, 2));
         SP_ASSERT(checkPtr(src1, 2));
-        SP_ASSERT(cmp(2, src0.dsize, src1.dsize));
+        SP_ASSERT(cmp(src0.dsize, src1.dsize, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
@@ -315,7 +315,7 @@ namespace sp{
     SP_CPUFUNC void remap(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<Vec2> &table, const bool useExt = false){
         SP_ASSERT(checkPtr(src, 2));
         SP_ASSERT(checkPtr(table, 2));
-        SP_ASSERT(cmp(2, src.dsize, table.dsize));
+        SP_ASSERT(cmp(src.dsize, table.dsize, 2));
         
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 

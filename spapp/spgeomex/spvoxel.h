@@ -1,5 +1,5 @@
 ﻿//--------------------------------------------------------------------------------
-// Copyright (c) 2017-2019, sanko-shoko. All rights reserved.
+// Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
 #ifndef __SP_VOXEL_H__
@@ -851,7 +851,7 @@ namespace sp {
                     if (fabs(acsv(mvec, i)) > SP_SMALL) {
                         for(int j = 0; j < 2; j++){
                             const int p = (j == 0) ? -1 : +1;
-                            const double s = (s * acsv(cent, i) - acsv(ipose.trn, i)) / acsv(mvec, i);
+                            const double s = (p * acsv(cent, i) - acsv(ipose.trn, i)) / acsv(mvec, i);
                             const double a = acsv(mvec, (i + 1) % 3) * s + acsv(ipose.trn, (i + 1) % 3);
                             const double b = acsv(mvec, (i + 2) % 3) * s + acsv(ipose.trn, (i + 2) % 3);
                             if (fabs(a) < acsv(cent, (i + 1) % 3) && fabs(b) < acsv(cent, (i + 2) % 3)) {
@@ -861,9 +861,7 @@ namespace sp {
                         }
                     }
                 }
-                if (u == map.dsize[0] / 2 && v == map.dsize[1] / 2) {
-                    printf("%lf %lf\n", minv, maxv);
-                }
+
                 if (minv <= SP_SMALL) continue;
 
  

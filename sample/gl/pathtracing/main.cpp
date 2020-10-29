@@ -60,9 +60,9 @@ private:
 
         mat0.col = getCol4f(0.9, 0.2, 0.2, 1.0);
         mat1.col = getCol4f(0.2, 0.9, 0.4, 1.0);
-        mat0.tr = 0.7f;
-        mat0.ri = 1.1f;
-        mat1.tr = 0.0f;
+        //mat0.tr = 0.7f;
+        //mat0.ri = 1.1f;
+        //mat1.tr = 0.0f;
         for (int i = 0; i < mats0.size(); i++) {
             mats0[i] = &mat0;
             mats1[i] = &mat1;
@@ -80,7 +80,7 @@ private:
         m_pt.setCam(m_cam, m_pose);
 
         m_pt.addModel(m_model, mats0);
-        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats1);
+        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats0);
         m_pt.build();
     }
 
