@@ -10,30 +10,18 @@
 #include "GL/glew.h"
 #endif
 
-#if SP_USE_IMGUI
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl2.h"
-#include "imgui_internal.h"
-#endif
-
 #include "GLFW/glfw3.h"
 
 #include "spcore/spcore.h"
 
-#include <string>
-#include <map>
+//--------------------------------------------------------------------------------
+// additional define
+//--------------------------------------------------------------------------------
 
-namespace sp {
-
-    //--------------------------------------------------------------------------------
-    // additional define
-    //--------------------------------------------------------------------------------
-
-#define GLFW_KEY_SHIFT (GLFW_KEY_LAST + 1)
+#define GLFW_KEY_SHIFT   (GLFW_KEY_LAST + 1)
 #define GLFW_KEY_CONTROL (GLFW_KEY_LAST + 2)
-#define GLFW_KEY_ALT (GLFW_KEY_LAST + 3)
-#define GLFW_KEY_SUPER (GLFW_KEY_LAST + 4)
+#define GLFW_KEY_ALT     (GLFW_KEY_LAST + 3)
+#define GLFW_KEY_SUPER   (GLFW_KEY_LAST + 4)
 
 #define GLFW_CALLBACK_SIZE   0x01
 #define GLFW_CALLBACK_BUTTON 0x02
@@ -43,60 +31,32 @@ namespace sp {
 #define GLFW_CALLBACK_CHAR   0x20
 #define GLFW_CALLBACK_DROP   0x40
 #define GLFW_CALLBACK_FOCUS  0x80
+
+namespace sp {
      
     //--------------------------------------------------------------------------------
     // util
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC void initGLFW() {
-        static bool init = false;
-        if (init == true) return;
+        static bool once = false;
+        if (once == true) return;
+        once = true;
+
         SP_ASSERT(glfwInit());
 
-        //glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     }
 
     SP_CPUFUNC void initGLEW() {
-        static bool init = false;
-        if (init == true) return;
+        static bool once = false;
+        if (once == true) return;
+        once = true;
 
 #if SP_USE_GLEW
-        // glew init
         SP_ASSERT(glewInit() == GLEW_OK);
 #endif
-        init = true;
     }
-
-    SP_CPUFUNC void initIMGUI() {
-        static bool init = false;
-        if (init == true) return;
-
-        GLFWwindow *win = glfwGetCurrentContext();
-
-#if SP_USE_IMGUI
-        // imgui init
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        SP_ASSERT(ImGui_ImplGlfw_InitForOpenGL(win, false) == true);
-        SP_ASSERT(ImGui_ImplOpenGL2_Init() == true);
-        ImGui::GetIO().IniFilename = NULL;
-#endif
-        init = true;
-    }
-
-    SP_CPUFUNC void finishIMGUI() {
-        static bool init = false;
-        if (init == true) return;
-
-#if SP_USE_IMGUI
-        ImGui_ImplOpenGL2_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-#endif
-        init = true;
-    }
-
 
     //--------------------------------------------------------------------------------
     // mouse
@@ -127,7 +87,7 @@ namespace sp {
             memset(this, 0, sizeof(Mouse));
         }
 
-        void post() {
+        void next() {
             setScroll(0.0, 0.0);
             pressL = 0;
             pressR = 0;
@@ -361,22 +321,18 @@ namespace sp {
             }
 
             m_noswap = false;
-
-            m_mouse.post();
             m_callback = false;
 
-            glfwSwapInterval(1);
+            m_mouse.next();
+
             return true;
         }
 
         void execute(const char *name, const int width, const int height) {
 
-            // init glfw
             initGLFW();
-
             SP_ASSERT(create(name, width, height) == true);
 
-            // init glew
             initGLEW();
 
             init();
@@ -388,8 +344,6 @@ namespace sp {
 
                 post();
             }
-
-            // glfw terminate
             glfwTerminate();
         }
 
@@ -475,6 +429,7 @@ namespace sp {
 
         void _keyFun(int key, int scancode, int action, int mods) {
             if (key < 0) return;
+
             if (action == 0 || action == 1) {
                 m_callback |= GLFW_CALLBACK_KEY;
             }
@@ -568,135 +523,7 @@ namespace sp {
         }
     };
 
-    //--------------------------------------------------------------------------------
-    // base window imgui
-    //--------------------------------------------------------------------------------
-
-    class BaseWindowIMGUI : public BaseWindow {
-
-    public:
-
-        bool main() {
-
-            if (m_win == NULL) return false;
-
-            if (glfwWindowShouldClose(m_win)) {
-                glfwDestroyWindow(m_win);
-                m_win = NULL;
-                return false;
-            }
-
-            // glfw make context
-            if (m_win != glfwGetCurrentContext()) {
-                glfwMakeContextCurrent(m_win);
-            }
-
-#if SP_USE_IMGUI
-            ImGui_ImplOpenGL2_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-#endif
-
-            display();
-
-#if SP_USE_IMGUI
-            ImGui::Render();
-            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-#endif
-
-            if (m_noswap == false) {
-                glfwSwapBuffers(m_win);
-            }
-            else {
-                sleep(10);
-            }
-            m_noswap = false;
-
-            m_mouse.setScroll(0.0, 0.0);
-            m_callback = false;
-
-            return true;
-        }
-
-        void execute(const char *name, const int width, const int height, const int samples = 1) {
-
-            // init glfw
-            initGLFW();
-
-            SP_ASSERT(create(name, width, height));
-
-            // init glew
-            initGLEW();
-
-            // init imgui
-            initIMGUI();
-
-            init();
-
-            while (!glfwWindowShouldClose(m_win)) {
-                if (main() == false) break;
-
-                glfwPollEvents();
-
-                post();
-            }
-
-            // glfw terminate
-            glfwTerminate();
-
-            // finish imgui
-            finishIMGUI();
-        }
-
-    public:
-
-        //--------------------------------------------------------------------------------
-        // event process
-        //--------------------------------------------------------------------------------
-
-#if SP_USE_IMGUI
-        virtual bool _pmouseButton(int button, int action, int mods) {
-            if (ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_MouseButtonCallback(NULL, button, action, mods);
-                return true;
-            }
-            return false;
-        }
-
-        virtual bool _pmousePos(double x, double y) {
-            if (ImGui::GetIO().WantCaptureMouse) {
-                return true;
-            }
-            return false;
-        }
-
-        virtual bool _pmouseScroll(double x, double y) {
-            if (ImGui::GetIO().WantCaptureMouse) {
-                ImGui_ImplGlfw_ScrollCallback(NULL, x, y);
-                m_mouse.setScroll(0.0, 0.0);
-                return true;
-            }
-            return false;
-        }
-        virtual bool _pkeyFun(int key, int scancode, int action, int mods) {
-            static bool prev = false;
-            if (ImGui::GetIO().WantCaptureKeyboard == true || (action == 0 && prev == true)) {
-                prev = ImGui::GetIO().WantCaptureKeyboard;
-                ImGui_ImplGlfw_KeyCallback(NULL, key, scancode, action, mods);
-                return true;
-            }
-            prev = false;
-            return false;
-        }
-        virtual bool _pcharFun(unsigned int charInfo) {
-            if (ImGui::GetIO().WantCaptureKeyboard == true) {
-                ImGui_ImplGlfw_CharCallback(NULL, charInfo);
-                return true;
-            }
-            return false;
-        }
-#endif
-    };
+  
 
     template<typename TYPE>
     class ImgWindow : public BaseWindow {
@@ -707,7 +534,7 @@ namespace sp {
 
         virtual void display() {
             if (m_img.size() > 0) {
-                if (cmp(2, m_img.dsize, m_wcam.dsize) == false) {
+                if (cmp(m_img.dsize, m_wcam.dsize, 2) == false) {
                     glfwSetWindowSize(m_win, m_img.dsize[0], m_img.dsize[1]);
                 }
                 glLoadView2D(m_img.dsize, m_viewPos, m_viewScale);

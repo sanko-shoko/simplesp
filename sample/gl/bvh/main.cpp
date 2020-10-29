@@ -45,8 +45,16 @@ private:
         SP_ASSERT(m_model.size() > 0);
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
-        m_bvh.addModel(m_model);
-        m_bvh.build(false);
+
+        static Material mat;
+        mat.col = getCol4f(0.9, 0.2, 0.2, 1.0);
+        static Mem1<Material*> mats;
+        mats.resize(m_model.size());
+        for (int i = 0; i < mats.size(); i++) {
+            mats[i] = &mat;
+        }
+        m_bvh.addModel(m_model, mats);
+        m_bvh.build();
 
     }
 
