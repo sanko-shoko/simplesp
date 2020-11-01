@@ -11,7 +11,6 @@
 #endif
 
 #include "GLFW/glfw3.h"
-
 #include "spcore/spcore.h"
 
 //--------------------------------------------------------------------------------
@@ -45,6 +44,11 @@ namespace sp {
 
         SP_ASSERT(glfwInit());
 
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     }
 
@@ -54,6 +58,7 @@ namespace sp {
         once = true;
 
 #if SP_USE_GLEW
+        glewExperimental = GL_TRUE;
         SP_ASSERT(glewInit() == GLEW_OK);
 #endif
     }
@@ -66,8 +71,6 @@ namespace sp {
 
     public:
 
-        bool init;
-
         // cursor position and move
         Vec2 pos, move;
 
@@ -75,9 +78,9 @@ namespace sp {
         double scroll;
 
         // button state
-        int buttonL, buttonR, buttonM;
-
-        int pressL, pressR, pressM;
+        int buttonL, pressL;
+        int buttonR, pressR;
+        int buttonM, pressM;
 
         Mouse() {
             reset();
@@ -118,11 +121,10 @@ namespace sp {
 
         void setPos(const double x, const double y) {
 
-            if (init == true && (buttonL || buttonR || buttonM)) {
+            if (buttonL || buttonR || buttonM) {
                 move = getVec2(x, y) - pos;
             }
             pos = getVec2(x, y);
-            init = true;
         }
 
         void setScroll(const double x, const double y) {
@@ -144,7 +146,7 @@ namespace sp {
         }
 
         if (mouse.scroll != 0) {
-            viewpPos *= (1.0 + mouse.scroll * 0.1);
+            viewpPos  *= (1.0 + mouse.scroll * 0.1);
             viewScale *= (1.0 + mouse.scroll * 0.1);
             ret = true;
         }
@@ -190,39 +192,29 @@ namespace sp {
 
         virtual void windowSize(int width, int height) {
         }
-
         virtual void mouseButton(int button, int action, int mods) {
         }
-
         virtual void mousePos(double x, double y) {
         }
-
         virtual void mouseScroll(double x, double y) {
         }
-
         virtual void keyFun(int key, int scancode, int action, int mods) {
         }
-
         virtual void charFun(unsigned int charInfo) {
         }
-
         virtual void drop(int num, const char **paths) {
         }
-
         virtual void focus(int focused) {
         }
 
-
         virtual void init() {
         }
-
         virtual void display() {
         }
-
         virtual void post() {
         }
-
-
+        virtual void terminate() {
+        }
     protected:
 
         // window ptr

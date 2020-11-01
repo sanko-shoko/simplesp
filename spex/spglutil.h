@@ -6,9 +6,7 @@
 #define __SP_GLUTIL_H__
 
 #include "GLFW/glfw3.h"
-
 #include "spcore/spcore.h"
-#include "spapp/spdata/spmodel.h"
 
 namespace sp {
     //--------------------------------------------------------------------------------
@@ -262,8 +260,8 @@ namespace sp {
             const double nx = 1.0 / cam.fx;
             const double ny = 1.0 / cam.fy;
 
-            const double sw = (viewport[2] - 1) / viewScale;
-            const double sh = (viewport[3] - 1) / viewScale;
+            const double sw = (viewport[2]) / viewScale;
+            const double sh = (viewport[3]) / viewScale;
 
             const double l = (-cdisp.x / viewScale) * nx;
             const double r = (-cdisp.x / viewScale + sw) * nx;
@@ -527,6 +525,7 @@ namespace sp {
         glVertex(getVec2(B.x, B.y)); glVertex(getVec2(A.x, B.y));
         glEnd();
     }
+
     SP_CPUFUNC void glRect(const Rect3 &rect, const double m = 0.5, const bool fill = false) {
 
         const Vec3 A = getVec3(rect.dbase[0] - m, rect.dbase[1] - m, rect.dbase[2] - m);
@@ -591,26 +590,58 @@ namespace sp {
     }
 
     SP_CPUFUNC void glCylinder(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
+        const int div = 36;
+        const double step = 360.0 / div;
+        const Vec3 drc = vtx1 - vtx0;
+        const Vec3 nx = invRot(getRotDirection(drc)) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = invRot(getRotDirection(drc)) * getVec3(0.0, 1.0, 0.0);
 
-        const Mem1<Mesh3> cyl = loadCylinder(vtx1 - vtx0, radius) + vtx0;
+        for (int i = 0; i < div; i++) {
+            const double pa = (i + 0) * step * SP_PI / 180.0;
+            const double pb = (i + 1) * step * SP_PI / 180.0;
+            const Vec3 a = (nx * cos(pa) + ny * sin(pa)) * radius;
+            const Vec3 b = (nx * cos(pb) + ny * sin(pb)) * radius;
+            const Vec3 c = a + drc;
+            const Vec3 d = b + drc;
 
-        for (int i = 0; i < cyl.size(); i++) {
-            glMesh(cyl[i]);
+            glMesh(getMesh3(a, b, d) + vtx0);
+            glMesh(getMesh3(d, c, a) + vtx0);
+            glMesh(getMesh3(b, a, getVec3(0.0, 0.0, 0.0)) + vtx0);
+            glMesh(getMesh3(a, b, getVec3(0.0, 0.0, 0.0)) + drc + vtx0);
         }
     }
     SP_CPUFUNC void glVector(const Vec3 &vtx0, const Vec3 &vtx1, const double radius) {
-        const double seg0 = radius * 8.0;
-        const double seg1 = normVec(vtx1 - vtx0) - seg0;
-        const Vec3 drc = unitVec(vtx1 - vtx0);
+        const int div = 36;
+        const Vec3 drc = vtx1 - vtx0;
+        const Vec3 nx = invRot(getRotDirection(drc)) * getVec3(1.0, 0.0, 0.0);
+        const Vec3 ny = invRot(getRotDirection(drc)) * getVec3(0.0, 1.0, 0.0);
+        const double step = 360.0 / div;
 
-        const Mem1<Mesh3> vec = loadCone(drc * seg0, radius * 3.0) + (drc * seg1 + vtx0);
-        const Mem1<Mesh3> cyl = loadCylinder(drc * seg1, radius) + vtx0;
+        const double seg0 = 8.0 * radius / normVec(drc);
+        const double seg1 = 1.0 - seg0;
 
-        for (int i = 0; i < vec.size(); i++) {
-            glMesh(vec[i]);
+        for (int i = 0; i < div; i++) {
+            const double pa = (i + 0) * step * SP_PI / 180.0;
+            const double pb = (i + 1) * step * SP_PI / 180.0;
+            const Vec3 a = (nx * cos(pa) + ny * sin(pa)) * radius * 3.0;
+            const Vec3 b = (nx * cos(pb) + ny * sin(pb)) * radius * 3.0;
+            const Vec3 c = drc * seg0;
+
+            glMesh(getMesh3(a, b, c) + drc * seg1 + vtx0);
+            glMesh(getMesh3(b, a, getVec3(0.0, 0.0, 0.0)) + drc * seg1 + vtx0);
         }
-        for (int i = 0; i < cyl.size(); i++) {
-            glMesh(cyl[i]);
+        for (int i = 0; i < div; i++) {
+            const double pa = (i + 0) * step * SP_PI / 180.0;
+            const double pb = (i + 1) * step * SP_PI / 180.0;
+            const Vec3 a = (nx * cos(pa) + ny * sin(pa)) * radius;
+            const Vec3 b = (nx * cos(pb) + ny * sin(pb)) * radius;
+            const Vec3 c = a + drc * seg1;
+            const Vec3 d = b + drc * seg1;
+
+            glMesh(getMesh3(a, b, d) + vtx0);
+            glMesh(getMesh3(d, c, a) + vtx0);
+            glMesh(getMesh3(b, a, getVec3(0.0, 0.0, 0.0)) + vtx0);
+            glMesh(getMesh3(a, b, getVec3(0.0, 0.0, 0.0)) + drc * seg1 + vtx0);
         }
     }
 

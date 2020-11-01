@@ -57,12 +57,12 @@ namespace sp {
             }
         }
 
-        void set(const int size, const void *vtx) {
+        void set(const void *vtx, const int size, const int type = GL_STATIC_DRAW) {
             if (m_id == 0) {
                 glGenBuffers(1, &m_id);
             }
             bind();
-            glBufferData(GL_ARRAY_BUFFER, size, vtx, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, size, vtx, type);
             unbind();
         }
 
@@ -509,7 +509,6 @@ namespace sp {
         void enable() {
             glUseProgram(m_pgid);
 
-
             //Mat proj(4, 4);
             //Mat view(4, 4);
 
@@ -593,7 +592,7 @@ namespace sp {
                 }
             }
             const GLint location = glGetUniformLocation(m_pgid, name);
-            glUniformMatrix4fv(location, 1, GL_FALSE, tmatf.ptr);
+            glUniformMatrix4fv(location, 1, GL_FALSE, matf);
         }
 
         void setVertex(const int id, const int unit, const int type, const VertexBufferObject &vbo) {

@@ -20,6 +20,8 @@ class RenderGUI : public BaseWindow {
     // object to cam pose
     Pose m_pose;
 
+    VertexBufferObject m_vbo;
+
 
 private:
 
@@ -44,8 +46,31 @@ private:
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
-    }
+        //m_vbo.set(m_model.ptr, sizeof(Mesh3) * m_model.size());
 
+        static float vtx[] = { -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f };
+        m_vbo.set(vtx, 8 * 4);
+
+        static const GLfloat g_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            0.0f,  1.0f, 0.0f,
+        };
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
+
+        glGenBuffers(1, &vertexbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    }
+    GLuint VertexArrayID;
+    GLuint vertexbuffer;
+    virtual void terminate() {
+        glDeleteBuffers(1, &vertexbuffer);
+        glDeleteVertexArrays(1, &VertexArrayID);
+        //glDeleteProgram(programID);
+    }
     void edge() {
         static Shader shader;
         static FrameBufferObject fbo;
@@ -186,42 +211,71 @@ private:
 
     void simple() {
         const char *vert =
-            "#version 400 core\n"
-            "layout(location = 0) in vec3 vtx;"
-            "out vec3 fcol;"
-            "uniform mat4 mat;"
-
+            "#version 330 core\n"
+            "layout(location = 0) in vec3 position;"
             "void main(){"
-            "gl_Position = mat * vec4(vtx, 1.0);"
-            "fcol = vec3(0.5, 1.0, 1.0);"
+            "gl_Position = vec4(position, 1.0);"
             "}"
             ;
 
         const char *flag =
-            "#version 400 core\n"
-            "in vec3 fcol;"
-            "out vec3 color;"
+            "#version 330 core\n"
+            "out vec4 color;"
             "void main()"
             "{"
-            "color = fcol;"
+            "color = vec4(0.5, 1.0, 1.0, 1.0);"
             "}"
             ;
+        glColor3d(1.0, 1.0, 1.0);
+        glLineWidth(3.0f);
+        {
+            glColor3d(1.0, 1.0, 1.0);
+            glLineWidth(3.0f);
 
-        static Shader shader;
-        static bool once = true;
-        if (once) {
-            once = false;
-            shader.load(vert, flag, NULL, NULL);
+            glBegin(GL_LINES);
+            glVertex2d(0.0, 0.0);
+            glVertex2d(1.0, 1.0);
+            glEnd();
         }
 
-        glLoadView3D(m_cam, m_viewPos, m_viewScale);
-        glLoadMatrix(m_pose);
+        static Shader shader;
+        if (!shader.pgid()) {
+            char log[512] = { 0 };
+            shader.load(vert, flag, NULL, log);
+            printf("%s\n", log);
+        }
+        //glEnableClientState(GL_VERTEX_ARRAY);
 
-        shader.enable();
-        //shader.setUniform("mat", glGetMat(GL_PROJECTION_MATRIX) * glGetMat(GL_MODELVIEW_MATRIX));
-        //shader.setVertex(0, (Vec3*)m_model.ptr, m_model.size() * 3);
+        //glLoadView3D(m_cam, m_viewPos, m_viewScale);
+        //glLoadMatrix(m_pose);
+        {
+            glUseProgram(shader.pgid());
 
-        glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+            glVertexAttribPointer(
+                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                3,                  // size
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                0,                  // stride
+                (void*)0            // array buffer offset
+            );
+
+            // Draw the triangle !
+            glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+
+            glDisableVertexAttribArray(0);
+        }
+
+        //shader.enable();
+        //shader.setVertex(0, 2, GL_FLOAT, m_vbo);
+        ////m_vbo.bind();
+        ////glVertexPointer(2, GL_FLOAT, 0, NULL);
+        ////m_vbo.unbind();
+        //glDrawArrays(GL_LINE_LOOP, 0, 4);
+        ////glDisableClientState(GL_VERTEX_ARRAY);
+        //glDisableVertexAttribArray(0);
 
         shader.disable();
     }
@@ -230,7 +284,7 @@ private:
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        edge2();
+        simple();
 
     }
 
