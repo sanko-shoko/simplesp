@@ -20,6 +20,7 @@ class RenderGUI : public BaseWindow {
     // object to cam pose
     Pose m_pose;
 
+    VertexArrayObject m_vao;
     VertexBufferObject m_vbo;
 
 
@@ -28,8 +29,12 @@ private:
     void help() {
         printf("\n");
     }
+    Shader shader;
+    float *vtx;
 
     virtual void init() {
+        static float _vtx[] = { -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f };
+        vtx = _vtx;
 
         help();
 
@@ -48,28 +53,10 @@ private:
 
         //m_vbo.set(m_model.ptr, sizeof(Mesh3) * m_model.size());
 
-        static float vtx[] = { -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f };
         m_vbo.set(vtx, 8 * 4);
-
-        static const GLfloat g_vertex_buffer_data[] = {
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            0.0f,  1.0f, 0.0f,
-        };
-        glGenVertexArrays(1, &VertexArrayID);
-        glBindVertexArray(VertexArrayID);
-
-        glGenBuffers(1, &vertexbuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    }
-    GLuint VertexArrayID;
-    GLuint vertexbuffer;
-    virtual void terminate() {
-        glDeleteBuffers(1, &vertexbuffer);
-        glDeleteVertexArrays(1, &VertexArrayID);
-        //glDeleteProgram(programID);
+        m_vao.bind();
+        shader.bindVertex(0, 2, GL_FLOAT, m_vbo);
+        m_vao.unbind();
     }
     void edge() {
         static Shader shader;
@@ -210,6 +197,8 @@ private:
     }
 
     void simple() {
+        vtx[0] += 0.01;
+        m_vbo.set(vtx, 8 * 4);
         const char *vert =
             "#version 330 core\n"
             "layout(location = 0) in vec3 position;"
@@ -238,45 +227,20 @@ private:
             glEnd();
         }
 
-        static Shader shader;
         if (!shader.pgid()) {
             char log[512] = { 0 };
             shader.load(vert, flag, NULL, log);
             printf("%s\n", log);
         }
-        //glEnableClientState(GL_VERTEX_ARRAY);
 
         //glLoadView3D(m_cam, m_viewPos, m_viewScale);
         //glLoadMatrix(m_pose);
-        {
-            glUseProgram(shader.pgid());
+ 
 
-            glEnableVertexAttribArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-            glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void*)0            // array buffer offset
-            );
-
-            // Draw the triangle !
-            glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
-
-            glDisableVertexAttribArray(0);
-        }
-
-        //shader.enable();
-        //shader.setVertex(0, 2, GL_FLOAT, m_vbo);
-        ////m_vbo.bind();
-        ////glVertexPointer(2, GL_FLOAT, 0, NULL);
-        ////m_vbo.unbind();
-        //glDrawArrays(GL_LINE_LOOP, 0, 4);
-        ////glDisableClientState(GL_VERTEX_ARRAY);
-        //glDisableVertexAttribArray(0);
-
+        shader.enable();
+        m_vao.bind();
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        m_vao.unbind();
         shader.disable();
     }
 

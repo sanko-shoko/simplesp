@@ -17,25 +17,6 @@
 
 namespace sp {
 
-    template<typename DEPTH>
-    static void cnvZBuffToDepth(DEPTH *depth, const float zbuff, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
-        double d = 0.0;
-        if (pers == true) {
-            const double div = (farPlane - zbuff * (farPlane - nearPlane));
-            if (div > 0.001) {
-                d = farPlane * nearPlane / div;
-            }
-        }
-        else {
-            const double a = 2.0 / (farPlane - nearPlane);
-            const double b = -(farPlane + nearPlane) / (farPlane - nearPlane);
-            {
-                d = (zbuff * 2 - 1 - b) / a;
-            }
-        }
-        *depth = static_cast<DEPTH>((d > nearPlane && d < farPlane) ? d : 0.0);
-    }
-
     class VertexBufferObject {
 
     private:
@@ -66,11 +47,48 @@ namespace sp {
             unbind();
         }
 
-        void bind() const {
+        void bind() {
             glBindBuffer(GL_ARRAY_BUFFER, m_id);
         }
-        void unbind() const {
+        void unbind() {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        GLuint id() const {
+            return m_id;
+        }
+    };
+    
+    class VertexArrayObject {
+
+    private:
+        GLuint m_id;
+
+    private:
+        VertexArrayObject(const VertexArrayObject &vao) {}
+        VertexArrayObject& operator =(const VertexArrayObject &vao) {}
+
+    public:
+
+        VertexArrayObject() {
+            m_id = 0;
+        }
+
+        ~VertexArrayObject() {
+            if (m_id != 0) {
+                glDeleteBuffers(1, &m_id);
+            }
+        }
+
+        void bind() {
+            if (m_id == 0) {
+                glGenVertexArrays(1, &m_id);
+            }
+
+            glBindVertexArray(m_id);
+        }
+        void unbind() {
+            glBindVertexArray(0);
         }
 
         GLuint id() const {
@@ -385,6 +403,27 @@ namespace sp {
             return (m_msid != 0) ? m_mstx[i] : m_tx[i];
         }
 
+    private:
+
+        template<typename DEPTH>
+        void cnvZBuffToDepth(DEPTH *depth, const float zbuff, const bool pers, const double nearPlane = 1.0, const double farPlane = 10000.0) {
+            double d = 0.0;
+            if (pers == true) {
+                const double div = (farPlane - zbuff * (farPlane - nearPlane));
+                if (div > 0.001) {
+                    d = farPlane * nearPlane / div;
+                }
+            }
+            else {
+                const double a = 2.0 / (farPlane - nearPlane);
+                const double b = -(farPlane + nearPlane) / (farPlane - nearPlane);
+                {
+                    d = (zbuff * 2 - 1 - b) / a;
+                }
+            }
+            *depth = static_cast<DEPTH>((d > nearPlane && d < farPlane) ? d : 0.0);
+        }
+
     };
 
     class Shader {
@@ -595,10 +634,14 @@ namespace sp {
             glUniformMatrix4fv(location, 1, GL_FALSE, matf);
         }
 
-        void setVertex(const int id, const int unit, const int type, const VertexBufferObject &vbo) {
+        void bindVertex(const int id, const int unit, const int type, const VertexBufferObject &vbo) {
             glEnableVertexAttribArray(id);
             glBindBuffer(GL_ARRAY_BUFFER, vbo.id());
             glVertexAttribPointer(id, unit, type, GL_FALSE, 0, NULL);
+        }
+
+        void unbindVertex(const int id) {
+            glDisableVertexAttribArray(id);
         }
 
     };
