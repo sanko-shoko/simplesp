@@ -109,7 +109,7 @@ private:
 
             glRenderSurface(m_model);
 
-            const Mem1<const BVH::Node*> nodes = m_bvh.getNodes(m_level);
+            const Mem1<const BVH::Node*> nodes = m_bvh.getNodes(0, m_level);
 
             glLineWidth(2.0);
             for (int i = 0; i < nodes.size(); i++) {

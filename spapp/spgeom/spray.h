@@ -163,10 +163,14 @@ namespace sp {
             Node *n0, *n1;
         };
 
+        struct Data {
+            Mesh3 mesh;
+            Material mat;
+        };
+
         struct Index {
             Vec3 cent;
-            const Mesh3 *pmesh;
-            const Material *pmat;
+            const Data *pdata;
         };
 
         struct Hit {
@@ -178,9 +182,10 @@ namespace sp {
         };
 
         struct Unit {
-            Mem1<Mesh3> buff;
+            Mem1<Data> data;
 
             Mem1<Mat> poses;
+            Mem1<Mat> iposes;
             Mem1<Node> nodes;
             Mem1<Index> idxs;
         };
@@ -193,14 +198,15 @@ namespace sp {
             clear();
         }
 
-        Mem1<const Node*> getNodes(const int level) const {
+        Mem1<const Node*> getNodes(const int i, const int level) const {
             Mem1<const Node*> nodes;
 
-            //for (int i = 0; i < m_nodes.size(); i++) {
-            //    if (m_nodes[i].level == level) {
-            //        nodes.push(&m_nodes[i]);
-            //    }
-            //}
+            const Unit &unit = m_units[i];
+            for (int i = 0; i < unit.nodes.size(); i++) {
+                if (unit.nodes[i].level == level) {
+                    nodes.push(&unit.nodes[i]);
+                }
+            }
             return nodes;
         }
 
@@ -208,21 +214,31 @@ namespace sp {
             m_units.clear();
         }
 
-        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats, const Mem1<Mat> &poses) {
+        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material> &mats, const Mem1<Mat> &poses) {
             Unit &unit = *m_units.malloc();
 
-            unit.poses = poses;
-            unit.buff = meshes;
+            unit.poses.clear();
+            unit.iposes.clear();
+            for (int i = 0; i < poses.size(); i++) {
+                unit.poses.push(poses[i]);
+                unit.iposes.push(invMat(poses[i]));
+            }
 
-            unit.idxs.resize(meshes.size());
-            for (int i = 0; i < meshes.size(); i++) {
-                unit.idxs[i].pmesh = &unit.buff[i];
-                unit.idxs[i].pmat = pmats[i];
-                unit.idxs[i].cent = getMeshCent(*unit.idxs[i].pmesh);
+            const int size = meshes.size();
+
+            unit.data.resize(size);
+            unit.idxs.resize(size);
+            for (int i = 0; i < size; i++) {
+                unit.data[i].mesh = meshes[i];
+                unit.data[i].mat = mats[i];
+
+                unit.idxs[i].pdata = &unit.data[i];
+                unit.idxs[i].cent = getMeshCent(unit.data[i].mesh);
             }
         }
 
         void build() {
+
             typedef int(*CMP)(const void*, const void*);
             CMP cmp[3];
             cmp[0] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.x < ((Index*)i2)->cent.x) ? +1 : -1; };
@@ -252,7 +268,7 @@ namespace sp {
 
                     n->box = nullBox3();
                     for (int i = base; i < base + size; i++) {
-                        n->box = orBox(n->box, *idxs[i].pmesh);
+                        n->box = orBox(n->box, idxs[i].pdata->mesh);
                     }
                     return n;
                 };
@@ -270,13 +286,13 @@ namespace sp {
 
                         for (int i = 1; i < n.size; i++) {
                             const int l = i;
-                            bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
+                            bl = orBox(bl, idxs[n.base + l - 1].pdata->mesh);
                             buff[n.base + l] = 0;
                             buff[n.base + l] += getBoxArea(bl) * i;
                         }
                         for (int i = 1; i < n.size; i++) {
                             const int r = n.size - i;
-                            br = orBox(br, *idxs[n.base + r].pmesh);
+                            br = orBox(br, idxs[n.base + r].pdata->mesh);
                             buff[n.base + r] += getBoxArea(br) * i;
                         }
 
@@ -339,6 +355,7 @@ namespace sp {
                         tnodes[i].push(n.n1);
                     }
                 }
+
             }
 
         }
@@ -347,19 +364,22 @@ namespace sp {
             memset(&hit, 0, sizeof(Hit));
             hit.calc = true;
 
+            const int QUE_MAX = 100;
+            const Node* que[QUE_MAX];
+
+            double lmaxv = maxv;
+
             for (int i = 0; i < m_units.size(); i++) {
                 const Unit &unit = m_units[i];
                 for (int j = 0; j < unit.poses.size(); j++) {
-                    const Mat pose = unit.poses[j];
+                    const Mat &pose = unit.poses[j];
+                    const Mat &ipose = unit.iposes[j];
 
-                    const VecPD3 bray = invMat(pose) * ray;
+                    const VecPD3 bray = ipose * ray;
 
                     int stack = 0;
-                    const int QUE_MAX = 100;
-                    const Node* que[QUE_MAX];
                     que[stack++] = &unit.nodes[0];
 
-                    double lmaxv = maxv;
                     int minid = -1;
                     int objid = -1;
 
@@ -376,16 +396,16 @@ namespace sp {
                             continue;
                         }
                         {
-                            const int i = n->base;
+                            const int id = n->base;
                             SP_REAL result[3] = { 0 };
-                            if (traceMesh(result, *unit.idxs[i].pmesh, bray, minv, lmaxv + SP_SMALL) == true) {
+                            if (traceMesh(result, unit.idxs[id].pdata->mesh, bray, minv, lmaxv + SP_SMALL) == true) {
 
                                 if (result[0] < lmaxv - SP_SMALL) {
-                                    const Vec3 nrm = getMeshNrm(*unit.idxs[i].pmesh);
+                                    const Vec3 nrm = getMeshNrm(unit.idxs[id].pdata->mesh);
                                     const bool f = (dotVec(nrm, bray.drc) < 0.0);
 
                                     lmaxv = result[0];
-                                    minid = i;
+                                    minid = id;
                                 }
                             }
                         }
@@ -393,10 +413,10 @@ namespace sp {
 
                     if (minid >= 0) {
                         hit.find = true;
-                        hit.mat = *unit.idxs[minid].pmat;
+                        hit.mat = unit.idxs[minid].pdata->mat;
 
                         hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
-                        hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(*unit.idxs[minid].pmesh));
+                        hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(unit.idxs[minid].pdata->mesh));
                     }
                 }
             }
@@ -645,8 +665,8 @@ namespace sp {
             m_plights = lights;
         }
 
-        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats, const Mem1<Mat> &poses) {
-            m_bvh.addModel(meshes, pmats, poses);
+        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material> &mats, const Mem1<Mat> &poses) {
+            m_bvh.addModel(meshes, mats, poses);
         }
 
         void build() {
