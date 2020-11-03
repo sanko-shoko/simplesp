@@ -1,4 +1,6 @@
-﻿#define SP_USE_GLEW 1
+﻿#define SP_REAL float
+
+#define SP_USE_GLEW 1
 #define SP_USE_DEBUG 1
 
 #include "simplesp.h"
@@ -16,6 +18,8 @@ class RenderGUI : public BaseWindow {
 
     // object mesh model
     Mem1<Mesh3> m_model;
+    Mem1<Vec3> m_nrms;
+    Mem1<Vec3> m_vtxs;
 
     // object to cam pose
     Pose m_pose;
@@ -48,6 +52,20 @@ private:
             // if could not find stanford bunny, load dummy model
             m_model = loadGeodesicDorm(100.0, 1);
         }
+        for (int i = 0; i < m_model.size(); i++) {
+            const Vec3 nrm = getMeshNrm(m_model[i]);
+            m_nrms.push(nrm);
+            m_nrms.push(nrm);
+            m_nrms.push(nrm);
+        }
+
+        ::srand(0);
+        for (int i = 0; i < 100; i++) {
+            const int x = ::rand() % 101 - 50;
+            const int y = ::rand() % 101 - 50;
+            const int z = ::rand() % 101 - 50;
+            m_vtxs.push(getVec3(x, y, z));
+        }
 
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
@@ -55,8 +73,8 @@ private:
 
         m_vbo.set(vtx, 8 * 4);
         m_vao.bind();
-        shader.bindVertex(0, 2, GL_FLOAT, m_vbo);
         m_vao.unbind();
+
     }
     void edge() {
         static Shader shader;
@@ -99,11 +117,9 @@ private:
         }
 
         {
-            static FrameBufferObject dfbo;
-            dfbo.resize(m_wcam.dsize);
             
             shader.enable();
-            shader.setUniformTx("depth", 0, dfbo.tx(1));
+            shader.setUniformTx("depth", 0, fbo.tx(1));
             shader.setUniform1i("pers", 1);
             shader.setUniform1f("nearPlane", 1.0);
             shader.setUniform1f("farPlane", 10000.0);
@@ -197,58 +213,142 @@ private:
     }
 
     void simple() {
-        vtx[0] += 0.01;
-        m_vbo.set(vtx, 8 * 4);
-        const char *vert =
-            "#version 330 core\n"
-            "layout(location = 0) in vec3 position;"
-            "void main(){"
-            "gl_Position = vec4(position, 1.0);"
-            "}"
-            ;
-
-        const char *flag =
-            "#version 330 core\n"
-            "out vec4 color;"
-            "void main()"
-            "{"
-            "color = vec4(0.5, 1.0, 1.0, 1.0);"
-            "}"
-            ;
-        glColor3d(1.0, 1.0, 1.0);
-        glLineWidth(3.0f);
         {
-            glColor3d(1.0, 1.0, 1.0);
-            glLineWidth(3.0f);
+            static Shader shader;
+            static VertexArrayObject vao;
 
-            glBegin(GL_LINES);
-            glVertex2d(0.0, 0.0);
-            glVertex2d(1.0, 1.0);
-            glEnd();
+            if (shader.id() == 0) {
+                const char *vert =
+                    "#version 330 core\n"
+                    "layout(location = 0) in vec3 position;"
+                    "layout(location = 1) in vec3 normal;"
+                    "out vec3 pos;"
+                    "out vec3 nrm;"
+                    "uniform mat4 transform;"
+                    "void main(){"
+                    "gl_Position = transform * vec4(position, 1.0);"
+                    "pos = position;"
+                    "nrm = normal;"
+                    "}"
+                    ;
+                const char *flag =
+                    "#version 330 core\n"
+                    "in vec3 pos;"
+                    "in vec3 nrm;"
+                    "out vec4 color;"
+                    "uniform vec3 light;"
+                    "void main()"
+                    "{"
+                    "vec3 l = normalize(light - pos);"
+                    "float d = max(dot(nrm, l), 0);"
+                    "color = vec4(d, d, d, 1.0);"
+                    "}"
+                    ;
+                
+                char log[512] = { 0 };
+                shader.load(vert, flag, NULL, log);
+                printf("%s\n", log);
+
+                vao.init();
+                vao.set(0, m_model.ptr, sizeof(Mesh3) * m_model.size());
+                vao.set(1, m_nrms.ptr, sizeof(Vec3) * m_nrms.size());
+
+                vao.bind();
+                vao.enable(0, 3, GL_FLOAT);
+                vao.enable(1, 3, GL_FLOAT);
+                vao.unbind();
+            }
+
+            const Mat transform = glGetProjMat(m_cam, m_viewPos, m_viewScale) * m_pose;
+            const Vec3 light = invPose(m_pose) * getVec3(0, 0, -1000);
+
+            shader.enable();
+            shader.setUniform4m("transform", transform.ptr);
+            shader.setUniform3f("light", (float*)&light);
+            glEnable(GL_DEPTH_TEST);
+            vao.bind();
+
+            glDrawArrays(GL_TRIANGLES, 0, m_model.size() * 3);
+            
+            vao.unbind();
+            shader.disable();
         }
-
-        if (!shader.pgid()) {
-            char log[512] = { 0 };
-            shader.load(vert, flag, NULL, log);
-            printf("%s\n", log);
-        }
-
-        //glLoadView3D(m_cam, m_viewPos, m_viewScale);
-        //glLoadMatrix(m_pose);
- 
-
-        shader.enable();
-        m_vao.bind();
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
-        m_vao.unbind();
-        shader.disable();
     }
 
+    void sample02() {
+        {
+            static Shader shader;
+            static VertexArrayObject vao;
+
+            if (shader.id() == 0) {
+                const char *vert =
+                    "#version 330 core\n"
+                    "layout(location = 0) in vec3 position;"
+                    "uniform mat4 transform;"
+                    "void main(){"
+                    "gl_Position = transform * vec4(position, 1.0);"
+                    "}"
+                    ;
+                const char *geom =
+                    "#version 330 core\n"
+                    "layout(points) in;"
+                    "layout(triangle_strip, max_vertices = 18) out;"
+                    "void cube(vec3 n, vec3 a, vec3 b){"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n - a - b, 0.0); EmitVertex();"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n - a + b, 0.0); EmitVertex();"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n + a - b, 0.0); EmitVertex();"
+                    "EndPrimitive();"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n + a + b, 0.0); EmitVertex();"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n + a - b, 0.0); EmitVertex();"
+                    "gl_Position = gl_in[0].gl_Position + vec4(n - a + b, 0.0); EmitVertex();"
+                    "EndPrimitive();"
+                    "}"
+                    "void main() {"
+                    "cube(vec3(-0.5, 0.0, 0.0), vec3(0.0, 0.5, 0.0), vec3(0.0, 0.0, 0.5));"
+                    "cube(vec3(0.0, 0.0, -0.5), vec3(0.5, 0.0, 0.0), vec3(0.0, 0.5, 0.0));"
+                    "}"
+                    ;
+
+                const char *flag =
+                    "#version 330 core\n"
+                    "out vec4 color;"
+                    "void main()"
+                    "{"
+                    "color = vec4(1.0, 1.0, 1.0, 1.0);"
+                    "}"
+                    ;
+
+                char log[512] = { 0 };
+                shader.load(vert, flag, geom, log);
+                printf("%s\n", log);
+
+                vao.init();
+                vao.set(0, m_vtxs.ptr, sizeof(Vec3) * m_vtxs.size());
+
+                vao.bind();
+                vao.enable(0, 3, GL_FLOAT);
+                vao.unbind();
+            }
+
+            const Mat transform = glGetProjMat(m_cam, m_viewPos, m_viewScale) * m_pose;
+            shader.enable();
+            shader.setUniform4m("transform", transform.ptr);
+
+            glPointSize(3.0f);
+            glEnable(GL_DEPTH_TEST);
+            vao.bind();
+
+            glDrawArrays(GL_POINTS, 0, m_vtxs.size());
+
+            vao.unbind();
+            shader.disable();
+        }
+    }
     virtual void display() {
         glClearColor(0.10f, 0.12f, 0.12f, 0.00f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        simple();
+        sample02();
 
     }
 

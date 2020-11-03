@@ -112,7 +112,7 @@ namespace sp {
         glGetIntegerv(GL_VIEWPORT, viewport);
 
         const Vec2 rectCenter = getVec2(dsize0 - 1, dsize1 - 1) * 0.5;
-        const Vec2 viewCenter = getVec2(viewport[2] - 1, viewport[3] - 1) * 0.5;
+        const Vec2 viewCenter = getVec2(viewport[2], viewport[3]) * 0.5;
         const Vec2 shift = (viewPos + viewCenter) - rectCenter * viewScale;
 
         Mat vmat = eyeMat(4, 4);
@@ -218,8 +218,7 @@ namespace sp {
 #define SP_DEFAULT_FAR SP_CAST_REAL(10000.0)
 #endif
 
-    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
-        glEnable(GL_DEPTH_TEST);
+    SP_CPUFUNC Mat glGetProjMat(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
 
         Mat mat = zeroMat(4, 4);
 
@@ -280,6 +279,14 @@ namespace sp {
 
             mat(3, 3) = SP_CAST_REAL(1.0);
         }
+
+        return mat;
+    }
+
+    SP_CPUFUNC void glLoadView3D(const CamParam &cam, const Vec2 &viewPos = getVec2(0.0, 0.0), const double viewScale = 1.0, const double nearPlane = SP_DEFAULT_NEAR, const double farPlane = SP_DEFAULT_FAR) {
+        glEnable(GL_DEPTH_TEST);
+
+        const Mat mat = glGetProjMat(cam, viewPos, viewScale, nearPlane, farPlane);
 
         glMatrixMode(GL_PROJECTION);
         glLoadMatrix(mat);

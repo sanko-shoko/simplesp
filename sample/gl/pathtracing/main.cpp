@@ -79,8 +79,10 @@ private:
         //m_pt.setPntLights(lights);
         m_pt.setCam(m_cam, m_pose);
 
-        m_pt.addModel(m_model, mats0);
-        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats0);
+        //m_pt.addModel(m_model, mats0);
+        Mem1<Pose> poses;
+        poses.push(getPose(getVec3(100, 0, 0)));
+        m_pt.addModel(poses, m_model, mats0);
         m_pt.build();
     }
 

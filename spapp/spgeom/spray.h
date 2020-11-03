@@ -164,7 +164,7 @@ namespace sp {
         };
 
         struct Index {
-            short objid;
+            Vec3 cent;
             const Mesh3 *pmesh;
             const Material *pmat;
         };
@@ -176,18 +176,17 @@ namespace sp {
             VecPD3 vec;
             Material mat;
         };
-        struct Ray : public VecPD3 {
-            float ri;
+
+        struct Unit {
+            Mem1<Mesh3> buff;
+
+            Mem1<Pose> poses;
+            Mem1<Node> nodes;
+            Mem1<Index> idxs;
         };
-
     private:
-        short m_objid;
 
-        MemP<Mem1<Mesh3>> m_buffs;
-
-        Mem1<Node> m_nodes;
-
-        Mem1<Index> m_idxs;
+        MemP<Unit> m_units;
 
     public:
         BVH() {
@@ -197,237 +196,211 @@ namespace sp {
         Mem1<const Node*> getNodes(const int level) const {
             Mem1<const Node*> nodes;
 
-            for (int i = 0; i < m_nodes.size(); i++) {
-                if (m_nodes[i].level == level) {
-                    nodes.push(&m_nodes[i]);
-                }
-            }
+            //for (int i = 0; i < m_nodes.size(); i++) {
+            //    if (m_nodes[i].level == level) {
+            //        nodes.push(&m_nodes[i]);
+            //    }
+            //}
             return nodes;
         }
 
         void clear() {
-            m_objid = 0;
-            m_buffs.clear();
-            m_nodes.clear();
-            m_idxs.clear();
+            m_units.clear();
         }
 
-        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
-            //SP_ASSERT(m_acnt < 100);
+        void addModel(const Mem1<Pose> &poses, const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
+            Unit &unit = *m_units.malloc();
 
-            Mem1<Mesh3> &buff = *m_buffs.malloc();
-            buff = meshes;
+            unit.poses = poses;
+            unit.buff = meshes;
 
-            const int offset = m_idxs.size();
-
-            m_idxs.extend(meshes.size());
+            unit.idxs.resize(meshes.size());
             for (int i = 0; i < meshes.size(); i++) {
-                m_idxs[offset + i].objid = m_objid;
-                m_idxs[offset + i].pmesh = &buff[i];
-                m_idxs[offset + i].pmat = pmats[i];
+                unit.idxs[i].pmesh = &unit.buff[i];
+                unit.idxs[i].pmat = pmats[i];
+                unit.idxs[i].cent = getMeshCent(*unit.idxs[i].pmesh);
             }
-            m_objid++;
         }
 
         void build() {
+            typedef int(*CMP)(const void*, const void*);
+            CMP cmp[3];
+            cmp[0] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.x < ((Index*)i2)->cent.x) ? +1 : -1; };
+            cmp[1] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.y < ((Index*)i2)->cent.y) ? +1 : -1; };
+            cmp[2] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.z < ((Index*)i2)->cent.z) ? +1 : -1; };
 
-            // mesh centers (for sort)
-            struct IndexEx : public Index {
-                Vec3 cent;
-            };
+            for (int i = 0; i < m_units.size(); i++) {
+                Unit &unit = m_units[i];
+                Mem1<Index> &idxs = unit.idxs;
 
-            if (m_idxs.size() == 0) return;
+                unit.nodes.clear();
+                unit.nodes.reserve(2 * idxs.size() - 1);
 
-            Mem1<IndexEx> idxs(m_idxs.size());
-            for (int i = 0; i < idxs.size(); i++) {
-                idxs[i].objid = m_idxs[i].objid;
-                idxs[i].pmesh = m_idxs[i].pmesh;
-                idxs[i].pmat = m_idxs[i].pmat;
-                idxs[i].cent = getMeshCent(*m_idxs[i].pmesh);
-            }
-
-            m_nodes.clear();
-            m_nodes.reserve(2 * idxs.size() - 1);
-
-            auto initn = [&](const int level, const int base, const int size) -> Node* {
-                Node *n = NULL;
+                auto initn = [&](const int level, const int base, const int size) -> Node* {
+                    Node *n = NULL;
 #if SP_USE_OMP
 #pragma omp critical
 #endif
-                {
-                    n = m_nodes.extend();
-                }
-                n->level = level;
-                n->base = base;
-                n->size = size;
-                n->n0 = NULL;
-                n->n1 = NULL;
-
-                n->box = nullBox3();
-                for (int i = base; i < base + size; i++) {
-                    n->box = orBox(n->box, *idxs[i].pmesh);
-                }
-                return n;
-            };
-
-            static Mem1<SP_REAL> buff;
-            buff.resize(idxs.size());
-            auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int{
-                typedef int(*CMP)(const void*, const void*);
-                CMP cmp[3];
-                cmp[0] = [](const void* i1, const void* i2) -> int {
-                    return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1;
-                };
-                cmp[1] = [](const void* i1, const void* i2) -> int {
-                    return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1;
-                };
-                cmp[2] = [](const void* i1, const void* i2) -> int {
-                    return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1;
-                };
-                
-                int di = 0;
-                int da = 0;
-
-                double mina = SP_INFINITY;
-                for (int a = 0; a < 3; a++) {
-                    sort(&idxs[n.base], n.size, cmp[a]);
-                    Box3 bl = nullBox3();
-                    Box3 br = nullBox3();
-
-                    for (int i = 1; i < n.size; i++) {
-                        const int l = i;
-                        bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
-                        buff[n.base + l] = 0;
-                        buff[n.base + l] += getBoxArea(bl) * i;
+                    {
+                        n = unit.nodes.extend();
                     }
-                    for (int i = 1; i < n.size; i++) {
-                        const int r = n.size - i;
-                        br = orBox(br, *idxs[n.base + r].pmesh);
-                        buff[n.base + r] += getBoxArea(br) * i;
-                    }
+                    n->level = level;
+                    n->base = base;
+                    n->size = size;
+                    n->n0 = NULL;
+                    n->n1 = NULL;
 
-                    for (int i = 1; i < n.size; i++) {
-                        //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
-                        if (buff[n.base + i] < mina) {
-                            mina = buff[n.base + i];
-                            di = i;
-                            da = a;
+                    n->box = nullBox3();
+                    for (int i = base; i < base + size; i++) {
+                        n->box = orBox(n->box, *idxs[i].pmesh);
+                    }
+                    return n;
+                };
+
+                Mem1<SP_REAL> buff(idxs.size());
+                auto sorti = [&](Node &n, Mem1<Index> &idxs) -> int {
+                    int di = 0;
+                    int da = 0;
+
+                    double mina = SP_INFINITY;
+                    for (int a = 0; a < 3; a++) {
+                        sort(&idxs[n.base], n.size, cmp[a]);
+                        Box3 bl = nullBox3();
+                        Box3 br = nullBox3();
+
+                        for (int i = 1; i < n.size; i++) {
+                            const int l = i;
+                            bl = orBox(bl, *idxs[n.base + l - 1].pmesh);
+                            buff[n.base + l] = 0;
+                            buff[n.base + l] += getBoxArea(bl) * i;
+                        }
+                        for (int i = 1; i < n.size; i++) {
+                            const int r = n.size - i;
+                            br = orBox(br, *idxs[n.base + r].pmesh);
+                            buff[n.base + r] += getBoxArea(br) * i;
+                        }
+
+                        for (int i = 1; i < n.size; i++) {
+                            //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                            if (buff[n.base + i] < mina) {
+                                mina = buff[n.base + i];
+                                di = i;
+                                da = a;
+                            }
+                        }
+                    }
+                    if (da != 2) {
+                        sort(&idxs[n.base], n.size, cmp[da]);
+                    }
+                    return di;
+                };
+
+                initn(0, 0, idxs.size());
+
+                Mem1<Mem1<Node*> > tnodes;
+                if (idxs.size() > 1000) {
+                    const int level = 5;
+
+                    tnodes.reserve(256);
+                    for (int ni = 0; ni < unit.nodes.size(); ni++) {
+                        Node& n = unit.nodes[ni];
+                        if (n.size == 1) continue;
+
+                        if (n.level < level) {
+                            const int di = sorti(n, idxs);
+                            n.n0 = initn(n.level + 1, n.base, di);
+                            n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                        }
+                        else {
+                            Mem1<Node*> &nodes = *tnodes.extend();
+                            nodes.reserve(2 * n.size - 1);
+                            nodes.push(&n);
                         }
                     }
                 }
-                if (da != 2) {
-                    sort(&idxs[n.base], n.size, cmp[da]);
+                else {
+                    Mem1<Node*> &nodes = *tnodes.extend();
+                    nodes.push(&unit.nodes[0]);
                 }
-                return di;
-            };
-
-            initn(0, 0, idxs.size());
-
-            Mem1<Mem1<Node*> > tnodes;
-            if (idxs.size() > 1000) {
-                const int level = 5;
-
-                tnodes.reserve(256);
-                for (int ni = 0; ni < m_nodes.size(); ni++) {
-                    Node& n = m_nodes[ni];
-                    if (n.size == 1) continue;
-
-                    if (n.level < level) {
-                        const int di = sorti(n, idxs);
-                        n.n0 = initn(n.level + 1, n.base, di);
-                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
-                    }
-                    else {
-                        Mem1<Node*> &nodes = *tnodes.extend();
-                        nodes.reserve(2 * n.size - 1);
-                        nodes.push(&n);
-                    }
-                }
-            }
-            else {
-                Mem1<Node*> &nodes = *tnodes.extend();
-                nodes.push(&m_nodes[0]);
-            }
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
-            for (int i = 0; i < tnodes.size(); i++) {
-                for (int ni = 0; ni < tnodes[i].size(); ni++) {
-                    Node& n = *tnodes[i][ni];
-                    if (n.size == 1) continue;
+                for (int i = 0; i < tnodes.size(); i++) {
+                    for (int ni = 0; ni < tnodes[i].size(); ni++) {
+                        Node& n = *tnodes[i][ni];
+                        if (n.size == 1) continue;
 
-                    const int di = sorti(n, idxs);
-                    
-                    n.n0 = initn(n.level + 1, n.base, di);
-                    n.n1 = initn(n.level + 1, n.base + di, n.size - di);
-                    tnodes[i].push(n.n0);
-                    tnodes[i].push(n.n1);
+                        const int di = sorti(n, idxs);
+
+                        n.n0 = initn(n.level + 1, n.base, di);
+                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                        tnodes[i].push(n.n0);
+                        tnodes[i].push(n.n1);
+                    }
                 }
             }
 
-            for (int i = 0; i < m_idxs.size(); i++) {
-                m_idxs[i] = idxs[i];
-            }
         }
 
         bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
             memset(&hit, 0, sizeof(Hit));
             hit.calc = true;
 
-            if (m_idxs.size() == 0) return false;
+            for (int i = 0; i < m_units.size(); i++) {
+                const Unit &unit = m_units[i];
+                for (int j = 0; j < unit.poses.size(); j++) {
+                    const Pose pose = unit.poses[j];
 
-            int stack = 0;
-            const int QUE_MAX = 100;
-            const Node* que[QUE_MAX];
-            que[stack++] = &m_nodes[0];
+                    const VecPD3 bray = invPose(pose) * ray;
 
-            double lmaxv = maxv;
-            int minid = -1;
-            int objid = -1;
+                    int stack = 0;
+                    const int QUE_MAX = 100;
+                    const Node* que[QUE_MAX];
+                    que[stack++] = &unit.nodes[0];
 
-            const SP_REAL delta = 0.001;
+                    double lmaxv = maxv;
+                    int minid = -1;
+                    int objid = -1;
 
-            while (stack > 0) {
-                const Node *n = que[--stack];
-                if (checkHit(n->box, ray, minv, lmaxv) == false) {
-                    continue;
-                }
-                if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
-                    que[stack++] = n->n0;
-                    que[stack++] = n->n1;
-                    continue;
-                }
-                {
-                    const int i = n->base;
-                    SP_REAL result[3] = { 0 };
-                    if (traceMesh(result, *m_idxs[i].pmesh, ray, minv, lmaxv + SP_SMALL) == true) {
+                    const SP_REAL delta = 0.001;
 
-                        if (result[0] < lmaxv - SP_SMALL || m_idxs[i].objid < objid) {
-                            const Vec3 nrm = getMeshNrm(*m_idxs[i].pmesh);
-                            const bool f = (dotVec(nrm, ray.drc) < 0.0);
-
-                            lmaxv = result[0];
-                            minid = i;
-                            objid = m_idxs[i].objid;
+                    while (stack > 0) {
+                        const Node *n = que[--stack];
+                        if (checkHit(n->box, bray, minv, lmaxv) == false) {
+                            continue;
                         }
+                        if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
+                            que[stack++] = n->n0;
+                            que[stack++] = n->n1;
+                            continue;
+                        }
+                        {
+                            const int i = n->base;
+                            SP_REAL result[3] = { 0 };
+                            if (traceMesh(result, *unit.idxs[i].pmesh, bray, minv, lmaxv + SP_SMALL) == true) {
+
+                                if (result[0] < lmaxv - SP_SMALL) {
+                                    const Vec3 nrm = getMeshNrm(*unit.idxs[i].pmesh);
+                                    const bool f = (dotVec(nrm, bray.drc) < 0.0);
+
+                                    lmaxv = result[0];
+                                    minid = i;
+                                }
+                            }
+                        }
+                    }
+
+                    if (minid >= 0) {
+                        hit.find = true;
+                        hit.mat = *unit.idxs[minid].pmat;
+
+                        hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
+                        hit.vec.drc = pose.rot * getMeshNrm(*unit.idxs[minid].pmesh);
                     }
                 }
             }
-
-            if (minid < 0) {
-                return false;
-            }
-
-            const Index &idx = m_idxs[minid];
-
-            hit.find = true;
-            hit.mat = *idx.pmat;
-
-            hit.vec.pos = ray.pos + ray.drc * lmaxv;
-            hit.vec.drc = getMeshNrm(*m_idxs[minid].pmesh);
-
-            return true;
+            return hit.find;
         }
     };
 
@@ -672,8 +645,8 @@ namespace sp {
             m_plights = lights;
         }
 
-        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
-            m_bvh.addModel(meshes, pmats);
+        void addModel(const Mem1<Pose> &poses, const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
+            m_bvh.addModel(poses, meshes, pmats);
         }
 
         void build() {
