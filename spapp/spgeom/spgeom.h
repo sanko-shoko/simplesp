@@ -117,7 +117,7 @@ namespace sp {
             const Vec2 &npx = npxs[i];
 
             const Mat R = getMat(poses[i].rot);
-            const Vec3 &trn = poses[i].trn;
+            const Vec3 &trn = poses[i].pos;
 
             M(i * 2 + 0, 0) = R(0, 0) - npx.x * R(2, 0);
             M(i * 2 + 0, 1) = R(0, 1) - npx.x * R(2, 1);
@@ -199,7 +199,7 @@ namespace sp {
         const Pose stereo = pose1 * invPose(pose0);
         const Mat mat = getMat(stereo);
 
-        const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
+        const Mat E = skewMat(stereo.pos) * getMat(stereo.rot);
 
         const Vec3 epi = E * getVec3(npx0.x, npx0.y, 1.0);
         const Vec2 npx1 = npxUndistX(cam1, epi, (pix1x - cam1.cx) / cam1.fx);
@@ -223,7 +223,7 @@ namespace sp {
         const Pose stereo = pose1 * invPose(pose0);
         const Mat mat = getMat(stereo);
 
-        const Mat E = skewMat(stereo.trn) * getMat(stereo.rot);
+        const Mat E = skewMat(stereo.pos) * getMat(stereo.rot);
 
         const Vec3 epi = E * getVec3(npx0.x, npx0.y, 1.0);
         const Vec2 npx1 = npxUndistY(cam1, epi, (pix1y - cam1.cy) / cam1.fy);
@@ -400,10 +400,10 @@ namespace sp {
 
             if (refinePose(pose, cam1, pixs, objs, 1) == false) return false;
             
-            const SP_REAL d = normVec(pose.trn);
+            const SP_REAL d = normVec(pose.pos);
             if (d < SP_SMALL) return false;
 
-            pose.trn /= d;
+            pose.pos /= d;
         }
 
         return true;
@@ -449,7 +449,7 @@ namespace sp {
 
             pose.rot = getRot(V * H * trnMat(U));
 
-            pose.trn = cent0 - pose.rot * cent1;
+            pose.pos = cent0 - pose.rot * cent1;
         }
 
         if (maxit - 1 > 0) {
@@ -956,8 +956,8 @@ namespace sp {
         for (int i = 0; i < pnts.size(); i++) {
             const Pose base = zeroPose();
 
-            const Vec3 vec0 = unitVec(base.trn - pnts[i]);
-            const Vec3 vec1 = unitVec(pose.trn - pnts[i]);
+            const Vec3 vec0 = unitVec(base.pos - pnts[i]);
+            const Vec3 vec1 = unitVec(pose.pos - pnts[i]);
             const SP_REAL angle = acos(dotVec(vec0, vec1));
 
             if (angle > minAngle) {

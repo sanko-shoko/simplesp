@@ -750,7 +750,7 @@ namespace sp {
         SP_REAL meanDist = 0.0;
         {
             for (int i = 0; i < poses.size(); i++) {
-                meanDist += poses[i].trn.z;
+                meanDist += poses[i].pos.z;
             }
             meanDist /= poses.size();
         }
@@ -851,9 +851,9 @@ namespace sp {
                     if (fabs(acsv(mvec, i)) > SP_SMALL) {
                         for(int j = 0; j < 2; j++){
                             const int p = (j == 0) ? -1 : +1;
-                            const double s = (p * acsv(cent, i) - acsv(ipose.trn, i)) / acsv(mvec, i);
-                            const double a = acsv(mvec, (i + 1) % 3) * s + acsv(ipose.trn, (i + 1) % 3);
-                            const double b = acsv(mvec, (i + 2) % 3) * s + acsv(ipose.trn, (i + 2) % 3);
+                            const double s = (p * acsv(cent, i) - acsv(ipose.pos, i)) / acsv(mvec, i);
+                            const double a = acsv(mvec, (i + 1) % 3) * s + acsv(ipose.pos, (i + 1) % 3);
+                            const double b = acsv(mvec, (i + 2) % 3) * s + acsv(ipose.pos, (i + 2) % 3);
                             if (fabs(a) < acsv(cent, (i + 1) % 3) && fabs(b) < acsv(cent, (i + 2) % 3)) {
                                 maxv = maxVal(maxv, s);
                                 minv = minVal(minv, s);
@@ -871,7 +871,7 @@ namespace sp {
                 SP_REAL step = mu;
 
                 for (SP_REAL d = minv; d < maxv; d += step * voxel.unit) {
-                    const Vec3 mpos = (ipose.trn + mvec * d) / voxel.unit + cent;
+                    const Vec3 mpos = (ipose.pos + mvec * d) / voxel.unit + cent;
                     const int x = round(mpos.x);
                     const int y = round(mpos.y);
                     const int z = round(mpos.z);
@@ -904,7 +904,7 @@ namespace sp {
                 }
 
                 if (detect > minv) {
-                    const Vec3 mpos = (ipose.trn + mvec * detect) / voxel.unit + cent;
+                    const Vec3 mpos = (ipose.pos + mvec * detect) / voxel.unit + cent;
                     const Vec3 mnrm = voxel.getn(round(mpos.x), round(mpos.y), round(mpos.z));
 
                     const Vec3 cpos = cvec * detect;

@@ -723,7 +723,7 @@ namespace sp{
                     if (crsps[i][j] < 0) continue;
                     Pose pose;
                     pose = cposes[crsps[i][j]];
-                    pose.trn *= mrks[i][j].length;
+                    pose.pos *= mrks[i][j].length;
                     pose = pose * mrks[i][j].offset;
 
                     tposes.push(pose);

@@ -157,12 +157,12 @@ namespace sp {
         bool ret = false;
 
         Pose cpose = pose * invPose(base);
-        if (cpose.trn.z < 0.0) return false;
+        if (cpose.pos.z < 0.0) return false;
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
-            const double s = ((cam.type == CamParam_Pers) ? cpose.trn.z : 1.0) / viewScale;
-            cpose.trn.x += SP_CAST_REAL(mouse.move.x / cam.fx * s);
-            cpose.trn.y += SP_CAST_REAL(mouse.move.y / cam.fy * s);
+            const double s = ((cam.type == CamParam_Pers) ? cpose.pos.z : 1.0) / viewScale;
+            cpose.pos.x += SP_CAST_REAL(mouse.move.x / cam.fx * s);
+            cpose.pos.y += SP_CAST_REAL(mouse.move.y / cam.fy * s);
 
             ret = true;
         }
@@ -173,7 +173,7 @@ namespace sp {
         }
 
         if (mouse.scroll != 0) {
-            cpose.trn -= unitVec(cpose.trn) * (cpose.trn.z * mouse.scroll * 0.02);
+            cpose.pos -= unitVec(cpose.pos) * (cpose.pos.z * mouse.scroll * 0.02);
             ret = true;
         }
 

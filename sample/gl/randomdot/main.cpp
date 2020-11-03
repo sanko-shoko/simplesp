@@ -139,7 +139,7 @@ private:
 
             StereoBase estimator;
             estimator.setRange(maxDisp, minDisp);
-            estimator.setCam(m_rects[0].cam, m_rects[1].cam, normVec(m_cam2prj.trn));
+            estimator.setCam(m_rects[0].cam, m_rects[1].cam, normVec(m_cam2prj.pos));
             estimator.setWinSize(15);
 
             // matching

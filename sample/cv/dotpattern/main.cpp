@@ -116,7 +116,7 @@ void sample(cv::Mat &cvimg, const int key){
 
             Pose stereo;
             const double stereoRMS = calibStereo(stereo, cam, ptnPixsList, prj, ptnPrjsList, ptnObjsList);
-            stereo.trn *= dotMarker.getMrk().distance;
+            stereo.pos *= dotMarker.getMrk().distance;
 
             printf("camRMS %.3lf\n", camRMS);
             printf("prjRMS %.3lf\n", prjRMS);

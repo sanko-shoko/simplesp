@@ -179,12 +179,12 @@ private:
             const Mat vmat = glGetViewMat(m_cam.dsize, m_viewPos, m_viewScale);
 
             if (m_dataA.size() > 0) {
-                const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseA.trn));
+                const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseA.pos));
                 const string str = string("data A (points)");
                 ShowText(str.c_str(), ImVec2(float(pix.x + 100.0), float(pix.y - 120.0)), ImVec4(1.f, 1.f, 0.f, 1.f), 1.4f);
             }
             if(m_dataB.size() > 0){
-                const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseB.trn));
+                const Vec2 pix = vmat * mulCam(m_cam, prjVec(m_poseB.pos));
                 const string str = string("data B ") + ((m_dataB.dim == 1) ? "(points)" : "(depth map)");
 
                 ShowText(str.c_str(), ImVec2(float(pix.x - 220.0), float(pix.y + 120.0)), ImVec4(0.f, 1.f, 1.f, 1.f), 1.4f);

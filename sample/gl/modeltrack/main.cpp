@@ -100,8 +100,8 @@ private:
 
             if (m_start == true) {
                 m_pose *= getRotAngle(getVec3(+::sin(s), +::cos(s), +0.0), -0.02);
-                m_pose.trn.x = ::cos(s * 2.0) * m_radius * 0.4;
-                m_pose.trn.y = ::sin(s * 2.0) * m_radius * 0.4;
+                m_pose.pos.x = ::cos(s * 2.0) * m_radius * 0.4;
+                m_pose.pos.y = ::sin(s * 2.0) * m_radius * 0.4;
 
                 s += 0.01;
             }

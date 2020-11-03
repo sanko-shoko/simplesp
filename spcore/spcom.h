@@ -210,8 +210,8 @@ namespace sp{
         // rotation
         Rot rot;
 
-        // translation
-        Vec3 trn;
+        // position
+        Vec3 pos;
     };
 
 
@@ -585,7 +585,7 @@ namespace sp {
     SP_GENFUNC bool cmp(const Pose &pose0, const Pose &pose1, const double tr = 1.0e-6, const double tt = 1.0e-6) {
         bool ret = true;
         ret &= cmp(pose0.rot, pose1.rot, tr);
-        ret &= cmp(pose0.trn, pose1.trn, tt);
+        ret &= cmp(pose0.pos, pose1.pos, tt);
         return ret;
     }
 

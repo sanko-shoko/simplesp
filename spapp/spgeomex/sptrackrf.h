@@ -41,7 +41,7 @@ namespace sp{
     public:
 
         Vec3 getDirect(const Pose &pose) {
-            return unitVec((invRot(pose.rot) * pose.trn)) * -1.0;
+            return unitVec((invRot(pose.rot) * pose.pos)) * -1.0;
         }
 
         bool valid() {
@@ -125,7 +125,7 @@ namespace sp{
                         const Vec2 pix = mulCam(cam, npx);
 
                         double d = depth(round(pix.x), round(pix.y));
-                        d = (d > 0.0) ? d : (1.0 + 0.1 * randu()) * pose.trn.z;
+                        d = (d > 0.0) ? d : (1.0 + 0.1 * randu()) * pose.pos.z;
 
                         const Vec3 v = getVec3(npx.x, npx.y, 1.0) * d;
                         data[p] = dotVec(ref, invPose(pose) * v - node.pnts[p]);
@@ -246,7 +246,7 @@ namespace sp{
                     const Vec2 pix = mulCam(cam, npx);
 
                     SP_REAL d = depth(round(pix.x), round(pix.y));
-                    d = (d > 0.0) ? d : pose.trn.z + randu() * m_randTrn;
+                    d = (d > 0.0) ? d : pose.pos.z + randu() * m_randTrn;
 
                     const Vec3 vec = getVec3(npx.x, npx.y, 1.0) * d;
                     const Vec3 vec1 = invPose(tpose) * vec;

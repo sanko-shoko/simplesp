@@ -204,9 +204,9 @@ namespace sp{
             ftextn(fp, mode, &val[i].rot.qz, 1, "qz");
             ftextn(fp, mode, &val[i].rot.qw, 1, "qw");
 
-            ftextn(fp, mode, &val[i].trn.x, 1, "tx");
-            ftextn(fp, mode, &val[i].trn.y, 1, "ty");
-            ftextn(fp, mode, &val[i].trn.z, 1, "tz");
+            ftextn(fp, mode, &val[i].pos.x, 1, "tx");
+            ftextn(fp, mode, &val[i].pos.y, 1, "ty");
+            ftextn(fp, mode, &val[i].pos.z, 1, "tz");
         }
         return true;
     }

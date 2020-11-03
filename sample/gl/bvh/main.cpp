@@ -53,7 +53,10 @@ private:
         for (int i = 0; i < mats.size(); i++) {
             mats[i] = &mat;
         }
-        m_bvh.addModel(m_model, mats);
+        
+        Mem1<Mat> poses;
+        poses.push(eyeMat(4, 4));
+        m_bvh.addModel(m_model, mats, poses);
         m_bvh.build();
 
     }
@@ -88,7 +91,7 @@ private:
                     const Vec2 prj = invCam(m_cam, getVec2(u, v));
                     const Vec3 vec = unitVec(getVec3(prj.x, prj.y, 1.0));
                     VecPD3 ray;
-                    ray.pos = ipose.trn;
+                    ray.pos = ipose.pos;
                     ray.drc = irmat * (vec);
 
                     BVH::Hit hit;
@@ -98,7 +101,7 @@ private:
                 }
             }
             glLoadView2D(m_cam);
-            glTexDepth(depth, maxVal(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+            glTexDepth(depth, maxVal(m_pose.pos.z - 500.0, 10.0), m_pose.pos.z + 500.0);
         }
         else{
             glLoadView3D(m_cam);

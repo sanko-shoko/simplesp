@@ -180,7 +180,7 @@ namespace sp {
         struct Unit {
             Mem1<Mesh3> buff;
 
-            Mem1<Pose> poses;
+            Mem1<Mat> poses;
             Mem1<Node> nodes;
             Mem1<Index> idxs;
         };
@@ -208,7 +208,7 @@ namespace sp {
             m_units.clear();
         }
 
-        void addModel(const Mem1<Pose> &poses, const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
+        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats, const Mem1<Mat> &poses) {
             Unit &unit = *m_units.malloc();
 
             unit.poses = poses;
@@ -350,9 +350,9 @@ namespace sp {
             for (int i = 0; i < m_units.size(); i++) {
                 const Unit &unit = m_units[i];
                 for (int j = 0; j < unit.poses.size(); j++) {
-                    const Pose pose = unit.poses[j];
+                    const Mat pose = unit.poses[j];
 
-                    const VecPD3 bray = invPose(pose) * ray;
+                    const VecPD3 bray = invMat(pose) * ray;
 
                     int stack = 0;
                     const int QUE_MAX = 100;
@@ -396,7 +396,7 @@ namespace sp {
                         hit.mat = *unit.idxs[minid].pmat;
 
                         hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
-                        hit.vec.drc = pose.rot * getMeshNrm(*unit.idxs[minid].pmesh);
+                        hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(*unit.idxs[minid].pmesh));
                     }
                 }
             }
@@ -593,11 +593,11 @@ namespace sp {
 
                         VecPD3 &vec = m_raymap(u, v)[i];
                         if (m_cam.type == CamParam_Pers) {
-                            vec.pos = wpose.trn;
+                            vec.pos = wpose.pos;
                             vec.drc = wrot * unitVec(prjVec(npx, 1.0, true));
                         }
                         else {
-                            vec.pos = wpose.trn + wrot * getVec3(npx.x, npx.y, -1000.0 * 10);
+                            vec.pos = wpose.pos + wrot * getVec3(npx.x, npx.y, -1000.0 * 10);
                             vec.drc = wrot * getVec3(0.0, 0.0, 1.0);
                         }
                     }
@@ -645,8 +645,8 @@ namespace sp {
             m_plights = lights;
         }
 
-        void addModel(const Mem1<Pose> &poses, const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats) {
-            m_bvh.addModel(poses, meshes, pmats);
+        void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material*> &pmats, const Mem1<Mat> &poses) {
+            m_bvh.addModel(meshes, pmats, poses);
         }
 
         void build() {

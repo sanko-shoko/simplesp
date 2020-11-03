@@ -387,7 +387,7 @@ namespace sp{
     SP_GENFUNC Pose getPose(const Rot &rot, const Vec3 &trn){
         Pose dst;
         dst.rot = nrmRot(rot);
-        dst.trn = trn;
+        dst.pos = trn;
 
         return dst;
     }
@@ -404,12 +404,12 @@ namespace sp{
         Pose dst;
         if ((rows == 3 || rows == 4) && cols == 4) {
             dst.rot = getRot(mat, rows, cols);
-            dst.trn = getVec3(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
+            dst.pos = getVec3(mat[0 * cols + 3], mat[1 * cols + 3], mat[2 * cols + 3]);
         }
         if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
             Vec3 euler = getVec3(mat[0], mat[1], mat[2]);
             dst.rot = getRotEuler(euler);
-            dst.trn = getVec3(mat[3], mat[4], mat[5]);
+            dst.pos = getVec3(mat[3], mat[4], mat[5]);
         }
         return dst;
     }
@@ -419,18 +419,18 @@ namespace sp{
             eyeMat(dst, rows, cols);
             getMat(dst, rows, cols, pose.rot);
 
-            dst[0 * cols + 3] = pose.trn.x;
-            dst[1 * cols + 3] = pose.trn.y;
-            dst[2 * cols + 3] = pose.trn.z;
+            dst[0 * cols + 3] = pose.pos.x;
+            dst[1 * cols + 3] = pose.pos.y;
+            dst[2 * cols + 3] = pose.pos.z;
         }
         if ((rows == 6 && cols == 1) || (rows == 1 && cols == 6)) {
             const Vec3 euler = getEuler(pose.rot);
             dst[0] = euler.x;
             dst[1] = euler.y;
             dst[2] = euler.z;
-            dst[3] = pose.trn.x;
-            dst[4] = pose.trn.y;
-            dst[5] = pose.trn.z;
+            dst[3] = pose.pos.x;
+            dst[4] = pose.pos.y;
+            dst[5] = pose.pos.z;
         }
     }
 
@@ -441,7 +441,7 @@ namespace sp{
     SP_GENFUNC Pose invPose(const Pose &pose){
         Pose dst;
         dst.rot = invRot(pose.rot);
-        dst.trn = mulVec(mulRot(dst.rot, pose.trn), -1.0);
+        dst.pos = mulVec(mulRot(dst.rot, pose.pos), -1.0);
 
         return dst;
     }
@@ -449,7 +449,7 @@ namespace sp{
     SP_GENFUNC Pose mulPose(const Pose &pose0, const Pose &pose1){
         Pose dst;
         dst.rot = mulRot(pose0.rot, pose1.rot);
-        dst.trn = addVec(mulRot(pose0.rot, pose1.trn), pose0.trn);
+        dst.pos = addVec(mulRot(pose0.rot, pose1.pos), pose0.pos);
 
         return dst;
     }
@@ -537,7 +537,7 @@ namespace sp{
     SP_GENFUNC Pose updatePose(const Pose &pose, const SP_REAL *delta){
         Pose dst;
         dst.rot = updateRot(pose.rot, &delta[0]);
-        dst.trn = pose.trn + getVec3(delta[3], delta[4], delta[5]);
+        dst.pos = pose.pos + getVec3(delta[3], delta[4], delta[5]);
         return dst;
     }
 

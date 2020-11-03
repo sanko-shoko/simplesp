@@ -80,9 +80,9 @@ private:
         m_pt.setCam(m_cam, m_pose);
 
         //m_pt.addModel(m_model, mats0);
-        Mem1<Pose> poses;
-        poses.push(getPose(getVec3(100, 0, 0)));
-        m_pt.addModel(poses, m_model, mats0);
+        Mem1<Mat> poses;
+        poses.push(getMat(getPose(getVec3(100, 0, 0)), 4, 4));
+        m_pt.addModel(m_model, mats0, poses);
         m_pt.build();
     }
 

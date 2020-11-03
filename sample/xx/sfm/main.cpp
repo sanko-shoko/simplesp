@@ -175,7 +175,7 @@ private:
                     glLoadMatrix(m_pose * invPose(view->pose));
 
                     glBegin(GL_LINES);
-                    glCam(view->cam, 0.03 * m_pose.trn.z);
+                    glCam(view->cam, 0.03 * m_pose.pos.z);
                     glEnd();
                 }
             }
@@ -186,7 +186,7 @@ private:
 
                 glLineWidth(2.f);
                 glBegin(GL_LINES);
-                glAxis(0.05 * m_pose.trn.z);
+                glAxis(0.05 * m_pose.pos.z);
                 glEnd();
             }
         }
@@ -201,8 +201,8 @@ private:
     virtual void mouseScroll(double x, double y) {
         Pose delta = zeroPose();
         controlPose(delta, m_mouse, m_wcam, m_viewScale, m_axis);
-        m_pose.trn.z += delta.trn.z;
-        m_axis.trn.z -= delta.trn.z;
+        m_pose.pos.z += delta.pos.z;
+        m_axis.pos.z -= delta.pos.z;
     }
 
 };
