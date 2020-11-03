@@ -169,7 +169,6 @@ namespace sp {
         };
 
         struct Index {
-            Vec3 cent;
             const Data *pdata;
         };
 
@@ -181,11 +180,16 @@ namespace sp {
             Material mat;
         };
 
+        struct Layout {
+            Mat pose;
+            Mat invp;
+        };
+
         struct Unit {
             Mem1<Data> data;
 
-            Mem1<Mat> poses;
-            Mem1<Mat> iposes;
+            Mem1<Layout> layout;
+
             Mem1<Node> nodes;
             Mem1<Index> idxs;
         };
@@ -215,39 +219,46 @@ namespace sp {
         }
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material> &mats, const Mem1<Mat> &poses) {
+            SP_ASSERT(meshes.size() == mats.size());
+
             Unit &unit = *m_units.malloc();
 
-            unit.poses.clear();
-            unit.iposes.clear();
+            unit.layout.resize(poses.size());
             for (int i = 0; i < poses.size(); i++) {
-                unit.poses.push(poses[i]);
-                unit.iposes.push(invMat(poses[i]));
+                unit.layout[i].pose = poses[i];
+                unit.layout[i].invp = invMat(poses[i]);
             }
 
-            const int size = meshes.size();
 
-            unit.data.resize(size);
-            unit.idxs.resize(size);
-            for (int i = 0; i < size; i++) {
+            unit.data.resize(meshes.size());
+            unit.idxs.resize(meshes.size());
+            for (int i = 0; i < meshes.size(); i++) {
                 unit.data[i].mesh = meshes[i];
                 unit.data[i].mat = mats[i];
 
                 unit.idxs[i].pdata = &unit.data[i];
-                unit.idxs[i].cent = getMeshCent(unit.data[i].mesh);
             }
         }
 
         void build() {
+            struct IndexEx : public Index {
+                Vec3 cent;
+            };
 
             typedef int(*CMP)(const void*, const void*);
             CMP cmp[3];
-            cmp[0] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.x < ((Index*)i2)->cent.x) ? +1 : -1; };
-            cmp[1] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.y < ((Index*)i2)->cent.y) ? +1 : -1; };
-            cmp[2] = [](const void* i1, const void* i2) -> int { return (((Index*)i1)->cent.z < ((Index*)i2)->cent.z) ? +1 : -1; };
+            cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
+            cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
+            cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
 
             for (int i = 0; i < m_units.size(); i++) {
                 Unit &unit = m_units[i];
-                Mem1<Index> &idxs = unit.idxs;
+                Mem1<IndexEx> idxs(unit.idxs.size());
+
+                for (int i = 0; i < idxs.size(); i++) {
+                    idxs[i].pdata = unit.idxs[i].pdata;
+                    idxs[i].cent = getMeshCent(idxs[i].pdata->mesh);
+                }
 
                 unit.nodes.clear();
                 unit.nodes.reserve(2 * idxs.size() - 1);
@@ -274,7 +285,7 @@ namespace sp {
                 };
 
                 Mem1<SP_REAL> buff(idxs.size());
-                auto sorti = [&](Node &n, Mem1<Index> &idxs) -> int {
+                auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int {
                     int di = 0;
                     int da = 0;
 
@@ -356,6 +367,9 @@ namespace sp {
                     }
                 }
 
+                for (int i = 0; i < idxs.size(); i++) {
+                    unit.idxs[i] = idxs[i];
+                }
             }
 
         }
@@ -371,11 +385,11 @@ namespace sp {
 
             for (int i = 0; i < m_units.size(); i++) {
                 const Unit &unit = m_units[i];
-                for (int j = 0; j < unit.poses.size(); j++) {
-                    const Mat &pose = unit.poses[j];
-                    const Mat &ipose = unit.iposes[j];
+                for (int j = 0; j < unit.layout.size(); j++) {
+                    const Mat &pose = unit.layout[j].pose;
+                    const Mat &invp = unit.layout[j].invp;
 
-                    const VecPD3 bray = ipose * ray;
+                    const VecPD3 bray = invp * ray;
 
                     int stack = 0;
                     que[stack++] = &unit.nodes[0];
@@ -398,15 +412,13 @@ namespace sp {
                         {
                             const int id = n->base;
                             SP_REAL result[3] = { 0 };
-                            if (traceMesh(result, unit.idxs[id].pdata->mesh, bray, minv, lmaxv + SP_SMALL) == true) {
+                            if (traceMesh(result, unit.idxs[id].pdata->mesh, bray, minv, lmaxv) == true) {
 
-                                if (result[0] < lmaxv - SP_SMALL) {
-                                    const Vec3 nrm = getMeshNrm(unit.idxs[id].pdata->mesh);
-                                    const bool f = (dotVec(nrm, bray.drc) < 0.0);
+                                const Vec3 nrm = getMeshNrm(unit.idxs[id].pdata->mesh);
+                                const bool f = (dotVec(nrm, bray.drc) < 0.0);
 
-                                    lmaxv = result[0];
-                                    minid = id;
-                                }
+                                lmaxv = result[0];
+                                minid = id;
                             }
                         }
                     }
