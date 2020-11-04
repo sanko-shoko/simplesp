@@ -220,10 +220,13 @@ namespace sp {
         void clear() {
             m_layouts.clear();
             m_units.clear();
+            m_nodes.clear();
+            m_idxs.clear();
         }
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material> &mats, const Mem1<Mat> &poses) {
             SP_ASSERT(meshes.size() == mats.size());
+            if (meshes.size() == 0) return;
 
             for (int i = 0; i < poses.size(); i++) {
                 Layout &layout = *m_layouts.extend();
@@ -232,103 +235,104 @@ namespace sp {
                 layout.invp = invMat(poses[i]);
             }
 
-
             Unit &unit = *m_units.malloc();
-            
             unit.data.resize(meshes.size());
             unit.idxs.resize(meshes.size());
             for (int i = 0; i < meshes.size(); i++) {
                 unit.data[i].mesh = meshes[i];
                 unit.data[i].mat = mats[i];
-                
                 unit.idxs[i].id = i;
             }
         }
 
         void build() {
+            if (m_layouts.size() == 0) return;
+
+            struct IndexEx : public Index {
+                Box3 box;
+                Vec3 cent;
+            };
+
+            typedef int(*CMP)(const void*, const void*);
+            CMP cmp[3];
+            cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
+            cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
+            cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
+      
+            auto initn = [&](Mem1<Node> &nodes, Mem1<IndexEx> &idxs, const int level, const int base, const int size) -> Node* {
+                Node *n = NULL;
+#if SP_USE_OMP
+#pragma omp critical
+#endif
+                {
+                    n = nodes.extend();
+                }
+                n->level = level;
+                n->base = base;
+                n->size = size;
+                n->n0 = NULL;
+                n->n1 = NULL;
+
+                n->box = nullBox3();
+                for (int i = base; i < base + size; i++) {
+                    n->box = orBox(n->box, idxs[i].box);
+                }
+                return n;
+            };
+            auto sorti = [&](Node &n, Mem1<IndexEx> &idxs, Mem1<SP_REAL> &buff) -> int {
+                int di = 0;
+                int da = 0;
+
+                double mina = SP_INFINITY;
+                for (int a = 0; a < 3; a++) {
+                    sort(&idxs[n.base], n.size, cmp[a]);
+                    Box3 bl = nullBox3();
+                    Box3 br = nullBox3();
+
+                    for (int i = 1; i < n.size; i++) {
+                        const int l = i;
+                        bl = orBox(bl, idxs[n.base + l - 1].box);
+                        buff[n.base + l] = 0;
+                        buff[n.base + l] += getBoxArea(bl) * i;
+                    }
+                    for (int i = 1; i < n.size; i++) {
+                        const int r = n.size - i;
+                        br = orBox(br, idxs[n.base + r].box);
+                        buff[n.base + r] += getBoxArea(br) * i;
+                    }
+
+                    for (int i = 1; i < n.size; i++) {
+                        //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                        if (buff[n.base + i] < mina) {
+                            mina = buff[n.base + i];
+                            di = i;
+                            da = a;
+                        }
+                    }
+                }
+                if (da != 2) {
+                    sort(&idxs[n.base], n.size, cmp[da]);
+                }
+                return di;
+            };
+            
             {
-                struct IndexEx : public Index {
-                    Vec3 cent;
-                };
-
-                typedef int(*CMP)(const void*, const void*);
-                CMP cmp[3];
-                cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
-                cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
-                cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
-
                 for (int i = 0; i < m_units.size(); i++) {
                     Unit &unit = m_units[i];
                     Mem1<IndexEx> idxs(unit.idxs.size());
 
                     for (int i = 0; i < idxs.size(); i++) {
                         idxs[i].id = unit.idxs[i].id;
+                        idxs[i].box = getBox3(unit.data[idxs[i].id].mesh);
                         idxs[i].cent = getMeshCent(unit.data[idxs[i].id].mesh);
                     }
 
                     unit.nodes.clear();
                     unit.nodes.reserve(2 * idxs.size() - 1);
 
-                    auto initn = [&](const int level, const int base, const int size) -> Node* {
-                        Node *n = NULL;
-#if SP_USE_OMP
-#pragma omp critical
-#endif
-                        {
-                            n = unit.nodes.extend();
-                        }
-                        n->level = level;
-                        n->base = base;
-                        n->size = size;
-                        n->n0 = NULL;
-                        n->n1 = NULL;
-
-                        n->box = nullBox3();
-                        for (int i = base; i < base + size; i++) {
-                            n->box = orBox(n->box, unit.data[idxs[i].id].mesh);
-                        }
-                        return n;
-                    };
-
                     Mem1<SP_REAL> buff(idxs.size());
-                    auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int {
-                        int di = 0;
-                        int da = 0;
-
-                        double mina = SP_INFINITY;
-                        for (int a = 0; a < 3; a++) {
-                            sort(&idxs[n.base], n.size, cmp[a]);
-                            Box3 bl = nullBox3();
-                            Box3 br = nullBox3();
-
-                            for (int i = 1; i < n.size; i++) {
-                                const int l = i;
-                                bl = orBox(bl, unit.data[idxs[n.base + l - 1].id].mesh);
-                                buff[n.base + l] = 0;
-                                buff[n.base + l] += getBoxArea(bl) * i;
-                            }
-                            for (int i = 1; i < n.size; i++) {
-                                const int r = n.size - i;
-                                br = orBox(br, unit.data[idxs[n.base + r].id].mesh);
-                                buff[n.base + r] += getBoxArea(br) * i;
-                            }
-
-                            for (int i = 1; i < n.size; i++) {
-                                //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
-                                if (buff[n.base + i] < mina) {
-                                    mina = buff[n.base + i];
-                                    di = i;
-                                    da = a;
-                                }
-                            }
-                        }
-                        if (da != 2) {
-                            sort(&idxs[n.base], n.size, cmp[da]);
-                        }
-                        return di;
-                    };
-
-                    initn(0, 0, idxs.size());
+                    
+                    initn(unit.nodes, idxs, 0, 0, idxs.size());
 
                     Mem1<Mem1<Node*> > tnodes;
                     if (idxs.size() > 1000) {
@@ -340,9 +344,9 @@ namespace sp {
                             if (n.size == 1) continue;
 
                             if (n.level < level) {
-                                const int di = sorti(n, idxs);
-                                n.n0 = initn(n.level + 1, n.base, di);
-                                n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                                const int di = sorti(n, idxs, buff);
+                                n.n0 = initn(unit.nodes, idxs, n.level + 1, n.base, di);
+                                n.n1 = initn(unit.nodes, idxs, n.level + 1, n.base + di, n.size - di);
                             }
                             else {
                                 Mem1<Node*> &nodes = *tnodes.extend();
@@ -364,10 +368,10 @@ namespace sp {
                             Node& n = *tnodes[i][ni];
                             if (n.size == 1) continue;
 
-                            const int di = sorti(n, idxs);
+                            const int di = sorti(n, idxs, buff);
 
-                            n.n0 = initn(n.level + 1, n.base, di);
-                            n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                            n.n0 = initn(unit.nodes, idxs, n.level + 1, n.base, di);
+                            n.n1 = initn(unit.nodes, idxs, n.level + 1, n.base + di, n.size - di);
                             tnodes[i].push(n.n0);
                             tnodes[i].push(n.n1);
                         }
@@ -379,17 +383,6 @@ namespace sp {
                 }
             }
             {
-                struct IndexEx : Index {
-                    Box3 box;
-                    Vec3 cent;
-                };
-
-                typedef int(*CMP)(const void*, const void*);
-                CMP cmp[3];
-                cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
-                cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
-                cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
-
 
                 Mem1<IndexEx> idxs(m_layouts.size());
                 m_idxs.resize(m_layouts.size());
@@ -411,84 +404,25 @@ namespace sp {
                 m_nodes.clear();
                 m_nodes.reserve(2 * idxs.size() - 1);
 
-                auto initn = [&](const int level, const int base, const int size) -> Node* {
-                    Node *n = NULL;
-#if SP_USE_OMP
-#pragma omp critical
-#endif
-                    {
-                        n = m_nodes.extend();
-                    }
-                    n->level = level;
-                    n->base = base;
-                    n->size = size;
-                    n->n0 = NULL;
-                    n->n1 = NULL;
-
-                    n->box = nullBox3();
-                    for (int i = base; i < base + size; i++) {
-                        n->box = orBox(n->box, idxs[i].box);
-                    }
-                    return n;
-                };
-
                 Mem1<SP_REAL> buff(idxs.size());
-                auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int {
-                    int di = 0;
-                    int da = 0;
+                
+                initn(m_nodes, idxs, 0, 0, idxs.size());
 
-                    double mina = SP_INFINITY;
-                    for (int a = 0; a < 3; a++) {
-                        sort(&idxs[n.base], n.size, cmp[a]);
-                        Box3 bl = nullBox3();
-                        Box3 br = nullBox3();
-
-                        for (int i = 1; i < n.size; i++) {
-                            const int l = i;
-                            bl = orBox(bl, idxs[n.base + l - 1].box);
-                            buff[n.base + l] = 0;
-                            buff[n.base + l] += getBoxArea(bl) * i;
-                        }
-                        for (int i = 1; i < n.size; i++) {
-                            const int r = n.size - i;
-                            br = orBox(br, idxs[n.base + r].box);
-                            buff[n.base + r] += getBoxArea(br) * i;
-                        }
-
-                        for (int i = 1; i < n.size; i++) {
-                            //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
-                            if (buff[n.base + i] < mina) {
-                                mina = buff[n.base + i];
-                                di = i;
-                                da = a;
-                            }
-                        }
-                    }
-                    if (da != 2) {
-                        sort(&idxs[n.base], n.size, cmp[da]);
-                    }
-                    return di;
-                };
-                initn(0, 0, idxs.size());
-
-                Mem1<Mem1<Node*> > tnodes;
+                Mem1<Node*> tnodes;
                 {
-                    Mem1<Node*> &nodes = *tnodes.extend();
-                    nodes.push(&m_nodes[0]);
+                    tnodes.push(&m_nodes[0]);
                 }
 
-                for (int i = 0; i < tnodes.size(); i++) {
-                    for (int ni = 0; ni < tnodes[i].size(); ni++) {
-                        Node& n = *tnodes[i][ni];
-                        if (n.size == 1) continue;
+                for (int ni = 0; ni < tnodes.size(); ni++) {
+                    Node& n = *tnodes[ni];
+                    if (n.size == 1) continue;
 
-                        const int di = sorti(n, idxs);
+                    const int di = sorti(n, idxs, buff);
 
-                        n.n0 = initn(n.level + 1, n.base, di);
-                        n.n1 = initn(n.level + 1, n.base + di, n.size - di);
-                        tnodes[i].push(n.n0);
-                        tnodes[i].push(n.n1);
-                    }
+                    n.n0 = initn(m_nodes, idxs, n.level + 1, n.base, di);
+                    n.n1 = initn(m_nodes, idxs, n.level + 1, n.base + di, n.size - di);
+                    tnodes.push(n.n0);
+                    tnodes.push(n.n1);
                 }
 
                 for (int i = 0; i < idxs.size(); i++) {
@@ -506,7 +440,7 @@ namespace sp {
             const Node* queB[QUE_MAX];
 
             double lmaxv = maxv;
-            {
+            if (m_nodes.size() > 0) {
                 int stack = 0;
                 queA[stack++] = &m_nodes[0];
 
