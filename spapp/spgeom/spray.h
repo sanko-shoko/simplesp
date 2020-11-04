@@ -169,7 +169,7 @@ namespace sp {
         };
 
         struct Index {
-            const Data *pdata;
+            int id;
         };
 
         struct Hit {
@@ -181,6 +181,7 @@ namespace sp {
         };
 
         struct Layout {
+            int uid;
             Mat pose;
             Mat invp;
         };
@@ -188,14 +189,16 @@ namespace sp {
         struct Unit {
             Mem1<Data> data;
 
-            Mem1<Layout> layout;
 
             Mem1<Node> nodes;
             Mem1<Index> idxs;
         };
     private:
 
+        Mem1<Layout> m_layouts;
         MemP<Unit> m_units;
+        Mem1<Node> m_nodes;
+        Mem1<Index> m_idxs;
 
     public:
         BVH() {
@@ -215,53 +218,198 @@ namespace sp {
         }
 
         void clear() {
+            m_layouts.clear();
             m_units.clear();
         }
 
         void addModel(const Mem1<Mesh3> &meshes, const Mem1<Material> &mats, const Mem1<Mat> &poses) {
             SP_ASSERT(meshes.size() == mats.size());
 
-            Unit &unit = *m_units.malloc();
-
-            unit.layout.resize(poses.size());
             for (int i = 0; i < poses.size(); i++) {
-                unit.layout[i].pose = poses[i];
-                unit.layout[i].invp = invMat(poses[i]);
+                Layout &layout = *m_layouts.extend();
+                layout.uid = m_units.size();
+                layout.pose = poses[i];
+                layout.invp = invMat(poses[i]);
             }
 
 
+            Unit &unit = *m_units.malloc();
+            
             unit.data.resize(meshes.size());
             unit.idxs.resize(meshes.size());
             for (int i = 0; i < meshes.size(); i++) {
                 unit.data[i].mesh = meshes[i];
                 unit.data[i].mat = mats[i];
-
-                unit.idxs[i].pdata = &unit.data[i];
+                
+                unit.idxs[i].id = i;
             }
         }
 
         void build() {
-            struct IndexEx : public Index {
-                Vec3 cent;
-            };
+            {
+                struct IndexEx : public Index {
+                    Vec3 cent;
+                };
 
-            typedef int(*CMP)(const void*, const void*);
-            CMP cmp[3];
-            cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
-            cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
-            cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
+                typedef int(*CMP)(const void*, const void*);
+                CMP cmp[3];
+                cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
+                cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
+                cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
 
-            for (int i = 0; i < m_units.size(); i++) {
-                Unit &unit = m_units[i];
-                Mem1<IndexEx> idxs(unit.idxs.size());
+                for (int i = 0; i < m_units.size(); i++) {
+                    Unit &unit = m_units[i];
+                    Mem1<IndexEx> idxs(unit.idxs.size());
+
+                    for (int i = 0; i < idxs.size(); i++) {
+                        idxs[i].id = unit.idxs[i].id;
+                        idxs[i].cent = getMeshCent(unit.data[idxs[i].id].mesh);
+                    }
+
+                    unit.nodes.clear();
+                    unit.nodes.reserve(2 * idxs.size() - 1);
+
+                    auto initn = [&](const int level, const int base, const int size) -> Node* {
+                        Node *n = NULL;
+#if SP_USE_OMP
+#pragma omp critical
+#endif
+                        {
+                            n = unit.nodes.extend();
+                        }
+                        n->level = level;
+                        n->base = base;
+                        n->size = size;
+                        n->n0 = NULL;
+                        n->n1 = NULL;
+
+                        n->box = nullBox3();
+                        for (int i = base; i < base + size; i++) {
+                            n->box = orBox(n->box, unit.data[idxs[i].id].mesh);
+                        }
+                        return n;
+                    };
+
+                    Mem1<SP_REAL> buff(idxs.size());
+                    auto sorti = [&](Node &n, Mem1<IndexEx> &idxs) -> int {
+                        int di = 0;
+                        int da = 0;
+
+                        double mina = SP_INFINITY;
+                        for (int a = 0; a < 3; a++) {
+                            sort(&idxs[n.base], n.size, cmp[a]);
+                            Box3 bl = nullBox3();
+                            Box3 br = nullBox3();
+
+                            for (int i = 1; i < n.size; i++) {
+                                const int l = i;
+                                bl = orBox(bl, unit.data[idxs[n.base + l - 1].id].mesh);
+                                buff[n.base + l] = 0;
+                                buff[n.base + l] += getBoxArea(bl) * i;
+                            }
+                            for (int i = 1; i < n.size; i++) {
+                                const int r = n.size - i;
+                                br = orBox(br, unit.data[idxs[n.base + r].id].mesh);
+                                buff[n.base + r] += getBoxArea(br) * i;
+                            }
+
+                            for (int i = 1; i < n.size; i++) {
+                                //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                                if (buff[n.base + i] < mina) {
+                                    mina = buff[n.base + i];
+                                    di = i;
+                                    da = a;
+                                }
+                            }
+                        }
+                        if (da != 2) {
+                            sort(&idxs[n.base], n.size, cmp[da]);
+                        }
+                        return di;
+                    };
+
+                    initn(0, 0, idxs.size());
+
+                    Mem1<Mem1<Node*> > tnodes;
+                    if (idxs.size() > 1000) {
+                        const int level = 5;
+
+                        tnodes.reserve(256);
+                        for (int ni = 0; ni < unit.nodes.size(); ni++) {
+                            Node& n = unit.nodes[ni];
+                            if (n.size == 1) continue;
+
+                            if (n.level < level) {
+                                const int di = sorti(n, idxs);
+                                n.n0 = initn(n.level + 1, n.base, di);
+                                n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                            }
+                            else {
+                                Mem1<Node*> &nodes = *tnodes.extend();
+                                nodes.reserve(2 * n.size - 1);
+                                nodes.push(&n);
+                            }
+                        }
+                    }
+                    else {
+                        Mem1<Node*> &nodes = *tnodes.extend();
+                        nodes.push(&unit.nodes[0]);
+                    }
+
+#if SP_USE_OMP
+#pragma omp parallel for
+#endif
+                    for (int i = 0; i < tnodes.size(); i++) {
+                        for (int ni = 0; ni < tnodes[i].size(); ni++) {
+                            Node& n = *tnodes[i][ni];
+                            if (n.size == 1) continue;
+
+                            const int di = sorti(n, idxs);
+
+                            n.n0 = initn(n.level + 1, n.base, di);
+                            n.n1 = initn(n.level + 1, n.base + di, n.size - di);
+                            tnodes[i].push(n.n0);
+                            tnodes[i].push(n.n1);
+                        }
+                    }
+
+                    for (int i = 0; i < idxs.size(); i++) {
+                        unit.idxs[i].id = idxs[i].id;
+                    }
+                }
+            }
+            {
+                struct IndexEx : Index {
+                    Box3 box;
+                    Vec3 cent;
+                };
+
+                typedef int(*CMP)(const void*, const void*);
+                CMP cmp[3];
+                cmp[0] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.x < ((IndexEx*)i2)->cent.x) ? +1 : -1; };
+                cmp[1] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.y < ((IndexEx*)i2)->cent.y) ? +1 : -1; };
+                cmp[2] = [](const void* i1, const void* i2) -> int { return (((IndexEx*)i1)->cent.z < ((IndexEx*)i2)->cent.z) ? +1 : -1; };
+
+
+                Mem1<IndexEx> idxs(m_layouts.size());
+                m_idxs.resize(m_layouts.size());
 
                 for (int i = 0; i < idxs.size(); i++) {
-                    idxs[i].pdata = unit.idxs[i].pdata;
-                    idxs[i].cent = getMeshCent(idxs[i].pdata->mesh);
+                    Unit &unit = m_units[m_layouts[i].uid];
+                    idxs[i].id = i;
+                    idxs[i].box = nullBox3();
+                    for (int j = 0; j < 8; j++) {
+                        const int a = (j & 0x01) ? 1 : 0;
+                        const int b = (j & 0x02) ? 1 : 0;
+                        const int c = (j & 0x04) ? 1 : 0;
+                        const Vec3 v = getVec3(unit.nodes[0].box.pos[a].x, unit.nodes[0].box.pos[b].y, unit.nodes[0].box.pos[c].z);
+                        idxs[i].box = orBox(idxs[i].box, m_layouts[i].pose * v);
+                    }
+                    idxs[i].cent = getBoxCent(idxs[i].box);
                 }
 
-                unit.nodes.clear();
-                unit.nodes.reserve(2 * idxs.size() - 1);
+                m_nodes.clear();
+                m_nodes.reserve(2 * idxs.size() - 1);
 
                 auto initn = [&](const int level, const int base, const int size) -> Node* {
                     Node *n = NULL;
@@ -269,7 +417,7 @@ namespace sp {
 #pragma omp critical
 #endif
                     {
-                        n = unit.nodes.extend();
+                        n = m_nodes.extend();
                     }
                     n->level = level;
                     n->base = base;
@@ -279,7 +427,7 @@ namespace sp {
 
                     n->box = nullBox3();
                     for (int i = base; i < base + size; i++) {
-                        n->box = orBox(n->box, idxs[i].pdata->mesh);
+                        n->box = orBox(n->box, idxs[i].box);
                     }
                     return n;
                 };
@@ -297,13 +445,13 @@ namespace sp {
 
                         for (int i = 1; i < n.size; i++) {
                             const int l = i;
-                            bl = orBox(bl, idxs[n.base + l - 1].pdata->mesh);
+                            bl = orBox(bl, idxs[n.base + l - 1].box);
                             buff[n.base + l] = 0;
                             buff[n.base + l] += getBoxArea(bl) * i;
                         }
                         for (int i = 1; i < n.size; i++) {
                             const int r = n.size - i;
-                            br = orBox(br, idxs[n.base + r].pdata->mesh);
+                            br = orBox(br, idxs[n.base + r].box);
                             buff[n.base + r] += getBoxArea(br) * i;
                         }
 
@@ -321,38 +469,14 @@ namespace sp {
                     }
                     return di;
                 };
-
                 initn(0, 0, idxs.size());
 
                 Mem1<Mem1<Node*> > tnodes;
-                if (idxs.size() > 1000) {
-                    const int level = 5;
-
-                    tnodes.reserve(256);
-                    for (int ni = 0; ni < unit.nodes.size(); ni++) {
-                        Node& n = unit.nodes[ni];
-                        if (n.size == 1) continue;
-
-                        if (n.level < level) {
-                            const int di = sorti(n, idxs);
-                            n.n0 = initn(n.level + 1, n.base, di);
-                            n.n1 = initn(n.level + 1, n.base + di, n.size - di);
-                        }
-                        else {
-                            Mem1<Node*> &nodes = *tnodes.extend();
-                            nodes.reserve(2 * n.size - 1);
-                            nodes.push(&n);
-                        }
-                    }
-                }
-                else {
+                {
                     Mem1<Node*> &nodes = *tnodes.extend();
-                    nodes.push(&unit.nodes[0]);
+                    nodes.push(&m_nodes[0]);
                 }
 
-#if SP_USE_OMP
-#pragma omp parallel for
-#endif
                 for (int i = 0; i < tnodes.size(); i++) {
                     for (int ni = 0; ni < tnodes[i].size(); ni++) {
                         Node& n = *tnodes[i][ni];
@@ -368,10 +492,9 @@ namespace sp {
                 }
 
                 for (int i = 0; i < idxs.size(); i++) {
-                    unit.idxs[i] = idxs[i];
+                    m_idxs[i].id = idxs[i].id;
                 }
             }
-
         }
 
         bool trace(Hit &hit, const VecPD3 &ray, const double minv, const double maxv) const {
@@ -379,56 +502,73 @@ namespace sp {
             hit.calc = true;
 
             const int QUE_MAX = 100;
-            const Node* que[QUE_MAX];
+            const Node* queA[QUE_MAX];
+            const Node* queB[QUE_MAX];
 
             double lmaxv = maxv;
+            {
+                int stack = 0;
+                queA[stack++] = &m_nodes[0];
 
-            for (int i = 0; i < m_units.size(); i++) {
-                const Unit &unit = m_units[i];
-                for (int j = 0; j < unit.layout.size(); j++) {
-                    const Mat &pose = unit.layout[j].pose;
-                    const Mat &invp = unit.layout[j].invp;
-
-                    const VecPD3 bray = invp * ray;
-
-                    int stack = 0;
-                    que[stack++] = &unit.nodes[0];
-
-                    int minid = -1;
-                    int objid = -1;
-
-                    const SP_REAL delta = 0.001;
-
-                    while (stack > 0) {
-                        const Node *n = que[--stack];
-                        if (checkHit(n->box, bray, minv, lmaxv) == false) {
-                            continue;
-                        }
-                        if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
-                            que[stack++] = n->n0;
-                            que[stack++] = n->n1;
-                            continue;
-                        }
-                        {
-                            const int id = n->base;
-                            SP_REAL result[3] = { 0 };
-                            if (traceMesh(result, unit.idxs[id].pdata->mesh, bray, minv, lmaxv) == true) {
-
-                                const Vec3 nrm = getMeshNrm(unit.idxs[id].pdata->mesh);
-                                const bool f = (dotVec(nrm, bray.drc) < 0.0);
-
-                                lmaxv = result[0];
-                                minid = id;
-                            }
-                        }
+                while (stack > 0) {
+                    const Node *n = queA[--stack];
+                    if (checkHit(n->box, ray, minv, lmaxv) == false) {
+                        continue;
+                    }
+                    if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
+                        queA[stack++] = n->n0;
+                        queA[stack++] = n->n1;
+                        continue;
                     }
 
-                    if (minid >= 0) {
-                        hit.find = true;
-                        hit.mat = unit.idxs[minid].pdata->mat;
+                    const int i = m_idxs[n->base].id;
+                    {
+                        const Mat &pose = m_layouts[i].pose;
+                        const Mat &invp = m_layouts[i].invp;
 
-                        hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
-                        hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(unit.idxs[minid].pdata->mesh));
+                        const Unit &unit = m_units[m_layouts[i].uid];
+
+                        const VecPD3 bray = invp * ray;
+
+                        int stack = 0;
+                        queB[stack++] = &unit.nodes[0];
+
+                        int minid = -1;
+                        int objid = -1;
+
+                        const SP_REAL delta = 0.001;
+
+                        while (stack > 0) {
+                            const Node *n = queB[--stack];
+                            if (checkHit(n->box, bray, minv, lmaxv) == false) {
+                                continue;
+                            }
+                            if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
+                                queB[stack++] = n->n0;
+                                queB[stack++] = n->n1;
+                                continue;
+                            }
+                            {
+                                const int id = n->base;
+                                SP_REAL result[3] = { 0 };
+                                if (traceMesh(result, unit.data[unit.idxs[id].id].mesh, bray, minv, lmaxv) == true) {
+
+                                    const Vec3 nrm = getMeshNrm(unit.data[unit.idxs[id].id].mesh);
+                                    const bool f = (dotVec(nrm, bray.drc) < 0.0);
+
+                                    lmaxv = result[0];
+                                    minid = id;
+                                }
+                            }
+                        }
+
+                        if (minid >= 0) {
+                            hit.find = true;
+                            hit.mat = unit.data[unit.idxs[minid].id].mat;
+
+                            hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
+                            hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(unit.data[unit.idxs[minid].id].mesh));
+                        }
                     }
                 }
             }

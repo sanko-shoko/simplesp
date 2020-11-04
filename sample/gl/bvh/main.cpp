@@ -48,10 +48,10 @@ private:
 
         static Material mat;
         mat.col = getCol4f(0.9, 0.2, 0.2, 1.0);
-        static Mem1<Material*> mats;
+        static Mem1<Material> mats;
         mats.resize(m_model.size());
         for (int i = 0; i < mats.size(); i++) {
-            mats[i] = &mat;
+            mats[i] = mat;
         }
         
         Mem1<Mat> poses;
