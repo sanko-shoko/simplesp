@@ -7,7 +7,7 @@
 
 #include "spcore/spcom.h"
 #include "spcore/spgen/spmath.h"
-#include "spcore/spgen/spstd.h"
+#include "spcore/spgen/sptype.h"
 
 #include "spcore/spcpu/spmem.h"
 
@@ -527,16 +527,6 @@ namespace sp{
     // vector util
     //--------------------------------------------------------------------------------
     
-    template<typename TYPE>
-    SP_CPUFUNC Vec2 getVec2(const MemA<TYPE, 2> &vec) {
-        return getVec2(vec[0], vec[1]);
-    }
-
-    template<typename TYPE>
-    SP_CPUFUNC Vec3 getVec3(const MemA<TYPE, 3> &vec) {
-        return getVec3(vec[0], vec[1], vec[2]);
-    }
-
     SP_CPUFUNC Mem1<Vec3> getVec3(const Mem1<Vec2> &vec, const double z) {
         Mem<Vec3> dst(vec.dim, vec.dsize);
         for (int i = 0; i < dst.size(); i++) {

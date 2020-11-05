@@ -11,7 +11,7 @@
 
 // gen
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/spstd.h"
+#include "spcore/spgen/sptype.h"
 #include "spcore/spgen/spmath.h"
 
 // cpu

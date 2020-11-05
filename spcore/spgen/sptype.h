@@ -2,8 +2,8 @@
 // Copyright (c) 2017-2020, sanko-shoko. All rights reserved.
 //--------------------------------------------------------------------------------
 
-#ifndef __SP_STD_H__
-#define __SP_STD_H__
+#ifndef __SP_TYPE_H__
+#define __SP_TYPE_H__
 
 #include "spcore/spcom.h"
 #include "spcore/spgen/spbase.h"
@@ -1781,6 +1781,7 @@ namespace sp {
 
 }
 
+
 //--------------------------------------------------------------------------------
 // transform
 //--------------------------------------------------------------------------------
@@ -1872,6 +1873,10 @@ namespace sp {
         return getRot(-rot.qx, -rot.qy, -rot.qz, rot.qw);
     }
 
+    //--------------------------------------------------------------------------------
+    // rotation operator
+    //--------------------------------------------------------------------------------
+
     SP_GENFUNC Rot mulRot(const Rot &rot0, const Rot &rot1) {
         Rot dst;
         dst.qx = static_cast<SP_REAL>((rot0.qw * rot1.qx) + (rot0.qx * rot1.qw) + (rot0.qy * rot1.qz) - (rot0.qz * rot1.qy));
@@ -1894,26 +1899,11 @@ namespace sp {
         return mulRot(rot, getVec3(vec.x, vec.y, 0.0));
     }
 
+    SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec3 &vec) { return mulRot(rot, vec); }
+    SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec2 &vec) { return mulRot(rot, vec); }
 
-    //--------------------------------------------------------------------------------
-    // rotation operator
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec3 &vec) {
-        return mulRot(rot, vec);
-    }
-
-    SP_GENFUNC Vec3 operator * (const Rot &rot, const Vec2 &vec) {
-        return mulRot(rot, vec);
-    }
-
-    SP_GENFUNC Rot operator * (const Rot &rot0, const Rot &rot1) {
-        return mulRot(rot0, rot1);
-    }
-
-    SP_GENFUNC void operator *= (Rot &rot0, const Rot &rot1) {
-        rot0 = mulRot(rot0, rot1);
-    }
+    SP_GENFUNC Rot operator * (const Rot &rot0, const Rot &rot1) { return mulRot(rot0, rot1); }
+    SP_GENFUNC void operator *= (Rot &rot0, const Rot &rot1) { rot0 = mulRot(rot0, rot1); }
 
     //--------------------------------------------------------------------------------
     // rotation util
@@ -2221,6 +2211,10 @@ namespace sp {
         return dst;
     }
 
+    //--------------------------------------------------------------------------------
+    // pose operator
+    //--------------------------------------------------------------------------------
+
     SP_GENFUNC Pose mulPose(const Pose &pose0, const Pose &pose1) {
         Pose dst;
         dst.rot = mulRot(pose0.rot, pose1.rot);
@@ -2261,38 +2255,19 @@ namespace sp {
         return mulMat(poseMat, 3, 4, mesh);
     }
 
+    SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec3 &vec) { return mulPose(pose, vec); }
+    SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec2 &vec) { return mulPose(pose, vec); }
+    
+    SP_GENFUNC VecPD3 operator * (const Pose &pose, const VecPD3 &vec) { return mulPose(pose, vec); }
+    SP_GENFUNC Line3 operator * (const Pose &pose, const Line3 &line) { return mulPose(pose, line); }
+    SP_GENFUNC Mesh3 operator * (const Pose &pose, const Mesh3 &mesh) { return mulPose(pose, mesh); }
 
-    //--------------------------------------------------------------------------------
-    // pose operator
-    //--------------------------------------------------------------------------------
+    SP_GENFUNC Pose operator * (const Pose &pose0, const Pose &pose1) { return mulPose(pose0, pose1); }
+    SP_GENFUNC void operator *= (Pose &pose0, const Pose &pose1) { pose0 = mulPose(pose0, pose1); }
 
-    SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec3 &vec) {
-        return mulPose(pose, vec);
-    }
-
-    SP_GENFUNC Vec3 operator * (const Pose &pose, const Vec2 &vec) {
-        return mulPose(pose, vec);
-    }
-
-    SP_GENFUNC VecPD3 operator * (const Pose &pose, const VecPD3 &vec) {
-        return mulPose(pose, vec);
-    }
-
-    SP_GENFUNC Line3 operator * (const Pose &pose, const Line3 &line) {
-        return mulPose(pose, line);
-    }
-
-    SP_GENFUNC Mesh3 operator * (const Pose &pose, const Mesh3 &mesh) {
-        return mulPose(pose, mesh);
-    }
-
-    SP_GENFUNC Pose operator * (const Pose &pose0, const Pose &pose1) {
-        return mulPose(pose0, pose1);
-    }
-
-    SP_GENFUNC void operator *= (Pose &pose0, const Pose &pose1) {
-        pose0 = mulPose(pose0, pose1);
-    }
+    SP_GENFUNC Pose operator * (const Rot &rot, const Pose &pose) { return mulPose(getPose(rot), pose); }
+    SP_GENFUNC Pose operator * (const Pose &pose, const Rot &rot) { return mulPose(pose, getPose(rot)); }
+    SP_GENFUNC void operator *= (Pose &pose, const Rot &rot) { pose = mulPose(pose, getPose(rot)); }
 
     //--------------------------------------------------------------------------------
     // pose util
@@ -2321,22 +2296,6 @@ namespace sp {
         const Vec3 v = getMeshCent(getGeodesicMesh(level, id)) * (-1.0);
         const Pose pose = getPose(getRotDirection(v), getVec3(0.0, 0.0, distance));
         return pose;
-    }
-
-    //--------------------------------------------------------------------------------
-    // rotation / pose operator
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC Pose operator * (const Rot &rot, const Pose &pose) {
-        return mulPose(getPose(rot), pose);
-    }
-
-    SP_GENFUNC Pose operator * (const Pose &pose, const Rot &rot) {
-        return mulPose(pose, getPose(rot));
-    }
-
-    SP_GENFUNC void operator *= (Pose &pose, const Rot &rot) {
-        pose = mulPose(pose, getPose(rot));
     }
 
     //--------------------------------------------------------------------------------
