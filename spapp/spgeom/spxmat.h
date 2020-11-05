@@ -208,7 +208,7 @@ namespace sp{
     }
 
     SP_CPUFUNC Mat getEMat(const Pose &pose) {
-        Mat E = skewMat(pose.trn) * getMat(pose.rot);
+        Mat E = skewMat(pose.pos) * getMat(pose.rot);
         E /= normMat(E);
         return E;
     }

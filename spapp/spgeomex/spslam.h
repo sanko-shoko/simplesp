@@ -133,7 +133,7 @@ namespace sp {
                     const Pose nearPose = m_sfm.getView(i)->pose;
                     const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
 
-                    norm = minVal(norm, normVec(dif.trn));
+                    norm = minVal(norm, normVec(dif.pos));
                     angle = minVal(angle, getAngle(dif.rot, 2));
                 }
 
@@ -142,7 +142,7 @@ namespace sp {
                     const Pose nearPose = view->pose;
                     const Pose dif = *m_vtrack.getPose() * invPose(nearPose);
 
-                    norm = minVal(norm, normVec(dif.trn));
+                    norm = minVal(norm, normVec(dif.pos));
                     angle = minVal(angle, getAngle(dif.rot, 2));
 
                 }

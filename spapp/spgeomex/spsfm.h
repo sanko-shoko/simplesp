@@ -703,8 +703,8 @@ namespace sp {
                         for (int b = a + 1; b < num; b++) {
                             if (errs[a] > MPNT_PRJERR || errs[b] > MPNT_PRJERR) continue;
 
-                            const Vec3 vec0 = unitVec(poses[a].trn - pos);
-                            const Vec3 vec1 = unitVec(poses[b].trn - pos);
+                            const Vec3 vec0 = unitVec(poses[a].pos - pos);
+                            const Vec3 vec1 = unitVec(poses[b].pos - pos);
                             const SP_REAL angle = acos(dotVec(vec0, vec1));
 
                             angles.push(angle);
@@ -759,7 +759,7 @@ namespace sp {
                 const SP_REAL angle = difRot(pose.rot, hypo.rot, 2);
                 if (angle > MAX_NEARPOSE) continue;
 
-                const SP_REAL d = normVec(pose.trn - hypo.trn);
+                const SP_REAL d = normVec(pose.pos - hypo.pos);
                 if (d < maxd) {
                     maxd = d;
                     id = i;

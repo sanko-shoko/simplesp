@@ -48,12 +48,15 @@ private:
 
         static Material mat;
         mat.col = getCol4f(0.9, 0.2, 0.2, 1.0);
-        static Mem1<Material*> mats;
+        static Mem1<Material> mats;
         mats.resize(m_model.size());
         for (int i = 0; i < mats.size(); i++) {
-            mats[i] = &mat;
+            mats[i] = mat;
         }
-        m_bvh.addModel(m_model, mats);
+        
+        Mem1<Mat> poses;
+        poses.push(eyeMat(4, 4));
+        m_bvh.addModel(m_model, mats, poses);
         m_bvh.build();
 
     }
@@ -88,7 +91,7 @@ private:
                     const Vec2 prj = invCam(m_cam, getVec2(u, v));
                     const Vec3 vec = unitVec(getVec3(prj.x, prj.y, 1.0));
                     VecPD3 ray;
-                    ray.pos = ipose.trn;
+                    ray.pos = ipose.pos;
                     ray.drc = irmat * (vec);
 
                     BVH::Hit hit;
@@ -98,7 +101,7 @@ private:
                 }
             }
             glLoadView2D(m_cam);
-            glTexDepth(depth, maxVal(m_pose.trn.z - 500.0, 10.0), m_pose.trn.z + 500.0);
+            glTexDepth(depth, maxVal(m_pose.pos.z - 500.0, 10.0), m_pose.pos.z + 500.0);
         }
         else{
             glLoadView3D(m_cam);
@@ -106,7 +109,7 @@ private:
 
             glRenderSurface(m_model);
 
-            const Mem1<const BVH::Node*> nodes = m_bvh.getNodes(m_level);
+            const Mem1<const BVH::Node*> nodes = m_bvh.getNodes(0, m_level);
 
             glLineWidth(2.0);
             for (int i = 0; i < nodes.size(); i++) {

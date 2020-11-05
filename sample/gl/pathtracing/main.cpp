@@ -49,8 +49,8 @@ private:
         m_pose = getPose(getVec3(0.0, 0.0, getModelDistance(m_model, m_cam)));
 
 
-        static Mem1<Material*> mats0;
-        static Mem1<Material*> mats1;
+        static Mem1<Material> mats0;
+        static Mem1<Material> mats1;
         mats0.resize(m_model.size());
         mats1.resize(m_model.size());
         static Material mat0;
@@ -64,8 +64,8 @@ private:
         //mat0.ri = 1.1f;
         //mat1.tr = 0.0f;
         for (int i = 0; i < mats0.size(); i++) {
-            mats0[i] = &mat0;
-            mats1[i] = &mat1;
+            mats0[i] = mat0;
+            mats1[i] = mat1;
         }
 
         Mem1<PathTrace::PntLight> lights;
@@ -79,8 +79,11 @@ private:
         //m_pt.setPntLights(lights);
         m_pt.setCam(m_cam, m_pose);
 
-        m_pt.addModel(m_model, mats0);
-        m_pt.addModel(getPose(getVec3(100, 0, 0)) * m_model, mats0);
+        //m_pt.addModel(m_model, mats0);
+        Mem1<Mat> poses;
+        poses.push(eyeMat(4, 4));
+        poses.push(getMat(getPose(getVec3(100, 0, 0)), 4, 4));
+        //m_pt.addModel(m_model, mats0, poses);
         m_pt.build();
     }
 

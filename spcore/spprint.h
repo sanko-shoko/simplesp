@@ -269,7 +269,7 @@ namespace sp {
         SP_PRINTF("[ ");
         _print(pose.rot);
         SP_PRINTF(", ");
-        _print(pose.trn);
+        _print(pose.pos);
         SP_PRINTF(" ]");
     }
     SP_CPUFUNC void print(const Pose &pose) {

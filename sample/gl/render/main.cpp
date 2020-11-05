@@ -110,7 +110,7 @@ private:
 
             for (int i = 0; i < m_pnts.size(); i++) {
                 // X_C = R * X_M + T
-                glVertex(m_pose.rot * m_pnts[i].pos + m_pose.trn);
+                glVertex(m_pose.rot * m_pnts[i].pos + m_pose.pos);
             }
             glEnd();
         }

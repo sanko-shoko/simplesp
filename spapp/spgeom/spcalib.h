@@ -639,7 +639,7 @@ namespace sp{
             Mat mat1(num * 3, 6);
 
             for (int i = 0; i < num; i++) {
-                const Mat tmat = getMat(zrot * Bs[i].trn - As[i].trn);
+                const Mat tmat = getMat(zrot * Bs[i].pos - As[i].pos);
 
                 const Mat rmat = getMat(As[i].rot);
                 const Mat imat = eyeMat(3, 3);
@@ -891,7 +891,7 @@ namespace sp{
         // rot
         {
             Vec3 vecx, vecy, vecz;
-            vecx = unitVec((invRot(stereo.rot) * stereo.trn) * -1.0);
+            vecx = unitVec((invRot(stereo.rot) * stereo.pos) * -1.0);
 
             const Vec3 uz = getVec3(0.0, 0.0, 1.0);
             const Vec3 mz = unitVec(uz + invRot(stereo.rot) * uz);
