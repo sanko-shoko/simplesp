@@ -25,7 +25,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC Vec3 getModelCent(const Mem1<Mesh3> &model){
-        Vec3 sum = zero<Vec3>();
+        Vec3 sum = getVec3(0.0, 0.0, 0.0);
         for (int i = 0; i < model.size(); i++){
             sum += getMeshCent(model[i]);
         }

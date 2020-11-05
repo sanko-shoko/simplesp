@@ -91,8 +91,8 @@ namespace sp {
 
         //    const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
         //    const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
-        //    n = maxVal(n, tn);
-        //    f = minVal(f, tf);
+        //    n = max(n, tn);
+        //    f = min(f, tf);
         //    if (f < n) {
         //        return false;
         //    }
@@ -108,8 +108,8 @@ namespace sp {
 
             const double tn = (a.x - ray.pos.x) / ray.drc.x;
             const double tf = (b.x - ray.pos.x) / ray.drc.x;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
+            n = max(n, tn);
+            f = min(f, tf);
             if (f < n) return false;
         }
 
@@ -123,8 +123,8 @@ namespace sp {
 
             const double tn = (a.y - ray.pos.y) / ray.drc.y;
             const double tf = (b.y - ray.pos.y) / ray.drc.y;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
+            n = max(n, tn);
+            f = min(f, tf);
             if (f < n) return false;
         }
 
@@ -138,8 +138,8 @@ namespace sp {
 
             const double tn = (a.z - ray.pos.z) / ray.drc.z;
             const double tf = (b.z - ray.pos.z) / ray.drc.z;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
+            n = max(n, tn);
+            f = min(f, tf);
             if (f < n) return false;
         }
         return true;
@@ -741,7 +741,7 @@ namespace sp {
             SP_ASSERT(lights.size() <= LIGHT_MAX);
 
             for (int i = 0; i < LIGHT_MAX; i++) {
-                if (i >= minVal(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
+                if (i >= min(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
                     m_cnt.dif[i] = 0;
                 }
                 
@@ -773,11 +773,11 @@ namespace sp {
                 }
             }
             {
-                m_cnt.amb = minVal(m_lim.amb, m_cnt.amb + 1);
+                m_cnt.amb = min(m_lim.amb, m_cnt.amb + 1);
                 for (int i = 0; i < m_plights.size(); i++) {
-                    m_cnt.dif[i] = minVal(m_lim.dif[i], m_cnt.dif[i] + 1);
+                    m_cnt.dif[i] = min(m_lim.dif[i], m_cnt.dif[i] + 1);
                 }
-                m_cnt.msk = minVal(m_lim.msk, m_cnt.msk + 1);
+                m_cnt.msk = min(m_lim.msk, m_cnt.msk + 1);
             }
             return true;
         }
@@ -954,9 +954,9 @@ namespace sp {
 
             const SP_REAL delta = 0.001;
 
-            const double rate0 = 1.0 - maxVal(base.mat.tr, base.mat.rf);
-            const double rate1 = base.mat.tr * maxVal(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
-            const double rate2 = base.mat.rf * maxVal(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
+            const double rate0 = 1.0 - max(base.mat.tr, base.mat.rf);
+            const double rate1 = base.mat.tr * max(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
+            const double rate2 = base.mat.rf * max(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
 
             data.col = getCol4f(0.0, 0.0, 0.0, 0.0);
             data.sdw = 0.0;
@@ -1028,7 +1028,7 @@ namespace sp {
                 for (int i = 0; i < LEVEL_MAX - level; i++) {
                     ret = trace(hit, next, 0.0, SP_INFINITY);
                     if (ret == true) {
-                        const double r = hit.mat.tr * maxVal(hit.mat.tr, hit.mat.rf) / (hit.mat.tr + hit.mat.rf);
+                        const double r = hit.mat.tr * max(hit.mat.tr, hit.mat.rf) / (hit.mat.tr + hit.mat.rf);
                         if (r > 0.0) {
                             next.pos = hit.vec.pos + next.drc * delta;
                             next.drc = next.drc;

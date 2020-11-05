@@ -16,7 +16,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const double dscale0, const double dscale1){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -41,7 +40,6 @@ namespace sp{
     
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -50,7 +48,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -74,7 +71,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -89,7 +85,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void pyrdown(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE>*>(&dst) != &src) ? src : clone(src);
 
@@ -150,7 +145,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect2 &rect, const double angle = 0.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -247,7 +241,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void invert(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -378,7 +371,6 @@ namespace sp{
 
     template<typename DST, typename SRC>
     SP_CPUFUNC void cnvImg(Mem<DST> &dst, const Mem<SRC> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -435,7 +427,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const int maxDisp, const int minDisp) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -446,7 +437,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void cnvLabelToImg(Mem<Col3> &dst, const Mem<int> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();

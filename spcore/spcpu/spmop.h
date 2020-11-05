@@ -68,7 +68,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM>
     SP_CPUFUNC void setElm(Mem<TYPE> &dst, const ELEM &elm){
-        if (checkPtr(dst) == false) return;
 
         setElm(dst.ptr, dst.size(), elm);
     }

@@ -16,7 +16,6 @@ namespace sp{
     
     template<typename DEPTH>
     SP_CPUFUNC void bilateralFilterDepth(Mem<DEPTH> &dst, const Mem<DEPTH> &src, const double asigma = 0.8, const double bsigma = 10.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         const Mem<DEPTH> &tmp = (&dst != &src) ? src : clone(src);
@@ -78,7 +77,6 @@ namespace sp{
 
     template<typename DEPTH>
     SP_CPUFUNC void pyrdownDepth(Mem<DEPTH> &dst, const Mem<DEPTH> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<DEPTH> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -123,7 +121,6 @@ namespace sp{
 
     template<typename DEPTH>
     SP_CPUFUNC void cnvDepthToVec(Mem<Vec3> &dst, const CamParam &cam, const Mem<DEPTH> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -148,7 +145,6 @@ namespace sp{
 
     template<typename DEPTH>
     SP_CPUFUNC void cnvDepthToVecPD(Mem<VecPD3> &dst, const CamParam &cam, const Mem<DEPTH> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -180,7 +176,6 @@ namespace sp{
 
     template<typename DEPTH>
     SP_CPUFUNC void cnvVecToDepth(Mem<DEPTH> &dst, const Mem<Vec3> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -192,7 +187,6 @@ namespace sp{
 
     template<typename DEPTH>
     SP_CPUFUNC void cnvVecPDToDepth(Mem<DEPTH> &dst, const Mem<VecPD3> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();

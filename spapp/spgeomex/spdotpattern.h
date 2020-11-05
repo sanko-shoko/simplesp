@@ -14,8 +14,6 @@ namespace sp{
 
     SP_CPUFUNC void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
         
-        SP_ASSERT(checkPtr(src, 2));
-
         Mem2<Byte> base(src.dsize);
         {
             const SP_REAL scale = 100.0 / (src.dsize[0] + src.dsize[1]);

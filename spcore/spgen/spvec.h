@@ -52,7 +52,7 @@ namespace sp {
     // random uniform
     SP_CPUFUNC Vec2 randuVec2(const double x, const double y, const unsigned int seed) {
         const unsigned int s0 = seed;
-        const unsigned int s1 = snext(s0);
+        const unsigned int s1 = _snext(s0);
         return getVec2(randu(s0) * x, randu(s1) * y);
     }
     // random gauss
@@ -62,7 +62,7 @@ namespace sp {
     // random gauss
     SP_CPUFUNC Vec2 randgVec2(const double x, const double y, const unsigned int seed) {
         const unsigned int s0 = seed;
-        const unsigned int s1 = snext(s0);
+        const unsigned int s1 = _snext(s0);
         return getVec2(randg(s0) * x, randg(s1) * y);
     }
 
@@ -73,8 +73,8 @@ namespace sp {
     // random uniform
     SP_CPUFUNC Vec3 randuVec3(const double x, const double y, const double z, const unsigned int seed) {
         const unsigned int s0 = seed;
-        const unsigned int s1 = snext(s0);
-        const unsigned int s2 = snext(s1);
+        const unsigned int s1 = _snext(s0);
+        const unsigned int s2 = _snext(s1);
         return getVec3(randu(s0) * x, randu(s1) * y, randu(s2) * z);
     }
     // random gauss
@@ -84,8 +84,8 @@ namespace sp {
     // random gauss
     SP_CPUFUNC Vec3 randgVec3(const double x, const double y, const double z, const unsigned int seed) {
         const unsigned int s0 = seed;
-        const unsigned int s1 = snext(s0);
-        const unsigned int s2 = snext(s1);
+        const unsigned int s1 = _snext(s0);
+        const unsigned int s2 = _snext(s1);
         return getVec3(randg(s0) * x, randg(s1) * y, randg(s2) * z);
     }
 

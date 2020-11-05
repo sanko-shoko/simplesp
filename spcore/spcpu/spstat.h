@@ -57,7 +57,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC TYPE max(const Mem<TYPE> &mem){
-        if (mem.size() == 0) return zero<TYPE>();
+        SP_ASSERT(mem.size() != 0);
 
         TYPE maxv = mem[0];
         for (int i = 1; i < mem.size(); i++){
@@ -68,7 +68,7 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC TYPE min(const Mem<TYPE> &mem){
-        if (mem.size() == 0) return zero<TYPE>();
+        SP_ASSERT(mem.size() != 0);
 
         TYPE minv = mem[0];
         for (int i = 0; i < mem.size(); i++){
@@ -302,7 +302,8 @@ namespace sp{
 
     template<typename VEC>
     SP_CPUFUNC VEC sumVec(const Mem<VEC> &vecs){
-        VEC sum = zero<VEC>();
+        VEC sum;
+        memset(&sum, 0, sizeof(VEC));
 
         for (int i = 0; i < vecs.size(); i++){
             sum += vecs[i];
