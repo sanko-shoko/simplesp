@@ -33,7 +33,6 @@ private:
 
             static int iVal = 0;
             ImGui::InputInt("InputInt", &iVal, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue);
-            printf("%d\n", iVal);
 
             ImGui::End();
         }
