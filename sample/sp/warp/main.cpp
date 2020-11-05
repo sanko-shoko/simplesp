@@ -82,7 +82,7 @@ int main(){
                     dst.resize(imgs[0].dsize);
                     warp<Col3, Byte>(dst, imgs[0], hom);
 
-                    blend(dst, dst, imgs[1]);
+                    blend(dst, dst, 0.5, imgs[1], 0.5);
                 }
                 saveBMP("hom1.bmp", dst);
             }
@@ -136,7 +136,7 @@ int main(){
                     dst.resize(imgs[0].dsize);
                     warp<Col3, Byte>(dst, imgs[0], hom);
 
-                    blend(dst, dst, imgs[1]);
+                    blend(dst, dst, 0.5, imgs[1], 0.5);
                 }
                 saveBMP("hom2.bmp", dst);
             }

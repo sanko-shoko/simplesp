@@ -14,10 +14,6 @@
 #define SP_USE_OMP 1
 #endif
 
-#ifndef SP_USE_ASSERT
-#define SP_USE_ASSERT 1
-#endif
-
 #ifndef SP_USE_CONSOLE
 #define SP_USE_CONSOLE 1
 #endif
@@ -50,23 +46,19 @@
 #define SP_REAL double
 #endif
 
-#ifndef SP_CAST_REAL
-#define SP_CAST_REAL(V) static_cast<SP_REAL>(V)
-#endif
-
 
 //--------------------------------------------------------------------------------
 // const value
 //--------------------------------------------------------------------------------
 
 // pi
-#define SP_PI SP_CAST_REAL(3.14159265358979323846)
+#define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
 
 // limit value regarded as zero
-#define SP_SMALL    SP_CAST_REAL(1.0e-20)
+#define SP_SMALL    static_cast<SP_REAL>(1.0e-20)
 
 // limit value regarded as infinity
-#define SP_INFINITY SP_CAST_REAL(1.0e+20)
+#define SP_INFINITY static_cast<SP_REAL>(1.0e+20)
 
 // maximal value (unsigned char)
 #define SP_BYTEMAX 255

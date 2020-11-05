@@ -177,7 +177,7 @@ namespace sp{
         }
         const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
      
-        return SP_CAST_REAL(eval);
+        return static_cast<SP_REAL>(eval);
     }
 
     template<typename TYPE>

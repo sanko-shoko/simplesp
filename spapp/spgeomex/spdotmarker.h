@@ -703,7 +703,7 @@ namespace sp{
 
                     const Vec2 pos = vec + getVec2(dw, dh);
 
-                    img(u, v) = blendCol(img(u, v), acsc(cmap, pos.x, pos.y), rate);
+                    img(u, v) = blendCol(img(u, v), rate, acsc(cmap, pos.x, pos.y), 1.0 - rate);
                 }
             }
         }

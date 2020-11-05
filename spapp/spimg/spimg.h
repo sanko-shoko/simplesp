@@ -187,8 +187,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void concat(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const bool horizon = true){
-        SP_ASSERT(checkPtr(src0, 2));
-        SP_ASSERT(checkPtr(src1, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
@@ -217,9 +215,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
-        SP_ASSERT(checkPtr(src0, 2));
-        SP_ASSERT(checkPtr(src1, 2));
+    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const double r0, const Mem<TYPE> &src1, const double r1) {
         SP_ASSERT(cmp(src0.dsize, src1.dsize, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
@@ -230,7 +226,7 @@ namespace sp{
 
         for (int v = 0; v < src0.dsize[1]; v++) {
             for (int u = 0; u < src0.dsize[0]; u++) {
-                acs2(dst, u, v) = blendCol(acs2(tmp0, u, v), acs2(tmp1, u, v), rate);
+                acs2(dst, u, v) = blendCol(acs2(tmp0, u, v), r0, acs2(tmp1, u, v), r1);
             }
         }
     }
@@ -306,8 +302,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void remap(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<Vec2> &table, const bool useExt = false){
-        SP_ASSERT(checkPtr(src, 2));
-        SP_ASSERT(checkPtr(table, 2));
         SP_ASSERT(cmp(src.dsize, table.dsize, 2));
         
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -337,7 +331,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void warp(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mat &mat){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -381,7 +374,6 @@ namespace sp{
         
     template <typename TYPE0, typename TYPE1>
     SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -397,7 +389,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPD3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -413,7 +404,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const Mem<float> &eval, const int maxDisp, const int minDisp) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();

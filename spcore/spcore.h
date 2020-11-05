@@ -11,14 +11,8 @@
 
 // gen
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/sprect.h"
-#include "spcore/spgen/spcol.h"
-#include "spcore/spgen/spvec.h"
+#include "spcore/spgen/spstd.h"
 #include "spcore/spgen/spmath.h"
-#include "spcore/spgen/spmath.h"
-
-#include "spcore/spgen/spcam.h"
-#include "spcore/spgen/sppose.h"
 
 // cpu
 #include "spcore/spcpu/spmem.h"

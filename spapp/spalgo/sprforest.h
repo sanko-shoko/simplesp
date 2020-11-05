@@ -301,7 +301,7 @@ namespace sp{
                 }
                 gain -= sum * cnt[s] / index.size();
             }
-            return SP_CAST_REAL(gain);
+            return static_cast<SP_REAL>(gain);
         }
 
 

@@ -767,7 +767,7 @@ namespace sp {
 #endif
             for (int v = 0; v < m_cam.dsize[1]; v++) {
                 for (int u = 0; u < m_cam.dsize[0]; u++) {
-                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == SP_CAST_REAL(0.0)) continue;
+                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == static_cast<SP_REAL>(0.0)) continue;
 
                     calc(m_img(u, v), m_hitmap(u, v), m_raymap(u, v));
                 }
@@ -821,7 +821,7 @@ namespace sp {
                         col = getCol4f(0.0, 0.0, 0.0, im.msk);
                     }
 
-                    col = meanCol(col, col.a, bgcol, 1.0f - col.a);
+                    col = blendCol(col, col.a, bgcol, 1.0f - col.a);
 
                     img(u, v) = cast<Col4>(col);
                 }
@@ -879,7 +879,7 @@ namespace sp {
                         Data data;
                         calc_amb(data, ray, hit, 0, (unsigned int)m_cnt.amb);
 
-                        img.amb.col = meanCol(img.amb.col, m_cnt.amb, data.col, 1.0);
+                        img.amb.col = blendCol(img.amb.col, m_cnt.amb, data.col, 1.0);
                         img.amb.sdw = (img.amb.sdw * m_cnt.amb + data.sdw) / (m_cnt.amb + 1);
                     }
                 }
@@ -897,7 +897,7 @@ namespace sp {
                     if (hit.find == true) {
                         Data data;
                         calc_dif(data, ray, hit, m_plights[i].pos + randgVec3(1.0, 1.0, 1.0, m_cnt.dif[i]) * 1.0, 0, m_cnt.dif[i]);
-                        img.dif[i].col = meanCol(img.dif[i].col, m_cnt.dif[i], data.col, 1.0);
+                        img.dif[i].col = blendCol(img.dif[i].col, m_cnt.dif[i], data.col, 1.0);
                         img.dif[i].sdw = (img.dif[i].sdw * m_cnt.dif[i] + data.sdw) / (m_cnt.dif[i] + 1.0);
                     }
                 }
