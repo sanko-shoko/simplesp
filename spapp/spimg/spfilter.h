@@ -143,7 +143,7 @@ namespace sp{
     SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
         SP_ASSERT(checkPtr(src, 2));
 
-        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma - 0.8) / 0.3 + 1));
 
         Mem1<SP_REAL> kernel(2 * half + 1);
         for (int k = -half; k <= half; k++){
@@ -296,7 +296,7 @@ namespace sp{
                     for (int kx = 0; kx < winSize; kx++) {
 
                         const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
-                        maxv = maxVal(maxv, val);
+                        maxv = max(maxv, val);
                     }
                 }
 
@@ -323,7 +323,7 @@ namespace sp{
                     for (int kx = 0; kx < winSize; kx++) {
 
                         const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
-                        minv = minVal(minv, val);
+                        minv = min(minv, val);
                     }
                 }
 
@@ -341,7 +341,7 @@ namespace sp{
     SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(checkPtr(src, 2));
 
-        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma - 0.8) / 0.3 + 1));
 
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= half; y++){
@@ -590,7 +590,7 @@ namespace sp{
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
-        const int half = maxVal(1, round((sigma_s - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma_s - 0.8) / 0.3 + 1));
 
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= +half; y++) {

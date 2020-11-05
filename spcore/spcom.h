@@ -63,7 +63,7 @@
 #define SP_PI SP_CAST_REAL(3.14159265358979323846)
 
 // limit value regarded as zero
-#define SP_SMALL SP_CAST_REAL(1.0e-20)
+#define SP_SMALL    SP_CAST_REAL(1.0e-20)
 
 // limit value regarded as infinity
 #define SP_INFINITY SP_CAST_REAL(1.0e+20)

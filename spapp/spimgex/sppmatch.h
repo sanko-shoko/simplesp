@@ -31,7 +31,7 @@ namespace sp{
 
         const Rect2 rect = getRect2(img0.dsize);
 
-        SP_REAL range = minVal(img0.dsize[0], img0.dsize[1]) * 0.5;
+        SP_REAL range = min(img0.dsize[0], img0.dsize[1]) * 0.5;
 
         for (int it = 0; it < maxit; it++) {
 

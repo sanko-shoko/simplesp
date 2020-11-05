@@ -56,23 +56,23 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template<typename TYPE>
-    SP_CPUFUNC TYPE maxVal(const Mem<TYPE> &mem){
+    SP_CPUFUNC TYPE max(const Mem<TYPE> &mem){
         if (mem.size() == 0) return zero<TYPE>();
 
         TYPE maxv = mem[0];
         for (int i = 1; i < mem.size(); i++){
-            maxv = maxVal(maxv, mem[i]);
+            maxv = max(maxv, mem[i]);
         }
         return maxv;
     }
 
     template<typename TYPE>
-    SP_CPUFUNC TYPE minVal(const Mem<TYPE> &mem){
+    SP_CPUFUNC TYPE min(const Mem<TYPE> &mem){
         if (mem.size() == 0) return zero<TYPE>();
 
         TYPE minv = mem[0];
         for (int i = 0; i < mem.size(); i++){
-            minv = minVal(minv, mem[i]);
+            minv = min(minv, mem[i]);
         }
         return minv;
     }

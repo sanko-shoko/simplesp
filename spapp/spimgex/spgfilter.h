@@ -206,7 +206,7 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            dst[i] = cast<Byte>(minVal(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
+            dst[i] = cast<Byte>(min(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
         }
     }
 
@@ -290,9 +290,9 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            dst[i].r = cast<Byte>(minVal(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
-            dst[i].g = cast<Byte>(minVal(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
-            dst[i].b = cast<Byte>(minVal(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
+            dst[i].r = cast<Byte>(min(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
+            dst[i].g = cast<Byte>(min(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
+            dst[i].b = cast<Byte>(min(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
         }
     }
 

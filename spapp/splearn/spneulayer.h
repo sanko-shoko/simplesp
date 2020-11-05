@@ -295,7 +295,7 @@ namespace sp{
         virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < Y.size(); n++){
-                const SP_REAL maxv = maxVal(X[n]);
+                const SP_REAL maxv = max(X[n]);
 
                 Mem1<SP_REAL> S(X[n].size());
                 for (int i = 0; i < S.size(); i++){
@@ -471,7 +471,7 @@ namespace sp{
             // kernel dsize
             m_kernel[0] = m_winSize;
             m_kernel[1] = m_winSize;
-            m_kernel[2] = maxVal(X[0].dsize[2], 1);
+            m_kernel[2] = max(X[0].dsize[2], 1);
 
             // foward parameter
             m_prm.resize(m_nodeNum, m_kernel[0] * m_kernel[1] * m_kernel[2]);
@@ -664,7 +664,7 @@ namespace sp{
             // output dsize
             m_output[0] = (X[0].dsize[0] - 2 * m_margin) / m_stride;
             m_output[1] = (X[0].dsize[1] - 2 * m_margin) / m_stride;
-            m_output[2] = maxVal(X[0].dsize[2], 1);
+            m_output[2] = max(X[0].dsize[2], 1);
 
             // kernel dsize
             m_kernel[0] = m_winSize;

@@ -169,7 +169,7 @@ namespace sp{
             Mem2<float> imgf;
             cnvMem(imgf, img, 1.0 / 255.0);
 
-            const int pynum = round(log2(minVal(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
+            const int pynum = round(log2(min(img.dsize[0], img.dsize[1]) / (8.0 * BASE_SIGMA)));
 
             imgsets.resize(pynum);
 
@@ -395,7 +395,7 @@ namespace sp{
             }
 
             // detect peak
-            const SP_REAL phresh = maxVal(fhist) * 0.8;
+            const SP_REAL phresh = max(fhist) * 0.8;
 
             drcs.reserve(BINS);
             for (int i = 0; i < BINS; i++) {
@@ -403,7 +403,7 @@ namespace sp{
                 const SP_REAL hp1 = fhist.lacs(i + BINS - 1);
                 const SP_REAL hn1 = fhist.lacs(i + BINS + 1);
 
-                if (hi > phresh && hi > maxVal(hp1, hn1)) {
+                if (hi > phresh && hi > max(hp1, hn1)) {
                     const SP_REAL finei = i + 0.5 * (hp1 - hn1) / (hp1 + hn1 - 2 * hi);
                     const SP_REAL angle = finei * (2.0 * SP_PI / BINS);
 
@@ -502,13 +502,13 @@ namespace sp{
                 const SP_REAL thresh = sqrt(sq) * DSC_MAG_THR;
 
                 for (int k = 0; k < ddsc.size(); k++) {
-                    ddsc[k] = minVal(ddsc[k], thresh);
+                    ddsc[k] = min(ddsc[k], thresh);
                 }
             }
 
             {
                 const SP_REAL sq = sumSq(ddsc);
-                const SP_REAL nrm = 1.0 / maxVal(sqrt(sq), SP_SMALL);
+                const SP_REAL nrm = 1.0 / max(sqrt(sq), SP_SMALL);
 
                 const int dim = ddsc.size();
 

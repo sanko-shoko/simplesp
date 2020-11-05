@@ -143,7 +143,7 @@ namespace sp{
             const Mem1<int> index = kdtree.search(&src[i], 0.0001);
             int minv = num;
             for (int k = 0; k < index.size(); k++) {
-                minv = minVal(minv, index[k]);
+                minv = min(minv, index[k]);
             }
 
             if (i == minv) {

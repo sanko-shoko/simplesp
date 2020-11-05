@@ -71,17 +71,17 @@ namespace sp {
             int search = 0;
             int length = minLength - 1;
 
-            for (int j = maxVal(0, i - maxSearch); j < i; j++) {
+            for (int j = max(0, i - maxSearch); j < i; j++) {
                 if (data[i] != data[j]) continue;
 
                 int k = 1;
-                const int maxk = minVal(maxLength, data.size() - 1 - i);
+                const int maxk = min(maxLength, data.size() - 1 - i);
                 for (; k <= maxk; k++) {
                     if (data[i + k] != data[j + k]) break;
                 }
                 if (k > length) {
                     search = i - j;
-                    length = minVal(k, maxLength);
+                    length = min(k, maxLength);
                 }
             }
             if (search == 0) {
@@ -149,8 +149,8 @@ namespace sp {
         for (int i = 0; i < lngs.size(); i++) {
             const int n = lngs[i];
             if (n == 0) continue;
-            maxv = maxVal(n, maxv);
-            minv = minVal(n, minv);
+            maxv = max(n, maxv);
+            minv = min(n, minv);
         }
         if (maxv == 0) {
             return table;

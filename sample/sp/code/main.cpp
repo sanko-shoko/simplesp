@@ -17,7 +17,7 @@ int main() {
 
             print("src ", src);
         }
-        const int maxv = maxVal(src) + 1;
+        const int maxv = max(src) + 1;
         {
             const Mem1<Mem1<Byte>> table = hmMakeTableFromCnts(getCodeCnts(src, maxv));
             const Mem1<Byte> enc = hmEncode(table, src);

@@ -378,8 +378,8 @@ namespace sp{
     SP_GENFUNC void extMat(SP_REAL *dst, const int rows, const int cols, const SP_REAL *mat0, const int rows0, const int cols0){
         eyeMat(dst, rows, cols);
 
-        for (int r = 0; r < minVal(rows, rows0); r++){
-            for (int c = 0; c < minVal(cols, cols0); c++){
+        for (int r = 0; r < min(rows, rows0); r++){
+            for (int c = 0; c < min(cols, cols0); c++){
                 dst[r * cols + c] = mat0[r * cols0 + c];
             }
         }
@@ -484,11 +484,11 @@ namespace sp{
             // partial pivoting
             {
                 int pivot = i;
-                SP_REAL maxVal = 0.0;
+                SP_REAL max = 0.0;
                 for (int r = i; r < size; r++){
                     const SP_REAL val = fabs(buf[r * size + i]);
-                    if (val > maxVal){
-                        maxVal = val;
+                    if (val > max){
+                        max = val;
                         pivot = r;
                     }
                 }
@@ -584,11 +584,11 @@ namespace sp{
             // partial pivoting
             {
                 int pivot = i;
-                SP_REAL maxVal = 0.0;
+                SP_REAL max = 0.0;
                 for (int r = i; r < size; r++){
                     const SP_REAL val = fabs(buf[r * size + i]);
-                    if (val > maxVal){
-                        maxVal = val;
+                    if (val > max){
+                        max = val;
                         pivot = r;
                     }
                 }
@@ -846,7 +846,7 @@ namespace sp{
 
         double unorm = 0.0;
         for (int i = 0; i < cols; i++) {
-            unorm = maxVal(unorm, fabs(Q[i]) + fabs(R[i]));
+            unorm = max(unorm, fabs(Q[i]) + fabs(R[i]));
         }
 
         // accumulation of right-hand transformations
@@ -877,7 +877,7 @@ namespace sp{
         }
 
         // accumulation of left-hand transformations
-        for (int i = minVal(rows, cols) - 1; i >= 0; i--){ 
+        for (int i = min(rows, cols) - 1; i >= 0; i--){ 
             
             for (int j = i + 1; j < cols; j++){
                 U[i * cols + j] = 0.0;

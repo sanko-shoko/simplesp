@@ -111,7 +111,7 @@ namespace sp{
     }
 
     SP_CPUFUNC Mem1<int> getLabelCount(const Mem2<int> &map) {
-        const int labelNum = round(maxVal(map) + 1);
+        const int labelNum = round(max(map) + 1);
         //const int step = map.dsize[0];
 
         Mem1<int> dst(labelNum);
@@ -131,7 +131,7 @@ namespace sp{
     }
 
     SP_CPUFUNC Mem1<Rect2> getLabelRect(const Mem2<int> &map){
-        const int labelNum = round(maxVal(map) + 1);
+        const int labelNum = round(max(map) + 1);
         const int step = map.dsize[0];
 
         Mem1<Rect2> dst(labelNum);
@@ -154,11 +154,11 @@ namespace sp{
                     const int rw = rect.dsize[0];
                     const int rh = rect.dsize[1];
 
-                    rect.dbase[0] = minVal(u, ru);
-                    rect.dsize[0] = maxVal(u + 1, ru + rw) - rect.dbase[0];
+                    rect.dbase[0] = min(u, ru);
+                    rect.dsize[0] = max(u + 1, ru + rw) - rect.dbase[0];
 
-                    rect.dbase[1] = minVal(v, rv);
-                    rect.dsize[1] = maxVal(v + 1, rv + rh) - rect.dbase[1];
+                    rect.dbase[1] = min(v, rv);
+                    rect.dsize[1] = max(v + 1, rv + rh) - rect.dbase[1];
                 }
             }
         }

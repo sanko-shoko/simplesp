@@ -69,7 +69,7 @@ namespace sp{
     SP_CPUFUNC void renderLine(Mem<TYPE> &dst, const Vec2 &pix0, const Vec2 &pix1, const TYPE &val, const double thick = 1.0){
         SP_ASSERT(checkPtr(dst, 2));
 
-        const double div = maxVal(fabs(pix1.x - pix0.x), fabs(pix1.y - pix0.y));
+        const double div = max(fabs(pix1.x - pix0.x), fabs(pix1.y - pix0.y));
         
         const Vec2 step = (round(div) > 0) ? (pix1 - pix0) / div : getVec2(0.0, 0.0);
         for (int i = 0; i <= round(div); i++) {
@@ -373,11 +373,11 @@ namespace sp{
 
                 const Vec2 pix = mulCamD(cam, prjVec(pm.pos[i]));
 
-                xs = minVal(xs, floor(pix.x + 1));
-                xe = maxVal(xe, floor(pix.x + 1));
+                xs = min(xs, floor(pix.x + 1));
+                xe = max(xe, floor(pix.x + 1));
 
-                ys = minVal(ys, floor(pix.y + 1));
-                ye = maxVal(ye, floor(pix.y + 1));
+                ys = min(ys, floor(pix.y + 1));
+                ye = max(ye, floor(pix.y + 1));
             }
             if (valid == false) return;
 

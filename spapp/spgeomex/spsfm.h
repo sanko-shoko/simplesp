@@ -285,7 +285,7 @@ namespace sp {
                     // update view pose
                     updatePose(m_views, m_mpnts, view);
 
-                    view.upcnt = minVal(m_views.size(), view.upcnt + 1);
+                    view.upcnt = min(m_views.size(), view.upcnt + 1);
                 }
 
                 m_update++;
@@ -410,7 +410,7 @@ namespace sp {
 
                 list = shuffle(list);
 
-                for (int i = 0; i < minVal(10, list.size()); i++) {
+                for (int i = 0; i < min(10, list.size()); i++) {
                     const int b = list[i];
                     initPair(views, pairs, a, b);
                     initPair(views, pairs, b, a);
@@ -711,7 +711,7 @@ namespace sp {
                         }
                     }
 
-                    if (maxVal(angles) < MPNT_ANGLE) continue;
+                    if (max(angles) < MPNT_ANGLE) continue;
 
                     setMPnt(*mpnt, pos);
                 }

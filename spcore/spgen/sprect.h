@@ -142,8 +142,8 @@ namespace sp{
     SP_GENFUNC Rect2 andRect(const Rect2 &rect0, const Rect2 &rect1) {
         int dbase[2] = { 0 }, dsize[2] = { 0 };
         for (int i = 0; i < 2; i++) {
-            dbase[i] = maxVal(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = minVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+            dbase[i] = max(rect0.dbase[i], rect1.dbase[i]);
+            dsize[i] = min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
         }
         return getRect2(dbase, dsize);
     }
@@ -151,8 +151,8 @@ namespace sp{
     SP_GENFUNC Rect3 andRect(const Rect3 &rect0, const Rect3 &rect1) {
         int dbase[3] = { 0 }, dsize[3] = { 0 };
         for (int i = 0; i < 3; i++) {
-            dbase[i] = maxVal(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = minVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+            dbase[i] = max(rect0.dbase[i], rect1.dbase[i]);
+            dsize[i] = min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
         }
         return getRect3(dbase, dsize);
     }
@@ -163,9 +163,9 @@ namespace sp{
         if (b0 && b1) {
             int dbase[2] = { 0 }, dsize[2] = { 0 };
             for (int i = 0; i < 2; i++) {
-                dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
-                dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-                dsize[i] = maxVal(0, dsize[i]);
+                dbase[i] = min(rect0.dbase[i], rect1.dbase[i]);
+                dsize[i] = max(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+                dsize[i] = max(0, dsize[i]);
             }
             return getRect2(dbase, dsize);
         }
@@ -180,9 +180,9 @@ namespace sp{
         if (b0 && b1) {
             int dbase[3] = { 0 }, dsize[3] = { 0 };
             for (int i = 0; i < 3; i++) {
-                dbase[i] = minVal(rect0.dbase[i], rect1.dbase[i]);
-                dsize[i] = maxVal(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
-                dsize[i] = maxVal(0, dsize[i]);
+                dbase[i] = min(rect0.dbase[i], rect1.dbase[i]);
+                dsize[i] = max(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+                dsize[i] = max(0, dsize[i]);
             }
             return getRect3(dbase, dsize);
         }
@@ -194,7 +194,7 @@ namespace sp{
     SP_GENFUNC Rect2 extRect(const Rect2 &rect, const int val) {
         int dbase[2] = { 0 }, dsize[2] = { 0 };
         for (int i = 0; i < 2; i++) {
-            const int t = maxVal(val, -rect.dsize[i] / 2);
+            const int t = max(val, -rect.dsize[i] / 2);
             dbase[i] = rect.dbase[i] - t;
             dsize[i] = rect.dsize[i] + 2 * t;
         }
@@ -204,7 +204,7 @@ namespace sp{
     SP_GENFUNC Rect3 extRect(const Rect3 &rect, const int val) {
         int dbase[3] = { 0 }, dsize[3] = { 0 };
         for (int i = 0; i < 3; i++) {
-            const int t = maxVal(val, -rect.dsize[i] / 2);
+            const int t = max(val, -rect.dsize[i] / 2);
             dbase[i] = rect.dbase[i] - t;
             dsize[i] = rect.dsize[i] + 2 * t;
         }

@@ -91,7 +91,7 @@ namespace sp {
                 char &wei = wmap(x, y, z);
 
                 val = cast<char>((val * wei + SP_VOXEL_VMAX * srcv) / (wei + 1.0));
-                wei = minVal(wei + 1, SP_VOXEL_WMAX);
+                wei = min(wei + 1, SP_VOXEL_WMAX);
             }
             else {
                 vmap(x, y, z) = (srcv > 0) ? +SP_VOXEL_VMAX : -SP_VOXEL_VMAX;
@@ -175,7 +175,7 @@ namespace sp {
                         else {
                             if (dotVec(cpos, drc) >= 0) continue;
 
-                            const SP_REAL dist = maxVal(cpos.z - pos.z, -step) / step;
+                            const SP_REAL dist = max(cpos.z - pos.z, -step) / step;
                             voxel.update(x, y, z, dist);
                         }
                     }
@@ -819,7 +819,7 @@ namespace sp {
                     const SP_REAL d = depth(round(pix.x), round(pix.y));
                     if (d == 0.0) continue;
 
-                    const SP_REAL dist = maxVal(cpos.z - d, -step) / step;
+                    const SP_REAL dist = max(cpos.z - d, -step) / step;
                     voxel.update(x, y, z, dist);
                 }
             }
@@ -855,8 +855,8 @@ namespace sp {
                             const double a = acsv(mvec, (i + 1) % 3) * s + acsv(ipose.pos, (i + 1) % 3);
                             const double b = acsv(mvec, (i + 2) % 3) * s + acsv(ipose.pos, (i + 2) % 3);
                             if (fabs(a) < acsv(cent, (i + 1) % 3) && fabs(b) < acsv(cent, (i + 2) % 3)) {
-                                maxv = maxVal(maxv, s);
-                                minv = minVal(minv, s);
+                                maxv = max(maxv, s);
+                                minv = min(minv, s);
                             }
                         }
                     }
