@@ -696,7 +696,7 @@ namespace sp {
                     if (calcPnt3dRANSAC(pos, poses, cams, pixs) == false) continue;
 
                     const Mem1<SP_REAL> errs = calcPrjErr(poses, cams, pixs, pos);
-                    if (medianVal(errs) > MPNT_PRJERR) continue;
+                    if (median(errs) > MPNT_PRJERR) continue;
 
                     Mem1<SP_REAL> angles;
                     for (int a = 0; a < num; a++) {

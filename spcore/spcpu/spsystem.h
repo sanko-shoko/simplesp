@@ -5,7 +5,7 @@
 #ifndef __SP_SYSTEM_H__
 #define __SP_SYSTEM_H__
 
-#include "spcore/spcpu/spstr.h"
+#include "spcore/spcpu/spmem.h"
 
 
 //--------------------------------------------------------------------------------

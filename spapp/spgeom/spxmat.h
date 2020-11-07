@@ -569,10 +569,10 @@ namespace sp{
         SP_REAL maxv = SP_INFINITY;
         for (int i = 0; i < Es.size(); i++) {
             const Mem1<SP_REAL> errs = errMatType2(Es[i], npxs0, npxs1);
-            const SP_REAL sum = sumVal(errs);
+            const SP_REAL sumv = sum(errs);
 
-            if (sum < maxv) {
-                maxv = sum;
+            if (sumv < maxv) {
+                maxv = sumv;
                 E = Es[i];
             }
         }
@@ -739,8 +739,8 @@ namespace sp{
 
         // refine
         const Mem1<SP_REAL> errs = errHMat(H, pixs, objs);
-        const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
-        const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
+        const Mem1<Vec2> dpixs = filter(pixs, errs, thresh * 2);
+        const Mem1<Vec2> dobjs = filter(objs, errs, thresh * 2);
 
         return calcHMat(H, dpixs, dobjs, 10);
     }
@@ -791,8 +791,8 @@ namespace sp{
         // refine
         {
             const Mem1<SP_REAL> errs = errMatType2(E, npxs0, npxs1);
-            const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, thresh * 2);
-            const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, thresh * 2);
+            const Mem1<Vec2> dnpxs0 = filter(npxs0, errs, thresh * 2);
+            const Mem1<Vec2> dnpxs1 = filter(npxs1, errs, thresh * 2);
 
             if (calcEMat(E, dnpxs0, dnpxs1, 10) == false) return false;
         }
@@ -844,8 +844,8 @@ namespace sp{
         // refine
         {
             const Mem1<SP_REAL> errs = errMatType2(F, pixs0, pixs1);
-            const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, thresh * 2);
-            const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, thresh * 2);
+            const Mem1<Vec2> dpixs0 = filter(pixs0, errs, thresh * 2);
+            const Mem1<Vec2> dpixs1 = filter(pixs1, errs, thresh * 2);
 
             if (calcFMat(F, dpixs0, dpixs1, 10) == false) return false;
         }

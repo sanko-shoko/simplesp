@@ -397,7 +397,7 @@ namespace sp{
 
                     Mem2<SP_REAL> evalMap;
                     getEvalMap(evalMap, h, mrk.map, pixs, kdtree);
-                    const SP_REAL eval = sumVal(evalMap);
+                    const SP_REAL eval = sum(evalMap);
 
                     if (eval > maxv){
                         maxv = eval;
@@ -412,7 +412,7 @@ namespace sp{
         SP_REAL recog(Mat &hom, const DotMarkerParam &mrk, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const KdTree<SP_REAL> &kdtree){
 
             const Mem2<Vec2> ext = grid(2 * (mrk.map.dsize[0] - 1), 2 * (mrk.map.dsize[1] - 1));
-            const Mem2<Vec2> unit = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
+            const Mem2<Vec2> unit = grid(2, 2) + mean(ext) - getVec2(0.5, 0.5);
 
             const int maxn = 10;
             const SP_REAL step = max(static_cast<SP_REAL>(links.size()) / maxn, 1.0);

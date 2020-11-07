@@ -208,19 +208,19 @@ namespace sp {
                 errs[i] = calcPrjErr(pose, cam, pix, pos);
             }
 
-            err = (errs.size() > 0) ? medianVal(errs) : SP_INFINITY;
+            err = (errs.size() > 0) ? median(errs) : SP_INFINITY;
         }
 
         void updateCol() {
             if (valid == false) return;
 
-            Vec3 vec = getVec3(0.0, 0.0, 0.0);
+            Col3f vec = getCol3f(0.0, 0.0, 0.0);
 
             const int num = views.size();
 
             for (int i = 0; i < num; i++) {
                 const Vec2 &pix = ftrs[i]->pix;
-                vec += cast<Vec3>(acsc(views[i]->img, pix.x, pix.y));
+                vec += cast<Col3f>(acsc(views[i]->img, pix.x, pix.y));
             }
 
             col = cast<Col3>(vec / (num));

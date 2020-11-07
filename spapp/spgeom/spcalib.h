@@ -136,10 +136,6 @@ namespace sp{
                     }
                 }
 
-                const SP_REAL mean = meanVal(errs);
-                const SP_REAL median = medianVal(errs);
-                const SP_REAL rms = sqrt(meanSq(errs));
-
                 Mat delta;
                 if (solver::solveAX_B(delta, J, E, solver::calcW(errs, 2)) == false) return ret;
 
@@ -149,7 +145,8 @@ namespace sp{
                     vposes[n] = updatePose(vposes[n], &delta[9 + n * 6]);
                 }
 
-                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+                const SP_REAL rms = sqrt(sqmean(errs));
+                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean(errs), median(errs), rms);
                 ret = rms;
             }
 
@@ -170,7 +167,7 @@ namespace sp{
                 const Mem1<SP_REAL> errs0 = calcPrjErr(pose0, cam0, pixs0[i], getVec3(objs[i], 0.0));
                 const Mem1<SP_REAL> errs1 = calcPrjErr(pose1, cam1, pixs1[i], getVec3(objs[i], 0.0));
 
-                const SP_REAL err = medianVal(errs0) + medianVal(errs1);
+                const SP_REAL err = median(errs0) + median(errs1);
                 if (err < minv){
                     minv = err;
                     stereo = pose1 * invPose(pose0);
@@ -294,11 +291,8 @@ namespace sp{
                     errs.push(calcPrjErr(stereo * vposes[i], cam1, vpixs1[i], getVec3(vobjs[i], 0.0)));
                 }
 
-                const SP_REAL mean = meanVal(errs);
-                const SP_REAL median = medianVal(errs);
-                rms = sqrt(meanSq(errs));
-
-                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+                rms = sqrt(sqmean(errs));
+                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean(errs), median(errs), rms);
             }
 
             return rms;
@@ -567,11 +561,8 @@ namespace sp{
                         }
                     }
 
-                    const SP_REAL mean = meanVal(errs);
-                    const SP_REAL median = medianVal(errs);
-                    rms = sqrt(meanSq(errs));
-
-                    SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+                    rms = sqrt(sqmean(errs));
+                    SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean(errs), median(errs), rms);
                 }
             }
 
@@ -727,11 +718,8 @@ namespace sp{
                 iZ = updatePose(iZ, &delta[6]);
                 Z = invPose(iZ);
 
-                const SP_REAL mean = meanVal(errs);
-                const SP_REAL median = medianVal(errs);
-                rms = sqrt(meanSq(errs));
-
-                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean, median, rms);
+                rms = sqrt(sqmean(errs));
+                SP_PRINTD("i:%02d [mean: %9.6lf], [median: %9.6lf], [rms: %9.6lf]\n", it, mean(errs), median(errs), rms);
             }
 
             return rms;

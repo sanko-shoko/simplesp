@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
-    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
+    SP_CPUFUNC void filter2d(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
         SP_ASSERT(checkPtr(src, 2) && checkPtr(kernel, 2));
         
         dst.resize(2, src.dsize);
@@ -344,7 +344,7 @@ namespace sp{
             }
         }
 
-        filter(dst, src, kernel);
+        filter2d(dst, src, kernel);
     }
 
     template <typename TYPE, typename TYPE0>
@@ -528,7 +528,7 @@ namespace sp{
                             list[ky * winSize + kx] = val;
                         }
                     }
-                    acs2<TYPE, ELEM>(dst, u, v, c) = medianVal(list);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = median(list);
                 }
             }
         }

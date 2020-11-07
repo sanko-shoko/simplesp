@@ -63,7 +63,9 @@ namespace sp{
                 }
 
                 for (int k = 0; k < K; k++){
-                    divElm(&cent(k, 0), dim, &cent(k, 0), cnts[k]);
+                    if (cnts[k] > 0) {
+                        divElm(&cent(k, 0), dim, &cent(k, 0), cnts[k]);
+                    }
                 }
 
             }

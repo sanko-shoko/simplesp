@@ -306,9 +306,9 @@ namespace sp{
         SP_REAL recog(Mat &hom, const DotPatternParam &ptn, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales, const KdTree<SP_REAL> &kdtree) {
 
             const Mem2<Vec2> ext = grid(2 * (ptn.map.dsize[0] - 1), 2 * (ptn.map.dsize[1] - 1));
-            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
-            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec2(1.5, 1.5);
-            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec2(2.5, 2.5);
+            const Mem2<Vec2> unit0 = grid(2, 2) + mean(ext) - getVec2(0.5, 0.5);
+            const Mem2<Vec2> unit1 = grid(4, 4) + mean(ext) - getVec2(1.5, 1.5);
+            const Mem2<Vec2> unit2 = grid(6, 6) + mean(ext) - getVec2(2.5, 2.5);
 
             const int maxn = 10;
             const SP_REAL step = max(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
@@ -330,7 +330,7 @@ namespace sp{
                 Mem2<SP_REAL> evalMap;
                 getEvalMap(evalMap, h, ext, pixs, kdtree);
 
-                const SP_REAL eval = sumVal(evalMap);
+                const SP_REAL eval = sum(evalMap);
                 if (eval > maxv) {
                     H = h;
                     maxv = eval;
@@ -374,7 +374,7 @@ namespace sp{
                     norms.push(minv);
                 }
             }
-            const SP_REAL range = medianVal(norms);
+            const SP_REAL range = median(norms);
 
             for (int p0 = 0; p0 < pixs.size(); p0++) {
                 Mem1<int> index = kdtree.search(&pixs[p0], 2.0 * range);
@@ -550,14 +550,13 @@ namespace sp{
                     list.push(scaleMap[i]);
                 }
             }
-            const SP_REAL median = medianVal(list);
 
+            const SP_REAL m = median(list);
             for (int i = 0; i < scaleMap.size(); i++) {
                 if (scaleMap[i] > 0) {
-                    codeMap[i] = scaleMap[i] - median;
+                    codeMap[i] = scaleMap[i] - m;
                 }
             }
-
         }
     
         SP_REAL searchPeak(Vec2 &peak, const DotPatternParam &ptn, const Mem2<SP_REAL> &codeMap) {

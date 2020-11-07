@@ -25,17 +25,17 @@ private:
     virtual void init() {
         help();
 
-        m_K = 10;
+        m_K = 40;
 
         // generate test data
         m_pnts.clear();
         for (int c = 0; c < m_K; c++) {
-            const Vec2 vec = getVec2(300.0, 200.0);
-            const Vec2 cent = randuVec2(vec.x / 2, vec.y / 2);
+            const Vec2 size = getVec2(m_wcam.dsize[0], m_wcam.dsize[1]);
+            const Vec2 cent = size / 2 + randuVec2(size.x, size.y) / 4;
 
-            const int num = 200;
+            const int num = 40;
             for (int n = 0; n < num; n++) {
-                const Vec2 pnt = randgVec2(vec.x / 4, vec.y / 4) + cent;
+                const Vec2 pnt = randgVec2(size.x / 8, size.y / 8) + cent;
                 m_pnts.push(pnt);
             }
         }
@@ -62,7 +62,7 @@ private:
 
         // render points
         {
-            glLoadView2D(0, 0, m_viewPos, m_viewScale);
+            glLoadView2D(m_wcam.dsize, m_viewPos, m_viewScale);
 
             glPointSize(5.f);
             glBegin(GL_POINTS);

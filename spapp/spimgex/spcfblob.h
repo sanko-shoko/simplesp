@@ -713,7 +713,7 @@ namespace sp {
             {
                 const SP_REAL DSC_MAG_THR = 0.2;
 
-                const SP_REAL sq = sumSq(ddsc);
+                const SP_REAL sq = sqsum(ddsc);
                 const SP_REAL thresh = sqrt(sq) * DSC_MAG_THR;
 
                 for (int k = 0; k < ddsc.size(); k++) {
@@ -722,7 +722,7 @@ namespace sp {
             }
 
             {
-                const SP_REAL sq = sumSq(ddsc);
+                const SP_REAL sq = sqsum(ddsc);
                 const SP_REAL nrm = 1.0 / max(sqrt(sq), SP_SMALL);
 
                 const int dim = ddsc.size();

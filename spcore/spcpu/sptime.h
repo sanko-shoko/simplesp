@@ -6,6 +6,7 @@
 #define __SP_TIME_H__
 
 #include <time.h>
+#include <thread>
 
 #if defined(_WIN32)
 #define NOMINMAX
@@ -23,6 +24,10 @@ namespace sp {
         time_t t = time(NULL);
         strftime(dst, SP_STRMAX - 1, format, localtime(&t));
         return dst;
+    }
+
+    static void sleep(const long long ms) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
     }
 }
 

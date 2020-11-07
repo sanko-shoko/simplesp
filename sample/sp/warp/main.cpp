@@ -102,8 +102,8 @@ int main(){
                     zlist.push(pnts[i].z);
                 }
 
-                //const double z = medianVal(zlist);
-                const double z = meanVal(zlist);
+                //const double z = median(zlist);
+                const double z = mean(zlist);
 
                 {
                     const Mat cmat = extMat(4, 4, getMat(cam));

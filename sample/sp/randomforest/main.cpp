@@ -57,7 +57,7 @@ void regression(){
         X[1] = randu() * 10;
 
         const double Y = a * X[0] + b * X[1] + c;
-        const double R = meanVal(rf.execute(X));
+        const double R = mean(rf.execute(X));
 
         printf("ground truth %.4lf\n", Y);
         printf("regression   %.4lf\n", R);
@@ -94,7 +94,7 @@ void classification(const char *path) {
 
         Mem1<int> hist;
         histogram(hist, rf.execute(X), 10);
-        const int C = maxArg(hist);
+        const int C = maxarg(hist);
 
         results.push(C);
     }

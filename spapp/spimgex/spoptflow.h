@@ -225,8 +225,8 @@ namespace sp{
             }
         }
 
-        if (cntVal(mask, true) > 0) {
-            const SP_REAL sigma = 1.4826 * medianVal(filter(errs, mask));
+        if (count(mask, true) > 0) {
+            const SP_REAL sigma = 1.4826 * median(filter(errs, mask));
 
             for (int i = 0; i < mask.size(); i++) {
                 if (errs[i] > 3.0 * sigma) mask[i] = false;

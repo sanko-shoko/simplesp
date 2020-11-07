@@ -29,9 +29,6 @@ namespace sp {
 #define SP_PRINTD(...) if(0){ SP_PRINTF(__VA_ARGS__); }
 #endif
 
-#define SP_ASSERT(EXP) if(!(EXP)){ SP_PRINTF(" assert (%s)\n file: %s\n line: %d\n", #EXP, __FILE__, __LINE__); ::exit(0); }
-
-
     //--------------------------------------------------------------------------------
     // print 
     //--------------------------------------------------------------------------------

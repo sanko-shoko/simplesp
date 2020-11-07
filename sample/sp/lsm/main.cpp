@@ -155,9 +155,9 @@ int main(){
                 errs.push(err);
             }
 
-            const double median = medianVal(errs);
+            const double m = median(errs);
             for (int i = 0; i < data.size(); i++) {
-                const double w = funcTukey(errs[i], 3.0 * median);
+                const double w = funcTukey(errs[i], 3.0 * m);
                 W(i, i) = w;
             }
         }

@@ -30,7 +30,7 @@ int main() {
         }
     
         {
-            const Vec2 mean = meanVec(data);
+            const Vec2 mean = mean(data);
 
             Mat mat(data.size(), 2);
             for (int i = 0; i < data.size(); i++) {

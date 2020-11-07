@@ -207,10 +207,10 @@ namespace sp{
                 tmp[i] = Ys[index[i]];
             }
 
-            const SP_REAL mean = meanVal(tmp);
-            const SP_REAL sigma = sqrt(meanSq(tmp - mean));
+            const SP_REAL meanv = mean(tmp);
+            const SP_REAL sigma = sqrt(sqmean(tmp - meanv));
 
-            node->val = mean;
+            node->val = meanv;
             node->dev = sigma;
 
             return node;
@@ -272,7 +272,7 @@ namespace sp{
                 hist[Ys[index[n]]]++;
             }
 
-            node->val = maxArg(hist);
+            node->val = maxarg(hist);
             node->dev = 1.0 - static_cast<SP_REAL>(max(hist)) / index.size();
 
             return node;

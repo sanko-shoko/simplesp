@@ -367,7 +367,7 @@ namespace sp{
                 if (contour.size() == 0) continue;
 
                 // center position
-                const Vec2 cent = meanVec(contour);
+                const Vec2 cent = mean(contour);
 
                 // tracing contour and count good contrast
                 int cnt = 0;
@@ -402,7 +402,7 @@ namespace sp{
             // detect corner
             for (int i = 0; i < contours.size(); i++) {
                 const Mem1<Vec2> &contour = contours[i];
-                const Vec2 cent = meanVec(contour);
+                const Vec2 cent = mean(contour);
 
                 Mem1<Vec2> corner(4);
                 for (int c = 0; c < 4; c++){
@@ -433,7 +433,7 @@ namespace sp{
             // refine
             for (int i = 0; i < dst.size(); i++) {
                 Mem1<Vec2> &corner = dst[i];
-                const Vec2 cent = meanVec(corner);
+                const Vec2 cent = mean(corner);
 
                 for (int c = 0; c < 4; c++){
                     const int u = round(corner[c].x);
@@ -728,7 +728,7 @@ namespace sp{
 
                     tposes.push(pose);
                     tcpixs.push(dpixs[crsps[i][j]]);
-                    tcobjs.push(invPose(mrks[i][j].offset) * (unit * mrks[i][j].length));
+                    tcobjs.push(invPose(mrks[i][j].offset) * getVec3(unit * mrks[i][j].length, 0.0));
                 }
 
                 if (mrks[i].size() == 1) {
@@ -746,7 +746,7 @@ namespace sp{
                         Pose &tmp = tposes[j];
                         if (refinePose(tmp, m_cam, tcpixs, tcobjs) == false) continue;
 
-                        const SP_REAL err = medianVal(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
+                        const SP_REAL err = median(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
 
                         if (err < minv) {
                             minv = err;
@@ -757,8 +757,8 @@ namespace sp{
 
                     const Mem1<SP_REAL> errs = calcPrjErr(pose, m_cam, tcpixs, tcobjs);
                     poses[i] = pose;
-                    cpixs[i] = denoise(tcpixs, errs, minv * 3.0);
-                    cobjs[i] = denoise(tcobjs, errs, minv * 3.0);
+                    cpixs[i] = filter(tcpixs, errs, minv * 3.0);
+                    cobjs[i] = filter(tcobjs, errs, minv * 3.0);
                 }
 
             }
