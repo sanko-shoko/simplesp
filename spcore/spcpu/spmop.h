@@ -16,18 +16,6 @@
 namespace sp{
 
     //--------------------------------------------------------------------------------
-    // type
-    //--------------------------------------------------------------------------------
-
-    SP_CPUFUNC Mem1<Vec3> getVec3(const Mem1<Vec2> &vec, const double z) {
-        Mem<Vec3> dst(vec.dim, vec.dsize);
-        for (int i = 0; i < dst.size(); i++) {
-            dst[i] = getVec3(vec[i].x, vec[i].y, z);
-        }
-        return dst;
-    }
-
-    //--------------------------------------------------------------------------------
     // mem
     //--------------------------------------------------------------------------------
 
@@ -70,6 +58,12 @@ namespace sp{
         SP_ASSERT(mem0.dim == mem1.dim && cmp(mem0.dsize, mem1.dsize, mem0.dim));
         dst.resize(mem0.dim, mem0.dsize);
         mulMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
+    }
+    template<typename TYPE, typename TYPE0, typename TYPE1>
+    SP_CPUFUNC void divMem(Mem<TYPE> &dst, const Mem<TYPE0> &mem0, const Mem<TYPE1> &mem1) {
+        SP_ASSERT(mem0.dim == mem1.dim && cmp(mem0.dsize, mem1.dsize, mem0.dim));
+        dst.resize(mem0.dim, mem0.dsize);
+        divMem(dst.ptr, dst.size(), mem0.ptr, mem1.ptr);
     }
 
     template<typename TYPE, typename TYPE0, typename ELEM>
@@ -372,6 +366,13 @@ namespace sp{
     // vector util
     //--------------------------------------------------------------------------------
 
+    SP_CPUFUNC Mem1<Vec3> getVec3(const Mem1<Vec2> &vec, const double z) {
+        Mem<Vec3> dst(vec.dim, vec.dsize);
+        for (int i = 0; i < dst.size(); i++) {
+            dst[i] = getVec3(vec[i].x, vec[i].y, z);
+        }
+        return dst;
+    }
 
     SP_CPUFUNC Mem2<Vec2> grid(const int dsize0, const int dsize1) {
         Mem2<Vec2> map(dsize0, dsize1);
@@ -408,7 +409,7 @@ namespace sp{
 
 
     //--------------------------------------------------------------------------------
-    // pose
+    // transform
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC Rot getRot(const Mat &mat) {
