@@ -283,35 +283,53 @@ namespace sp {
                 int di = 0;
                 int da = 0;
 
-                double mina = SP_INFINITY;
-                for (int a = 0; a < 3; a++) {
-                    sort(&idxs[n.base], n.size, cmp[a]);
-                    Box3 bl = nullBox3();
-                    Box3 br = nullBox3();
+                if (n.size < 100) {
+                    double mina = SP_INFINITY;
+                    for (int a = 0; a < 3; a++) {
+                        sort(&idxs[n.base], n.size, cmp[a]);
+                        Box3 bl = nullBox3();
+                        Box3 br = nullBox3();
 
-                    for (int i = 1; i < n.size; i++) {
-                        const int l = i;
-                        bl = orBox(bl, idxs[n.base + l - 1].box);
-                        buff[n.base + l] = 0;
-                        buff[n.base + l] += getBoxArea(bl) * i;
-                    }
-                    for (int i = 1; i < n.size; i++) {
-                        const int r = n.size - i;
-                        br = orBox(br, idxs[n.base + r].box);
-                        buff[n.base + r] += getBoxArea(br) * i;
-                    }
+                        for (int i = 1; i < n.size; i++) {
+                            const int l = i;
+                            bl = orBox(bl, idxs[n.base + l - 1].box);
+                            buff[n.base + l] = 0;
+                            buff[n.base + l] += getBoxArea(bl) * i;
+                        }
+                        for (int i = 1; i < n.size; i++) {
+                            const int r = n.size - i;
+                            br = orBox(br, idxs[n.base + r].box);
+                            buff[n.base + r] += getBoxArea(br) * i;
+                        }
 
-                    for (int i = 1; i < n.size; i++) {
-                        //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
-                        if (buff[n.base + i] < mina) {
-                            mina = buff[n.base + i];
-                            di = i;
-                            da = a;
+                        for (int i = 1; i < n.size; i++) {
+                            //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                            if (buff[n.base + i] < mina) {
+                                mina = buff[n.base + i];
+                                di = i;
+                                da = a;
+                            }
                         }
                     }
+                    if (da != 2) {
+                        sort(&idxs[n.base], n.size, cmp[da]);
+                    }
                 }
-                if (da != 2) {
+                else {
+                    const double x = fabs(n.box.pos[1].x - n.box.pos[0].x);
+                    const double y = fabs(n.box.pos[1].y - n.box.pos[0].y);
+                    const double z = fabs(n.box.pos[1].z - n.box.pos[0].z);
+                    if (x > max(y, z)) {
+                        da = 0;
+                    }
+                    else if(y > z) {
+                        da = 1;
+                    }
+                    else {
+                        da = 2;
+                    }
                     sort(&idxs[n.base], n.size, cmp[da]);
+                    di = n.size / 2;
                 }
                 return di;
             };

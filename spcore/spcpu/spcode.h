@@ -7,6 +7,7 @@
 
 #include "spcore/spgen/spbase.h"
 #include "spcore/spcpu/spmem.h"
+#include "spcore/spcpu/spstring.h"
 
 namespace sp {
 

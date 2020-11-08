@@ -21,6 +21,7 @@
 #include "spcore/spcpu/spcode.h"
 #include "spcore/spcpu/spprint.h"
 
+#include "spcore/spcpu/spstring.h"
 #include "spcore/spcpu/spsystem.h"
 #include "spcore/spcpu/sptime.h"
 #include "spcore/spcpu/spthread.h"
