@@ -30,12 +30,12 @@ int main() {
         }
     
         {
-            const Vec2 mean = mean(data);
+            const Vec2 m = mean(data);
 
             Mat mat(data.size(), 2);
             for (int i = 0; i < data.size(); i++) {
-                mat(i, 0) = data[i].x - mean.x;
-                mat(i, 1) = data[i].y - mean.y;
+                mat(i, 0) = data[i].x - m.x;
+                mat(i, 1) = data[i].y - m.y;
             }
 
             Mat eigVec, eigVal;
