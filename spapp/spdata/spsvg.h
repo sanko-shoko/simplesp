@@ -6,7 +6,6 @@
 #define __SP_SVG_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spfile.h"
 
 namespace sp {
 

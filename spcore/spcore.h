@@ -22,6 +22,7 @@
 #include "spcore/spcpu/spprint.h"
 
 #include "spcore/spcpu/spstring.h"
+#include "spcore/spcpu/spfile.h"
 #include "spcore/spcpu/spsystem.h"
 #include "spcore/spcpu/spthread.h"
 #include "spcore/spcpu/spdebug.h"

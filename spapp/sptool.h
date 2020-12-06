@@ -5,9 +5,9 @@
 #ifndef __SP_TOOL_H__
 #define __SP_TOOL_H__
 
+#include "spcore/spcore.h"
 #include "spapp/spgeom/spcalib.h"
 #include "spapp/spgeomex/spdotmarker.h"
-#include "spapp/spdata/spfile.h"
 
 namespace sp {
 

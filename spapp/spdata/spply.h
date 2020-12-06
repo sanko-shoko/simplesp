@@ -5,7 +5,7 @@
 #ifndef __SP_PLY_H__
 #define __SP_PLY_H__
 
-#include "spapp/spdata/spfile.h"
+#include "spcore/spcore.h"
 #include "spapp/spdata/spmodel.h"
 
 namespace sp{

@@ -5,7 +5,7 @@
 #ifndef __SP_STL_H__
 #define __SP_STL_H__
 
-#include "spapp/spdata/spfile.h"
+#include "spcore/spcore.h"
 
 namespace sp{
 

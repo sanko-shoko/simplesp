@@ -6,7 +6,6 @@
 #define __SP_DATASET_H__
 
 #include "spcore/spcore.h"
-#include "spapp/spdata/spfile.h"
 #include "spapp/splearn/spneubase.h"
 
 namespace sp{

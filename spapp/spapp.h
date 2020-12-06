@@ -6,7 +6,6 @@
 #define __SP_APP_H__
 
 // data
-#include "spapp/spdata/spfile.h"
 #include "spapp/spdata/spxml.h"
 #include "spapp/spdata/spjson.h"
 #include "spapp/spdata/spply.h"
