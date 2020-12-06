@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-
 namespace sp {
 
     //--------------------------------------------------------------------------------
@@ -29,13 +28,6 @@ namespace sp {
 #else
 #define SP_PRINTD(...) if(0){ SP_PRINTF(__VA_ARGS__); }
 #endif
-
-#if SP_USE_ASSERT
-#define SP_ASSERT(EXP) if(!(EXP)){ ::printf(" assert (%s)\n file: %s\n line: %d\n", #EXP, __FILE__, __LINE__); ::exit(0); }
-#else
-#define SP_ASSERT(EXP) (EXP);
-#endif
-
 
     //--------------------------------------------------------------------------------
     // print 

@@ -146,8 +146,8 @@ void output(char *name, const Mat &F, const Mem2<Col3> &img0, const Mem1<Vec2> &
     const Mem1<SP_REAL> errs = errFMat(F, pixs0, pixs1);
 
     // get points on epipolar line
-    const Mem1<Vec2> dpixs0 = denoise(pixs0, errs);
-    const Mem1<Vec2> dpixs1 = denoise(pixs1, errs);
+    const Mem1<Vec2> dpixs0 = filter(pixs0, errs);
+    const Mem1<Vec2> dpixs1 = filter(pixs1, errs);
 
     renderEpipolar(_img0, trnMat(F), dpixs1, getCol3(0, 200, 100), 2);
     renderPoint(_img0, dpixs0, getCol3(255, 255, 255), 4);

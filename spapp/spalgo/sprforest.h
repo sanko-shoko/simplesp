@@ -103,7 +103,7 @@ namespace sp{
                     return node;
                 }
 
-                const int maxd = maxVal(floor(log(Xs.size()) / log(2.0) - 2), 2);
+                const int maxd = max(floor(log(Xs.size()) / log(2.0) - 2), 2);
                 if (depth >= maxd) {
                     return node;
                 }
@@ -127,8 +127,8 @@ namespace sp{
                     SP_REAL minv = +SP_INFINITY;
                     for (int n = 0; n < index.size(); n++) {
                         const SP_REAL v = Xs[index[n]][s];
-                        maxv = maxVal(maxv, v);
-                        minv = minVal(minv, v);
+                        maxv = max(maxv, v);
+                        minv = min(minv, v);
                     }
                     maxvs[s] = maxv;
                     minvs[s] = minv;
@@ -207,10 +207,10 @@ namespace sp{
                 tmp[i] = Ys[index[i]];
             }
 
-            const SP_REAL mean = meanVal(tmp);
-            const SP_REAL sigma = sqrt(meanSq(tmp - mean));
+            const SP_REAL meanv = mean(tmp);
+            const SP_REAL sigma = sqrt(sqmean(tmp - meanv));
 
-            node->val = mean;
+            node->val = meanv;
             node->dev = sigma;
 
             return node;
@@ -272,8 +272,8 @@ namespace sp{
                 hist[Ys[index[n]]]++;
             }
 
-            node->val = maxArg(hist);
-            node->dev = 1.0 - static_cast<SP_REAL>(maxVal(hist)) / index.size();
+            node->val = maxarg(hist);
+            node->dev = 1.0 - static_cast<SP_REAL>(max(hist)) / index.size();
 
             return node;
         }
@@ -301,7 +301,7 @@ namespace sp{
                 }
                 gain -= sum * cnt[s] / index.size();
             }
-            return SP_CAST_REAL(gain);
+            return static_cast<SP_REAL>(gain);
         }
 
 

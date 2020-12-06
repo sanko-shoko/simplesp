@@ -59,7 +59,7 @@ namespace sp{
                     if (grad(u, v) < low) continue;
 
                     const int *s = ref[bin(u, v)];
-                    if (grad(u, v) > maxVal(grad(u - s[0], v - s[1]), grad(u + s[0], v + s[1]))) {
+                    if (grad(u, v) > max(grad(u - s[0], v - s[1]), grad(u + s[0], v + s[1]))) {
                         acs2(dst, u, v) = (grad(u, v) < higth) ? 1 : 255;
                     }
                 }

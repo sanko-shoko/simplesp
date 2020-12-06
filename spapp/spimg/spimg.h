@@ -16,7 +16,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src, const double dscale0, const double dscale1){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -41,7 +40,6 @@ namespace sp{
     
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void rescale(Mem<TYPE> &dst, const Mem<TYPE> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -50,7 +48,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src, const double dscale0, const double dscale1) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<Byte> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -74,7 +71,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void rescaleFast(Mem<Byte> &dst, const Mem<Byte> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const SP_REAL dscale0 = static_cast<SP_REAL>(dst.dsize[0]) / src.dsize[0];
         const SP_REAL dscale1 = static_cast<SP_REAL>(dst.dsize[1]) / src.dsize[1];
@@ -89,7 +85,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void pyrdown(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE>*>(&dst) != &src) ? src : clone(src);
 
@@ -150,7 +145,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void crop(Mem<TYPE> &dst, const Mem<TYPE> &src, const Rect2 &rect, const double angle = 0.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -193,14 +187,12 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void concat(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const bool horizon = true){
-        SP_ASSERT(checkPtr(src0, 2));
-        SP_ASSERT(checkPtr(src1, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
         const Mem<TYPE> &tmp1 = (&dst != &src1) ? src1 : clone(src1);
         
-        const int dsize0 = (horizon == true) ? src0.dsize[0] + src1.dsize[0] : maxVal(src0.dsize[0], src1.dsize[0]);
-        const int dsize1 = (horizon == true) ? maxVal(src0.dsize[1], src1.dsize[1]) : src0.dsize[1] + src1.dsize[1];
+        const int dsize0 = (horizon == true) ? src0.dsize[0] + src1.dsize[0] : max(src0.dsize[0], src1.dsize[0]);
+        const int dsize1 = (horizon == true) ? max(src0.dsize[1], src1.dsize[1]) : src0.dsize[1] + src1.dsize[1];
         
         const int dsize[2] = { dsize0, dsize1 };
         dst.resize(2, dsize);
@@ -223,9 +215,7 @@ namespace sp{
     }
 
     template <typename TYPE>
-    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const Mem<TYPE> &src1, const double rate = 0.5) {
-        SP_ASSERT(checkPtr(src0, 2));
-        SP_ASSERT(checkPtr(src1, 2));
+    SP_CPUFUNC void blend(Mem<TYPE> &dst, const Mem<TYPE> &src0, const double r0, const Mem<TYPE> &src1, const double r1) {
         SP_ASSERT(cmp(src0.dsize, src1.dsize, 2));
 
         const Mem<TYPE> &tmp0 = (&dst != &src0) ? src0 : clone(src0);
@@ -236,7 +226,7 @@ namespace sp{
 
         for (int v = 0; v < src0.dsize[1]; v++) {
             for (int u = 0; u < src0.dsize[0]; u++) {
-                acs2(dst, u, v) = blendCol(acs2(tmp0, u, v), acs2(tmp1, u, v), rate);
+                acs2(dst, u, v) = blendCol(acs2(tmp0, u, v), r0, acs2(tmp1, u, v), r1);
             }
         }
     }
@@ -247,7 +237,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void invert(Mem<TYPE> &dst, const Mem<TYPE> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -313,8 +302,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void remap(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mem<Vec2> &table, const bool useExt = false){
-        SP_ASSERT(checkPtr(src, 2));
-        SP_ASSERT(checkPtr(table, 2));
         SP_ASSERT(cmp(src.dsize, table.dsize, 2));
         
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -344,7 +331,6 @@ namespace sp{
 
     template<typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void warp(Mem<TYPE> &dst, const Mem<TYPE> &src, const Mat &mat){
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
@@ -378,7 +364,6 @@ namespace sp{
 
     template<typename DST, typename SRC>
     SP_CPUFUNC void cnvImg(Mem<DST> &dst, const Mem<SRC> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -389,7 +374,6 @@ namespace sp{
         
     template <typename TYPE0, typename TYPE1>
     SP_CPUFUNC void cnvDepthToImg(Mem<TYPE0> &dst, const Mem<TYPE1> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -405,7 +389,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvNormalToImg(Mem<TYPE> &dst, const Mem<VecPD3> &src, const double nearPlane = 100.0, const double farPlane = 10000.0){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -421,7 +404,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const Mem<float> &eval, const int maxDisp, const int minDisp) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -435,7 +417,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void cnvDispToImg(Mem<TYPE> &dst, const Mem<float> &src, const int maxDisp, const int minDisp) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();
@@ -446,7 +427,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void cnvLabelToImg(Mem<Col3> &dst, const Mem<int> &src){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         dst.zero();

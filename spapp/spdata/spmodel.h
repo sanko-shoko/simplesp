@@ -25,7 +25,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_CPUFUNC Vec3 getModelCent(const Mem1<Mesh3> &model){
-        Vec3 sum = zero<Vec3>();
+        Vec3 sum = getVec3(0.0, 0.0, 0.0);
         for (int i = 0; i < model.size(); i++){
             sum += getMeshCent(model[i]);
         }
@@ -39,15 +39,15 @@ namespace sp{
             mem[i] = normVec(getMeshCent(model[i]));
         }
 
-        return maxVal(mem);
+        return max(mem);
     }
 
     SP_CPUFUNC SP_REAL getModelDistance(const Mem1<Mesh3> &model, const CamParam &cam){
 
         const double radius = getModelRadius(model);
-        const double distance = 1.2 * maxVal(cam.fx, cam.fy) * radius / (0.5 * minVal(cam.dsize[0], cam.dsize[1]));
+        const double distance = 1.2 * max(cam.fx, cam.fy) * radius / (0.5 * min(cam.dsize[0], cam.dsize[1]));
     
-        return SP_CAST_REAL(distance);
+        return static_cast<SP_REAL>(distance);
     }
 
     SP_CPUFUNC Mem1<VecPD3> getModelPoint(const Mem1<Mesh3> &model, const int density = 50){

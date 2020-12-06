@@ -14,7 +14,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
-    SP_CPUFUNC void filter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
+    SP_CPUFUNC void filter2d(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
         SP_ASSERT(checkPtr(src, 2) && checkPtr(kernel, 2));
         
         dst.resize(2, src.dsize);
@@ -56,7 +56,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
     SP_CPUFUNC void filterX(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
-        SP_ASSERT(checkPtr(src, 2) && checkPtr(kernel, 1));
 
         dst.resize(2, src.dsize);
         const Mem2<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
@@ -94,7 +93,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE, typename TYPE0, typename ELEM0 = ELEM>
     SP_CPUFUNC void filterY(Mem<TYPE> &dst, const Mem<TYPE0> &src, const Mem<SP_REAL> &kernel){
-        SP_ASSERT(checkPtr(src, 2) && checkPtr(kernel, 1));
 
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
@@ -141,9 +139,8 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void gaussianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma = 0.8){
-        SP_ASSERT(checkPtr(src, 2));
 
-        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma - 0.8) / 0.3 + 1));
 
         Mem1<SP_REAL> kernel(2 * half + 1);
         for (int k = -half; k <= half; k++){
@@ -158,7 +155,6 @@ namespace sp{
 
     template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void gaussianFilter3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
@@ -211,11 +207,10 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void boxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         Mem1<SP_REAL> kernel(winSize);
         for (int k = 0; k < winSize; k++) {
-            kernel(k) = SP_CAST_REAL(1.0);
+            kernel(k) = static_cast<SP_REAL>(1.0);
         }
 
         Mem2<TYPE> tmp;
@@ -225,7 +220,6 @@ namespace sp{
     
     template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void boxFilter3x3(Mem<TYPE> &dst, const Mem<TYPE0> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Mem<TYPE0> &tmp = (reinterpret_cast<const Mem<TYPE0>*>(&dst) != &src) ? src : clone(src);
 
@@ -280,7 +274,6 @@ namespace sp{
 
     template <typename TYPE>
     SP_CPUFUNC void maxFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -296,7 +289,7 @@ namespace sp{
                     for (int kx = 0; kx < winSize; kx++) {
 
                         const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
-                        maxv = maxVal(maxv, val);
+                        maxv = max(maxv, val);
                     }
                 }
 
@@ -323,7 +316,7 @@ namespace sp{
                     for (int kx = 0; kx < winSize; kx++) {
 
                         const TYPE &val = acs2(tmp, u + kx - offset, v + ky - offset);
-                        minv = minVal(minv, val);
+                        minv = min(minv, val);
                     }
                 }
 
@@ -341,17 +334,17 @@ namespace sp{
     SP_CPUFUNC void laplacianFilter(Mem<TYPE> &dst, const Mem<TYPE0> &src, const double sigma = 0.8){
         SP_ASSERT(checkPtr(src, 2));
 
-        const int half = maxVal(1, round((sigma - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma - 0.8) / 0.3 + 1));
 
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= half; y++){
             for (int x = -half; x <= half; x++){
                 const double r = x * x + y * y;
-                kernel(x + half, y + half) = SP_CAST_REAL((r - 2 * sq(sigma)) * exp(-r / (2 * sq(sigma))));
+                kernel(x + half, y + half) = static_cast<SP_REAL>((r - 2 * sq(sigma)) * exp(-r / (2 * sq(sigma))));
             }
         }
 
-        filter(dst, src, kernel);
+        filter2d(dst, src, kernel);
     }
 
     template <typename TYPE, typename TYPE0>
@@ -409,7 +402,6 @@ namespace sp{
 
     template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void sobelFilter3x3(Mem<TYPE> &dX, Mem<TYPE> &dY, const Mem<TYPE0> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const int dsize0 = src.dsize[0];
         const int dsize1 = src.dsize[1];
@@ -463,7 +455,6 @@ namespace sp{
     
     template <typename TYPE, typename TYPE0>
     SP_CPUFUNC void scharrFilter3x3(Mem<TYPE> &dX, Mem<TYPE> &dY, const Mem<TYPE0> &src) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const int dsize0 = src.dsize[0];
         const int dsize1 = src.dsize[1];
@@ -517,7 +508,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void medianFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
@@ -538,7 +528,7 @@ namespace sp{
                             list[ky * winSize + kx] = val;
                         }
                     }
-                    acs2<TYPE, ELEM>(dst, u, v, c) = medianVal(list);
+                    acs2<TYPE, ELEM>(dst, u, v, c) = median(list);
                 }
             }
         }
@@ -551,7 +541,6 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void normalizeFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const int winSize, const int maxv = SP_BYTEMAX) {
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
 
@@ -559,7 +548,7 @@ namespace sp{
         {
             Mem1<SP_REAL> kernel(winSize);
             for (int k = 0; k < winSize; k++) {
-                kernel(k) = SP_CAST_REAL(1.0);
+                kernel(k) = static_cast<SP_REAL>(1.0);
             }
 
             filterX<TYPE, ELEM>(tmp, src, kernel);
@@ -585,12 +574,11 @@ namespace sp{
 
     template <typename TYPE, typename ELEM = TYPE>
     SP_CPUFUNC void bilateralFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const double sigma_s, const double sigma_c){
-        SP_ASSERT(checkPtr(src, 2));
 
         dst.resize(2, src.dsize);
         const Mem<TYPE> &tmp = (&dst != &src) ? src : clone(src);
 
-        const int half = maxVal(1, round((sigma_s - 0.8) / 0.3 + 1));
+        const int half = max(1, round((sigma_s - 0.8) / 0.3 + 1));
 
         Mem2<SP_REAL> kernel(2 * half + 1, 2 * half + 1);
         for (int y = -half; y <= +half; y++) {
@@ -605,7 +593,7 @@ namespace sp{
         for (int i = 0; i < exptable.size(); i++){
             const double r = sq(i / expscale);
             const double v = exp(-r / 2.0);
-            exptable[i] = SP_CAST_REAL(v);
+            exptable[i] = static_cast<SP_REAL>(v);
         }
 
         const Rect2 rect = getRect2(dst.dsize);

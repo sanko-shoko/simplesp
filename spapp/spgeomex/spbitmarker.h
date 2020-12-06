@@ -63,9 +63,9 @@ namespace sp{
             Mem2<Byte> gry;
             cnvImg(gry, tmp);
 
-            const Byte minv = minVal(gry);
-            const Byte maxv = maxVal(gry);
-            const SP_REAL rate = SP_BYTEMAX / maxVal(static_cast<SP_REAL>(maxv - minv), 1.0);
+            const Byte minv = min(gry);
+            const Byte maxv = max(gry);
+            const SP_REAL rate = SP_BYTEMAX / max(static_cast<SP_REAL>(maxv - minv), 1.0);
 
             cnvMem(this->img, gry, rate, minv);
         }
@@ -287,7 +287,7 @@ namespace sp{
 
     private:
         SP_REAL getMinScale(){
-            return static_cast<SP_REAL>(MIN_IMGSIZE) / maxVal(m_cam.dsize[0], m_cam.dsize[1]);
+            return static_cast<SP_REAL>(MIN_IMGSIZE) / max(m_cam.dsize[0], m_cam.dsize[1]);
         }
 
         //--------------------------------------------------------------------------------
@@ -367,7 +367,7 @@ namespace sp{
                 if (contour.size() == 0) continue;
 
                 // center position
-                const Vec2 cent = meanVec(contour);
+                const Vec2 cent = mean(contour);
 
                 // tracing contour and count good contrast
                 int cnt = 0;
@@ -380,14 +380,14 @@ namespace sp{
                         cnt++;
                     }
 
-                    minLng = minVal(minLng, normVec(crnt - cent));
+                    minLng = min(minLng, normVec(crnt - cent));
                 }
 
                 // check contrast
                 if (static_cast<double>(cnt) / contour.size() < 0.8) continue;
 
                 // check size
-                if (minLng < minVal(img.dsize[0], img.dsize[1]) * MRK_MINSIZE) continue;
+                if (minLng < min(img.dsize[0], img.dsize[1]) * MRK_MINSIZE) continue;
 
                 dst.push(contour);
             }
@@ -402,7 +402,7 @@ namespace sp{
             // detect corner
             for (int i = 0; i < contours.size(); i++) {
                 const Mem1<Vec2> &contour = contours[i];
-                const Vec2 cent = meanVec(contour);
+                const Vec2 cent = mean(contour);
 
                 Mem1<Vec2> corner(4);
                 for (int c = 0; c < 4; c++){
@@ -433,7 +433,7 @@ namespace sp{
             // refine
             for (int i = 0; i < dst.size(); i++) {
                 Mem1<Vec2> &corner = dst[i];
-                const Vec2 cent = meanVec(corner);
+                const Vec2 cent = mean(corner);
 
                 for (int c = 0; c < 4; c++){
                     const int u = round(corner[c].x);
@@ -443,7 +443,7 @@ namespace sp{
                     crop(part, img, getRect2(u, v, 1, 1) + WIN_SIZE);
 
                     // binalize
-                    binalize(bin, part, (maxVal(part) + minVal(part)) / 2);
+                    binalize(bin, part, (max(part) + min(part)) / 2);
 
                     // update position
                     const int step = 3;
@@ -615,17 +615,17 @@ namespace sp{
 
                 for (int v = margin; v < dsize[1] - margin; v++){
                     for (int u = margin; u < dsize[0] - margin; u++){
-                        maxv = maxVal(maxv, timg(u, v));
-                        minv = minVal(minv, timg(u, v));
+                        maxv = max(maxv, timg(u, v));
+                        minv = min(minv, timg(u, v));
                     }
                 }
 
                 for (int s = 0; s < pimg.size(); s++){
-                    pimg[s] = minVal(pimg[s], maxv);
-                    pimg[s] = maxVal(pimg[s], minv);
+                    pimg[s] = min(pimg[s], maxv);
+                    pimg[s] = max(pimg[s], minv);
                 }
 
-                const SP_REAL rate = SP_BYTEMAX / maxVal(static_cast<SP_REAL>(maxv - minv), 1.0);
+                const SP_REAL rate = SP_BYTEMAX / max(static_cast<SP_REAL>(maxv - minv), 1.0);
                 cnvMem(pimg, pimg, rate, minv);
             }
 
@@ -712,7 +712,7 @@ namespace sp{
             for (int i = 0; i < mrks.size(); i++) {
                 poses[i] = zeroPose();
 
-                if (maxVal(crsps[i]) < 0) continue;
+                if (max(crsps[i]) < 0) continue;
 
                 Mem1<Pose> tposes;
                 Mem1<Vec2> tcpixs;
@@ -728,7 +728,7 @@ namespace sp{
 
                     tposes.push(pose);
                     tcpixs.push(dpixs[crsps[i][j]]);
-                    tcobjs.push(invPose(mrks[i][j].offset) * (unit * mrks[i][j].length));
+                    tcobjs.push(invPose(mrks[i][j].offset) * getVec3(unit * mrks[i][j].length, 0.0));
                 }
 
                 if (mrks[i].size() == 1) {
@@ -746,7 +746,7 @@ namespace sp{
                         Pose &tmp = tposes[j];
                         if (refinePose(tmp, m_cam, tcpixs, tcobjs) == false) continue;
 
-                        const SP_REAL err = medianVal(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
+                        const SP_REAL err = median(calcPrjErr(tmp, m_cam, tcpixs, tcobjs));
 
                         if (err < minv) {
                             minv = err;
@@ -757,8 +757,8 @@ namespace sp{
 
                     const Mem1<SP_REAL> errs = calcPrjErr(pose, m_cam, tcpixs, tcobjs);
                     poses[i] = pose;
-                    cpixs[i] = denoise(tcpixs, errs, minv * 3.0);
-                    cobjs[i] = denoise(tcobjs, errs, minv * 3.0);
+                    cpixs[i] = filter(tcpixs, errs, minv * 3.0);
+                    cobjs[i] = filter(tcobjs, errs, minv * 3.0);
                 }
 
             }

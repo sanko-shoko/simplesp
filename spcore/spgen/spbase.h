@@ -14,162 +14,82 @@ namespace sp{
     // wrapper
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC int abs(const int x) {
-        return ::abs(x);
-    }
+    SP_GENFUNC int abs(const int x) { return ::abs(x); }
 
-    SP_GENFUNC SP_REAL fabs(const double x) {
-        return SP_CAST_REAL(::fabs(x));
-    }
+    SP_GENFUNC SP_REAL fabs(const double x) { return static_cast<SP_REAL>(::fabs(x)); }
 
-    SP_GENFUNC SP_REAL pow(const double x, const double y) {
-        return static_cast<SP_REAL>(::pow(x, y));
-    }
+    SP_GENFUNC SP_REAL pow(const double x, const double y) { return static_cast<SP_REAL>(::pow(x, y)); }
 
-    SP_GENFUNC SP_REAL sin(const double x) {
-        return static_cast<SP_REAL>(::sin(x));
-    }
+    SP_GENFUNC SP_REAL sin(const double x) { return static_cast<SP_REAL>(::sin(x)); }
+    SP_GENFUNC SP_REAL cos(const double x) { return static_cast<SP_REAL>(::cos(x)); }
+    SP_GENFUNC SP_REAL tan(const double x) { return static_cast<SP_REAL>(::tan(x)); }
 
-    SP_GENFUNC SP_REAL asin(const double x) {
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
-        return static_cast<SP_REAL>(::asin(t));
-    }
+    SP_GENFUNC SP_REAL asin(const double x) { const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x; return static_cast<SP_REAL>(::asin(t)); }
+    SP_GENFUNC SP_REAL acos(const double x) { const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x; return static_cast<SP_REAL>(::acos(t)); }
+    
+    SP_GENFUNC SP_REAL atan (const double x) { return static_cast<SP_REAL>(::atan(x)); }
+    SP_GENFUNC SP_REAL atan2(const double y, const double x) { return static_cast<SP_REAL>(::atan2(y, x)); }
 
-    SP_GENFUNC SP_REAL cos(const double x) {
-        return static_cast<SP_REAL>(::cos(x));
-    }
+    SP_GENFUNC SP_REAL sqrt(const double x) { return static_cast<SP_REAL>(::sqrt(x)); }
 
-    SP_GENFUNC SP_REAL acos(const double x) {
-        const double t = (x > +1.0) ? +1.0 : (x < -1.0) ? -1.0 : x;
-        return static_cast<SP_REAL>(::acos(t));
-    }
+    SP_GENFUNC SP_REAL exp(const double x) { return static_cast<SP_REAL>(::exp(x)); }
 
-    SP_GENFUNC SP_REAL tan(const double x) {
-        return static_cast<SP_REAL>(::tan(x));
-    }
+    SP_GENFUNC SP_REAL log  (const double x) { return static_cast<SP_REAL>(::log(x)); }
+    SP_GENFUNC SP_REAL log2 (const double x) { return static_cast<SP_REAL>(::log(x) / ::log(2.0)); }
+    SP_GENFUNC SP_REAL log10(const double x) { return static_cast<SP_REAL>(::log(x) / ::log(10.0)); }
 
-    SP_GENFUNC SP_REAL atan(const double x) {
-        return static_cast<SP_REAL>(::atan(x));
-    }
-
-    SP_GENFUNC SP_REAL atan2(const double y, const double x) {
-        return static_cast<SP_REAL>(::atan2(y, x));
-    }
-
-    SP_GENFUNC SP_REAL sqrt(const double x) {
-        return static_cast<SP_REAL>(::sqrt(x));
-    }
-
-    SP_GENFUNC SP_REAL exp(const double x) {
-        return static_cast<SP_REAL>(::exp(x));
-    }
-
-    SP_GENFUNC SP_REAL log(const double x) {
-        return static_cast<SP_REAL>(::log(x));
-    }
-
-    SP_GENFUNC SP_REAL log2(const double x) {
-        return static_cast<SP_REAL>(::log(x) / ::log(2.0));
-    }
-
-    SP_GENFUNC SP_REAL log10(const double x) {
-        return static_cast<SP_REAL>(::log(x) / ::log(10.0));
-    }
 
     //--------------------------------------------------------------------------------
     // util
     //--------------------------------------------------------------------------------
 
     // get round (ex. 1.5 -> 2)
-    SP_GENFUNC int round(const double val){
-        return static_cast<int>((val > 0) ? (val + 0.5) : (val - 0.5));
-    }
+    SP_GENFUNC int round(const double x) { return static_cast<int>((x > 0) ? (x + 0.5) : (x - 0.5)); }
 
     // get ceil (ex. 1.5 -> 2)
-    SP_GENFUNC int ceil(const double val) {
-        return static_cast<int>((val > 0) ? (val + 1.0) : (val - 1.0));
-    }
+    SP_GENFUNC int ceil(const double x) { return static_cast<int>((x > 0) ? (x + 1.0) : (x - 1.0)); }
 
     // get floor (ex. 1.5 -> 1)
-    SP_GENFUNC int floor(const double val){
-        return static_cast<int>(val);
-    }
+    SP_GENFUNC int floor(const double x){ return static_cast<int>(x); }
 
     // get sign (+1 or -1)
-    template<typename TYPE> SP_GENFUNC int sign(const TYPE val){
-        return (val > 0) - (val < 0);
-    }
+    template<typename TYPE> SP_GENFUNC int sign(const TYPE x){ return (x > 0) - (x < 0); }
 
     // swap
-    template<typename TYPE> SP_GENFUNC void swap(TYPE &a, TYPE &b){
-        const TYPE tmp = a;
-        a = b;
-        b = tmp;
-    }
+    template<typename TYPE> SP_GENFUNC void swap(TYPE &a, TYPE &b) { const TYPE tmp = a; a = b; b = tmp; }
 
     // get clone
-    template<typename TYPE> SP_GENFUNC TYPE clone(const TYPE &src){
-        TYPE dst = src;
-        return dst;
-    }
-
-    // get zero
-    template<typename TYPE> SP_GENFUNC TYPE zero(){
-        TYPE dst;
-        for (int i = 0; i < sizeof(TYPE); i++){
-            ((Byte*)&dst)[i] = 0;
-        }
-        return dst;
-    }
+    template<typename TYPE> SP_GENFUNC TYPE clone(const TYPE &src) { TYPE dst = src; return dst; }
 
     // get max value
-    SP_GENFUNC const int maxVal(const int a, const int b){
-        return (a > b) ? a : b;
-    }
+    SP_GENFUNC const int max(const int a, const int b) { return (a > b) ? a : b; }
+
+    // get min value
+    SP_GENFUNC const int min(const int a, const int b) { return (a < b) ? a : b; }
 
     // get max value
-    SP_GENFUNC const SP_REAL maxVal(const double a, const double b){
-        return SP_CAST_REAL((a > b) ? a : b);
-    }
+    SP_GENFUNC const SP_REAL max(const double a, const double b) { return static_cast<SP_REAL>((a > b) ? a : b); }
 
     // get min value
-    SP_GENFUNC const int minVal(const int a, const int b){
-        return (a < b) ? a : b;
-    }
-
-    // get min value
-    SP_GENFUNC const SP_REAL minVal(const double a, const double b){
-        return SP_CAST_REAL((a < b) ? a : b);
-    }
+    SP_GENFUNC const SP_REAL min(const double a, const double b) { return static_cast<SP_REAL>((a < b) ? a : b); }
 
     // get limit value
-    SP_GENFUNC const int limVal(const int v, const int minv, const int maxv) {
-        return (v > maxv) ? maxv : ((v < minv) ? minv : v);
-    }
+    SP_GENFUNC const int lim(const int v, const int minv, const int maxv) { return (v > maxv) ? maxv : ((v < minv) ? minv : v); }
 
     // get limit value
-    SP_GENFUNC const SP_REAL limVal(const double v, const double minv, const double maxv) {
-        return SP_CAST_REAL((v > maxv) ? maxv : ((v < minv) ? minv : v));
-    }
+    SP_GENFUNC const SP_REAL lim(const double v, const double minv, const double maxv) { return static_cast<SP_REAL>((v > maxv) ? maxv : ((v < minv) ? minv : v)); }
 
      // x * x
-    SP_GENFUNC SP_REAL sq(const double x) {
-        return SP_CAST_REAL(x * x);
-    }
+    SP_GENFUNC SP_REAL sq(const double x) { return static_cast<SP_REAL>(x * x); }
 
     // x * x * x
-    SP_GENFUNC SP_REAL cb(const double x) {
-        return SP_CAST_REAL(x * x * x);
-    }
+    SP_GENFUNC SP_REAL cb(const double x) { return static_cast<SP_REAL>(x * x * x); }
 
     // cubic root
-    SP_GENFUNC SP_REAL cbrt(const double x) {
-        const double z = pow(fabs(x), 1.0 / 3.0);
-        return SP_CAST_REAL((x >= 0.0) ? z : -z);
-    }
+    SP_GENFUNC SP_REAL cbrt(const double x) { const double z = pow(fabs(x), 1.0 / 3.0); return static_cast<SP_REAL>((x >= 0.0) ? z : -z); }
 
     // sqrt(a * a + b * b) without destructive underflow or overflow
-    SP_GENFUNC SP_REAL pythag(const double a, const double b) {
+    SP_GENFUNC SP_REAL pythag(const double a, const double b) { 
         const double x = fabs(a);
         const double y = fabs(b);
 
@@ -180,7 +100,7 @@ namespace sp{
         else {
             ret = (y == 0.0) ? 0.0 : y * sqrt(1.0 + (x / y) * (x / y));
         }
-        return SP_CAST_REAL(ret);
+        return static_cast<SP_REAL>(ret);
     }
 
     // combination
@@ -191,18 +111,13 @@ namespace sp{
         }
         return ret;
     }
-
     
     //--------------------------------------------------------------------------------
     // random
     //--------------------------------------------------------------------------------
     
-    static unsigned int SP_RANDSEED = 0;
-    SP_GENFUNC void srand(const int seed) {
-        SP_RANDSEED = static_cast<unsigned int>(seed);
-    }
-
-    SP_GENFUNC unsigned int snext(const unsigned int seed) {
+    static unsigned int _randseed = 0;
+    SP_GENFUNC unsigned int _snext(const unsigned int seed) {
         unsigned int s = seed + 1;
         s ^= (s << 13);
         s ^= (s >> 17);
@@ -210,52 +125,55 @@ namespace sp{
         return s;
     }
 
-    SP_GENFUNC int rand(const unsigned int seed) {
-        const unsigned int s = snext(seed);
-        return static_cast<int>(s >> 1);
+    SP_GENFUNC void srand(const int seed) {
+        _randseed = static_cast<unsigned int>(seed);
     }
 
     SP_GENFUNC int rand() {
-        SP_RANDSEED = snext(SP_RANDSEED);
-        return static_cast<int>(SP_RANDSEED >> 1);
+        _randseed = _snext(_randseed);
+        return static_cast<int>(_randseed >> 1);
+    }
+
+    SP_GENFUNC int rand(const int seed) {
+        const unsigned int s = _snext(static_cast<unsigned int>(seed));
+        return static_cast<int>(s >> 1);
     }
 
     // get random uniform (-1.0, 1.0)
-    SP_GENFUNC SP_REAL randu(const unsigned int seed) {
-        const unsigned s = seed;
+    SP_GENFUNC SP_REAL randu(const int seed) {
+        const unsigned int s = static_cast<unsigned int>(seed);
 
         const int maxv = 20000;
         const double a = static_cast<double>(rand(s) % (maxv + 1) + 1) / (maxv + 2);
         const double u = 2.0 * a - 1.0;
-        return SP_CAST_REAL(u);
+        return static_cast<SP_REAL>(u);
     }
 
     // get random uniform (-1.0, 1.0)
     SP_GENFUNC SP_REAL randu() {
-        const unsigned s = SP_RANDSEED;
-        SP_RANDSEED = snext(s);
+        const unsigned s = _randseed;
+        _randseed = _snext(s);
         return randu(s);
     }
 
     // get random gauss
-    SP_GENFUNC SP_REAL randg(const unsigned int seed) {
-        const unsigned s0 = seed;
-        const unsigned s1 = snext(s0);
+    SP_GENFUNC SP_REAL randg(const int seed) {
+        const unsigned s0 = static_cast<unsigned int>(seed);
+        const unsigned s1 = _snext(s0);
 
         const int maxv = 20000;
         const double a = static_cast<double>(rand(s0) % (maxv + 1) + 1) / (maxv + 2);
         const double b = static_cast<double>(rand(s1) % (maxv + 1) + 1) / (maxv + 2);
         const double g = sqrt(-2.0 * log(a)) * sin(2.0 * SP_PI * b);
-        return SP_CAST_REAL(g);
+        return static_cast<SP_REAL>(g);
     }
 
     // get random gauss
     SP_GENFUNC SP_REAL randg() {
-        const unsigned s = SP_RANDSEED;
-        SP_RANDSEED = snext(s);
+        const unsigned s = _randseed;
+        _randseed = _snext(s);
         return randg(s);
     }
-
 
 
     //--------------------------------------------------------------------------------
@@ -356,26 +274,6 @@ namespace sp{
     }
 
     //--------------------------------------------------------------------------------
-    // check memory ptr
-    //--------------------------------------------------------------------------------
-
-    template<typename TYPE>
-    SP_GENFUNC bool checkPtr(const ExPtr<TYPE> &src, const int dim) {
-        if (src.dim == 0 || src.ptr == NULL || src.dim != dim) return false;
-
-        for (int i = 0; i < src.dim; i++) {
-            if (src.dsize[i] == 0) return false;
-        }
-        return true;
-    }
-
-    template<typename TYPE>
-    SP_GENFUNC bool checkPtr(const ExPtr<TYPE> &src) {
-        return checkPtr(src, src.dim);
-    }
-
-
-    //--------------------------------------------------------------------------------
     // access vector
     //--------------------------------------------------------------------------------
 
@@ -399,7 +297,7 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC const int acsid1(const int *dsize, const int d0) {
-        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
+        const int id0 = max(0, min(dsize[0] - 1, d0));
         return id0;
     }
 
@@ -453,8 +351,8 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC int acsid2(const int *dsize, const int d0, const int d1, const int c = 0) {
-        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
-        const int id1 = maxVal(0, minVal(dsize[1] - 1, d1));
+        const int id0 = max(0, min(dsize[0] - 1, d0));
+        const int id1 = max(0, min(dsize[1] - 1, d1));
         return id1 * dsize[0] + id0;
     }
 
@@ -495,9 +393,9 @@ namespace sp{
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC int acsid3(const int *dsize, const int d0, const int d1, const int d2, const int c = 0) {
-        const int id0 = maxVal(0, minVal(dsize[0] - 1, d0));
-        const int id1 = maxVal(0, minVal(dsize[1] - 1, d1));
-        const int id2 = maxVal(0, minVal(dsize[2] - 1, d2));
+        const int id0 = max(0, min(dsize[0] - 1, d0));
+        const int id1 = max(0, min(dsize[1] - 1, d1));
+        const int id2 = max(0, min(dsize[2] - 1, d2));
         return (id2 * dsize[1] + id1) * dsize[0] + id0;
     }
 
@@ -592,8 +490,6 @@ namespace sp{
     SP_GENFUNC Col3 acsc(const ExPtr<Col3> &src, const double d0, const double d1) {
         return acsc(*const_cast<ExPtr<Col3>*>(&src), d0, d1);
     }
-
-
 
 }
 

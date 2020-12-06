@@ -161,8 +161,8 @@ namespace sp {
 
         if (mouse.buttonM && normVec(mouse.move) > 0.0) {
             const double s = ((cam.type == CamParam_Pers) ? cpose.pos.z : 1.0) / viewScale;
-            cpose.pos.x += SP_CAST_REAL(mouse.move.x / cam.fx * s);
-            cpose.pos.y += SP_CAST_REAL(mouse.move.y / cam.fy * s);
+            cpose.pos.x += static_cast<SP_REAL>(mouse.move.x / cam.fx * s);
+            cpose.pos.y += static_cast<SP_REAL>(mouse.move.y / cam.fy * s);
 
             ret = true;
         }

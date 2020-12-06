@@ -5,7 +5,7 @@
 #ifndef __SP_SYSTEM_H__
 #define __SP_SYSTEM_H__
 
-#include "spcore/spcpu/spstr.h"
+#include "spcore/spcpu/spmem.h"
 
 
 //--------------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 //--------------------------------------------------------------------------------
 
 #if defined(_WIN32)
+#define NOMINMAX
 #include <windows.h>
 #include <psapi.h>
 

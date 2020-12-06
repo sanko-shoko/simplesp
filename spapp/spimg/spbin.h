@@ -77,8 +77,8 @@ namespace sp{
 
         for (int v = 0; v < dst.dsize[1]; v += blockSize){
             for (int u = 0; u < dst.dsize[0]; u += blockSize){
-                const int sizeX = minVal(u + blockSize, src.dsize[0]);
-                const int sizeY = minVal(v + blockSize, src.dsize[1]);
+                const int sizeX = min(u + blockSize, src.dsize[0]);
+                const int sizeY = min(v + blockSize, src.dsize[1]);
 
                 Byte maxv = 0;
                 Byte minv = SP_BYTEMAX;
@@ -87,8 +87,8 @@ namespace sp{
                 for (int y = v - margin; y < sizeY + margin; y++){
                     for (int x = u - margin; x < sizeX + margin; x++){
                         const Byte val = tmp(x, y);
-                        maxv = maxVal(maxv, val);
-                        minv = minVal(minv, val);
+                        maxv = max(maxv, val);
+                        minv = min(minv, val);
                     }
                 }
 

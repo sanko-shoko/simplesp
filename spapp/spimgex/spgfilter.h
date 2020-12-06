@@ -33,7 +33,6 @@ namespace sp{
 
         template<typename TYPE>
         void set(const Mem<TYPE> &src, const int winSize, const SP_REAL epsilon) {
-            SP_ASSERT(checkPtr(src, 2));
 
             I.resize(src.dsize);
             I2.resize(src.dsize);
@@ -41,8 +40,8 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const TYPE &g = src[i];
 
-                I[i] = SP_CAST_REAL(g);
-                I2[i] = SP_CAST_REAL(g * g);
+                I[i] = static_cast<SP_REAL>(g);
+                I2[i] = static_cast<SP_REAL>(g * g);
             }
 
             boxFilter(mean_I, I, winSize);
@@ -51,7 +50,7 @@ namespace sp{
             inv.resize(src.size());
             for (int i = 0; i < src.size(); i++) {
                 const double var = mean_I2[i] - mean_I[i] * mean_I[i];
-                inv[i] = SP_CAST_REAL(1.0 / (var + epsilon));
+                inv[i] = static_cast<SP_REAL>(1.0 / (var + epsilon));
             }
         }
     };
@@ -71,7 +70,6 @@ namespace sp{
         }
 
         void set(const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
-            SP_ASSERT(checkPtr(src, 2));
 
             I.resize(src.dsize);
             I2.resize(src.dsize);
@@ -80,17 +78,17 @@ namespace sp{
             for (int i = 0; i < src.size(); i++) {
                 const Col3 &g = src[i];
 
-                I[i].x = SP_CAST_REAL(g.r);
-                I[i].y = SP_CAST_REAL(g.g);
-                I[i].z = SP_CAST_REAL(g.b);
+                I[i].x = static_cast<SP_REAL>(g.r);
+                I[i].y = static_cast<SP_REAL>(g.g);
+                I[i].z = static_cast<SP_REAL>(g.b);
 
-                I2[i].x = SP_CAST_REAL(g.r * g.r);
-                I2[i].y = SP_CAST_REAL(g.g * g.g);
-                I2[i].z = SP_CAST_REAL(g.b * g.b);
+                I2[i].x = static_cast<SP_REAL>(g.r * g.r);
+                I2[i].y = static_cast<SP_REAL>(g.g * g.g);
+                I2[i].z = static_cast<SP_REAL>(g.b * g.b);
 
-                Ic[i].x = SP_CAST_REAL(g.r * g.g);
-                Ic[i].y = SP_CAST_REAL(g.g * g.b);
-                Ic[i].z = SP_CAST_REAL(g.b * g.r);
+                Ic[i].x = static_cast<SP_REAL>(g.r * g.g);
+                Ic[i].y = static_cast<SP_REAL>(g.g * g.b);
+                Ic[i].z = static_cast<SP_REAL>(g.b * g.r);
             }
 
             boxFilter<Vec3, SP_REAL>(mean_I, I, winSize);
@@ -120,7 +118,6 @@ namespace sp{
 
     template<typename TYPE>
     SP_CPUFUNC void guidedFilter(Mem<TYPE> &dst, const Mem<TYPE> &src, const Guide1 &guide, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         Mem2<SP_REAL> p(src.dsize);
         Mem2<SP_REAL> Ip(src.dsize);
@@ -158,7 +155,6 @@ namespace sp{
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const Guide3 &guide, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         Mem2<SP_REAL> p(src.dsize);
 
@@ -206,12 +202,11 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            dst[i] = cast<Byte>(minVal(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
+            dst[i] = cast<Byte>(min(255.0, a[i].x * g.x + a[i].y * g.y + a[i].z * g.z + b[i]));
         }
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const Guide3 &guide, const int winSize) {
-        SP_ASSERT(checkPtr(src, 2));
 
         Mem2<Vec3> p(src.dsize);
 
@@ -290,22 +285,20 @@ namespace sp{
         dst.resize(2, src.dsize);
         for (int i = 0; i < src.size(); i++) {
             const Vec3 &g = guide.I[i];
-            dst[i].r = cast<Byte>(minVal(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
-            dst[i].g = cast<Byte>(minVal(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
-            dst[i].b = cast<Byte>(minVal(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
+            dst[i].r = cast<Byte>(min(255.0, a[0][i].x * g.x + a[0][i].y * g.y + a[0][i].z * g.z + b[0][i]));
+            dst[i].g = cast<Byte>(min(255.0, a[1][i].x * g.x + a[1][i].y * g.y + a[1][i].z * g.z + b[1][i]));
+            dst[i].b = cast<Byte>(min(255.0, a[2][i].x * g.x + a[2][i].y * g.y + a[2][i].z * g.z + b[2][i]));
         }
     }
 
 
     SP_CPUFUNC void guidedFilter(Mem<Byte> &dst, const Mem<Byte> &src, const int winSize, const SP_REAL epsilon) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Guide1 guide(src, winSize, epsilon);
         guidedFilter(dst, src, guide, winSize);
     }
 
     SP_CPUFUNC void guidedFilter(Mem<Col3> &dst, const Mem<Col3> &src, const int winSize, const SP_REAL epsilon) {
-        SP_ASSERT(checkPtr(src, 2));
 
         const Guide3 guide(src, winSize, epsilon);
         guidedFilter(dst, src, guide, winSize);

@@ -14,6 +14,14 @@
 namespace sp{
 
     //--------------------------------------------------------------------------------
+    // base
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC void memset(void *dst, const int val, const int size) { ::memset(dst, val, size); }
+    SP_CPUFUNC void memcpy(void *dst, const void *src, const int size) { ::memcpy(dst, src, size); }
+
+
+    //--------------------------------------------------------------------------------
     // mem base class 
     //--------------------------------------------------------------------------------
 
@@ -130,7 +138,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         void resize(const int dim, const int *dsize, const void *cpy = NULL){
-            this->dim = maxVal(dim, 1);
+            this->dim = max(dim, 1);
 
             for (int i = 0; i < SP_DIMMAX; i++){
                 this->dsize[i] = (dsize != NULL && i < dim) ? dsize[i] : 0;
@@ -162,7 +170,6 @@ namespace sp{
         }
 
     };
-
 
 
     //--------------------------------------------------------------------------------
@@ -327,7 +334,7 @@ namespace sp{
         }
 
         Mem1 part(const int dbase0, const int dsize0) const {
-            Mem1<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0));
+            Mem1<TYPE> ret(min(dsize0, this->dsize[0] - dbase0));
             TYPE *ptr = ret.ptr;
 
             for (int d0 = 0; d0 < ret.dsize[0]; d0++){
@@ -420,7 +427,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
         
         Mem2 part(const int dbase0, const int dbase1, const int dsize0, const int dsize1) const {
-            Mem2<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0), minVal(dsize1, this->dsize[1] - dbase1));
+            Mem2<TYPE> ret(min(dsize0, this->dsize[0] - dbase0), min(dsize1, this->dsize[1] - dbase1));
             TYPE *ptr = ret.ptr;
 
             for (int d1 = 0; d1 < ret.dsize[1]; d1++) {
@@ -514,7 +521,7 @@ namespace sp{
         //--------------------------------------------------------------------------------
 
         Mem3 part(const int dbase0, const int dbase1, const int dbase2, const int dsize0, const int dsize1, const int dsize2) const {
-            Mem3<TYPE> ret(minVal(dsize0, this->dsize[0] - dbase0), minVal(dsize1, this->dsize[1] - dbase1), minVal(dsize2, this->dsize[2] - dbase2));
+            Mem3<TYPE> ret(min(dsize0, this->dsize[0] - dbase0), min(dsize1, this->dsize[1] - dbase1), min(dsize2, this->dsize[2] - dbase2));
             TYPE *ptr = ret.ptr;
 
             for (int d2 = 0; d2 < ret.dsize[2]; d2++) {
@@ -607,7 +614,7 @@ namespace sp{
         }
 
         Mat part(const int rbase, const int cbase, const int rsize, const int csize) const {
-            Mat mat(minVal(rsize, rows() - rbase), minVal(csize, cols() - cbase));
+            Mat mat(min(rsize, rows() - rbase), min(csize, cols() - cbase));
             for (int r = 0; r < mat.rows(); r++) {
                 for (int c = 0; c < mat.cols(); c++) {
                     mat(r, c) = (*this)(rbase + r, cbase + c);
@@ -750,7 +757,7 @@ namespace sp{
         void init(const int unit = 1){
             clear();
 
-            m_unit = maxVal(1, unit);
+            m_unit = max(1, unit);
             m_block = 100;
         }
 

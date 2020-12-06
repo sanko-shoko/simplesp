@@ -83,7 +83,7 @@ private:
         Mem1<Mat> poses;
         poses.push(eyeMat(4, 4));
         poses.push(getMat(getPose(getVec3(100, 0, 0)), 4, 4));
-        //m_pt.addModel(m_model, mats0, poses);
+        m_pt.addModel(m_model, mats0, poses);
         m_pt.build();
     }
 

@@ -14,8 +14,6 @@ namespace sp{
 
     SP_CPUFUNC void splitMarkerAndPattern(Mem<Byte> &mrkImg, Mem<Byte> &ptnImg, const Mem<Byte> &src) {
         
-        SP_ASSERT(checkPtr(src, 2));
-
         Mem2<Byte> base(src.dsize);
         {
             const SP_REAL scale = 100.0 / (src.dsize[0] + src.dsize[1]);
@@ -308,12 +306,12 @@ namespace sp{
         SP_REAL recog(Mat &hom, const DotPatternParam &ptn, const Mem1<Mem1<Vec2> > &links, const Mem1<Vec2> &pixs, const Mem1<SP_REAL> &scales, const KdTree<SP_REAL> &kdtree) {
 
             const Mem2<Vec2> ext = grid(2 * (ptn.map.dsize[0] - 1), 2 * (ptn.map.dsize[1] - 1));
-            const Mem2<Vec2> unit0 = grid(2, 2) + meanVec(ext) - getVec2(0.5, 0.5);
-            const Mem2<Vec2> unit1 = grid(4, 4) + meanVec(ext) - getVec2(1.5, 1.5);
-            const Mem2<Vec2> unit2 = grid(6, 6) + meanVec(ext) - getVec2(2.5, 2.5);
+            const Mem2<Vec2> unit0 = grid(2, 2) + mean(ext) - getVec2(0.5, 0.5);
+            const Mem2<Vec2> unit1 = grid(4, 4) + mean(ext) - getVec2(1.5, 1.5);
+            const Mem2<Vec2> unit2 = grid(6, 6) + mean(ext) - getVec2(2.5, 2.5);
 
             const int maxn = 10;
-            const SP_REAL step = maxVal(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
+            const SP_REAL step = max(static_cast<SP_REAL>(links.size()) / maxn, 1.0);
 
             Mat H = eyeMat(3, 3);
 
@@ -332,7 +330,7 @@ namespace sp{
                 Mem2<SP_REAL> evalMap;
                 getEvalMap(evalMap, h, ext, pixs, kdtree);
 
-                const SP_REAL eval = sumVal(evalMap);
+                const SP_REAL eval = sum(evalMap);
                 if (eval > maxv) {
                     H = h;
                     maxv = eval;
@@ -376,7 +374,7 @@ namespace sp{
                     norms.push(minv);
                 }
             }
-            const SP_REAL range = medianVal(norms);
+            const SP_REAL range = median(norms);
 
             for (int p0 = 0; p0 < pixs.size(); p0++) {
                 Mem1<int> index = kdtree.search(&pixs[p0], 2.0 * range);
@@ -399,13 +397,13 @@ namespace sp{
                             const SP_REAL lng12 = normVec(pixs[p2] - pixs[p1]);
                             const SP_REAL lng20 = normVec(pixs[p0] - pixs[p2]);
 
-                            if (lng12 >= maxVal(lng01, lng20)) {
+                            if (lng12 >= max(lng01, lng20)) {
                                 s0 = p0, s1 = p1, s2 = p2;
                             }
-                            if (lng20 >= maxVal(lng12, lng01)) {
+                            if (lng20 >= max(lng12, lng01)) {
                                 s0 = p1, s1 = p2, s2 = p0;
                             }
-                            if (lng01 >= maxVal(lng20, lng12)) {
+                            if (lng01 >= max(lng20, lng12)) {
                                 s0 = p2, s1 = p0, s2 = p1;
                             }
                         }
@@ -418,7 +416,7 @@ namespace sp{
                             const SP_REAL lngB = normVec(B);
                             const SP_REAL cosAB = dotVec(A, B) / (lngA * lngB);
 
-                            if (minVal(lngA, lngB) / maxVal(lngA, lngB) < MIN_ASPECT) continue;
+                            if (min(lngA, lngB) / max(lngA, lngB) < MIN_ASPECT) continue;
                             if (cosAB > 0.0 || cosAB < MIN_COS) continue;
                         }
 
@@ -437,9 +435,9 @@ namespace sp{
                                 if (pk == p0 || pk == p1 || pk == p2) continue;
 
                                 const Vec2 e = mulMat(inv, 2, 2, pixs[pk] - pixs[s0]);
-                                if (minVal(e.x, e.y) < -margin || maxVal(e.x, e.y) > 1.0 + margin) continue;
+                                if (min(e.x, e.y) < -margin || max(e.x, e.y) > 1.0 + margin) continue;
 
-                                if (s3 < 0 && minVal(e.x, e.y) > 1.0 - margin) {
+                                if (s3 < 0 && min(e.x, e.y) > 1.0 - margin) {
                                     s3 = pk;
                                 }
                                 else {
@@ -552,14 +550,13 @@ namespace sp{
                     list.push(scaleMap[i]);
                 }
             }
-            const SP_REAL median = medianVal(list);
 
+            const SP_REAL m = median(list);
             for (int i = 0; i < scaleMap.size(); i++) {
                 if (scaleMap[i] > 0) {
-                    codeMap[i] = scaleMap[i] - median;
+                    codeMap[i] = scaleMap[i] - m;
                 }
             }
-
         }
     
         SP_REAL searchPeak(Vec2 &peak, const DotPatternParam &ptn, const Mem2<SP_REAL> &codeMap) {

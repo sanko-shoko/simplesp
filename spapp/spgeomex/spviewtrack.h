@@ -210,7 +210,7 @@ namespace sp{
             sort(zlist);
             zlist = zlist.part(round(0.1 * zlist.size()), round(0.8 * zlist.size()));
 
-            const SP_REAL meanZ = meanVal(zlist);
+            const SP_REAL meanZ = mean(zlist);
 
             return meanZ;
         }

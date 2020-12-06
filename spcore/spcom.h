@@ -14,16 +14,28 @@
 #define SP_USE_OMP 1
 #endif
 
-#ifndef SP_USE_ASSERT
-#define SP_USE_ASSERT 1
-#endif
-
 #ifndef SP_USE_CONSOLE
 #define SP_USE_CONSOLE 1
 #endif
 
 #ifndef SP_USE_DEBUG
 #define SP_USE_DEBUG 0
+#endif
+
+
+//--------------------------------------------------------------------------------
+// assert
+//--------------------------------------------------------------------------------
+
+#ifndef SP_USE_ASSERT
+#define SP_USE_ASSERT 1
+#endif
+
+#if SP_USE_ASSERT
+#include<assert.h>
+#define SP_ASSERT(EXP) if (!(EXP)) { assert((EXP)); }
+#elif
+#define SP_ASSERT(EXP) (EXP)
 #endif
 
 
@@ -50,23 +62,19 @@
 #define SP_REAL double
 #endif
 
-#ifndef SP_CAST_REAL
-#define SP_CAST_REAL(V) static_cast<SP_REAL>(V)
-#endif
-
 
 //--------------------------------------------------------------------------------
 // const value
 //--------------------------------------------------------------------------------
 
 // pi
-#define SP_PI SP_CAST_REAL(3.14159265358979323846)
+#define SP_PI static_cast<SP_REAL>(3.14159265358979323846)
 
 // limit value regarded as zero
-#define SP_SMALL SP_CAST_REAL(1.0e-20)
+#define SP_SMALL    static_cast<SP_REAL>(1.0e-20)
 
 // limit value regarded as infinity
-#define SP_INFINITY SP_CAST_REAL(1.0e+20)
+#define SP_INFINITY static_cast<SP_REAL>(1.0e+20)
 
 // maximal value (unsigned char)
 #define SP_BYTEMAX 255
@@ -92,6 +100,15 @@ namespace sp{
     //--------------------------------------------------------------------------------
     
     typedef unsigned char Byte;
+
+    typedef char           s08;
+    typedef unsigned char  u08;
+    typedef short          s16;
+    typedef unsigned short u16;
+    typedef int            s32;
+    typedef unsigned int   u32;
+    typedef float          f32;
+    typedef double         f64;
 
     //--------------------------------------------------------------------------------
     // complex
@@ -293,7 +310,6 @@ namespace sp{
 // cast
 //--------------------------------------------------------------------------------
 
-
 namespace sp {
 
     //--------------------------------------------------------------------------------
@@ -325,11 +341,11 @@ namespace sp {
     //--------------------------------------------------------------------------------
 
     SP_GENFUNC void _cast(Byte &dst, const int &src) {
-        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
+        dst = static_cast<Byte>((src < 0) ? 0 : (src > SP_BYTEMAX) ? SP_BYTEMAX : src);
     }
 
     SP_GENFUNC void _cast(Byte &dst, const double &src) {
-        dst = static_cast<unsigned char>((src + 0.5) * (src > 0));
+        dst = static_cast<Byte>((src < 0) ? 0 : (src > SP_BYTEMAX) ? SP_BYTEMAX : src + 0.5);
     }
 
     SP_GENFUNC void _cast(Byte &dst, const Byte &src) {
@@ -409,13 +425,6 @@ namespace sp {
         dst.a = src.a;
     }
 
-    SP_GENFUNC void _cast(Col4 &dst, const Vec3 &src) {
-        dst.r = static_cast<Byte>(((src.x < 0.0) ? 0.0 : ((src.x > 1.0) ? 1.0 : src.x)) * SP_BYTEMAX + 0.5);
-        dst.g = static_cast<Byte>(((src.y < 0.0) ? 0.0 : ((src.y > 1.0) ? 1.0 : src.y)) * SP_BYTEMAX + 0.5);
-        dst.b = static_cast<Byte>(((src.z < 0.0) ? 0.0 : ((src.z > 1.0) ? 1.0 : src.z)) * SP_BYTEMAX + 0.5);
-        dst.a = SP_BYTEMAX;
-    }
-
     SP_GENFUNC void _cast(Col4 &dst, const Col3f &src) {
         dst.r = static_cast<Byte>(((src.r < 0.0) ? 0.0 : ((src.r > 1.0) ? 1.0 : src.r)) * SP_BYTEMAX + 0.5);
         dst.g = static_cast<Byte>(((src.g < 0.0) ? 0.0 : ((src.g > 1.0) ? 1.0 : src.g)) * SP_BYTEMAX + 0.5);
@@ -472,22 +481,6 @@ namespace sp {
     }
 
     //--------------------------------------------------------------------------------
-    // vector 3
-    //--------------------------------------------------------------------------------
-
-    SP_GENFUNC void _cast(Vec3 &dst, const Col3 &src) {
-        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
-    }
-
-    SP_GENFUNC void _cast(Vec3 &dst, const Col4 &src) {
-        dst.x = static_cast<SP_REAL>(src.r) / SP_BYTEMAX;
-        dst.y = static_cast<SP_REAL>(src.g) / SP_BYTEMAX;
-        dst.z = static_cast<SP_REAL>(src.b) / SP_BYTEMAX;
-    }
-
-    //--------------------------------------------------------------------------------
     // template cast
     //--------------------------------------------------------------------------------
 
@@ -506,115 +499,98 @@ namespace sp {
 namespace sp {
 
     // compare double
-    SP_GENFUNC bool cmp(const double val0, const double val1, const double t = 1.0e-6) {
-        return ((val0 - val1) < +t && (val0 - val1) > -t) ? true : false;
+    SP_GENFUNC bool cmp(const double v0, const double v1, const double t = 1.0e-6) {
+        return ((v0 - v1) < +t && (v0 - v1) > -t) ? true : false;
     }
 
     // compare complex
-    SP_GENFUNC bool cmp(const Cmp &cmp0, const Cmp &cmp1, const double t = 1.0e-6) {
-        return cmp(cmp0.re, cmp1.re, t) & cmp(cmp0.im, cmp1.im, t);
+    SP_GENFUNC bool cmp(const Cmp &v0, const Cmp &v1, const double t = 1.0e-6) {
+        return cmp(v0.re, v1.re, t) & cmp(v0.im, v1.im, t);
     }
 
     // compare rect
-    SP_GENFUNC bool cmp(const Rect2 &rect0, const Rect2 &rect1) {
-        for (int i = 0; i < 2; i++) {
-            if (rect0.dbase[i] != rect1.dbase[i]) return false;
-            if (rect0.dsize[i] != rect1.dsize[i]) return false;
-        }
-        return true;
+    SP_GENFUNC bool cmp(const Rect2 &v0, const Rect2 &v1) {
+        return (v0.dbase[0] == v1.dbase[0]) & (v0.dsize[0] == v1.dsize[0]) & (v0.dbase[1] == v1.dbase[1]) & (v0.dsize[1] == v1.dsize[1]);
     }
-
     // compare rect
-    SP_GENFUNC bool cmp(const Rect3 &rect0, const Rect3 &rect1) {
-        for (int i = 0; i < 3; i++) {
-            if (rect0.dbase[i] != rect1.dbase[i]) return false;
-            if (rect0.dsize[i] != rect1.dsize[i]) return false;
-        }
-        return true;
+    SP_GENFUNC bool cmp(const Rect3 &v0, const Rect3 &v1) {
+        return (v0.dbase[0] == v1.dbase[0]) & (v0.dsize[0] == v1.dsize[0]) & (v0.dbase[1] == v1.dbase[1]) & (v0.dsize[1] == v1.dsize[1]) & (v0.dbase[2] == v1.dbase[2]) & (v0.dsize[2] == v1.dsize[2]);
     }
 
     // compare vec
-    SP_GENFUNC bool cmp(const Vec2 &vec0, const Vec2 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.x, vec1.x, t) & cmp(vec0.y, vec1.y, t);
+    SP_GENFUNC bool cmp(const Vec2 &v0, const Vec2 &v1, const double t = 1.0e-6) {
+        return cmp(v0.x, v1.x, t) & cmp(v0.y, v1.y, t);
     }
     // compare vec
-    SP_GENFUNC bool cmp(const Vec3 &vec0, const Vec3 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.x, vec1.x, t) & cmp(vec0.y, vec1.y, t) & cmp(vec0.z, vec1.z, t);
+    SP_GENFUNC bool cmp(const Vec3 &v0, const Vec3 &v1, const double t = 1.0e-6) {
+        return cmp(v0.x, v1.x, t) & cmp(v0.y, v1.y, t) & cmp(v0.z, v1.z, t);
     }
 
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPD2 &vec0, const VecPD2 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
+    SP_GENFUNC bool cmp(const VecPD2 &v0, const VecPD2 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos, v1.pos, t) & cmp(v0.drc, v1.drc, t);
     }
     // compare vec (position and normal)
-    SP_GENFUNC bool cmp(const VecPD3 &vec0, const VecPD3 &vec1, const double t = 1.0e-6) {
-        return cmp(vec0.pos, vec1.pos, t) & cmp(vec0.drc, vec1.drc, t);
+    SP_GENFUNC bool cmp(const VecPD3 &v0, const VecPD3 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos, v1.pos, t) & cmp(v0.drc, v1.drc, t);
     }
     
     // compare line
-    SP_GENFUNC bool cmp(const Line2 &line0, const Line2 &line1, const double t = 1.0e-6) {
-        return cmp(line0.pos[0], line1.pos[0], t) & cmp(line0.pos[1], line1.pos[1], t);
+    SP_GENFUNC bool cmp(const Line2 &v0, const Line2 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos[0], v1.pos[0], t) & cmp(v0.pos[1], v1.pos[1], t);
     }
     // compare line
-    SP_GENFUNC bool cmp(const Line3 &line0, const Line3 &line1, const double t = 1.0e-6) {
-        return cmp(line0.pos[0], line1.pos[0], t) & cmp(line0.pos[1], line1.pos[1], t);
+    SP_GENFUNC bool cmp(const Line3 &v0, const Line3 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos[0], v1.pos[0], t) & cmp(v0.pos[1], v1.pos[1], t);
     }
 
     // compare mesh
-    SP_GENFUNC bool cmp(const Mesh2 &mesh0, const Mesh2 &mesh1, const double t = 1.0e-6) {
-        return cmp(mesh0.pos[0], mesh0.pos[0], t) & cmp(mesh1.pos[1], mesh1.pos[1], t) & cmp(mesh1.pos[2], mesh1.pos[2], t);
+    SP_GENFUNC bool cmp(const Mesh2 &v0, const Mesh2 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos[0], v1.pos[0], t) & cmp(v0.pos[1], v1.pos[1], t) & cmp(v0.pos[2], v1.pos[2], t);
     }
     // compare mesh
-    SP_GENFUNC bool cmp(const Mesh3 &mesh0, const Mesh3 &mesh1, const double t = 1.0e-6) {
-        return cmp(mesh0.pos[0], mesh0.pos[0], t) & cmp(mesh1.pos[1], mesh1.pos[1], t) & cmp(mesh1.pos[2], mesh1.pos[2], t);
+    SP_GENFUNC bool cmp(const Mesh3 &v0, const Mesh3 &v1, const double t = 1.0e-6) {
+        return cmp(v0.pos[0], v1.pos[0], t) & cmp(v0.pos[1], v1.pos[1], t) & cmp(v0.pos[2], v1.pos[2], t);
     }
 
     // compare rotation
-    SP_GENFUNC bool cmp(const Rot &rot0, const Rot &rot1, const double t = 1.0e-6) {
-        bool ret = true;
-        const double s0 = (rot0.qw > 0.0) ? +1.0 : -1.0;
-        const double s1 = (rot1.qw > 0.0) ? +1.0 : -1.0;
-        ret &= cmp(rot0.qx * s0, rot1.qx * s1, t);
-        ret &= cmp(rot0.qy * s0, rot1.qy * s1, t);
-        ret &= cmp(rot0.qz * s0, rot1.qz * s1, t);
-        ret &= cmp(rot0.qw * s0, rot1.qw * s1, t);
-        return ret;
+    SP_GENFUNC bool cmp(const Rot &v0, const Rot &v1, const double t = 1.0e-6) {
+        const double s0 = (v0.qw > 0.0) ? +1.0 : -1.0;
+        const double s1 = (v1.qw > 0.0) ? +1.0 : -1.0;
+        return cmp(v0.qx * s0, v1.qx * s1, t) & cmp(v0.qy * s0, v1.qy * s1, t) & cmp(v0.qz * s0, v1.qz * s1, t) & cmp(v0.qw * s0, v1.qw * s1, t);
     }
 
     // compare pose
-    SP_GENFUNC bool cmp(const Pose &pose0, const Pose &pose1, const double tr = 1.0e-6, const double tt = 1.0e-6) {
-        bool ret = true;
-        ret &= cmp(pose0.rot, pose1.rot, tr);
-        ret &= cmp(pose0.pos, pose1.pos, tt);
-        return ret;
+    SP_GENFUNC bool cmp(const Pose &v0, const Pose &v1, const double t = 1.0e-6) {
+        return cmp(v0.rot, v1.rot, t) & cmp(v0.pos, v1.pos, t);
     }
 
     // compare color
-    SP_GENFUNC bool cmp(const Col3 &col0, const Col3 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b);
+    SP_GENFUNC bool cmp(const Col3 &v0, const Col3 &v1) {
+        return (v0.r == v1.r) & (v0.g == v1.g) & (v0.b == v1.b);
     }
     // compare color
-    SP_GENFUNC bool cmp(const Col4 &col0, const Col4 &col1) {
-        return (col0.r == col1.r) & (col0.g == col1.g) & (col0.b == col1.b) & (col0.a == col1.a);
+    SP_GENFUNC bool cmp(const Col4 &v0, const Col4 &v1) {
+        return (v0.r == v1.r) & (v0.g == v1.g) & (v0.b == v1.b) & (v0.a == v1.a);
     }
     // compare color
-    SP_GENFUNC bool cmp(const Col3f &col0, const Col3f &col1) {
-        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b);
+    SP_GENFUNC bool cmp(const Col3f &v0, const Col3f &v1, const double t = 1.0e-6) {
+        return cmp(v0.r, v1.r, t) & cmp(v0.g, v1.g, t) & cmp(v0.b, v1.b, t);
     }
     // compare color
-    SP_GENFUNC bool cmp(const Col4f &col0, const Col4f &col1) {
-        return cmp(col0.r, col1.r) & cmp(col0.g, col1.g) & cmp(col0.b, col1.b) & cmp(col0.a, col1.a);
+    SP_GENFUNC bool cmp(const Col4f &v0, const Col4f &v1, const double t = 1.0e-6) {
+        return cmp(v0.r, v1.r, t) & cmp(v0.g, v1.g, t) & cmp(v0.b, v1.b, t) & cmp(v0.a, v1.a, t);
     }
+
     // compare material
-    SP_GENFUNC bool cmp(const Material &mat0, const Material &mat1) {
-        return cmp(mat0.col, mat1.col) & (mat0.rf == mat1.rf) & (mat0.ri == mat1.ri) & (mat0.tr == mat1.tr) & (mat0.ex == mat1.ex) & (mat0.em == mat1.em);
+    SP_GENFUNC bool cmp(const Material &v0, const Material &v1, const double t = 1.0e-6) {
+        return cmp(v0.col, v1.col) & cmp(v0.rf, v1.rf, t) & cmp(v0.ri, v1.ri, t) & cmp(v0.tr, v1.tr, t) & cmp(v0.ex, v1.ex, t) & cmp(v0.em, v1.em, t);
     }
 
     // compare camera
-    SP_GENFUNC bool cmp(const CamParam &cam0, const CamParam &cam1) {
-        return (cam0.type == cam1.type) & (cam0.dsize[0] == cam1.dsize[0]) & (cam0.dsize[1] == cam1.dsize[1]) &
-            (cam0.fx == cam1.fx) & (cam0.fy == cam1.fy) & (cam0.cx == cam1.cx) & (cam0.cy == cam1.cy) &
-            (cam0.k1 == cam1.k1) & (cam0.k2 == cam1.k2) & (cam0.k3 == cam1.k3) & (cam0.p1 == cam1.p1) & (cam0.p2 == cam1.p2);
+    SP_GENFUNC bool cmp(const CamParam &v0, const CamParam &v1) {
+        return (v0.type == v1.type) & (v0.dsize[0] == v1.dsize[0]) & (v0.dsize[1] == v1.dsize[1]) &
+            (v0.fx == v1.fx) & (v0.fy == v1.fy) & (v0.cx == v1.cx) & (v0.cy == v1.cy) & (v0.k1 == v1.k1) & (v0.k2 == v1.k2) & (v0.k3 == v1.k3) & (v0.p1 == v1.p1) & (v0.p2 == v1.p2);
     }
 
     // compare memory
@@ -630,11 +606,9 @@ namespace sp {
         return true;
     }
 
-
-
-#define SP_CMP_OPERATOR(TYPE) \
-    SP_GENFUNC bool operator == (const TYPE &val0, const TYPE &val1) { return  cmp(val0, val1); } \
-    SP_GENFUNC bool operator != (const TYPE &val0, const TYPE &val1) { return !cmp(val0, val1); }
+#define SP_CMP_OPERATOR(TYPE)\
+    SP_GENFUNC bool operator == (const TYPE &v0, const TYPE &v1) { return  cmp(v0, v1); } \
+    SP_GENFUNC bool operator != (const TYPE &v0, const TYPE &v1) { return !cmp(v0, v1); }
 
     SP_CMP_OPERATOR(Cmp);
     SP_CMP_OPERATOR(Rect2);
@@ -655,7 +629,6 @@ namespace sp {
     SP_CMP_OPERATOR(Col4f);
     SP_CMP_OPERATOR(Material);
     SP_CMP_OPERATOR(CamParam);
-
 
 }
 

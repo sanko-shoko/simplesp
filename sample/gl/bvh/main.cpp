@@ -63,10 +63,10 @@ private:
 
     virtual void keyFun(int key, int scancode, int action, int mods) {
         if (m_key[GLFW_KEY_S] == 1) {
-            m_level = maxVal(0, m_level + 1);
+            m_level = max(0, m_level + 1);
         }
         if (m_key[GLFW_KEY_A] == 1) {
-            m_level = maxVal(0, m_level - 1);
+            m_level = max(0, m_level - 1);
         }
         if (m_key[GLFW_KEY_D] == 1) {
             m_stop ^= true;
@@ -101,7 +101,7 @@ private:
                 }
             }
             glLoadView2D(m_cam);
-            glTexDepth(depth, maxVal(m_pose.pos.z - 500.0, 10.0), m_pose.pos.z + 500.0);
+            glTexDepth(depth, max(m_pose.pos.z - 500.0, 10.0), m_pose.pos.z + 500.0);
         }
         else{
             glLoadView3D(m_cam);

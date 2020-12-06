@@ -423,8 +423,8 @@ namespace sp {
         const int unit = 3;
         if (num < unit) return false;
 
-        const Vec3 cent0 = meanVec(objs0);
-        const Vec3 cent1 = meanVec(objs1);
+        const Vec3 cent0 = mean(objs0);
+        const Vec3 cent1 = mean(objs1);
 
         const Mem1<Vec3> mobjs0 = objs0 - cent0;
         const Mem1<Vec3> mobjs1 = objs1 - cent1;
@@ -541,7 +541,7 @@ namespace sp {
         SP_REAL mine = SP_INFINITY;
         for (int i = 0; i < poses.size(); i++) {
             const Pose test = poses[i];
-            const SP_REAL err = sumVal(calcPrjErr(test, cam, pixs, objs));
+            const SP_REAL err = sum(calcPrjErr(test, cam, pixs, objs));
             if (err < mine) {
                 mine = err;
                 pose = test;
@@ -575,7 +575,7 @@ namespace sp {
             }
             Vec3 T = getVec3(U(3, 0), U(7, 0), U(11, 0));
 
-            const Vec3 pos = R * meanVec(objs) + T;
+            const Vec3 pos = R * mean(objs) + T;
             if (pos.z < 0.0) {
                 R *= -1.0;
                 T *= -1.0;
@@ -736,9 +736,9 @@ namespace sp {
         // refine
         {
             const Mem1<SP_REAL> errs = calcPrjErr(poses, cams, pixs, pos);
-            const Mem1<Pose> dposes = denoise(poses, errs, thresh * 2);
-            const Mem1<CamParam> dcams = denoise(cams, errs, thresh * 2);
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
+            const Mem1<Pose> dposes = filter(poses, errs, thresh * 2);
+            const Mem1<CamParam> dcams = filter(cams, errs, thresh * 2);
+            const Mem1<Vec2> dpixs = filter(pixs, errs, thresh * 2);
 
             if (refinePnt3d(pos, dposes, dcams, dpixs) == false) return false;
         }
@@ -795,8 +795,8 @@ namespace sp {
             for (int i = 0; i < num; i++) {
                 errs.push(normVec(objs0[i] - pose * objs1[i]));
             }
-            const Mem1<Vec3> dobjs0 = denoise(objs0, errs, thresh * 2);
-            const Mem1<Vec3> dobjs1 = denoise(objs1, errs, thresh * 2);
+            const Mem1<Vec3> dobjs0 = filter(objs0, errs, thresh * 2);
+            const Mem1<Vec3> dobjs1 = filter(objs1, errs, thresh * 2);
 
             if (refinePose(pose, dobjs0, dobjs1) == false) return false;
         }
@@ -850,8 +850,8 @@ namespace sp {
         // refine
         {
             const Mem1<SP_REAL> errs = calcPrjErr(pose, cam, pixs, objs);
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
-            const Mem1<Vec3> dobjs = denoise(objs, errs, thresh * 2);
+            const Mem1<Vec2> dpixs = filter(pixs, errs, thresh * 2);
+            const Mem1<Vec3> dobjs = filter(objs, errs, thresh * 2);
 
             if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
         }
@@ -903,8 +903,8 @@ namespace sp {
         // refine
         {
             const Mem1<SP_REAL> errs = calcPrjErr(pose, cam, pixs, getVec3(objs, 0.0));
-            const Mem1<Vec2> dpixs = denoise(pixs, errs, thresh * 2);
-            const Mem1<Vec2> dobjs = denoise(objs, errs, thresh * 2);
+            const Mem1<Vec2> dpixs = filter(pixs, errs, thresh * 2);
+            const Mem1<Vec2> dobjs = filter(objs, errs, thresh * 2);
 
             if (refinePose(pose, cam, dpixs, dobjs) == false) return false;
         }
@@ -925,12 +925,12 @@ namespace sp {
         if (calcEMatRANSAC(E, npxs0, npxs1, nth) == false) return false;
         const Mem1<SP_REAL> errs = errMatType2(E, npxs0, npxs1);
 
-        const Mem1<Vec2> dnpxs0 = denoise(npxs0, errs, nth * 2);
-        const Mem1<Vec2> dnpxs1 = denoise(npxs1, errs, nth * 2);
+        const Mem1<Vec2> dnpxs0 = filter(npxs0, errs, nth * 2);
+        const Mem1<Vec2> dnpxs1 = filter(npxs1, errs, nth * 2);
         if (dcmpEMat(pose, E, dnpxs0, dnpxs1) == false) return false;
 
-        const Mem1<Vec2> dpixs0 = denoise(pixs0, errs, nth * 2);
-        const Mem1<Vec2> dpixs1 = denoise(pixs1, errs, nth * 2);
+        const Mem1<Vec2> dpixs0 = filter(pixs0, errs, nth * 2);
+        const Mem1<Vec2> dpixs1 = filter(pixs1, errs, nth * 2);
         if (refinePose(pose, cam0, dpixs0, cam1, dpixs1) == false) return false;
         return true;
     }
@@ -966,7 +966,7 @@ namespace sp {
         }
         if (zlist.size() == 0) return 0.0;
 
-        const SP_REAL pnum = minVal(10.0, log2(zlist.size()));
+        const SP_REAL pnum = min(10.0, log2(zlist.size()));
         const SP_REAL eval = pnum / 10.0;
         return eval;
     }

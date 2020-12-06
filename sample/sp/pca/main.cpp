@@ -30,7 +30,7 @@ int main() {
         }
     
         {
-            const Vec2 mean = meanVec(data);
+            const Vec2 mean = mean(data);
 
             Mat mat(data.size(), 2);
             for (int i = 0; i < data.size(); i++) {
@@ -127,8 +127,8 @@ int main() {
                     for (int j = 0; j < dst.size(); j++) {
                         tmp[j] = eigVec(j, i);
                     }
-                    const double maxv = maxVal(tmp);
-                    const double minv = minVal(tmp);
+                    const double maxv = max(tmp);
+                    const double minv = min(tmp);
                     cnvMem(dst, tmp, 255 / (maxv - minv), minv);
                 }
 

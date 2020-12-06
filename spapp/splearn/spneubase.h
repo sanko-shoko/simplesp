@@ -39,7 +39,7 @@ namespace sp{
         for (int i = 0; i < result.size(); i++){
             loss[i] = crossEntropy(result[i], truth[i]);
         }
-        return meanVal(loss);
+        return mean(loss);
     }
 
 
@@ -52,11 +52,11 @@ namespace sp{
     }
 
     SP_CPUFUNC SP_REAL testAccuracy(const Mem<SP_REAL>  &result, const int label) {
-        return (maxArg(result) == label) ? 1.0 : 0.0;
+        return (maxarg(result) == label) ? 1.0 : 0.0;
     }
 
     SP_CPUFUNC SP_REAL testAccuracy(const Mem<SP_REAL>  &result, const Mem<SP_REAL>  &label){
-        return (maxArg(result) == maxArg(label)) ? 1.0 : 0.0;
+        return (maxarg(result) == maxarg(label)) ? 1.0 : 0.0;
     }
 
     template<typename TYPE0, typename TYPE1>
@@ -66,7 +66,7 @@ namespace sp{
         for (int i = 0; i < result.size(); i++) {
             accuracy[i] = testAccuracy(result[i], truth[i]);
         }
-        return  meanVal(accuracy);
+        return  mean(accuracy);
     }
 
 

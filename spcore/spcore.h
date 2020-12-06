@@ -7,32 +7,25 @@
 
 
 #include "spcore/spcom.h"
-#include "spcore/spprint.h"
 
 // gen
 #include "spcore/spgen/spbase.h"
-#include "spcore/spgen/sprect.h"
-#include "spcore/spgen/spcol.h"
-#include "spcore/spgen/spvec.h"
+#include "spcore/spgen/sptype.h"
 #include "spcore/spgen/spmath.h"
-#include "spcore/spgen/spmath.h"
-
-#include "spcore/spgen/spcam.h"
-#include "spcore/spgen/sppose.h"
 
 // cpu
 #include "spcore/spcpu/spmem.h"
 #include "spcore/spcpu/spmop.h"
 #include "spcore/spcpu/spsolve.h"
-#include "spcore/spcpu/spstat.h"
-#include "spcore/spcpu/spstr.h"
+
 #include "spcore/spcpu/spcode.h"
+#include "spcore/spcpu/spprint.h"
 
-
-#include "spcore/spsystem.h"
-#include "spcore/sptime.h"
-#include "spcore/spthread.h"
-#include "spcore/spdebug.h"
+#include "spcore/spcpu/spstring.h"
+#include "spcore/spcpu/spsystem.h"
+#include "spcore/spcpu/sptime.h"
+#include "spcore/spcpu/spthread.h"
+#include "spcore/spcpu/spdebug.h"
 
 
 #endif

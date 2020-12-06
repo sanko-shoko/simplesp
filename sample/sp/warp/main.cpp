@@ -82,7 +82,7 @@ int main(){
                     dst.resize(imgs[0].dsize);
                     warp<Col3, Byte>(dst, imgs[0], hom);
 
-                    blend(dst, dst, imgs[1]);
+                    blend(dst, dst, 0.5, imgs[1], 0.5);
                 }
                 saveBMP("hom1.bmp", dst);
             }
@@ -102,8 +102,8 @@ int main(){
                     zlist.push(pnts[i].z);
                 }
 
-                //const double z = medianVal(zlist);
-                const double z = meanVal(zlist);
+                //const double z = median(zlist);
+                const double z = mean(zlist);
 
                 {
                     const Mat cmat = extMat(4, 4, getMat(cam));
@@ -136,7 +136,7 @@ int main(){
                     dst.resize(imgs[0].dsize);
                     warp<Col3, Byte>(dst, imgs[0], hom);
 
-                    blend(dst, dst, imgs[1]);
+                    blend(dst, dst, 0.5, imgs[1], 0.5);
                 }
                 saveBMP("hom2.bmp", dst);
             }

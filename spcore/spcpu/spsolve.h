@@ -6,7 +6,6 @@
 #define __SP_SOLVE_H__
 
 #include "spcore/spcpu/spmop.h"
-#include "spcore/spcpu/spstat.h"
 
 
 namespace sp{
@@ -24,17 +23,17 @@ namespace sp{
 
             Mat data(mem.size(), dim, mem.ptr);
 
-            const Mat mean = meanVal(data, 0);
-            data -= mean;
+            const Mat m = mean(data, 0);
+            data -= m;
 
-            SP_REAL scale = meanSqrt(sumSq(data, 1));
+            SP_REAL scale = sqrtmean(sqsum(data, 1));
             if (scale < SP_SMALL) return false;
             data /= scale;
 
             T = eyeMat(dim + 1, dim + 1);
             for (int c = 0; c < dim; c++) {
                 T(c, c) /= scale;
-                T(c, dim) -= mean(0, c) / scale;
+                T(c, dim) -= m(0, c) / scale;
             }
 
             dst.resize(mem.dim, mem.dsize);
@@ -51,8 +50,8 @@ namespace sp{
 
             Mat W(nsize * step, 1);
 
-            const double sigma = 1.4826 * medianVal(errs);
-            const double thresh = maxVal(3.0 * sigma, minErr);
+            const double sigma = 1.4826 * median(errs);
+            const double thresh = max(3.0 * sigma, minErr);
 
             SP_REAL *pw = W.ptr;
             const SP_REAL *pe = errs.ptr;
@@ -154,6 +153,21 @@ namespace sp{
         }
     }
 
+    //--------------------------------------------------------------------------------
+    // eval
+    //--------------------------------------------------------------------------------
+
+    SP_CPUFUNC SP_REAL evalErr(const Mem1<SP_REAL> &errs, const double thresh = 5.0) {
+        double eval = 0.0;
+        for (int i = 0; i < errs.size(); i++) {
+            if (errs[i] < thresh) eval += 1.0;
+        }
+        return eval / errs.size();
+    }
+
+    SP_CPUFUNC SP_REAL evalErr(const SP_REAL err, const double thresh = 5.0) {
+        return (err < thresh) ? 1.0 : 0.0;
+    }
 
     //--------------------------------------------------------------------------------
     // ransac util
@@ -165,9 +179,9 @@ namespace sp{
 
     // ransac adaptive stop
     SP_CPUFUNC int ransacAdaptiveStop(const double rate, const int unit, const double n = 0.99){
-        const SP_REAL e = maxVal(rate, 0.1);
+        const SP_REAL e = max(rate, 0.1);
         const int k = round(1.0 + log(1.0 - n) / log(1.0 - pow(e, unit)));
-        return minVal(k, SP_RANSAC_ITMAX);
+        return min(k, SP_RANSAC_ITMAX);
     }
 
     SP_CPUFUNC SP_REAL ransacEval(const Mem<SP_REAL> &errs, const int unit, const double thresh) {
@@ -177,7 +191,7 @@ namespace sp{
         }
         const double eval = static_cast<double>(cnt - unit) / (errs.size() - unit);
      
-        return SP_CAST_REAL(eval);
+        return static_cast<SP_REAL>(eval);
     }
 
     template<typename TYPE>

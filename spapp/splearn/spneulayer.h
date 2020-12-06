@@ -295,7 +295,7 @@ namespace sp{
         virtual void forward(Mem1<Mem<SP_REAL> > &Y, const Mem1<Mem<SP_REAL> > &X){
 
             for (int n = 0; n < Y.size(); n++){
-                const SP_REAL maxv = maxVal(X[n]);
+                const SP_REAL maxv = max(X[n]);
 
                 Mem1<SP_REAL> S(X[n].size());
                 for (int i = 0; i < S.size(); i++){
@@ -303,7 +303,7 @@ namespace sp{
                 }
 
                 // Y = S / sum(S)
-                divElm(Y[n], S, sumVal(S));
+                divElm(Y[n], S, sum(S));
             }
         }
 
@@ -471,7 +471,7 @@ namespace sp{
             // kernel dsize
             m_kernel[0] = m_winSize;
             m_kernel[1] = m_winSize;
-            m_kernel[2] = maxVal(X[0].dsize[2], 1);
+            m_kernel[2] = max(X[0].dsize[2], 1);
 
             // foward parameter
             m_prm.resize(m_nodeNum, m_kernel[0] * m_kernel[1] * m_kernel[2]);
@@ -664,7 +664,7 @@ namespace sp{
             // output dsize
             m_output[0] = (X[0].dsize[0] - 2 * m_margin) / m_stride;
             m_output[1] = (X[0].dsize[1] - 2 * m_margin) / m_stride;
-            m_output[2] = maxVal(X[0].dsize[2], 1);
+            m_output[2] = max(X[0].dsize[2], 1);
 
             // kernel dsize
             m_kernel[0] = m_winSize;
@@ -880,10 +880,10 @@ namespace sp{
 
                 Mem1<SP_REAL> cX, nX;
                 if (m_train == true){
-                    const SP_REAL mean = meanVal(bX);
-                    cX = bX - mean;
+                    const SP_REAL meanv = mean(bX);
+                    cX = bX - meanv;
 
-                    const double var = meanSq(cX);
+                    const double var = sqmean(cX);
                     const double std = sqrt(var + 10e-6);
                     nX = cX / std;
 
@@ -893,7 +893,7 @@ namespace sp{
                     m_std[r] = std;
 
                     const double blend = 0.9;
-                    m_mean[r] = blend * m_mean[r] + (1 - blend) * mean;
+                    m_mean[r] = blend * m_mean[r] + (1 - blend) * meanv;
                     m_var[r] = blend * m_var[r] + (1 - blend) * var;
                 }
                 else{
@@ -941,13 +941,13 @@ namespace sp{
                 for (int c = 0; c < M.cols(); c++){
                     tmp[c] = dnX[c] * m_cX[r][c] / (m_std[r] * m_std[r]);
                 }
-                const SP_REAL dstd = -sumVal(tmp);
+                const SP_REAL dstd = -sum(tmp);
                 const SP_REAL dvar = 0.5 * dstd / m_std[r];
 
                 for (int c = 0; c < M.cols(); c++){
                     dcX[c] += (2.0 / M.cols()) * m_cX[r][c] * dvar;
                 }
-                const SP_REAL dmean = sumVal(dcX);
+                const SP_REAL dmean = sum(dcX);
 
                 for (int c = 0; c < M.cols(); c++){
                     M(r, c) = dcX[c] - dmean / M.cols();

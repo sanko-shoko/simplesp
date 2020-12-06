@@ -41,7 +41,7 @@ namespace sp{
 
 
         // pyramid num
-        const int pynum = round(log2(minVal(img0.dsize[0], img0.dsize[1]) / 10.0));
+        const int pynum = round(log2(min(img0.dsize[0], img0.dsize[1]) / 10.0));
 
         Mem1<Mem2<Byte> > pyimgs0(pynum);
         Mem1<Mem2<Byte> > pyimgs1(pynum);
@@ -74,7 +74,7 @@ namespace sp{
                 int stop = 0;
                 if (scls.size() > 0) {
                     stop = round(log2(scls[i] / whalf));
-                    stop = maxVal(0, minVal(pynum - 1, stop));
+                    stop = max(0, min(pynum - 1, stop));
                 }
 
                 for (int p = pynum - 1; p >= stop; p--) {
@@ -225,8 +225,8 @@ namespace sp{
             }
         }
 
-        if (cntVal(mask, true) > 0) {
-            const SP_REAL sigma = 1.4826 * medianVal(filter(errs, mask));
+        if (count(mask, true) > 0) {
+            const SP_REAL sigma = 1.4826 * median(filter(errs, mask));
 
             for (int i = 0; i < mask.size(); i++) {
                 if (errs[i] > 3.0 * sigma) mask[i] = false;

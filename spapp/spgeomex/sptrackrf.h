@@ -281,7 +281,7 @@ namespace sp{
                     data[p] = SP_INFINITY;
                 }
             }
-            return medianVal(data);
+            return median(data);
         }
 
     };

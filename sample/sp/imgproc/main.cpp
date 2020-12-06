@@ -211,8 +211,8 @@ int main() {
                 mat[i] = ::log(pythag(re[i], im[i]) + 1.0);
             }
 
-            const double maxv = maxVal(mat);
-            const double minv = minVal(mat);
+            const double maxv = max(mat);
+            const double minv = min(mat);
 
             Mem2<Byte> vis(mat.dsize);
             for (int i = 0; i < mat.size(); i++) {

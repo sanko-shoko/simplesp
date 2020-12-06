@@ -78,68 +78,21 @@ namespace sp {
     SP_CPUFUNC bool checkHit(const Box3 &box, const VecPD3 &ray, const double minv, const double maxv) {
         double n = minv;
         double f = maxv;
-        //for (int i = 0; i < 3; i++) {
-        //    const double v = acsv(ray.drc, i);
-        //    if (fabs(v) < SP_SMALL) {
-        //        if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
-        //        if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
-        //        continue;
-        //    }
+        for (int i = 0; i < 3; i++) {
+            const double v = acsv(ray.drc, i);
+            if (fabs(v) < SP_SMALL) {
+                if (acsv(ray.pos, i) < acsv(box.pos[0], i)) return false;
+                if (acsv(ray.pos, i) > acsv(box.pos[1], i)) return false;
+                continue;
+            }
 
-        //    const Vec3 &a = (v >= 0.0) ? box.pos[0] : box.pos[1];
-        //    const Vec3 &b = (v >= 0.0) ? box.pos[1] : box.pos[0];
+            const Vec3 &a = (v >= 0.0) ? box.pos[0] : box.pos[1];
+            const Vec3 &b = (v >= 0.0) ? box.pos[1] : box.pos[0];
 
-        //    const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
-        //    const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
-        //    n = maxVal(n, tn);
-        //    f = minVal(f, tf);
-        //    if (f < n) {
-        //        return false;
-        //    }
-        //}
-
-        if (fabs(ray.drc.x) < SP_SMALL) {
-            if (ray.pos.x < box.pos[0].x) return false;
-            if (ray.pos.x > box.pos[1].x) return false;
-        }
-        else {
-            const Vec3 &a = (ray.drc.x >= 0.0) ? box.pos[0] : box.pos[1];
-            const Vec3 &b = (ray.drc.x >= 0.0) ? box.pos[1] : box.pos[0];
-
-            const double tn = (a.x - ray.pos.x) / ray.drc.x;
-            const double tf = (b.x - ray.pos.x) / ray.drc.x;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
-            if (f < n) return false;
-        }
-
-        if (fabs(ray.drc.y) < SP_SMALL) {
-            if (ray.pos.y < box.pos[0].y) return false;
-            if (ray.pos.y > box.pos[1].y) return false;
-        }
-        else {
-            const Vec3 &a = (ray.drc.y >= 0.0) ? box.pos[0] : box.pos[1];
-            const Vec3 &b = (ray.drc.y >= 0.0) ? box.pos[1] : box.pos[0];
-
-            const double tn = (a.y - ray.pos.y) / ray.drc.y;
-            const double tf = (b.y - ray.pos.y) / ray.drc.y;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
-            if (f < n) return false;
-        }
-
-        if (fabs(ray.drc.z) < SP_SMALL) {
-            if (ray.pos.z < box.pos[0].z) return false;
-            if (ray.pos.z > box.pos[1].z) return false;
-        }
-        else {
-            const Vec3 &a = (ray.drc.z >= 0.0) ? box.pos[0] : box.pos[1];
-            const Vec3 &b = (ray.drc.z >= 0.0) ? box.pos[1] : box.pos[0];
-
-            const double tn = (a.z - ray.pos.z) / ray.drc.z;
-            const double tf = (b.z - ray.pos.z) / ray.drc.z;
-            n = maxVal(n, tn);
-            f = minVal(f, tf);
+            const double tn = (acsv(a, i) - acsv(ray.pos, i)) / v;
+            const double tf = (acsv(b, i) - acsv(ray.pos, i)) / v;
+            n = max(n, tn);
+            f = min(f, tf);
             if (f < n) return false;
         }
         return true;
@@ -184,6 +137,7 @@ namespace sp {
             int uid;
             Mat pose;
             Mat invp;
+            double scale;
         };
 
         struct Unit {
@@ -233,6 +187,9 @@ namespace sp {
                 layout.uid = m_units.size();
                 layout.pose = poses[i];
                 layout.invp = invMat(poses[i]);
+
+                const Vec3 n = layout.pose.part(0, 0, 3, 3) * getVec3(0.0, 0.0, 1.0);
+                layout.scale = normVec(n);
             }
 
             Unit &unit = *m_units.malloc();
@@ -283,35 +240,53 @@ namespace sp {
                 int di = 0;
                 int da = 0;
 
-                double mina = SP_INFINITY;
-                for (int a = 0; a < 3; a++) {
-                    sort(&idxs[n.base], n.size, cmp[a]);
-                    Box3 bl = nullBox3();
-                    Box3 br = nullBox3();
+                if (n.size < 100) {
+                    double mina = SP_INFINITY;
+                    for (int a = 0; a < 3; a++) {
+                        sort(&idxs[n.base], n.size, cmp[a]);
+                        Box3 bl = nullBox3();
+                        Box3 br = nullBox3();
 
-                    for (int i = 1; i < n.size; i++) {
-                        const int l = i;
-                        bl = orBox(bl, idxs[n.base + l - 1].box);
-                        buff[n.base + l] = 0;
-                        buff[n.base + l] += getBoxArea(bl) * i;
-                    }
-                    for (int i = 1; i < n.size; i++) {
-                        const int r = n.size - i;
-                        br = orBox(br, idxs[n.base + r].box);
-                        buff[n.base + r] += getBoxArea(br) * i;
-                    }
+                        for (int i = 1; i < n.size; i++) {
+                            const int l = i;
+                            bl = orBox(bl, idxs[n.base + l - 1].box);
+                            buff[n.base + l] = 0;
+                            buff[n.base + l] += getBoxArea(bl) * i;
+                        }
+                        for (int i = 1; i < n.size; i++) {
+                            const int r = n.size - i;
+                            br = orBox(br, idxs[n.base + r].box);
+                            buff[n.base + r] += getBoxArea(br) * i;
+                        }
 
-                    for (int i = 1; i < n.size; i++) {
-                        //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
-                        if (buff[n.base + i] < mina) {
-                            mina = buff[n.base + i];
-                            di = i;
-                            da = a;
+                        for (int i = 1; i < n.size; i++) {
+                            //const double area = 1.0 + (buff(i, 0) + buff(i, 1)) / getBoxArea(n.box);
+                            if (buff[n.base + i] < mina) {
+                                mina = buff[n.base + i];
+                                di = i;
+                                da = a;
+                            }
                         }
                     }
+                    if (da != 2) {
+                        sort(&idxs[n.base], n.size, cmp[da]);
+                    }
                 }
-                if (da != 2) {
+                else {
+                    const double x = fabs(n.box.pos[1].x - n.box.pos[0].x);
+                    const double y = fabs(n.box.pos[1].y - n.box.pos[0].y);
+                    const double z = fabs(n.box.pos[1].z - n.box.pos[0].z);
+                    if (x > max(y, z)) {
+                        da = 0;
+                    }
+                    else if(y > z) {
+                        da = 1;
+                    }
+                    else {
+                        da = 2;
+                    }
                     sort(&idxs[n.base], n.size, cmp[da]);
+                    di = n.size / 2;
                 }
                 return di;
             };
@@ -439,70 +414,67 @@ namespace sp {
             const Node* queA[QUE_MAX];
             const Node* queB[QUE_MAX];
 
-            double lmaxv = maxv;
+            double minvA = minv;
+            double maxvA = maxv;
             if (m_nodes.size() > 0) {
-                int stack = 0;
-                queA[stack++] = &m_nodes[0];
+                int stackA = 0;
+                queA[stackA++] = &m_nodes[0];
 
-                while (stack > 0) {
-                    const Node *n = queA[--stack];
-                    if (checkHit(n->box, ray, minv, lmaxv) == false) {
+                while (stackA > 0) {
+                    const Node *n = queA[--stackA];
+
+                    if (checkHit(n->box, ray, minvA, maxvA) == false) {
                         continue;
                     }
-                    if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
-                        queA[stack++] = n->n0;
-                        queA[stack++] = n->n1;
+                    if (n->n0 != NULL && n->n1 != NULL && stackA < QUE_MAX - 2) {
+                        queA[stackA++] = n->n0;
+                        queA[stackA++] = n->n1;
                         continue;
                     }
 
-                    const int i = m_idxs[n->base].id;
-                    {
-                        const Mat &pose = m_layouts[i].pose;
-                        const Mat &invp = m_layouts[i].invp;
+                    const Layout &layout = m_layouts[m_idxs[n->base].id];
+                    const Unit &unit = m_units[layout.uid];
 
-                        const Unit &unit = m_units[m_layouts[i].uid];
+                    const VecPD3 bray = layout.invp * ray;
 
-                        const VecPD3 bray = invp * ray;
+                    int minid = -1;
 
-                        int stack = 0;
-                        queB[stack++] = &unit.nodes[0];
+                    double minvB = minvA / layout.scale;
+                    double maxvB = maxvA / layout.scale;
+                    
+                    int stackB = 0;
+                    queB[stackB++] = &unit.nodes[0];
 
-                        int minid = -1;
-                        int objid = -1;
+                    while (stackB > 0) {
+                        const Node *n = queB[--stackB];
 
-                        const SP_REAL delta = 0.001;
+                        if (checkHit(n->box, bray, minvB, maxvB) == false) {
+                            continue;
+                        }
+                        if (n->n0 != NULL && n->n1 != NULL && stackB < QUE_MAX - 2) {
+                            queB[stackB++] = n->n0;
+                            queB[stackB++] = n->n1;
+                            continue;
+                        }
+                        {
+                            const int id = unit.idxs[n->base].id;
 
-                        while (stack > 0) {
-                            const Node *n = queB[--stack];
-                            if (checkHit(n->box, bray, minv, lmaxv) == false) {
-                                continue;
-                            }
-                            if (n->n0 != NULL && n->n1 != NULL && stack < QUE_MAX - 2) {
-                                queB[stack++] = n->n0;
-                                queB[stack++] = n->n1;
-                                continue;
-                            }
-                            {
-                                const int id = n->base;
-                                SP_REAL result[3] = { 0 };
-                                if (traceMesh(result, unit.data[unit.idxs[id].id].mesh, bray, minv, lmaxv) == true) {
+                            SP_REAL result[3] = { 0 };
+                            if (traceMesh(result, unit.data[id].mesh, bray, minvB, maxvB) == true) {
 
-                                    const Vec3 nrm = getMeshNrm(unit.data[unit.idxs[id].id].mesh);
-                                    const bool f = (dotVec(nrm, bray.drc) < 0.0);
-
-                                    lmaxv = result[0];
-                                    minid = id;
-                                }
+                                maxvA = result[0] * layout.scale;
+                                maxvB = result[0];
+                                minid = id;
                             }
                         }
+                    }
 
-                        if (minid >= 0) {
-                            hit.find = true;
-                            hit.mat = unit.data[unit.idxs[minid].id].mat;
+                    if (minid >= 0) {
+                        hit.find = true;
+                        hit.mat = unit.data[minid].mat;
 
-                            hit.vec.pos = pose * (bray.pos + bray.drc * lmaxv);
-                            hit.vec.drc = unitVec(pose.part(0, 0, 3, 3)  * getMeshNrm(unit.data[unit.idxs[minid].id].mesh));
-                        }
+                        hit.vec.pos = layout.pose * (bray.pos + bray.drc * maxvB);
+                        hit.vec.drc = unitVec(layout.pose.part(0, 0, 3, 3)  * getMeshNrm(unit.data[minid].mesh));
                     }
                 }
             }
@@ -741,7 +713,7 @@ namespace sp {
             SP_ASSERT(lights.size() <= LIGHT_MAX);
 
             for (int i = 0; i < LIGHT_MAX; i++) {
-                if (i >= minVal(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
+                if (i >= min(m_plights.size(), lights.size()) || lights[i].pos != m_plights[i].pos) {
                     m_cnt.dif[i] = 0;
                 }
                 
@@ -761,23 +733,25 @@ namespace sp {
 
         bool update() {
             if (prog() == 1.0f) return false;
+            
+            const int t = SAMPLE_UNIT * SAMPLE_UNIT;
 
 #if SP_USE_OMP
 #pragma omp parallel for
 #endif
             for (int v = 0; v < m_cam.dsize[1]; v++) {
                 for (int u = 0; u < m_cam.dsize[0]; u++) {
-                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == SP_CAST_REAL(0.0)) continue;
+                    if (m_cnt.msk >= m_lim.msk && m_img(u, v).msk == static_cast<SP_REAL>(0.0)) continue;
 
                     calc(m_img(u, v), m_hitmap(u, v), m_raymap(u, v));
                 }
             }
             {
-                m_cnt.amb = minVal(m_lim.amb, m_cnt.amb + 1);
+                m_cnt.amb = min(m_lim.amb, m_cnt.amb + 1);
                 for (int i = 0; i < m_plights.size(); i++) {
-                    m_cnt.dif[i] = minVal(m_lim.dif[i], m_cnt.dif[i] + 1);
+                    m_cnt.dif[i] = min(m_lim.dif[i], m_cnt.dif[i] + 1);
                 }
-                m_cnt.msk = minVal(m_lim.msk, m_cnt.msk + 1);
+                m_cnt.msk = min(m_lim.msk, m_cnt.msk + 1);
             }
             return true;
         }
@@ -821,7 +795,7 @@ namespace sp {
                         col = getCol4f(0.0, 0.0, 0.0, im.msk);
                     }
 
-                    col = meanCol(col, col.a, bgcol, 1.0f - col.a);
+                    col = blendCol(col, col.a, bgcol, 1.0f - col.a);
 
                     img(u, v) = cast<Col4>(col);
                 }
@@ -862,7 +836,6 @@ namespace sp {
                 if (hit.calc == false) {
                     trace(hit, ray, 0.0, SP_INFINITY);
                 }
-                return hit;
             };
 
             {
@@ -879,8 +852,8 @@ namespace sp {
                         Data data;
                         calc_amb(data, ray, hit, 0, (unsigned int)m_cnt.amb);
 
-                        img.amb.col = meanCol(img.amb.col, m_cnt.amb, data.col, 1.0);
-                        img.amb.sdw = (img.amb.sdw * m_cnt.amb + data.sdw) / (m_cnt.amb + 1);
+                        img.amb.col = blendCol(img.amb.col, m_cnt.amb, data.col, 1.0);
+                        img.amb.sdw = blendCol(img.amb.sdw, m_cnt.amb, data.sdw, 1.0);
                     }
                 }
             }
@@ -897,8 +870,8 @@ namespace sp {
                     if (hit.find == true) {
                         Data data;
                         calc_dif(data, ray, hit, m_plights[i].pos + randgVec3(1.0, 1.0, 1.0, m_cnt.dif[i]) * 1.0, 0, m_cnt.dif[i]);
-                        img.dif[i].col = meanCol(img.dif[i].col, m_cnt.dif[i], data.col, 1.0);
-                        img.dif[i].sdw = (img.dif[i].sdw * m_cnt.dif[i] + data.sdw) / (m_cnt.dif[i] + 1.0);
+                        img.dif[i].col = blendCol(img.dif[i].col, m_cnt.dif[i], data.col, 1.0);
+                        img.dif[i].sdw = blendCol(img.dif[i].sdw, m_cnt.dif[i], data.sdw, 1.0);
                     }
                 }
             }
@@ -954,9 +927,9 @@ namespace sp {
 
             const SP_REAL delta = 0.001;
 
-            const double rate0 = 1.0 - maxVal(base.mat.tr, base.mat.rf);
-            const double rate1 = base.mat.tr * maxVal(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
-            const double rate2 = base.mat.rf * maxVal(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
+            const double rate0 = 1.0 - max(base.mat.tr, base.mat.rf);
+            const double rate1 = base.mat.tr * max(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
+            const double rate2 = base.mat.rf * max(base.mat.tr, base.mat.rf) / (base.mat.tr + base.mat.rf);
 
             data.col = getCol4f(0.0, 0.0, 0.0, 0.0);
             data.sdw = 0.0;
@@ -1028,7 +1001,7 @@ namespace sp {
                 for (int i = 0; i < LEVEL_MAX - level; i++) {
                     ret = trace(hit, next, 0.0, SP_INFINITY);
                     if (ret == true) {
-                        const double r = hit.mat.tr * maxVal(hit.mat.tr, hit.mat.rf) / (hit.mat.tr + hit.mat.rf);
+                        const double r = hit.mat.tr * max(hit.mat.tr, hit.mat.rf) / (hit.mat.tr + hit.mat.rf);
                         if (r > 0.0) {
                             next.pos = hit.vec.pos + next.drc * delta;
                             next.drc = next.drc;

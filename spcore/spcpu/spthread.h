@@ -16,10 +16,6 @@
 
 namespace sp {
 
-    static void sleep(const long long ms) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-    }
-
     class Thread {
     private:
         bool m_used;

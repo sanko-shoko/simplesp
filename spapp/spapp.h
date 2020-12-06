@@ -15,7 +15,6 @@
 #include "spapp/spdata/spsvg.h"
 #include "spapp/spdata/spmodel.h"
 #include "spapp/spdata/spdataset.h"
-#include "spapp/spdata/spiconv.h"
 
 // algorithm
 #include "spapp/spalgo/spkdtree.h"
