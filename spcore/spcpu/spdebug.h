@@ -6,7 +6,6 @@
 #define __SP_DEBUG_H__
 
 #include "spcore/spcpu/spsystem.h"
-#include "spcore/spcpu/sptime.h"
 #include "spcore/spcpu/spprint.h"
 
 #include <string>
