@@ -10,7 +10,7 @@
 #include "spcore/spgen/spmath.h"
 
 //--------------------------------------------------------------------------------
-// vertex
+// vector
 //--------------------------------------------------------------------------------
 
 namespace sp {
@@ -255,18 +255,18 @@ namespace sp {
     // vector pn (position and direction)
     //--------------------------------------------------------------------------------
 
-    // get vector pd
-    SP_GENFUNC VecPD2 getVecPD2(const Vec2 &vtx, const Vec2 &drc) {
+    // get vector (position and direction)
+    SP_GENFUNC VecPD2 getVecPD2(const Vec2 &pos, const Vec2 &drc) {
         VecPD2 dst;
-        dst.pos = vtx;
+        dst.pos = pos;
         dst.drc = drc;
         return dst;
     }
 
-    // get vector pd
-    SP_GENFUNC VecPD3 getVecPD3(const Vec3 &vtx, const Vec3 &drc) {
+    // get vector (position and direction)
+    SP_GENFUNC VecPD3 getVecPD3(const Vec3 &pos, const Vec3 &drc) {
         VecPD3 dst;
-        dst.pos = vtx;
+        dst.pos = pos;
         dst.drc = drc;
         return dst;
     }
@@ -717,40 +717,40 @@ namespace sp {
 
     SP_GENFUNC Box2 orBox(const Box2 &box0, const Box2 &box1) {
         Box2 dst = box0;
-        for (int i = 0; i < 2; i++) {
-            acsv(dst.pos[0], i) = min(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
-            acsv(dst.pos[1], i) = max(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
-        }
+        dst.pos[0].x = min(dst.pos[0].x, box1.pos[0].x);
+        dst.pos[1].x = max(dst.pos[1].x, box1.pos[1].x);
+        dst.pos[0].y = min(dst.pos[0].y, box1.pos[0].y);
+        dst.pos[1].y = max(dst.pos[1].y, box1.pos[1].y);
         return dst;
     }
 
     SP_GENFUNC Box3 orBox(const Box3 &box0, const Box3 &box1) {
         Box3 dst = box0;
-        for (int i = 0; i < 3; i++) {
-            acsv(dst.pos[0], i) = min(acsv(dst.pos[0], i), acsv(box1.pos[0], i));
-            acsv(dst.pos[1], i) = max(acsv(dst.pos[1], i), acsv(box1.pos[1], i));
-        }
+        dst.pos[0].x = min(dst.pos[0].x, box1.pos[0].x);
+        dst.pos[1].x = max(dst.pos[1].x, box1.pos[1].x);
+        dst.pos[0].y = min(dst.pos[0].y, box1.pos[0].y);
+        dst.pos[1].y = max(dst.pos[1].y, box1.pos[1].y);
+        dst.pos[0].z = min(dst.pos[0].z, box1.pos[0].z);
+        dst.pos[1].z = max(dst.pos[1].z, box1.pos[1].z);
         return dst;
     }
 
     SP_GENFUNC Box3 orBox(const Box3 &box, const Vec3 &vec) {
         Box3 dst = box;
-        for (int i = 0; i < 3; i++) {
-            acsv(dst.pos[0], i) = min(acsv(dst.pos[0], i), acsv(vec, i));
-            acsv(dst.pos[1], i) = max(acsv(dst.pos[1], i), acsv(vec, i));
-        }
+        dst.pos[0].x = min(dst.pos[0].x, vec.x);
+        dst.pos[1].x = max(dst.pos[1].x, vec.x);
+        dst.pos[0].y = min(dst.pos[0].y, vec.y);
+        dst.pos[1].y = max(dst.pos[1].y, vec.y);
+        dst.pos[0].z = min(dst.pos[0].z, vec.z);
+        dst.pos[1].z = max(dst.pos[1].z, vec.z);
         return dst;
     }
 
     SP_GENFUNC Box3 orBox(const Box3 &box, const Mesh3 &mesh) {
         Box3 dst = box;
-        for (int p = 0; p < 3; p++) {
-            const Vec3 &pos = mesh.pos[p];
-            for (int i = 0; i < 3; i++) {
-                acsv(dst.pos[0], i) = min(acsv(dst.pos[0], i), acsv(pos, i));
-                acsv(dst.pos[1], i) = max(acsv(dst.pos[1], i), acsv(pos, i));
-            }
-        }
+        dst = orBox(dst, mesh.pos[0]);
+        dst = orBox(dst, mesh.pos[1]);
+        dst = orBox(dst, mesh.pos[2]);
         return dst;
     }
 
@@ -997,7 +997,7 @@ namespace sp {
         // D65
         val.x = static_cast<SP_REAL>(+3.240970 * xyz.x - 1.537383 * xyz.y - 0.498611 * xyz.z);
         val.y = static_cast<SP_REAL>(-0.969244 * xyz.x + 1.875968 * xyz.y + 0.041555 * xyz.z);
-        val.z = static_cast<SP_REAL>(0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
+        val.z = static_cast<SP_REAL>(+0.055630 * xyz.x - 0.203977 * xyz.y + 1.056972 * xyz.z);
 
         val.x = min(1.0, f(val.x));
         val.y = min(1.0, f(val.y));
@@ -1056,13 +1056,23 @@ namespace sp {
     // color util
     //--------------------------------------------------------------------------------
 
-    SP_GENFUNC Byte blendCol(const Byte &col0, const double r0, const Byte &col1, const double r1) {
+    SP_GENFUNC Byte blendCol(const Byte col0, const double r0, const Byte col1, const double r1) {
         if (r0 + r1 == 0.0f) return 0;
         if (r0 == 0.0) return col1;
         if (r1 == 0.0) return col0;
 
         Byte col;
-        col = static_cast<Byte>((col0 * r0 + col1 * r1) / (r0 + r1));
+        col = static_cast<Byte>((col0 * r0 + col1 * r1) / (r0 + r1) + 0.5);
+        return col;
+    }
+
+    SP_GENFUNC SP_REAL blendCol(const SP_REAL col0, const double r0, const SP_REAL col1, const double r1) {
+        if (r0 + r1 == 0.0f) return 0.0f;
+        if (r0 == 0.0) return col1;
+        if (r1 == 0.0) return col0;
+
+        SP_REAL col;
+        col = static_cast<SP_REAL>((col0 * r0 + col1 * r1) / (r0 + r1));
         return col;
     }
 
@@ -1072,10 +1082,34 @@ namespace sp {
         if (r1 == 0.0) return col0;
 
         Col3 col;
-        col.r = static_cast<Byte>((col0.r * r0 + col1.r * r1) / (r0 + r1));
-        col.g = static_cast<Byte>((col0.g * r0 + col1.g * r1) / (r0 + r1));
-        col.b = static_cast<Byte>((col0.b * r0 + col1.b * r1) / (r0 + r1));
+        col.r = static_cast<Byte>((col0.r * r0 + col1.r * r1) / (r0 + r1) + 0.5);
+        col.g = static_cast<Byte>((col0.g * r0 + col1.g * r1) / (r0 + r1) + 0.5);
+        col.b = static_cast<Byte>((col0.b * r0 + col1.b * r1) / (r0 + r1) + 0.5);
         return col;
+    }
+
+    SP_GENFUNC Col4 blendCol(const Col4 &col0, const double r0, const Col4 &col1, const double r1) {
+        if (r0 + r1 == 0.0) return getCol4(0, 0, 0, 0);
+        if (r0 == 0.0) return col1;
+        if (r1 == 0.0) return col0;
+
+        Col4 dst;
+        const float t0 = col0.a * r0;
+        const float t1 = col1.a * r1;
+
+        if (t0 + t1 > 0.0f) {
+            dst.r = static_cast<Byte>((col0.r * t0 + col1.r * t1) / (t0 + t1) + 0.5);
+            dst.g = static_cast<Byte>((col0.g * t0 + col1.g * t1) / (t0 + t1) + 0.5);
+            dst.b = static_cast<Byte>((col0.b * t0 + col1.b * t1) / (t0 + t1) + 0.5);
+            dst.a = static_cast<Byte>((t0 + t1) / (r0 + r1) + 0.5);
+        }
+        else {
+            dst.r = static_cast<Byte>((col0.r * r0 + col1.r * r1) / (r0 + r1) + 0.5);
+            dst.g = static_cast<Byte>((col0.g * r0 + col1.g * r1) / (r0 + r1) + 0.5);
+            dst.b = static_cast<Byte>((col0.b * r0 + col1.b * r1) / (r0 + r1) + 0.5);
+            dst.a = 0.0f;
+        }
+        return dst;
     }
 
     SP_GENFUNC Col3f blendCol(const Col3f &col0, const double r0, const Col3f &col1, const double r1) {
