@@ -26,13 +26,29 @@ namespace sp{
         return true;
     }
 
-    SP_CPUFUNC bool cvCnvImg(Mem<Col3> &dst, const cv::Mat &src){
-        if (src.type() == CV_8UC1){
+    SP_CPUFUNC bool cvCnvImg(Mem<Col3> &dst, const cv::Mat &src) {
+        if (src.type() == CV_8UC1) {
             cnvPtrToImg(dst, src.ptr(), src.size().width, src.size().height, 1);
         }
-        if (src.type() == CV_8UC3){
+        if (src.type() == CV_8UC3) {
             cv::Mat rgb;
             cv::cvtColor(src, rgb, CV_BGR2RGB);
+            cnvPtrToImg(dst, rgb.ptr(), rgb.size().width, rgb.size().height, 3);
+        }
+        return true;
+    }
+    SP_CPUFUNC bool cvCnvImg(Mem<Col4> &dst, const cv::Mat &src) {
+        if (src.type() == CV_8UC1) {
+            cnvPtrToImg(dst, src.ptr(), src.size().width, src.size().height, 1);
+        }
+        if (src.type() == CV_8UC3) {
+            cv::Mat rgb;
+            cv::cvtColor(src, rgb, CV_BGR2RGB);
+            cnvPtrToImg(dst, rgb.ptr(), rgb.size().width, rgb.size().height, 3);
+        }
+        if (src.type() == CV_8UC4) {
+            cv::Mat rgb;
+            cv::cvtColor(src, rgb, CV_BGRA2RGBA);
             cnvPtrToImg(dst, rgb.ptr(), rgb.size().width, rgb.size().height, 3);
         }
         return true;

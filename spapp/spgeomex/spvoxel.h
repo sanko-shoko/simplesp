@@ -975,9 +975,10 @@ namespace sp {
                         for (int i = 0; i < linkNum; i++) {
                             if (pTmp[i] != NULL) {
                                 int p = *pTmp[i];
-                                while (pTable[p] != p) {
-                                    p = pTable[p];
+                                while (p != pTable[p]) {
+                                    const int prev = pTable[p];
                                     pTable[p] = crntLabel;
+                                    p = prev;
                                 }
                                 pTable[p] = crntLabel;
                             }
@@ -993,7 +994,7 @@ namespace sp {
         // update table
         for (int i = 0; i < tableNum; i++) {
             int p = i;
-            while (pTable[p] != p) {
+            while (p != pTable[p]) {
                 p = pTable[p];
             }
             pTable[i] = p;

@@ -5,7 +5,6 @@
 #ifndef __SP_TGA_H__
 #define __SP_TGA_H__
 
-#include "spapp/spdata/spfile.h"
 #include "spapp/spimg/spimg.h"
 
 namespace sp{

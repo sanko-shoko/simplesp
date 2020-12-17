@@ -62,7 +62,13 @@ namespace sp{
                 else{
                     for (int i = 0; i < linkNum; i++){
                         if (pTmp[i] != NULL) {
-                            pTable[*pTmp[i]] = crntLabel;
+                            int p = *pTmp[i];
+                            while (p != pTable[p]) {
+                                const int prev = pTable[p];
+                                pTable[p] = crntLabel;
+                                p = prev;
+                            }
+                            pTable[p] = crntLabel;
                         }
                     }
                 }

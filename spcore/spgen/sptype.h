@@ -1344,7 +1344,7 @@ namespace sp {
         int dbase[2] = { 0 }, dsize[2] = { 0 };
         for (int i = 0; i < 2; i++) {
             dbase[i] = max(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+            dsize[i] = max(0, min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i]);
         }
         return getRect2(dbase, dsize);
     }
@@ -1353,7 +1353,7 @@ namespace sp {
         int dbase[3] = { 0 }, dsize[3] = { 0 };
         for (int i = 0; i < 3; i++) {
             dbase[i] = max(rect0.dbase[i], rect1.dbase[i]);
-            dsize[i] = min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i];
+            dsize[i] = max(0, min(rect0.dbase[i] + rect0.dsize[i], rect1.dbase[i] + rect1.dsize[i]) - dbase[i]);
         }
         return getRect3(dbase, dsize);
     }
