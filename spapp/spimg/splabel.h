@@ -60,6 +60,17 @@ namespace sp{
                     table.push(crntLabel);
                 }
                 else{
+                    for (int i = 0; i < linkNum; i++) {
+                        if (pTmp[i] != NULL) {
+                            int p = *pTmp[i];
+                            while (p != pTable[p]) {
+                                p = pTable[p];
+                            }
+                            if (p < crntLabel) {
+                                crntLabel = p;
+                            }
+                        }
+                    }
                     for (int i = 0; i < linkNum; i++){
                         if (pTmp[i] != NULL) {
                             int p = *pTmp[i];

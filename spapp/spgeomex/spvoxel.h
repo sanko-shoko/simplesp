@@ -976,6 +976,17 @@ namespace sp {
                             if (pTmp[i] != NULL) {
                                 int p = *pTmp[i];
                                 while (p != pTable[p]) {
+                                    p = pTable[p];
+                                }
+                                if (p < crntLabel) {
+                                    crntLabel = p;
+                                }
+                            }
+                        }
+                        for (int i = 0; i < linkNum; i++) {
+                            if (pTmp[i] != NULL) {
+                                int p = *pTmp[i];
+                                while (p != pTable[p]) {
                                     const int prev = pTable[p];
                                     pTable[p] = crntLabel;
                                     p = prev;
